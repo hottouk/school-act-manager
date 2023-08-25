@@ -1,0 +1,20 @@
+.signup_form{
+  margin: 60px auto;
+  width: 800px;
+}
+
+.signup_form label{
+  display: block;
+  margin: 20px 0px;
+}
+
+.signup_form input{
+  display: block;
+  width: 100%;
+  margin: 20px 0px;
+  box-sizing: border-box;
+}
+
+.signup_form legend{
+  font-size: 1.5em;
+}
