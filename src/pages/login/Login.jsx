@@ -3,9 +3,9 @@ import React from 'react'
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from 'react-router-dom'
 import jwtDecode from 'jwt-decode';
-// import KakaoSocialLogin from './KakaoLogin';
+import KakaoSocialLogin from './KakaoLogin';
 //전역 변수 관련
-// import KakaoCallback from './KakaoCallback';
+import KakaoCallback from './KakaoCallback';
 import styles from './Login.module.css';
 import { useState } from 'react';
 import useLogin from '../../hooks/useLogin';
@@ -14,8 +14,8 @@ import useLogin from '../../hooks/useLogin';
 const Login = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const { isPending, err, login } = useLogin();
-
+  const { isPending, err, login, googleLogin } = useLogin();
+  
 
   const navigate = useNavigate()
   // KakaoCallback()
@@ -50,16 +50,7 @@ const Login = () => {
         {err && <strong>{err}</strong>}
       </fieldset>
       <div>
-
-        <GoogleLogin //구글 로그인 버튼
-          onSuccess={(res) => {
-            const loginInfo = jwtDecode(res.credential)
-            navigate('/classMain/teacherGuid')
-          }}
-          onFailure={(err) => {
-            console.log(err);
-          }} />
-        {/* <KakaoSocialLogin /> */}
+        <button onClick={googleLogin}>구글 로그인</button>
       </div >
     </form>
 

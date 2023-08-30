@@ -12,6 +12,8 @@ const authReducer = (state, action) => {
             return { ...state, user: null }
         case 'authIsReady':
             return { ...state, user: action.payload, isReady: true }
+        case 'kakaoLogin':
+            return {...state, user: action.payload}
         default:
             return state
     }

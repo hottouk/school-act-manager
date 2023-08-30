@@ -1,14 +1,20 @@
-import { collection, onSnapshot } from "firebase/firestore"
+import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore"
 import { useEffect, useState } from "react"
 import { appFireStore } from "../firebase/config"
 
-const useCollection = (collectionName) => {
+const useCollection = (collectionName, myQuery) => {
   const [documents, setDocuments] = useState(null)
   const [err, setErr] = useState(null)
+  const colRef = collection(appFireStore, collectionName)
 
   useEffect(() => {
+    let q;
+    if (myQuery) {
+      q = query(colRef, where(...myQuery), orderBy('title', 'desc'))
+    }
+
     const unsubscribe = onSnapshot(
-      collection(appFireStore, collectionName),
+      (myQuery ? q : colRef),
       (snapshot) => {
         let result = []
         snapshot.docs.forEach((doc) => {
@@ -21,7 +27,7 @@ const useCollection = (collectionName) => {
       }
     )
     return unsubscribe
-  }, [collection])
+  }, [colRef])
 
   return { documents, err }
 }

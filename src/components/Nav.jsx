@@ -18,9 +18,12 @@ const Nav = () => {
           <li><Link to='/signup'>가입하기</Link></li>
         </>}
         {user && <>
+          <li>{user.displayName}선생님 환영합니다.</li>
           <li><Link to='/'>메인 화면</Link></li>
           <li><Link to='/activities'>활동 관리</Link></li>
+          <li><Link to='/classRooms'>클래스 관리</Link></li>
           <li><button type='button' onClick={logout}>로그아웃</button></li>
+          <li><img alt='이미지 없음.' src={user.photoURL} /></li>
         </>}
       </ul>
     </nav>

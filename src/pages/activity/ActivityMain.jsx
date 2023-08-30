@@ -8,7 +8,7 @@ import ActivityList from './ActivityList'
 
 const ActivityMain = () => {
   const { user } = useAuthContext();
-  const { documents, err } = useCollection('activities')
+  const { documents, err } = useCollection('activities', ['uid', '==', user.uid])
 
   // const loginInfo = useRecoilValue(loginInfoState)
   // const imageUrl = loginInfo.picture;

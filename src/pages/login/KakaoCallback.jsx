@@ -1,52 +1,16 @@
-import axios from "axios";
 import { useEffect } from "react";
-import { KEYS } from "../../keys";
 
 const KakaoCallback = () => {
   useEffect(() => {
-    const params = new URL(document.location.toString()).searchParams;
-    const code = params.get('code');
-    const REST_API_KEY = KEYS.KAKAO_REST_API_KEY //REST API KEY
-    const REDIRECT_URI = KEYS.KAKAO_REDIRECT_URL //Redirect URI
-
-    axios.post(
-      `https://kauth.kakao.com/oauth/token`,
-      {},
-      {
-        headers: { "Content-type": "application/x-www-form-urlencoded;charset=utf-8" },
-        params:
-        {
-          grant_type: 'authorization_code',
-          client_id: REST_API_KEY,
-          code,
-          redirect_uri: REDIRECT_URI
-        }
-      }
-    )
-      .then((res) => {
-        console.log(res);
-        const { access_token } = res.data;
-        axios.post(
-          `https://kapi.kakao.com/v2/user/me`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${access_token}`,
-              "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
-            }
-          }
-        )
-          .then((res) => {
-            console.log('2번째', res);
-          })
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    const href = window.location.href //현재 윈도우창의 주소
+    let params = new URL(href).searchParams; //현재 주소에서 파라미터 찾기(?)
+    let code = params.get('code'); //파라미터 안에서 코드값을 가져옴
+    console.log(code)
   }, [])
 
   return (
     <>
+    <h2>잠시만 기다려 주세요. 카카오로 로그인 중입니다.</h2>
     </>
   )
 }
