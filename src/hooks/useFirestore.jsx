@@ -24,11 +24,12 @@ const storeReducer = (state, action) => {
   }
 }
 
-const useFirestore = (collectionName) => {
+const useFirestore = (collectionName, docName) => {
   const [response, dispatch] = useReducer(storeReducer, initState)
   const colRef = collection(appFireStore, collectionName)
-
-  //활동 추가 함수
+  const docRef = doc(appFireStore, collectionName, docName)
+  
+  //문서 추가 함수
   const addDocument = async (doc) => {
     dispatch({ type: 'isPending' });
     try {
@@ -51,10 +52,8 @@ const useFirestore = (collectionName) => {
     }
   }
 
-
-
   return (
-    { addDocument, deleteDocument, response }
+    { addDocument, deleteDocument, docRef, response }
   )
 }
 

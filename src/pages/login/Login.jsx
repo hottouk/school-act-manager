@@ -1,11 +1,7 @@
 import React from 'react'
 //로그인 관련
-import { GoogleLogin } from "@react-oauth/google";
-import { useNavigate } from 'react-router-dom'
-import jwtDecode from 'jwt-decode';
 import KakaoSocialLogin from './KakaoLogin';
 //전역 변수 관련
-import KakaoCallback from './KakaoCallback';
 import styles from './Login.module.css';
 import { useState } from 'react';
 import useLogin from '../../hooks/useLogin';
@@ -15,10 +11,6 @@ const Login = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const { isPending, err, login, googleLogin } = useLogin();
-  
-
-  const navigate = useNavigate()
-  // KakaoCallback()
 
   const handleOnChange = (event) => {
     if (event.target.type === 'email') {
@@ -49,8 +41,10 @@ const Login = () => {
         {isPending && <strong>로그인이 진행중입니다.</strong>}
         {err && <strong>{err}</strong>}
       </fieldset>
-      <div>
-        <button onClick={googleLogin}>구글 로그인</button>
+      <div className='google_login'>
+        <button className={styles.google_btn} onClick={googleLogin}>
+          <span className={styles.google_icon}></span>
+          구글 로그인</button>
       </div >
     </form>
 

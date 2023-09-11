@@ -5,7 +5,8 @@ const Activities = ({ uid }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [record, setRecord] = useState('');
-  const { addDocument, removeDocument, response } = useFirestore('activities');
+  const { addDocument, response } = useFirestore('activities');
+  
 
   const confirmWindow = () => {
     const confirm = window.confirm('활동을 저장하시겠습니까?')
@@ -28,7 +29,6 @@ const Activities = ({ uid }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     confirmWindow();
-    console.log(title, content, record)
   }
 
   useEffect(() => {
@@ -41,17 +41,19 @@ const Activities = ({ uid }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <legend>일기 쓰기</legend>
-      <label htmlFor="acti_title" >활동 제목</label>
-      <input id="acti_title" type="text" required onChange={handleChange} value={title} />
+      <fieldset>
+        <legend>활동 작성하기</legend>
+        <label htmlFor="acti_title" >활동 제목</label>
+        <input id="acti_title" type="text" required onChange={handleChange} value={title} />
 
-      <label htmlFor="acti_content" >활동 설명</label>
-      <textarea id="acti_content" type="text" required onChange={handleChange} value={content} />
+        <label htmlFor="acti_content" >활동 설명</label>
+        <textarea id="acti_content" type="text" required onChange={handleChange} value={content} />
 
-      <label htmlFor="acti_record" >생기부 문구</label>
-      <textarea id="acti_record" type="text" required onChange={handleChange} value={record} />
+        <label htmlFor="acti_record" >생기부 문구</label>
+        <textarea id="acti_record" type="text" required onChange={handleChange} value={record} />
 
-      <button type="submit">저장하기</button>
+        <button type="submit">저장하기</button>
+      </fieldset>
     </form>
   )
 }

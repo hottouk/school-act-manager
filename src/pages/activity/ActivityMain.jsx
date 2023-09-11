@@ -1,5 +1,4 @@
 import React from 'react'
-import { Button, Image } from 'react-bootstrap'
 import styles from './ActivityMain.module.css'
 import { useAuthContext } from '../../hooks/useAuthContext'
 import ActivityForm from './ActivitityForm'
@@ -8,7 +7,7 @@ import ActivityList from './ActivityList'
 
 const ActivityMain = () => {
   const { user } = useAuthContext();
-  const { documents, err } = useCollection('activities', ['uid', '==', user.uid])
+  const { documents, err } = useCollection('activities', ['uid', '==', user.uid], 'title')
 
   // const loginInfo = useRecoilValue(loginInfoState)
   // const imageUrl = loginInfo.picture;
@@ -23,7 +22,6 @@ const ActivityMain = () => {
         {err && <strong>{err}</strong>}
         {documents && <ActivityList activities={documents} />}
       </ul>
-
     </main>
   )
 }

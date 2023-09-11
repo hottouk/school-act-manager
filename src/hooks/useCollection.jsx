@@ -2,7 +2,7 @@ import { collection, onSnapshot, orderBy, query, where } from "firebase/firestor
 import { useEffect, useState } from "react"
 import { appFireStore } from "../firebase/config"
 
-const useCollection = (collectionName, myQuery) => {
+const useCollection = (collectionName, myQuery, order) => {
   const [documents, setDocuments] = useState(null)
   const [err, setErr] = useState(null)
   const colRef = collection(appFireStore, collectionName)
@@ -10,7 +10,7 @@ const useCollection = (collectionName, myQuery) => {
   useEffect(() => {
     let q;
     if (myQuery) {
-      q = query(colRef, where(...myQuery), orderBy('title', 'desc'))
+      q = query(colRef, where(...myQuery), orderBy(order, 'desc'))
     }
 
     const unsubscribe = onSnapshot(
@@ -27,7 +27,7 @@ const useCollection = (collectionName, myQuery) => {
       }
     )
     return unsubscribe
-  }, [colRef])
+  }, [colRef, myQuery])
 
   return { documents, err }
 }

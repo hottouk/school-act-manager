@@ -1,4 +1,3 @@
-import React from 'react'
 import styles from './ActivityMain.module.css'
 import useFirestore from '../../hooks/useFirestore'
 
@@ -9,11 +8,13 @@ const ActivityList = ({ activities }) => {
     <>
       {activities.map((item) => {
         return (
-          <li key={item.id}>
+          <li key={item.id} className={styles.item}>
             <strong className={styles.title}>{item.title}</strong>
+            <label>활동 설명</label>
             <p className={styles.text}>{item.content}</p>
+            <label>생기부 문구</label>
             <p className={styles.text}>{item.record}</p>
-            <button onClick={() => { deleteDocument(item.id) }}>삭제하기</button>
+            <button onClick={() => { deleteDocument(item.id) }}>X</button>
           </li>
         )
       })}

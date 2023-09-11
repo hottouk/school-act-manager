@@ -18,3 +18,29 @@
 .login_form legend{
   font-size: 1.5em;
 }
+
+.google_btn{
+  display: inline-block;
+  background: white;
+  color: #444;
+  width: 190px;
+  border-radius: 5px;
+  border: thin solid #888;
+  box-shadow: 1px 1px 1px grey;
+  white-space: nowrap;
+  margin-top: 20px;
+  cursor: pointer;
+  padding:5px;
+}
+
+span.google_icon {
+  margin-right: 10px;
+  background-image: url('../../image/g-logo.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: inline-block;
+  vertical-align: middle;
+  width: 30px;
+  height: 30px;
+  
+}

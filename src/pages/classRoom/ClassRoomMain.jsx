@@ -1,8 +1,29 @@
-import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuthContext } from '../../hooks/useAuthContext';
+import useCollection from '../../hooks/useCollection'
+import ClassRoomList from './ClassRoomList';
+import styles from './ClassRoomMain.module.css';
+
 
 const ClassRoomMain = () => {
+  const { user } = useAuthContext();
+  const { documents, err } = useCollection('classRooms', ['uid', '==', user.uid], 'subject')
+  const urlMove = useNavigate()
+  
+  const handleOnClick = (event) => {
+    event.preventDefault()
+    urlMove('/classrooms_setting')
+  }
+
   return (
-    <div>classRoomMain</div>
+    <main>
+      <ul className={styles.classRoom_list}>
+        {documents && <ClassRoomList classRooms={documents} />}
+        {!documents && <h3>아직 클래스가 없어요. 클래스를 만들어주세요</h3>}
+        {err && <strong>{err}</strong>}
+      </ul>
+      <button onClick={handleOnClick}>클래스 만들기</button>
+    </main>
   )
 }
 

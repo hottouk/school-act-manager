@@ -4,6 +4,11 @@ import { appAuth } from '../firebase/config';
 // context를 객체를 생성합니다.
 const AuthContext = createContext();
 
+const initState = {
+    user: null,
+    isReady: false
+}
+
 const authReducer = (state, action) => {
     switch (action.type) {
         case 'login':
@@ -13,7 +18,7 @@ const authReducer = (state, action) => {
         case 'authIsReady':
             return { ...state, user: action.payload, isReady: true }
         case 'kakaoLogin':
-            return {...state, user: action.payload}
+            return { ...state, user: action.payload }
         default:
             return state
     }
@@ -22,10 +27,7 @@ const authReducer = (state, action) => {
 // context를 객체를 구독할 컴포넌트의 묶음 범위를 설정합니다.
 const AuthContextProvider = ({ children }) => {
 
-    const [state, dispatch] = useReducer(authReducer, {
-        user: null,
-        isReady: false
-    })
+    const [state, dispatch] = useReducer(authReducer, initState)
 
     useEffect(() => {
         // onAuthStateChanged : 유저의 인증정보 변화를 감지하는 함수
