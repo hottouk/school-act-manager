@@ -24,11 +24,35 @@ const storeReducer = (state, action) => {
   }
 }
 
-const useFirestore = (collectionName, docName) => {
+const useFirestore = (collectionName) => {
   const [response, dispatch] = useReducer(storeReducer, initState)
-  const colRef = collection(appFireStore, collectionName)
-  const docRef = doc(appFireStore, collectionName, docName)
+  const db = appFireStore
+  const colRef = collection(db, collectionName)
   
+
+  //클래스룸 추가 함수
+  const addClassroom = async (classAtrs, studentList) => {
+    dispatch({ type: 'isPending' });
+    try {
+      const createdTime = timeStamp.fromDate(new Date());
+      const docRef = await addDoc(colRef, { ...classAtrs, createdTime });
+      const subColRef = collection(docRef, 'students')
+      //test code
+      //console.log('학생list', studentList)
+      
+      await studentList.map(student => {
+        //test code
+        //console.log('학생:',student)
+        addDoc(subColRef, student);
+        return student.length
+      })
+      
+      dispatch({ type: 'addDoc', payload: colRef }); //상태 전달
+    } catch (error) {
+      dispatch({ type: 'error', payload: error.message }) //상태 전달
+    }
+  }
+
   //문서 추가 함수
   const addDocument = async (doc) => {
     dispatch({ type: 'isPending' });
@@ -53,7 +77,7 @@ const useFirestore = (collectionName, docName) => {
   }
 
   return (
-    { addDocument, deleteDocument, docRef, response }
+    { addDocument, deleteDocument, addClassroom, response }
   )
 }
 

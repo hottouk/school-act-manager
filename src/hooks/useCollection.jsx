@@ -2,7 +2,8 @@ import { collection, onSnapshot, orderBy, query, where } from "firebase/firestor
 import { useEffect, useState } from "react"
 import { appFireStore } from "../firebase/config"
 
-const useCollection = (collectionName, myQuery, order) => {
+//문서 여러 개를 한번에 읽어올 때 사용한다.
+const useCollection = (collectionName, myQuery, order) => { 
   const [documents, setDocuments] = useState(null)
   const [err, setErr] = useState(null)
   const colRef = collection(appFireStore, collectionName)
@@ -27,7 +28,7 @@ const useCollection = (collectionName, myQuery, order) => {
       }
     )
     return unsubscribe
-  }, [colRef, myQuery])
+  }, [])
 
   return { documents, err }
 }

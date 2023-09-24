@@ -9,7 +9,8 @@ const ClassRoomMain = () => {
   const { user } = useAuthContext();
   const { documents, err } = useCollection('classRooms', ['uid', '==', user.uid], 'subject')
   const urlMove = useNavigate()
-  
+  console.log(documents)
+
   const handleOnClick = (event) => {
     event.preventDefault()
     urlMove('/classrooms_setting')

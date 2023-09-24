@@ -3,15 +3,19 @@ import styles from './ClassRoomMain.module.css'
 import useFirestore from '../../hooks/useFirestore';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useNavigate } from 'react-router-dom';
-
+import useStudent from '../../hooks/useStudent';
 
 const ClassRoomMakeForm = () => {
   const { user } = useAuthContext();
   const [classTitle, setClassTitle] = useState('');
-  const [subject, setSubject] = useState('');
+  //select 선택 값
+  const [subject, setSubject] = useState('default');
+  const [grade, setGrade] = useState('default');
+  const [classNumber, setClassNumber] = useState('default');
   const [numberOfStudent, setNumberOfStudent] = useState(0);
   const [intro, setIntro] = useState('');
-  const { addDocument, response } = useFirestore('classRooms');
+  const { addClassroom, response } = useFirestore('classRooms');
+  const { makeStudent } = useStudent()
   const urlMove = useNavigate()
 
 
@@ -20,7 +24,10 @@ const ClassRoomMakeForm = () => {
     if (confirm) {
       const uid = user.uid;
       const newDoc = { uid, classTitle, subject, numberOfStudent, intro }
-      addDocument(newDoc)
+      const studentList = makeStudent(numberOfStudent)
+      addClassroom(newDoc, studentList)
+      urlMove('/classRooms')
+      console.log(response)
     }
   }
 
@@ -33,6 +40,10 @@ const ClassRoomMakeForm = () => {
       setNumberOfStudent(event.target.value)
     } else if (event.target.id === 'class_explanation') {
       setIntro(event.target.value)
+    } else if (event.target.id === 'class_grade'){
+      setGrade(event.target.value)
+    } else if ( event.target.id === 'class_number'){
+      setClassNumber(event.target.value)
     }
   }
 
@@ -53,14 +64,41 @@ const ClassRoomMakeForm = () => {
         <label htmlFor='class_title'>클래스 이름</label>
         <input id='class_title' type="text" required onChange={handleChange} value={classTitle} />
 
-        <label htmlFor='class_subject'>과목을 선택하세요</label>
-        <select id='class_subject' required value={subject} defaultValue='default' onChange={handleChange}>
+        <select id='class_subject' required value={subject} onChange={handleChange}>
           <option value="default" disabled >과목을 선택하세요</option>
           <option value="kor">국어과</option>
           <option value="eng">영어과</option>
           <option value="math">수학과</option>
           <option value="soc">사회과</option>
           <option value="sci">과학과</option>
+        </select>
+        <select id='class_grade' required value={grade} onChange={handleChange}>
+          <option value="default" disabled >학년</option>
+          <option value="1st">1학년</option>
+          <option value="2nd">2학년</option>
+          <option value="3rd">3학년</option>
+        </select>
+        <select id='class_number' required value={classNumber} onChange={handleChange}>
+          <option value="default" disabled >반</option>
+          <option value="1">1반</option>
+          <option value="2">2반</option>
+          <option value="3">3반</option>
+          <option value="4">4반</option>
+          <option value="5">5반</option>
+          <option value="6">6반</option>
+          <option value="7">7반</option>
+          <option value="8">8반</option>
+          <option value="9">9반</option>
+          <option value="10">10반</option>
+          <option value="11">11반</option>
+          <option value="12">12반</option>
+          <option value="14">14반</option>
+          <option value="15">15반</option>
+          <option value="16">16반</option>
+          <option value="17">17반</option>
+          <option value="18">18반</option>
+          <option value="19">19반</option>
+          <option value="20">이동반</option>
         </select>
 
         <label htmlFor='class_number_of_studnets'>학생 총원</label>
