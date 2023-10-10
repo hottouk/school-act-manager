@@ -60,6 +60,7 @@ li.item {
   padding: 10px;
 }
 
-li+li{
+li+li {
   margin-left: 20px;
 }
+

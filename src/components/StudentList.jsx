@@ -1,6 +1,15 @@
-const StudentList = () => {
+const StudentList = ({ students }) => {
+
   return (
-    <div>StudentList</div>
+    <>
+      {students.map((item) => {
+        return (
+          <li key={item.id}>
+            <p id="student_number">{item.studentNumber}</p>
+          </li>
+        )
+      })}
+    </>
   )
 }
 

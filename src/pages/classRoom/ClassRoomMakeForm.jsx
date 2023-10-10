@@ -23,9 +23,9 @@ const ClassRoomMakeForm = () => {
     const confirm = window.confirm('클래스를 생성하시겠습니까?')
     if (confirm) {
       const uid = user.uid;
-      const newDoc = { uid, classTitle, subject, numberOfStudent, intro }
-      const studentList = makeStudent(numberOfStudent)
-      addClassroom(newDoc, studentList)
+      const newClassroom = { uid, classTitle, subject, grade, classNumber, numberOfStudent, intro }
+      const studentList = makeStudent(numberOfStudent, grade, classNumber)
+      addClassroom(newClassroom, studentList)
       urlMove('/classRooms')
       console.log(response)
     }
@@ -40,9 +40,9 @@ const ClassRoomMakeForm = () => {
       setNumberOfStudent(event.target.value)
     } else if (event.target.id === 'class_explanation') {
       setIntro(event.target.value)
-    } else if (event.target.id === 'class_grade'){
+    } else if (event.target.id === 'class_grade') {
       setGrade(event.target.value)
-    } else if ( event.target.id === 'class_number'){
+    } else if (event.target.id === 'class_number') {
       setClassNumber(event.target.value)
     }
   }
@@ -72,23 +72,25 @@ const ClassRoomMakeForm = () => {
           <option value="soc">사회과</option>
           <option value="sci">과학과</option>
         </select>
+
         <select id='class_grade' required value={grade} onChange={handleChange}>
           <option value="default" disabled >학년</option>
-          <option value="1st">1학년</option>
-          <option value="2nd">2학년</option>
-          <option value="3rd">3학년</option>
+          <option value="1">1학년</option>
+          <option value="2">2학년</option>
+          <option value="3">3학년</option>
         </select>
+
         <select id='class_number' required value={classNumber} onChange={handleChange}>
           <option value="default" disabled >반</option>
-          <option value="1">1반</option>
-          <option value="2">2반</option>
-          <option value="3">3반</option>
-          <option value="4">4반</option>
-          <option value="5">5반</option>
-          <option value="6">6반</option>
-          <option value="7">7반</option>
-          <option value="8">8반</option>
-          <option value="9">9반</option>
+          <option value="01">1반</option>
+          <option value="02">2반</option>
+          <option value="03">3반</option>
+          <option value="04">4반</option>
+          <option value="05">5반</option>
+          <option value="06">6반</option>
+          <option value="07">7반</option>
+          <option value="08">8반</option>
+          <option value="09">9반</option>
           <option value="10">10반</option>
           <option value="11">11반</option>
           <option value="12">12반</option>

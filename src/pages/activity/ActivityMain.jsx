@@ -7,7 +7,7 @@ import ActivityList from './ActivityList'
 
 const ActivityMain = () => {
   const { user } = useAuthContext();
-  const { documents, err } = useCollection('activities', ['uid', '==', user.uid], 'title')
+  const { documents, colErr } = useCollection('activities', ['uid', '==', user.uid], 'title')
 
   // const loginInfo = useRecoilValue(loginInfoState)
   // const imageUrl = loginInfo.picture;
@@ -19,7 +19,7 @@ const ActivityMain = () => {
         <ActivityForm uid={user.uid} />
       </aside>
       <ul className={styles.content_list}>
-        {err && <strong>{err}</strong>}
+        {colErr && <strong>{colErr}</strong>}
         {documents && <ActivityList activities={documents} />}
       </ul>
     </main>

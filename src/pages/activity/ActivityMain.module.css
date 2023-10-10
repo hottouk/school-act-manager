@@ -6,6 +6,8 @@
   margin: 60px auto;
 }
 
+/* 활동 만들기 css */
+
 .side_menu form {
   padding: 20px;
   background-color: teal;
@@ -47,6 +49,8 @@
   color: whitesmoke;
   border-radius: 15px;
 }
+
+/* 활동 리스트 CSS*/
 
 .content_list {
   margin: 0px;

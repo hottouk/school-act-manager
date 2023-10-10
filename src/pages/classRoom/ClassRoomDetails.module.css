@@ -1,0 +1,72 @@
+/* 클래스룸 디테일 css */
+
+.classroomDetailsCont {
+  display: flex;
+  max-width: 1080px;
+  margin: 40px auto;
+}
+
+/* 셀렉터 */
+.main_slector {
+  width: 100%;
+  min-height: 400px;
+  background-color: aqua;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+/* 학생 리스트 css */
+.student_list {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  list-style: none;
+  padding: 10px;
+  border: 1px black solid;
+  border-radius: 10px;
+  padding: 0px 0px;
+}
+
+.student_list li {
+  width: 84px;
+  height: 80px;
+  margin: 10px;
+  padding: 20px;
+  border: 1px solid black;
+  border-radius: 5px;
+  transform: skewX(-14deg);
+  transition: transform 0.1s;
+  background-color: gray;
+  border: whitesmoke 2px solid;
+  box-sizing: border-box;
+}
+
+.student_list li:hover {
+  background-color: orange;
+  transform: scale(1.3) skewX(-14deg);
+  z-index: 1;
+}
+
+.student_list li p {
+  color: blue;
+  transform: skewX(14deg);
+}
+
+/* 활동 리스트 css */
+.activity_list {
+  margin: 0;
+  padding: 20px;
+  background-color: aqua;
+}
+
+.activity_list li {
+  margin: 0;
+  background-color: orange;
+  border: black 1px solid;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.activity_list li+li {
+  margin-top: 10px;
+}
