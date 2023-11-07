@@ -15,6 +15,11 @@
   justify-content: space-evenly;
 }
 
+button {
+  display: block;
+  height: 30px;
+}
+
 /* 학생 리스트 css */
 .student_list {
   display: flex;
