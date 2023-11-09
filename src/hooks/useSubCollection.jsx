@@ -3,11 +3,11 @@ import { useEffect, useState } from "react"
 import { appFireStore } from "../firebase/config"
 
 //하위 Col에서 문서 여러 개를 한번에 읽어올 때 사용한다.
-const useSubCollection = (colName, docName, subColName,order) => { 
+const useSubCollection = (colName, docName, subColName, order) => {
   const [subDocuments, setSubDocuments] = useState(null)
   const [subColErr, setSubColErr] = useState(null)
   const colRef = collection(appFireStore, colName, docName, subColName)
-  
+
   useEffect(() => {
     let q;
     if (order) {

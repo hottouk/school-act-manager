@@ -8,12 +8,13 @@ import useStudent from '../../hooks/useStudent';
 const ClassRoomMakeForm = () => {
   const { user } = useAuthContext();
   const [classTitle, setClassTitle] = useState('');
-  //select 선택 값
+  //교실 obj에 필요한 속성 값
   const [subject, setSubject] = useState('default');
   const [grade, setGrade] = useState('default');
   const [classNumber, setClassNumber] = useState('default');
   const [numberOfStudent, setNumberOfStudent] = useState(0);
   const [intro, setIntro] = useState('');
+  
   const { addClassroom, response } = useFirestore('classRooms');
   const { makeStudent } = useStudent()
   const urlMove = useNavigate()

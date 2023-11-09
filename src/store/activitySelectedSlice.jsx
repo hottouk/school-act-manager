@@ -6,7 +6,7 @@ let activitySelected = createSlice({
   reducers: {
     setSelectActivity(state, action) {
       let activityList = action.payload
-      return [activityList]
+      return activityList
     }
   }
 })

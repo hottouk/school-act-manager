@@ -6,7 +6,7 @@ let studentSelected = createSlice({
   reducers: {
     setSelectStudent(state, action) {
       let studnetList = action.payload
-      return [studnetList]
+      return studnetList
     }
   }
 })
