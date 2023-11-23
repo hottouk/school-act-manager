@@ -2,6 +2,10 @@ import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthContext } from './hooks/useAuthContext';
 
+//bootstrap css
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+//components
 import Login from './pages/login/Login';
 import ClassMain from './pages/main/ClassMain';
 import Nav from './components/Nav';

@@ -14,7 +14,7 @@ const useSubCollection = (colName, docName, subColName, order) => {
       q = query(colRef, orderBy(order, 'asc'));
     }
 
-    const unsubscribe = onSnapshot(
+    const unsubscribe = onSnapshot( //언마운트 시, 또는 위의 코드보다 먼저 실행
       (order ? q : colRef),
       (snapshot) => {
         let result = []

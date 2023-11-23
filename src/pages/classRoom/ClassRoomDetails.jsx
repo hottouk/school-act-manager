@@ -14,12 +14,7 @@ import ActivitySimpleList from '../activity/ActivitySimpleList';
 //스타일
 import styles from './ClassRoomDetails.module.css';
 
-//리덕스
-import { useSelector } from 'react-redux';
-
 //파이어베이스
-import { appFireStore } from '../../firebase/config.js'
-import { doc, getDoc } from 'firebase/firestore';
 import MainSelector from './MainSelector.jsx';
 
 const ClassRoomDetails = () => {

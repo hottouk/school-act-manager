@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 import { setSelectStudent } from '../store/studentSelectedSlice'
 import { setSelectActivity } from '../store/activitySelectedSlice'
 
-const MultiSelector = ({ studentList, activitiyList }) => {
+const MultiSelector = ({ studentList, activitiyList, selectStudentRef, selectActRef }) => {
   let dispatcher = useDispatch() //redux dispatcher
 
   const handleStudentSelection = (event) => { //event는 선택값의 배열 반환
@@ -30,7 +30,7 @@ const MultiSelector = ({ studentList, activitiyList }) => {
   if (activitiyList) {
     activitiyList.map((item) => {
       return (
-        options.push({ value: item.id, label: item.title })
+        options.push({ value: item.id, label: item.title, uid: item.uid, record: item.record, content: item.content })
       )
     })
   }
@@ -39,11 +39,13 @@ const MultiSelector = ({ studentList, activitiyList }) => {
     <>
       {(studentList) ?
         <Select className={styles.mutli_selector}
+          ref={selectStudentRef}
           isMulti
           onChange={(event) => { handleStudentSelection(event) }}
           options={options}
           placeholder='학번을 선택해주세요.'
         /> : (activitiyList) ? <Select className={styles.mutli_selector}
+          ref={selectActRef}
           isMulti
           onChange={(event) => { handleActivitySelection(event) }}
           options={options}
