@@ -4,9 +4,9 @@ import styles from './ClassRoomMain.module.css'
 
 const ClassRoomList = ({ classRooms }) => {
   const { deleteDocument } = useFirestore('classRooms')
-  const urlMove = useNavigate()
+  const navigate = useNavigate()
   const handleEnterRoom = (classUrl) => {
-    urlMove(`/classrooms/${classUrl}`)
+    navigate(`/classrooms/${classUrl}`)
   }
 
   return (

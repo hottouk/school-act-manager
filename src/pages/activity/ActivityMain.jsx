@@ -9,10 +9,6 @@ const ActivityMain = () => {
   const { user } = useAuthContext();
   const { documents, colErr } = useCollection('activities', ['uid', '==', user.uid], 'title')
 
-  // const loginInfo = useRecoilValue(loginInfoState)
-  // const imageUrl = loginInfo.picture;
-  // console.log(imageUrl)
-
   return (
     <main className={styles.cont}>
       <aside className={styles.side_menu}>

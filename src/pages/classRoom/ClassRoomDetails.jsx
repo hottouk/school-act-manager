@@ -9,13 +9,25 @@ import useSubCollection from '../../hooks/useSubCollection';
 
 //컴포넌트
 import StudentList from '../../components/StudentList';
-import ActivitySimpleList from '../activity/ActivitySimpleList';
 
 //스타일
 import styles from './ClassRoomDetails.module.css';
 
 //파이어베이스
 import MainSelector from './MainSelector.jsx';
+import styled from 'styled-components';
+
+//스타일
+const StyledStudentList = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    list-style: none;
+    padding: 10px;
+    border: 1px black solid;
+    border-radius: 10px;
+    padding: 0px 0px;
+  `
 
 const ClassRoomDetails = () => {
   const { user } = useAuthContext();
@@ -23,9 +35,10 @@ const ClassRoomDetails = () => {
   const classId = useParams(); //id와 param의 key-value(id:'id') 오브젝트로 반환
   const { document, err } = useDoc(classId) //param을 받아서 전달하면 교실 정보 문서 반환
   const [actOn, setActOn] = useState(false);
-  
+
   const { subDocuments, subColErr } = useSubCollection('classRooms', classId.id, 'students', 'studentNumber') //학생 List
   const { documents, colErr } = useCollection('activities', ['uid', '==', user.uid], 'title') //활동 List
+
 
   // testCode
   console.log(classId.id, '반 학생List', subDocuments)
@@ -48,18 +61,17 @@ const ClassRoomDetails = () => {
           <MainSelector studentList={subDocuments} activitiyList={documents} classId={classId} />
           <main className={styles.classroomDetailsCont}>
             {/* 학생 상세 보기 */}
-            <aside className={styles.student_list}>
+            <StyledStudentList>
               {!subDocuments ? <h3>반에 학생들이 등록되어 있지 않습니다. {subColErr}</h3>
                 : subDocuments.length === 0 ? <h3>반에 학생들이 등록되어 있지 않습니다. {subColErr}</h3>
                   : <StudentList students={subDocuments} />}
-            </aside>
-
-            <ul className={styles.activity_list}>
+            </StyledStudentList>
+            {/* <ul className={styles.activity_list}>
               {actOn && <ActivitySimpleList activities={documents} />}
-            </ul>
+            </ul> */}
           </main>
           <footer>
-            <button onClick={() => { console.log('doc-->', document) }}>뭐라도 써봐</button>
+            {/* <button onClick={() => { console.log('doc-->', document) }}>뭐라도 써봐</button> */}
             <button onClick={() => { handleBringActivities() }}>{!actOn ? <p>활동 불러오기</p> : <p>활동 탭 닫기</p>}</button>
           </footer>
         </>

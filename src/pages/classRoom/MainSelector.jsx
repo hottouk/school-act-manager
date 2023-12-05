@@ -2,28 +2,46 @@
 import MultiSelector from '../../components/MultiSelector';
 import DialogModal from '../../components/StaticDialogModal.jsx';
 
-//리덕스
+//변수관리
 import { useSelector } from 'react-redux';
+import { useRef, useState } from 'react';
 
 //파이어베이스
 import { appFireStore } from '../../firebase/config.js'
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 //CSS styles
-import styles from './ClassRoomDetails.module.css';
-import { useRef, useState } from 'react';
+import styled from "styled-components"
+import styles from "./MainSelector.module.css"
 
+//스타일
+const StyledButtonSection = styled.div`
+  position: relative;
+  bottom: 40px;
+  width: 80%;
+  height: 20%;
+  margin: 0 auto;
+`
+const StyledButton = styled.button`
+  position: relative;
+  margin: 0 auto;
+  width: 15em;
+  height: 3em;
+  background-color: #6495ed;
+  border: none;
+  border-radius: 5px;
+  color: black;
+  padding: 0.25em 1em;
+`
 const MainSelector = ({ studentList, activitiyList, classId }) => {
-
   //redux 전역변수
   const studentSelected = useSelector(({ studentSelected }) => { return studentSelected })
   const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })
 
-  //지역 변수(대화창 보여주기, 대화창 확인버튼)
-  const [modalShow, setModalShow] = useState(false)
-  const selectStudentRef = useRef(null);
-  const selectActRef = useRef(null);
-
+  //지역 변수
+  const [modalShow, setModalShow] = useState(false) //대화창 보여주기 변수
+  const selectStudentRef = useRef(null); //학생 선택 변수, 재랜더링 X
+  const selectActRef = useRef(null); //활동 선택 변수, 재랜더링 X
 
   //★★★ 핵심 로직
   const writeDataOnDB = async () => {
@@ -88,26 +106,32 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
     return actList
   }
 
+  //선택 완료 버튼 클릭
   const handleSelectComplete = async () => {
     console.log('선택 학생List', studentSelected)
     console.log('선택 활동List', activitySelected)
     setModalShow(true) //대화창 pop
   }
-
+    
   return (
     <>
       {/* 학생 셀렉터, 활동 셀렉터 */}
-      <div className={styles.main_slector}>
-        <div className={styles.student_slector}>
-          <MultiSelector studentList={studentList} selectStudentRef={selectStudentRef} />
+      <div className={styles.wrapper}>
+        <div className={styles.selector_container}>
+          <div className={styles.selector}>
+            <MultiSelector studentList={studentList} selectStudentRef={selectStudentRef} />
+          </div>
+          <div className={styles.selector}>
+            <MultiSelector activitiyList={activitiyList} selectActRef={selectActRef} />
+          </div>
         </div>
-        <div className={styles.activity_slector}>
-          <MultiSelector activitiyList={activitiyList} selectActRef={selectActRef} />
-        </div>
-        <button className={styles.slectorButton} onClick={() => {
-          handleSelectComplete()
-        }}>선택 완료</button>
+        <StyledButtonSection>
+          <StyledButton onClick={() => {
+            handleSelectComplete()
+          }}>선택 완료</StyledButton>
+        </StyledButtonSection>
       </div>
+      {/* 리엑트 부트스트랩 */}
       <DialogModal
         show={modalShow}
         onHide={() => setModalShow(false)}

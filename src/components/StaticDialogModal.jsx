@@ -15,8 +15,8 @@ const StaticDialogModal = (props) => {
 
   useEffect(() => { //대화창에 선택한 학번과 활동 이름 띄운다.
     const selectedActList = []
-
     const selectedStudentList = []
+    
     studentSelected.map(({ label }) => {
       return selectedStudentList.push(` ${label}`)
     })

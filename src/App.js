@@ -15,6 +15,7 @@ import ClassRoomMain from './pages/classRoom/ClassRoomMain';
 import KakaoCallback from './pages/login/KakaoCallback';
 import ClassRoomMakeForm from './pages/classRoom/ClassRoomMakeForm';
 import ClassRoomDetails from './pages/classRoom/ClassRoomDetails';
+import StudentDetail from './pages/student/StudentDetail';
 
 function App() {
   const { isReady, user } = useAuthContext();
@@ -33,6 +34,7 @@ function App() {
             <Route path="/activities" element={user ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
             <Route path="/classrooms" element={user ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
             <Route path='/classrooms/:id' element={<ClassRoomDetails />} />
+            <Route path='/classrooms/:id/:studentId' element={<StudentDetail />} />
             <Route path="/classrooms_setting" element={user ? <ClassRoomMakeForm /> : <Navigate replace={true} to='/login' />} />
             <Route path="/login" element={!user ? <Login /> : <Navigate replace={true} to='/' />} />
             <Route path="/signup" element={!user ? <Signup /> : <Navigate replace={true} to='/' />} />
