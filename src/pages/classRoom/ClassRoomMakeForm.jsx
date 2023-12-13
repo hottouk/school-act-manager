@@ -18,8 +18,7 @@ const ClassRoomMakeForm = () => {
   const { addClassroom, response } = useFirestore('classRooms');
   const { makeStudent } = useStudent()
   const urlMove = useNavigate()
-
-
+  
   const confirmWindow = () => {
     const confirm = window.confirm('클래스를 생성하시겠습니까?')
     if (confirm) {

@@ -32,7 +32,6 @@ const StyledStudentNumber = styled.p`
   text-align: center;
   color:black;
 `
-
 const StudentList = ({ students }) => {
   const navigate = useNavigate()
   const classId = useParams().id //반 id

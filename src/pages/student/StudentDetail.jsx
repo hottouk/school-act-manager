@@ -1,4 +1,3 @@
-import React from 'react'
 import { useLocation } from 'react-router-dom'
 
 //스타일
@@ -73,14 +72,13 @@ const StyledBotRightInfo = styled.div`
   border: 1px solid black;
   border-radius: 10px;
 `
-
 const StyledAccRecord = styled.p`
   display: inline;
 `
-
 const StudentDetail = () => {
   const { state } = useLocation()
-  const { studentNumber, actList } = state
+  const { studentNumber, actList, scores } = state
+  console.log(scores)
   return (
     <StyledContainer>
       <StyledTopPannel>

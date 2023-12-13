@@ -10,8 +10,6 @@ const ClassRoomMain = () => {
   const { documents, err } = useCollection('classRooms', ['uid', '==', user.uid], 'subject')
   const urlMove = useNavigate()
   const classroomList = documents
-  //testCode
-  // console.log('교실List',classroomList)
 
   const handleOnClick = (event) => {
     event.preventDefault()

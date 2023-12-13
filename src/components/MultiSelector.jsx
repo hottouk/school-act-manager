@@ -13,7 +13,7 @@ const MultiSelector = ({ studentList, activitiyList, selectStudentRef, selectAct
     dispatcher(setSelectStudent(event))
   }
 
-  const handleActivitySelection = (event) => { //event는 선택값의 배열 반환
+  const handleActivitySelection = (event) => { 
     dispatcher(setSelectActivity(event))
   }
 

@@ -7,25 +7,29 @@ import mon_02 from "../../image/enemies/mon_02.png"
 import mon_03 from "../../image/enemies/mon_03.png"
 //스타일
 import styled from "styled-components";
+import { useLocation, useNavigate } from "react-router-dom";
 
+const StyledForm = styled.form`
+  padding: 20px;
+  background-color: teal;
+  border-radius: 10px;
+`
 const StyledFieldSet = styled.fieldset`
   position: relative;
+  border: none;
 `
-const StyledScoreWrapper = styled.div`
-  width: 100%;
-  max-width: 500px;
-  min-width: 400px;
-  margin : 20px auto;
-  text-align : center;
+const StyledLegend = styled.legend`
+  color: white;
+  font-size: 1.5em;
+  margin-bottom: 20px;
 `
-const StyledInputBox = styled.div`
-  display: inline-block;
-  background-color: red;
-`
-const StyledInput = styled.input`
-  width: 72px;
-  height: 30px;
-  margin-top: 7px;
+const StyledTitleInput = styled.input`
+  display: block;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  width: 60%;
+  max-width: 280px;
+  height: 27px;
 `
 const StyledImgPicker = styled.img`
   position: absolute;
@@ -38,26 +42,69 @@ const StyledImgPicker = styled.img`
   background-color: #fff;
   cursor: pointer;
 `
-
-const Activities = ({ uid }) => {
-  //활동 기본 정보
+const StyledTextarea = styled.textarea`
+  display: block;
+  width: 100%;
+  min-width: 400px;
+  min-height: 150px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+`
+const StyledScoreWrapper = styled.div`
+  width: 100%;
+  margin : 20px auto;
+  text-align : center;
+`
+const StyledInputBox = styled.div`
+  display: inline-block;
+  background-color: red;
+`
+const StyledNumberInput = styled.input`
+  width: 72px;
+  height: 30px;
+  margin-top: 7px;
+`
+const StyledLabel = styled.label`
+  display: block;
+  color: white; 
+`
+const StyledBtn = styled.button`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px auto;
+  margin-top: 25px;
+  width: 80%;
+  color: whitesmoke;
+  background-color: transparent;
+  border-radius: 15px;
+  border: 2px solid whitesmoke;
+  padding: 25px;
+`
+const ActivityForm = ({ uid }) => {
+  //1.활동 기본 정보 변수
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [record, setRecord] = useState('');
   const [monImg, setMonImg] = useState(null);
 
-  //경험치 점수
+  //2.경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
   const [careerScore, setCareerScore] = useState(0);
   const [sincerityScore, setSincerityScore] = useState(0);
   const [coopScore, setCoopScore] = useState(0);
   const [attitudeScore, setAttitudeScore] = useState(0);
+  const [coin, setCoin] = useState(0);
 
-  //대화창 보여주기 변수
+  //3.대화창 보여주기 변수
   const [modalShow, setModalShow] = useState(false)
 
-  //데이터 쓰기/받기
-  const { addDocument, response } = useFirestore('activities');
+  //4.데이터 쓰기/받기 변수
+  const { addDocument, updateAct, deleteDocument, response } = useFirestore('activities');
+
+  //5.경로 이동 관련 변수
+  const { state } = useLocation()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (response.isSuccess) {
@@ -65,19 +112,55 @@ const Activities = ({ uid }) => {
       setContent('')
       setRecord('')
     }
-  }, [response.isSuccess])
+  }, [response.isSuccess]);
+
+  useEffect(() => {
+    if (state) {
+      console.log(state)
+      const scoresObj = state.scores
+      setTitle(state.title)
+      setContent(state.content)
+      setRecord(state.record)
+      if (scoresObj) {
+        setLeadershipScore(scoresObj.leadership)
+        setCareerScore(scoresObj.careerScore)
+        setSincerityScore(scoresObj.sincerityScore)
+        setCoopScore(scoresObj.coopScore)
+        setAttitudeScore(scoresObj.attitudeScore)
+      } else {
+        setLeadershipScore(0)
+        setCareerScore(0)
+        setSincerityScore(0)
+        setCoopScore(0)
+        setAttitudeScore(0)
+      }
+    }
+  }, [state]);
 
   //활동 저장 대화창 ==> 추후 디자인 수정 필요
   const showConfirmWindow = () => {
-    const confirm = window.confirm('활동을 저장하시겠습니까?')
-    if (confirm) {
-      let scores = { leadership: leadershipScore, careerScore: careerScore, sincerityScore: sincerityScore, coopScore: coopScore, attitudeScore: attitudeScore };
-      let newAct = { uid, title, content, record, scores }
-      addDocument(newAct)
+    let scores = { leadership: leadershipScore, careerScore: careerScore, sincerityScore: sincerityScore, coopScore: coopScore, attitudeScore: attitudeScore };
+    let money = coin
+    if (state) {
+      const confirm = window.confirm('활동을 수정하시겠습니까?')
+      let actId = state.id
+      let uid = state.uid
+      if (confirm) {
+        let modifiedAct = { uid, title, content, record, scores, money };
+        updateAct(modifiedAct, actId)
+        navigate(`/activities`)
+      }
+    } else {
+      const confirm = window.confirm('활동을 생성하시겠습니까?')
+      if (confirm) {
+        let newAct = { uid, title, content, record, scores, money };
+        addDocument(newAct)
+      }
     }
   }
 
-  const handleChange = (event) => { //변수 수정 
+  //변화 감지 변수 수정
+  const handleChange = (event) => {
     if (event.target.id === 'act_title') {
       setTitle(event.target.value)
     } else if (event.target.id === 'act_content') {
@@ -85,72 +168,98 @@ const Activities = ({ uid }) => {
     } else if (event.target.id === 'act_record') {
       setRecord(event.target.value)
     } else if (event.target.id === 'act_leadership') {
-      setLeadershipScore(event.target.value)
+      setLeadershipScore(Number(event.target.value))
     } else if (event.target.id === 'act_career') {
-      setCareerScore(event.target.value)
+      setCareerScore(Number(event.target.value))
     } else if (event.target.id === 'act_sincerity') {
-      setSincerityScore(event.target.value)
+      setSincerityScore(Number(event.target.value))
     } else if (event.target.id === 'act_coop') {
-      setCoopScore(event.target.value)
+      setCoopScore(Number(event.target.value))
     } else if (event.target.id === 'act_attitudes') {
-      setAttitudeScore(event.target.value)
+      setAttitudeScore(Number(event.target.value))
+    } else if (event.target.id === 'act_coin') {
+      setCoin(Number(event.target.value))
     }
   }
 
-  const handleSubmit = (event) => { //양식 제출
+  //저장/수정버튼 클릭
+  const handleSubmit = (event) => {
     event.preventDefault();
     showConfirmWindow();
   }
 
+  //뒤로 가기 
+  const handleGoBack = (event) => {
+    event.preventDefault();
+    navigate(`/activities`)
+  }
+
+  //활동 삭제
+  const handleDelete = (event) => {
+    event.preventDefault();
+    const confirm = window.confirm('활동을 삭제하시겠습니까?')
+    if (confirm) {
+      deleteDocument(state.id)
+      navigate(`/activities`)
+    }
+  }
+
+  //활동 이미지 선택
   const handleImgPickerClick = () => {
     setModalShow(true)
   }
 
   return (
     <>
-      <form onSubmit={handleSubmit}>
+      <StyledForm onSubmit={handleSubmit}>
         <StyledFieldSet>
-          <legend>활동 작성하기</legend>
-          {!monImg ? <StyledImgPicker alt="엑스이미지 찾기" onClick={() => { handleImgPickerClick() }}/>
+          {state ? <StyledLegend>활동 수정하기</StyledLegend> : <StyledLegend>활동 작성하기</StyledLegend>}
+          {!monImg ? <StyledImgPicker alt="엑스이미지 찾기" onClick={() => { handleImgPickerClick() }} />
             : (monImg === "mon_01") ? <StyledImgPicker src={mon_01} alt="몬스터1" onClick={() => { handleImgPickerClick() }} />
               : (monImg === "mon_02") ? <StyledImgPicker src={mon_02} alt="몬스터2" onClick={() => { handleImgPickerClick() }} />
                 : <StyledImgPicker src={mon_03} alt="몬스터3" onClick={() => { handleImgPickerClick() }} />}
 
-          <label htmlFor="act_title" >활동 제목</label>
-          <input id="act_title" type="text" required onChange={handleChange} value={title} />
+          <StyledLabel htmlFor="act_title" >활동 제목</StyledLabel>
+          <StyledTitleInput id="act_title" type="text" required onChange={handleChange} value={title} />
 
-          <label htmlFor="act_content" >활동 설명</label>
-          <textarea id="act_content" type="text" required onChange={handleChange} value={content} />
+          <StyledLabel htmlFor="act_content" >활동 설명</StyledLabel>
+          <StyledTextarea id="act_content" type="text" required onChange={handleChange} value={content} />
 
-          <label htmlFor="act_record" >생기부 문구</label>
-          <textarea id="act_record" type="text" required onChange={handleChange} value={record} />
+          <StyledLabel htmlFor="act_record" >생기부 문구</StyledLabel>
+          <StyledTextarea id="act_record" type="text" required onChange={handleChange} value={record} />
 
           <StyledScoreWrapper>
             <StyledInputBox>
-              <label htmlFor="act_leadership">리더십</label>
-              <StyledInput id="act_leadership" type="number" value={leadershipScore} onChange={handleChange}></StyledInput>
+              <StyledLabel htmlFor="act_leadership">리더십</StyledLabel>
+              <StyledNumberInput id="act_leadership" type="number" value={leadershipScore} onChange={handleChange}></StyledNumberInput>
             </StyledInputBox>
             <StyledInputBox>
-              <label htmlFor="act_career">진로</label>
-              <StyledInput id="act_career" type="number" value={careerScore} onChange={handleChange}></StyledInput>
+              <StyledLabel htmlFor="act_career">진로</StyledLabel>
+              <StyledNumberInput id="act_career" type="number" value={careerScore} onChange={handleChange}></StyledNumberInput>
             </StyledInputBox>
             <StyledInputBox>
-              <label htmlFor="act_sincerity">성실성</label>
-              <StyledInput id="act_sincerity" type="number" value={sincerityScore} onChange={handleChange}></StyledInput>
+              <StyledLabel htmlFor="act_sincerity">성실성</StyledLabel>
+              <StyledNumberInput id="act_sincerity" type="number" value={sincerityScore} onChange={handleChange}></StyledNumberInput>
             </StyledInputBox>
             <StyledInputBox>
-              <label htmlFor="act_coop">협동성</label>
-              <StyledInput id="act_coop" type="number" value={coopScore} onChange={handleChange}></StyledInput>
+              <StyledLabel htmlFor="act_coop">협동성</StyledLabel>
+              <StyledNumberInput id="act_coop" type="number" value={coopScore} onChange={handleChange}></StyledNumberInput>
             </StyledInputBox>
             <StyledInputBox>
-              <label htmlFor="act_attitude">태도</label>
-              <StyledInput id="act_attitudes" type="number" value={attitudeScore} onChange={handleChange}></StyledInput>
+              <StyledLabel htmlFor="act_attitude">태도</StyledLabel>
+              <StyledNumberInput id="act_attitudes" type="number" value={attitudeScore} onChange={handleChange}></StyledNumberInput>
+            </StyledInputBox>
+            <StyledInputBox>
+              <StyledLabel htmlFor="act_attitude">리아</StyledLabel>
+              <StyledNumberInput id="act_coin" type="number" value={coin} onChange={handleChange}></StyledNumberInput>
             </StyledInputBox>
           </StyledScoreWrapper>
-
-          <button type="submit">저장하기</button>
+          {/* 아이템List를 클릭하여 이동했을시 다른 폼 보여주기 */}
+          {state ? <StyledBtn type="submit">수정하기</StyledBtn> : <StyledBtn type="submit">저장하기</StyledBtn>}
+          {state && <StyledBtn type="button" onClick={handleDelete}>삭제하기</StyledBtn>}
+          {state && <StyledBtn type="button" onClick={handleGoBack}>돌아가기</StyledBtn>}
         </StyledFieldSet>
-      </form>
+      </StyledForm>
       <GraphicDialogModal
         show={modalShow}
         onHide={() => setModalShow(false)}
@@ -160,4 +269,4 @@ const Activities = ({ uid }) => {
   )
 }
 
-export default Activities
+export default ActivityForm
