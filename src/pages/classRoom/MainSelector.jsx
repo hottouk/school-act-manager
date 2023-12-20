@@ -50,24 +50,25 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
       const studentRef = doc(appFireStore, "classRooms", classId.id, "students", studentId); //id로 학생 data 위치 참조
       getDoc(studentRef).then((student) => {//학생 데이터 반환 Promise
         try {
-          let curAccActList = student.data().actList //선택 학생 한명의 기존 누가 활동 반환
-          //누가기록 작성 함수
-          makeAccWithSelectedActs(activitySelected).then((newAccList) => { //newAccList는 선택 활동 누가
-            //데이터 서버에 업데이트
+          let curAccActList = student.data().actList //선택 학생 한명의 기존 누가 '활동' 반환
+          let accRecord = student.data().accRecord //선택 학생 한명의 기존 누가 '기록' 반환
+          makeAccWithSelectedActs().then(({ newActList, selectedAccRecord }) => { //선택 활동과, 선택 기록을 누적한다.
             if (!curAccActList) { //첫 작성이라면 그대로 업데이트
               setDoc(studentRef, {
-                actList: newAccList
+                actList: newActList,         //누가'활동'에 선택 활동 반영
+                accRecord: selectedAccRecord //누가'기록'에 선택 활동 반영
               }, { merge: true })
-            } else {//기존 누가기록이 있다면 ~
-              let newList = [...curAccActList, ...newAccList];
-              let uniqueList = newList.reduce((acc, current) => { //id를 찾아 비교하고 같지 않을때에만 acc에 추가
+            } else { //기존 누가기록이 있다면 ~
+              let newList = [...curAccActList, ...newActList];
+              let uniqueList = newList.reduce((acc, current) => { //id를 찾아 비교하고 중복되지 않았을 경우만 acc에 추가
                 if (acc.findIndex(({ id }) => id === current.id) === -1) { //배열에서 조건을 충족하는 index를 반환, 없을경우 -1 반환; 요소가 obj일경우 destructure 가능
                   acc.push(current);
                 }
                 return acc;
               }, [])
               setDoc(studentRef, {
-                actList: uniqueList
+                actList: uniqueList,
+                accRecord: accRecord.concat(selectedAccRecord)
               }, { merge: true })
             }
           })
@@ -92,18 +93,20 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
 
   //활동기록 누가 함수
   const makeAccWithSelectedActs = async () => {
-    let actList = []
-    await Promise.all( //Promise.All을 사용하면 모든 Promise가 반환될 때까지 기다린다. //캐시에서 해도 될듯한 작업임.
+    let newActList = []
+    let selectedAccRecord = ''
+    await Promise.all( //Promise.All을 사용하면 모든 Promise가 반환될 때까지 기다린다. 캐시에서 해도 될듯한 작업임.
       activitySelected.map(async ({ value }) => { //선택된 모든 활동에서 아래 작업 반복
         let activityId = value //id 참조
         const activityRef = doc(appFireStore, "activities", activityId); //id로 활동 data 위치 참조
         const activitySnap = getDoc(activityRef);
         await activitySnap.then((activity) => {
-          actList.push({ id: activity.id, ...activity.data() });
+          selectedAccRecord = selectedAccRecord.concat(activity.data().record)
+          newActList.push({ id: activity.id, ...activity.data() });
         })
         return null
       }))
-    return actList
+    return { newActList, selectedAccRecord }
   }
 
   //선택 완료 버튼 클릭
@@ -112,7 +115,7 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
     console.log('선택 활동List', activitySelected)
     setModalShow(true) //대화창 pop
   }
-    
+
   return (
     <>
       {/* 학생 셀렉터, 활동 셀렉터 */}

@@ -1,6 +1,6 @@
 import { useReducer } from "react"
 import { appFireStore, timeStamp } from "../firebase/config"
-import { addDoc, collection, deleteDoc, doc, setDoc } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, setDoc, updateDoc } from "firebase/firestore"
 
 const initState = {
   document: null,
@@ -63,9 +63,8 @@ const useFirestore = (collectionName) => {
 
   //활동 데이터 수정 함수: 새로운 활동과 활동 id(제목) 주면 수정
   const updateAct = async (activity, actId) => {
-    console.log(activity, actId);
     try {
-      const createdTime = timeStamp.fromDate(new Date());
+      let createdTime = timeStamp.fromDate(new Date());
       let docRef = doc(db, collectionName, actId)
       const updatePromise = await setDoc(docRef, { ...activity, createdTime }); //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
       dispatch({ type: 'addDoc', payload: updatePromise }); //상태 전달
@@ -75,19 +74,45 @@ const useFirestore = (collectionName) => {
     }
   }
 
-  //데이터 삭제 함수: 문서 id(제목) 주면 삭제
-  const deleteDocument = async (id) => {
+  // 학생 update 함수
+  const updateStudent = async (newInfo, classId, studentId) => {
+    try {
+      let modifiedTime = timeStamp.fromDate(new Date());
+      let studentRef = doc(db, collectionName, classId, 'students', studentId)
+      const updatePromise = await updateDoc(studentRef, { ...newInfo, modifiedTime })//서버 통신 
+      dispatch({ type: 'addDoc', payload: updatePromise }); //상태 전달
+    } catch (error) {
+      dispatch({ type: 'error', payload: error.message }) //상태 전달
+    }
+  }
+
+  //학생 delete 함수
+  const deleteStudent = async (classId, studentId) => {
     dispatch({ type: 'isPending' });
     try {
-      let docRef = await deleteDoc(doc(colRef, id))
-      dispatch({ type: 'deleteDoc', payload: docRef })
+      let studentRef = doc(db, collectionName, classId, 'students', studentId)
+      let deleteTask = await deleteDoc(studentRef)
+      dispatch({ type: 'deleteDoc', payload: deleteTask })
     } catch (error) {
       dispatch({ type: 'error', payload: error.message })
     }
   }
 
+  //데이터 삭제 함수: 문서 id(제목) 주면 삭제
+  const deleteDocument = async (id) => {
+    dispatch({ type: 'isPending' });
+    try {
+      let deleteTask = await deleteDoc(doc(colRef, id))
+      dispatch({ type: 'deleteDoc', payload: deleteTask })
+    } catch (error) {
+      dispatch({ type: 'error', payload: error.message })
+    }
+  }
+
+
+
   return (
-    { addDocument, updateAct, deleteDocument, addClassroom, response }
+    { addDocument, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, response }
   )
 }
 

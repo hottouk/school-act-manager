@@ -1,6 +1,13 @@
-import { useLocation } from "react-router-dom"
-import styled from "styled-components"
+//Hooks
 import useGetByte from "../../hooks/useGetByte"
+import useFirestore from "../../hooks/useFirestore"
+import { useParams } from "react-router-dom"
+import { useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
+//Firestore
+import { setModifiedStudent } from "../../store/allStudentsSlice"
+//CSS
+import styled from "styled-components"
 
 const StyledGirdContainer = styled.main`
   display: grid;
@@ -41,13 +48,40 @@ const StyledTextArea = styled.textarea`
   width: 95%;
   height: 85%;
 `
-
 const ClassAllStudents = () => {
-  //경로 이동 prop
-  const { state } = useLocation()
-  const studentList = state
+  //1. 변수
+  //경로 이동 props
+  const params = useParams(); //id와 param의 key-value(id:'id') 오브젝트로 반환
+  const classId = params.id
 
+  //전역 변수(새로고침하면 초기화)
+  const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //ClassRoomDetail에서 저장한 학생List 불러오기(전역)
+  const dispatcher = useDispatch()
+
+  //hooks
+  const { updateStudent } = useFirestore('classRooms')
   const { getByteLengthOfString } = useGetByte()
+
+  //특정 학생 정보 수정 판단 key 변수
+  const [thisModifying, setThisModifying] = useState('')
+  let writtenName = ''
+  let accRecord = ''
+  //test
+
+  //2. 함수
+  //수정버튼
+  const handleModifyingBtn = (key) => {
+    setThisModifying(key)
+  }
+  //저장 버튼
+  const handleSaveBtn = (key) => {
+    updateStudent({ accRecord, writtenName }, classId, key); //데이터 통신
+    dispatcher(setModifiedStudent({ key, accRecord, writtenName })); //전역 변수 변경
+    setThisModifying('');
+    writtenName = '';
+    accRecord = ''
+  }
+
   return (
     <StyledGirdContainer>
       <StyledTitleRow>
@@ -56,24 +90,42 @@ const ClassAllStudents = () => {
         <StyledMidlDiv>이름</StyledMidlDiv>
         <StyledBiglDiv>생기부</StyledBiglDiv>
         <StyledSmallDiv>Byte</StyledSmallDiv>
+        <StyledSmallDiv>수정</StyledSmallDiv>
       </StyledTitleRow>
-      {studentList.map((student, index) => {
+      {allStudentList.map((student, index) => {
+        let isModifying = (thisModifying === student.id)
+        let studentNumber = student.studentNumber
         let actList = student.actList
-        let record = (actList && actList.reduce((acc, cur) => {
-          return acc.concat(' ', cur.record)
-        }, ''))
-
-        let Bytes = (actList && getByteLengthOfString(record))
-
+        let name = (student.writtenName ? student.writtenName : '미등록')
+        let record = (student.accRecord
+          ? student.accRecord
+          : (actList ? actList.reduce((acc, cur) => { return acc.concat(' ', cur.record) }, '') : '기록 없음'))
+        let Bytes = ((record !== '기록 없음') ? getByteLengthOfString(record) : 0)
+        if (isModifying) {
+          writtenName = name
+          accRecord = record
+        }
         return <StyledTitleRow key={student.id}>
           <StyledSmallDiv>{index + 1}</StyledSmallDiv>
-          <StyledMidlDiv>{student.studentNumber}</StyledMidlDiv>
-          <StyledMidlDiv><StyledNameInput type="text" /></StyledMidlDiv>
-          <StyledBiglDiv><StyledTextArea value={(actList && record)} /></StyledBiglDiv>
+          <StyledMidlDiv>{studentNumber}</StyledMidlDiv>
+          <StyledMidlDiv>
+            {isModifying
+              ? <StyledNameInput type="text" defaultValue={name} onChange={(event) => { writtenName = event.target.value }} />
+              : name}
+          </StyledMidlDiv>
+          <StyledBiglDiv>
+            {isModifying
+              ? <StyledTextArea defaultValue={record} onChange={(event) => { accRecord = event.target.value }} />
+              : record}
+          </StyledBiglDiv>
           <StyledSmallDiv>{Bytes}</StyledSmallDiv>
+          <StyledSmallDiv>
+            {isModifying
+              ? <button id='save_btn' onClick={() => { handleSaveBtn(student.id) }}>저장</button>
+              : <button id='modi_btn' onClick={() => { handleModifyingBtn(student.id) }}>수정</button>}
+          </StyledSmallDiv>
         </StyledTitleRow>
       })}
-
     </StyledGirdContainer >
   )
 }
