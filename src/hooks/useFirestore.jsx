@@ -1,6 +1,6 @@
 import { useReducer } from "react"
 import { appFireStore, timeStamp } from "../firebase/config"
-import { addDoc, collection, deleteDoc, doc, setDoc, updateDoc } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore"
 
 const initState = {
   document: null,
@@ -27,9 +27,37 @@ const storeReducer = (state, action) => {
 }
 
 const useFirestore = (collectionName) => {
-  const [response, dispatch] = useReducer(storeReducer, initState)
   const db = appFireStore
   const colRef = collection(db, collectionName)
+  const [response, dispatch] = useReducer(storeReducer, initState)
+
+  //유저가 기존 DB에 있는지 체크
+  const findUser = async (userInfo) => {
+    let isUserExist = false
+    let uid = userInfo.uid
+    const q = query(colRef, where("uid", "==", uid))
+    const userSnapshot = await getDocs(q);
+    if (userSnapshot) {
+      isUserExist = true
+    }
+    return isUserExist
+  }
+
+  //유저 추가
+  const addUser = async (userInfo) => {
+    console.log(userInfo)
+    let uid = userInfo.uid
+      let email = userInfo.email
+      let name = userInfo.name
+      let isTeacher = userInfo.isTeacher
+      let docRef = doc(db, collectionName, uid)
+    try {
+      const createdTime = timeStamp.fromDate(new Date());
+      await setDoc(docRef, { uid, name, email, isTeacher, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
+    } catch (error) {
+      console.error(error.message)
+    }
+  }
 
   //클래스룸 추가 함수
   const addClassroom = async (classAtrs, studentList) => {
@@ -42,22 +70,20 @@ const useFirestore = (collectionName) => {
         addDoc(subColRef, student);
         return student.length
       })
-
       dispatch({ type: 'addDoc', payload: colRef }); //상태 전달
     } catch (error) {
       dispatch({ type: 'error', payload: error.message }) //상태 전달
     }
   }
 
-  //활동 데이터 추가 함수
-  const addDocument = async (activity) => {
+  //활동 추가 함수
+  const addDocument = async (documnet) => {
     dispatch({ type: 'isPending' });
     try {
       const createdTime = timeStamp.fromDate(new Date());
-      const createPromise = await addDoc(colRef, { ...activity, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
-      dispatch({ type: 'addDoc', payload: createPromise }); //상태 전달
+      await addDoc(colRef, { ...documnet, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
     } catch (error) {
-      dispatch({ type: 'error', payload: error.message }) //상태 전달
+      console.log(error.message)
     }
   }
 
@@ -109,10 +135,8 @@ const useFirestore = (collectionName) => {
     }
   }
 
-
-
   return (
-    { addDocument, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, response }
+    { addUser, findUser, addDocument, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, response }
   )
 }
 

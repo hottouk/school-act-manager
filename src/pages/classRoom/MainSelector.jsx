@@ -1,36 +1,53 @@
 //컴포넌트
 import MultiSelector from '../../components/MultiSelector';
-import DialogModal from '../../components/StaticDialogModal.jsx';
-
+import SelectedDialogModal from '../../components/Modal/SelectedDialogModal.jsx';
 //변수관리
 import { useSelector } from 'react-redux';
 import { useRef, useState } from 'react';
-
 //파이어베이스
 import { appFireStore } from '../../firebase/config.js'
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-
 //CSS styles
 import styled from "styled-components"
-import styles from "./MainSelector.module.css"
 
 //스타일
-const StyledButtonSection = styled.div`
+const StyledContainer = styled.div`
+  width: 100%;
+  min-height: 350px;
+  padding: 5px;
+`
+const Styledh4 = styled.h4`
+  display: flex;
+  justify-content: center;
+  margin: 10px auto;
+`
+const StyledSelectorDiv = styled.div`
+  width: 80%;
+  height: 300px;
+  margin: 0 auto;
+  padding : 10px;
+`
+const  StyledSelector = styled.div`
+  width: 50%;
+  margin: 0 auto;
+  margin-top: 35px;
+`
+const StyledBtnDiv = styled.div`
   position: relative;
   bottom: 40px;
   width: 80%;
   height: 20%;
   margin: 0 auto;
 `
-const StyledButton = styled.button`
-  position: relative;
+const StyledBtn = styled.button`
+  display: block;
   margin: 0 auto;
-  width: 15em;
-  height: 3em;
+  width: 240px;
+  height: 50px;
   background-color: #6495ed;
   border: none;
   border-radius: 5px;
-  color: black;
+  color: white;
   padding: 0.25em 1em;
 `
 const MainSelector = ({ studentList, activitiyList, classId }) => {
@@ -119,23 +136,24 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
   return (
     <>
       {/* 학생 셀렉터, 활동 셀렉터 */}
-      <div className={styles.wrapper}>
-        <div className={styles.selector_container}>
-          <div className={styles.selector}>
+      <StyledContainer>
+      <Styledh4>빠른 세특 입력기</Styledh4>
+        <StyledSelectorDiv>
+          <StyledSelector>
             <MultiSelector studentList={studentList} selectStudentRef={selectStudentRef} />
-          </div>
-          <div className={styles.selector}>
+          </StyledSelector>
+          <StyledSelector>
             <MultiSelector activitiyList={activitiyList} selectActRef={selectActRef} />
-          </div>
-        </div>
-        <StyledButtonSection>
-          <StyledButton onClick={() => {
+          </StyledSelector>
+        </StyledSelectorDiv>
+        <StyledBtnDiv>
+          <StyledBtn onClick={() => {
             handleSelectComplete()
-          }}>선택 완료</StyledButton>
-        </StyledButtonSection>
-      </div>
+          }}>선택 완료</StyledBtn>
+        </StyledBtnDiv>
+      </StyledContainer>
       {/* 리엑트 부트스트랩 */}
-      <DialogModal
+      <SelectedDialogModal
         show={modalShow}
         onHide={() => setModalShow(false)}
         onClearSelect={onClearSelect}

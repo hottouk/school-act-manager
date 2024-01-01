@@ -11,9 +11,8 @@ import egg from "../../image/myPet/egg.png";
 import green1 from "../../image/myPet/green_pet1.png"
 import green2 from "../../image/myPet/green_pet2.png"
 import AnimatedProgressBar from '../../components/ProgressBar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useFirestore from '../../hooks/useFirestore';
-
 //스타일
 const StyledContainer = styled.div`
   box-sizing: border-box;
@@ -80,7 +79,7 @@ const StyledBotPannel = styled.div`
   border-radius: 15px;
 `
 const StyledBotLeftInfo = styled.div`
-  position:absolute;
+  position: absolute;
   width: 20%;
   top: 0px;
   bottom: 0px;
@@ -101,14 +100,10 @@ const StyledBotRightInfo = styled.div`
   border: 1px solid black;
   border-radius: 10px;
 `
-const StyledAccRecord = styled.p`
-  display: inline;
-`
 const StyeldBtnDiv = styled.div`
   display: flex;
   justify-content: space-between;
 `
-
 const StyledBtn = styled.button`
   display: flex;
   justify-content: center;
@@ -121,26 +116,51 @@ const StyledBtn = styled.button`
   border: 2px solid royalBlue;
   padding: 25px;
   `
+const StyledTextArea = styled.textarea`
+  display: block;
+  width: 95%;
+  height: 85%;
+`
 const StudentDetail = () => {
+  //1.변수
   const navigate = useNavigate();  //네비
-  //url 관련 변수
+  //url 관련
   const { state } = useLocation()
-  const { studentNumber, actList, writtenName, accRecord } = state //props 학생 변수
   const params = useParams() //params
+  const { studentNumber, actList, writtenName, accRecord } = state //props 학생 변수
+  //hooks
   const { getAbilityScores, getExpAndLevelByActList } = useGetLevel()
-  
   //편집 모드
   const [isEditable, setIsEditable] = useState(false)
-  const { deleteStudent } = useFirestore('classRooms')
-
-  //레벨과 경험치
+  const { deleteStudent, updateStudent } = useFirestore('classRooms')
+  //useState
   let expAndLevel = { exp: 0, level: 0 }
   let abilityScores = {}
+  const [useAccRecord, setUseAccRecord] = useState('')
+  const [useWrittenName, setUseWrittenName] = useState('')
   if (actList) { //기록된 활동이 있다면
     expAndLevel = getExpAndLevelByActList(actList)
     abilityScores = getAbilityScores(actList)
   }
 
+  //2.UseEffect
+  useEffect(() => {
+    setUseAccRecord(accRecord)
+    setUseWrittenName(writtenName)
+  }, [accRecord, writtenName])
+
+  //3.함수
+  const handleOnChange = (event) => {
+    switch (event.target.id) {
+      case 'input_name':
+        setUseWrittenName(event.target.value)
+        break;
+      case 'ta_acc_record':
+        setUseAccRecord(event.target.value)
+        break;
+      default: return
+    }
+  }
   const handleBtnClick = (event) => {
     switch (event.target.id) {
       case "back_btn":
@@ -150,8 +170,16 @@ const StudentDetail = () => {
         setIsEditable(!isEditable)
         break;
       case "delete_btn":
-        deleteStudent(params.id, params.studentId)
-        navigate(-1)
+        if (window.confirm('학생을 삭제하시겠습니까? 삭제한 학생은 복구할 수 없습니다.')) {
+          deleteStudent(params.id, params.studentId) //데이터 통신
+          navigate(-1)
+        }
+        break;
+      case "save_btn":
+        if (window.confirm('학생정보를 이대로 저장하시겠습니까?')) {
+          updateStudent({ accRecord: useAccRecord, writtenName: useWrittenName }, params.id, params.studentId); //데이터 통신
+        }
+        setIsEditable(!isEditable)
         break;
       default: return
     }
@@ -168,7 +196,11 @@ const StudentDetail = () => {
           {expAndLevel.level === 3 && < StyledPetImg src={green2} alt="레벨2풀" />}
           <StyledTopRightInfo>
             <p>학번: {studentNumber}</p>
-            <p>이름: {writtenName ? writtenName : '미등록'}</p>
+            <p>이름: {!isEditable
+              ? useWrittenName ? useWrittenName : '미등록'
+              : <input id='input_name' type="text" defaultValue={useWrittenName} onChange={handleOnChange} />
+            }
+            </p>
             <p>레벨: {expAndLevel.level}</p>
             <StyledP>경험치: {expAndLevel.exp}<AnimatedProgressBar exp={expAndLevel.exp} level={expAndLevel.level} /></StyledP>
           </StyledTopRightInfo>
@@ -183,9 +215,11 @@ const StudentDetail = () => {
             })}
           </StyledBotLeftInfo>
           <StyledBotRightInfo>
-            {accRecord ? accRecord : !actList ? <div>기록 활동이 없습니다.</div> : actList.map((act) => {
-              return <StyledAccRecord> {act.record}.</StyledAccRecord>
-            })}
+            {!isEditable
+              ? useAccRecord ? useAccRecord : <div>기록 활동이 없습니다.</div>
+              : <StyledTextArea id='ta_acc_record' defaultValue={useAccRecord} onChange={handleOnChange} />
+            }
+
           </StyledBotRightInfo>
         </StyledBotPannel>
       </StyledStudentInfoPannel>
@@ -193,7 +227,7 @@ const StudentDetail = () => {
         <StyledBtn id='back_btn' onClick={handleBtnClick}>목록으로</StyledBtn>
         {!isEditable
           ? <StyledBtn id='edit_btn' onClick={handleBtnClick}>수정</StyledBtn>
-          : <StyledBtn id='edit_btn' onClick={handleBtnClick}>저장</StyledBtn>
+          : <StyledBtn id='save_btn' onClick={handleBtnClick}>저장</StyledBtn>
         }
         <StyledBtn id='delete_btn' onClick={handleBtnClick}>삭제</StyledBtn>
       </StyeldBtnDiv>

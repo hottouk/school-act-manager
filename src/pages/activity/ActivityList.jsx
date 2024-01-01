@@ -18,8 +18,7 @@ const StyledUl = styled.ul`
     border-left: 8px teal solid;
     box-sizing : border-box;
   }
-  
-  li+li{
+  li + li{
     margin-top: 10px;
   };
 `

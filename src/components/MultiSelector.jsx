@@ -10,10 +10,10 @@ const MultiSelector = ({ studentList, activitiyList, selectStudentRef, selectAct
   let dispatcher = useDispatch() //redux dispatcher
 
   const handleStudentSelection = (event) => { //event는 선택값의 배열 반환
-    dispatcher(setSelectStudent(event))
+    dispatcher(setSelectStudent(event)) 
   }
 
-  const handleActivitySelection = (event) => { 
+  const handleActivitySelection = (event) => {
     dispatcher(setSelectActivity(event))
   }
 

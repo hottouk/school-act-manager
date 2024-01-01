@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useAuthContext } from '../../hooks/useAuthContext'
 import useCollection from '../../hooks/useCollection'
 
 //컴포넌트
@@ -8,6 +7,7 @@ import ActivityList from './ActivityList'
 
 //CSS
 import styled from 'styled-components'
+import { useSelector } from 'react-redux'
 
 const StyledGirdContainer = styled.main`
   display: grid;
@@ -44,8 +44,8 @@ const StyledBtn = styled.button`
 `
 
 const ActivityMain = () => {
-  //유저 정보
-  const { user } = useAuthContext();
+  //전역변수 user정보
+  const user = useSelector(({ user }) => { return user })
   //활동 정보
   const { documents, colErr } = useCollection('activities', ['uid', '==', user.uid], 'title')
   //활동창 토글
@@ -54,21 +54,23 @@ const ActivityMain = () => {
     setIsActOn(!isActOn);
   }
 
-  return (
-    <StyledGirdContainer>
-      <StyledCenteredItem>
-        <ActivityForm uid={user.uid} />
-      </StyledCenteredItem>
-      <StyledSideB>
-        {/* 토글 상태에 따라 사이드바 보여주기 */}
-        {!isActOn ? null : <div> 
-          {colErr && <strong>{colErr}</strong>}
-          {documents && <ActivityList activities={documents} />}
-        </div>}
-      </StyledSideB>
-      <StyledBtn onClick={handleBtnClick}>활동 관리</StyledBtn>
-    </StyledGirdContainer>
-  )
+
+
+return (
+  <StyledGirdContainer>
+    <StyledCenteredItem>
+      <ActivityForm uid={user.uid} />
+    </StyledCenteredItem>
+    <StyledSideB>
+      {/* 토글 상태에 따라 사이드바 보여주기 */}
+      {!isActOn ? null : <div>
+        {colErr && <strong>{colErr}</strong>}
+        {documents && <ActivityList activities={documents} />}
+      </div>}
+    </StyledSideB>
+    <StyledBtn onClick={handleBtnClick}>활동 관리</StyledBtn>
+  </StyledGirdContainer>
+)
 }
 
 export default ActivityMain

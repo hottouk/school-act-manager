@@ -1,3 +1,5 @@
+import OpenAI from "openai";
+//
 import { useEffect, useState } from "react"
 import useFirestore from "../../hooks/useFirestore";
 import GraphicDialogModal from "../../components/GraphicDialogModal";
@@ -106,6 +108,13 @@ const ActivityForm = ({ uid }) => {
   const { state } = useLocation()
   const navigate = useNavigate()
 
+  //6.ChatGPt
+  let openai = new OpenAI({
+    apiKey: "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",
+    dangerouslyAllowBrowser: true
+  })
+
+  //2. useEffect
   useEffect(() => {
     if (response.isSuccess) {
       setTitle('')
@@ -159,6 +168,52 @@ const ActivityForm = ({ uid }) => {
     }
   }
 
+  const askChatGptToWrite = async () => {
+    let messages
+    if (content === '') {
+      messages = [
+        { role: "system", content: "당신은 학생의 생기부를 쓰는 교사입니다." },
+        { role: "user", content: "여행지 소개하기 활동을 수행한 학생이 받을 생기부 세특 예시를 작성해 주세요." },
+        { role: "assistant", content: "여행해보고 싶은 해외의 도시로 LA를 선정하여, 그 지역 명소인 디즈니랜드의 실제 리뷰를 해외 사이트에서 찾아, 이를 바탕으로 여행지를 소개하는 글을 작성하였고 구체적인 여행 계획을 세움." },
+        { role: "user", content: "영어로 토론하기 활동을 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요." },
+        { role: "assistant", content: "영어로 토론하기 활동에서 '집값을 낮추어야 출산률이 반등한다' 라는 본인의 주장을 근거를 들어 토론을 진행함. 청중에게 시선을 골고루 맞추고 인상적인 제스처와 통계를 활용하여 건설적인 토의를 진행함." },
+        { role: "user", content: "읽기 1회 활동은 수업시간에 자발적으로 손을 들어 주어진 지문을 읽는 활동이에요. 읽기 1회를 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요." },
+        { role: "assistant", content: "수업시간에 자발적으로 손을 들어 명쾌한 발음과 자연스러운 억양으로 주어진 지문을 1회 읽음." },
+        { role: "user", content: "발표3회 활동은 수업시간에 영어 지문을 3회 해석하며 발표한 활동이에요. 발표3회를 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요." },
+        { role: "assistant", content: "다양한 영역의 지문을 섭렵하여 조사하여 설명함으로 본인의 뛰어난 융, 복합적 문해 능력을 증명함. 수업시간에 성실하게 참여하는 적극성이 돋보이는 학생임." },
+        { role: "user", content: "영어 멘토 활동을 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요." },
+        { role: "assistant", content: "영어 멘토 활동에서 동료 학생들에게 영어 학습에 관한 조언과 도움을 주며, 개인화된 학습 계획을 돕는 역할을 수행함. 영어 멘토로서의 리더십과 소통 능력을 통해 학생들의 영어 실력 향상을 도왔음." },
+        { role: "user", content: `${title}활동을 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요.` }
+      ]
+    } else {
+      messages = [
+        { role: "system", content: "당신은 학생의 생기부를 쓰는 교사입니다." },
+        { role: "user", content: "여행지 소개하기 활동을 수행한 학생이 받을 생기부 세특 예시를 작성해 주세요." },
+        { role: "assistant", content: "여행해보고 싶은 해외의 도시로 LA를 선정하여, 그 지역 명소인 디즈니랜드의 실제 리뷰를 해외 사이트에서 찾아, 이를 바탕으로 여행지를 소개하는 글을 작성하였고 구체적인 여행 계획을 세움." },
+        { role: "user", content: "영어로 토론하기 활동을 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요." },
+        { role: "assistant", content: "영어로 토론하기 활동에서 '집값을 낮추어야 출산률이 반등한다' 라는 본인의 주장을 근거를 들어 토론을 진행함. 청중에게 시선을 골고루 맞추고 인상적인 제스처와 통계를 활용하여 건설적인 토의를 진행함." },
+        { role: "user", content: "읽기 1회 활동은 수업시간에 자발적으로 손을 들어 주어진 지문을 읽는 활동이에요. 읽기 1회를 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요." },
+        { role: "assistant", content: "수업시간에 자발적으로 손을 들어 명쾌한 발음과 자연스러운 억양으로 주어진 지문을 1회 읽음." },
+        { role: "user", content: "발표3회 활동은 수업시간에 영어 지문을 3회 해석하며 발표한 활동이에요. 발표3회를 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요." },
+        { role: "assistant", content: "다양한 영역의 지문을 섭렵하여 조사하여 설명함으로 본인의 뛰어난 융, 복합적 문해 능력을 증명함. 수업시간에 성실하게 참여하는 적극성이 돋보이는 학생임." },
+        { role: "user", content: "영어 멘토 활동을 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요." },
+        { role: "assistant", content: "영어 멘토 활동에서 동료 학생들에게 영어 학습에 관한 조언과 도움을 주며, 개인화된 학습 계획을 돕는 역할을 수행함. 영어 멘토로서의 리더십과 소통 능력을 통해 학생들의 영어 실력 향상을 도왔음." },
+        { role: "user", content: `${title}활동은 ${content}입니다. 이 활동을 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요.` }
+      ]
+    }
+
+    const completion = await openai.chat.completions.create({
+      messages: messages,
+      model: "gpt-3.5-turbo",
+    });
+
+    if (completion.choices[0].message.content) {
+      setRecord(completion.choices[0].message.content)
+    } else {
+      setRecord('챗GPT 서버 문제로 문구를 입력할 수 없습니다.')
+    }
+  }
+
   //변화 감지 변수 수정
   const handleChange = (event) => {
     if (event.target.id === 'act_title') {
@@ -182,25 +237,38 @@ const ActivityForm = ({ uid }) => {
     }
   }
 
-  //저장/수정버튼 클릭
+  //저장/수정버튼 클릭 제출
   const handleSubmit = (event) => {
     event.preventDefault();
     showConfirmWindow();
   }
 
-  //뒤로 가기 
-  const handleGoBack = (event) => {
+  //버튼 클릭
+  const handleBtnClick = (event) => {
     event.preventDefault();
-    navigate(`/activities`)
-  }
-
-  //활동 삭제
-  const handleDelete = (event) => {
-    event.preventDefault();
-    const confirm = window.confirm('활동을 삭제하시겠습니까?')
-    if (confirm) {
-      deleteDocument(state.id)
-      navigate(`/activities`)
+    switch (event.target.id) {
+      case 'gpt_btn':
+        if (title !== '') {
+          try {
+            askChatGptToWrite()
+          } catch (error) {
+            console.log(error.message)
+          }
+        } else {
+          console.log('활동 제목을 채워주세요')
+        }
+        break;
+      case 'go_back_btn':
+        navigate(`/activities`)
+        break;
+      case 'delete_btn':
+        const confirm = window.confirm('활동을 삭제하시겠습니까?')
+        if (confirm) {
+          deleteDocument(state.id)
+          navigate(`/activities`)
+        }
+        break;
+      default: return
     }
   }
 
@@ -256,8 +324,9 @@ const ActivityForm = ({ uid }) => {
           </StyledScoreWrapper>
           {/* 아이템List를 클릭하여 이동했을시 다른 폼 보여주기 */}
           {state ? <StyledBtn type="submit">수정하기</StyledBtn> : <StyledBtn type="submit">저장하기</StyledBtn>}
-          {state && <StyledBtn type="button" onClick={handleDelete}>삭제하기</StyledBtn>}
-          {state && <StyledBtn type="button" onClick={handleGoBack}>돌아가기</StyledBtn>}
+          {state && <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제하기</StyledBtn>}
+          {state && <StyledBtn type="button" id="go_back_btn" onClick={handleBtnClick}>돌아가기</StyledBtn>}
+          <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성하기</StyledBtn>
         </StyledFieldSet>
       </StyledForm>
       <GraphicDialogModal

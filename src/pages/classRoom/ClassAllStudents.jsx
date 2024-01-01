@@ -6,17 +6,30 @@ import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 //Firestore
 import { setModifiedStudent } from "../../store/allStudentsSlice"
+//컴포넌트
+import ExportAsExcel from "../../components/ExportAsExcel"
 //CSS
 import styled from "styled-components"
 
-const StyledGirdContainer = styled.main`
+const StyledContainer = styled.main`
+  margin: 15px 30px;
+`
+const StyledExcelDiv = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`
+const StyledGirdContainer = styled.div`
   display: grid;
   grid-template-rows: 40px;
   grid-auto-rows: minmax(100px, auto);
-  padding: 0 30px;
-  margin: 60px auto;
+  border: 1px solid black;
 `
 const StyledTitleRow = styled.div`
+  display: flex;
+  background-color: royalBlue; 
+  color: white;
+`
+const StyledContentRow = styled.div`
   display: flex;
 `
 const StyledSmallDiv = styled.div`
@@ -24,18 +37,27 @@ const StyledSmallDiv = styled.div`
   justify-content: center;
   display: flex;
   align-items: center;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
 `
 const StyledMidlDiv = styled.div`
   flex-basis: 100px;
   justify-content: center;
   display: flex;
   align-items: center;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
 `
-const StyledBiglDiv = styled.div`
+const StyledAcclDiv = styled.div`
   flex-grow: 1;
   justify-content: center;
+  padding: 0 5px;
+  width: 823px;
+  word-wrap: break-word;
   display: flex;
   align-items: center;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
 `
 const StyledNameInput = styled.input`
   display: block;
@@ -66,7 +88,6 @@ const ClassAllStudents = () => {
   const [thisModifying, setThisModifying] = useState('')
   let writtenName = ''
   let accRecord = ''
-  //test
 
   //2. 함수
   //수정버튼
@@ -79,54 +100,54 @@ const ClassAllStudents = () => {
     dispatcher(setModifiedStudent({ key, accRecord, writtenName })); //전역 변수 변경
     setThisModifying('');
     writtenName = '';
-    accRecord = ''
+    accRecord = '';
   }
 
   return (
-    <StyledGirdContainer>
-      <StyledTitleRow>
-        <StyledSmallDiv>연번</StyledSmallDiv>
-        <StyledMidlDiv>학번</StyledMidlDiv>
-        <StyledMidlDiv>이름</StyledMidlDiv>
-        <StyledBiglDiv>생기부</StyledBiglDiv>
-        <StyledSmallDiv>Byte</StyledSmallDiv>
-        <StyledSmallDiv>수정</StyledSmallDiv>
-      </StyledTitleRow>
-      {allStudentList.map((student, index) => {
-        let isModifying = (thisModifying === student.id)
-        let studentNumber = student.studentNumber
-        let actList = student.actList
-        let name = (student.writtenName ? student.writtenName : '미등록')
-        let record = (student.accRecord
-          ? student.accRecord
-          : (actList ? actList.reduce((acc, cur) => { return acc.concat(' ', cur.record) }, '') : '기록 없음'))
-        let Bytes = ((record !== '기록 없음') ? getByteLengthOfString(record) : 0)
-        if (isModifying) {
-          writtenName = name
-          accRecord = record
-        }
-        return <StyledTitleRow key={student.id}>
-          <StyledSmallDiv>{index + 1}</StyledSmallDiv>
-          <StyledMidlDiv>{studentNumber}</StyledMidlDiv>
-          <StyledMidlDiv>
-            {isModifying
-              ? <StyledNameInput type="text" defaultValue={name} onChange={(event) => { writtenName = event.target.value }} />
-              : name}
-          </StyledMidlDiv>
-          <StyledBiglDiv>
-            {isModifying
-              ? <StyledTextArea defaultValue={record} onChange={(event) => { accRecord = event.target.value }} />
-              : record}
-          </StyledBiglDiv>
-          <StyledSmallDiv>{Bytes}</StyledSmallDiv>
-          <StyledSmallDiv>
-            {isModifying
-              ? <button id='save_btn' onClick={() => { handleSaveBtn(student.id) }}>저장</button>
-              : <button id='modi_btn' onClick={() => { handleModifyingBtn(student.id) }}>수정</button>}
-          </StyledSmallDiv>
+    <StyledContainer>
+      <StyledExcelDiv><ExportAsExcel /></StyledExcelDiv>
+      <StyledGirdContainer>
+        <StyledTitleRow>
+          <StyledSmallDiv>연번</StyledSmallDiv>
+          <StyledMidlDiv>학번</StyledMidlDiv>
+          <StyledMidlDiv>이름</StyledMidlDiv>
+          <StyledAcclDiv>생기부</StyledAcclDiv>
+          <StyledSmallDiv>Byte</StyledSmallDiv>
+          <StyledSmallDiv>수정</StyledSmallDiv>
         </StyledTitleRow>
-      })}
-    </StyledGirdContainer >
+        {allStudentList.map((student, index) => {
+          let isModifying = (thisModifying === student.id)
+          let studentNumber = student.studentNumber
+          let name = (student.writtenName ? student.writtenName : '미등록')
+          let record = (student.accRecord ? student.accRecord : '기록 없음')
+          let bytes = ((record !== '기록 없음') ? getByteLengthOfString(record) : 0)
+          if (isModifying) {
+            writtenName = name
+            accRecord = record
+          }
+          return <StyledContentRow key={student.id}>
+            <StyledSmallDiv>{index + 1}</StyledSmallDiv>
+            <StyledMidlDiv>{studentNumber}</StyledMidlDiv>
+            <StyledMidlDiv>
+              {isModifying
+                ? <StyledNameInput type="text" defaultValue={name} onChange={(event) => { writtenName = event.target.value }} />
+                : name}
+            </StyledMidlDiv>
+            <StyledAcclDiv>
+              {isModifying
+                ? <StyledTextArea defaultValue={record} onChange={(event) => { accRecord = event.target.value }} />
+                : record}
+            </StyledAcclDiv>
+            <StyledSmallDiv>{bytes}</StyledSmallDiv>
+            <StyledSmallDiv>
+              {isModifying
+                ? <button id='save_btn' onClick={() => { handleSaveBtn(student.id) }}>저장</button>
+                : <button id='modi_btn' onClick={() => { handleModifyingBtn(student.id) }}>수정</button>}
+            </StyledSmallDiv>
+          </StyledContentRow>
+        })}
+      </StyledGirdContainer >
+    </StyledContainer>
   )
 }
 

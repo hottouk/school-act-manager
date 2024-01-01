@@ -8,17 +8,23 @@ import { KEYS } from "./keys";
 import 'normalize.css';
 import { AuthContextProvider } from './context/AuthContext';
 import { Provider } from 'react-redux'
-import store from './store/store';
 
+import store from './store/store';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistStore } from 'redux-persist';
+
+export let persistor = persistStore(store)
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={store}>
-    <GoogleOAuthProvider clientId={KEYS.GOOGLE_ID}>
-      <AuthContextProvider>
-        <App />
-      </AuthContextProvider>
-    </GoogleOAuthProvider>
+    <PersistGate loading={null} persistor={persistor}>
+      <GoogleOAuthProvider clientId={KEYS.GOOGLE_ID}>
+        <AuthContextProvider>
+          <App />
+        </AuthContextProvider>
+      </GoogleOAuthProvider>
+    </PersistGate>
   </Provider>
 );
 

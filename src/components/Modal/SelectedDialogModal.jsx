@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { useSelector } from 'react-redux';
 
-const StaticDialogModal = (props) => {
+const SelectedDialogModal = (props) => {
 
   //redux 전역변수
   const studentSelected = useSelector(({ studentSelected }) => { return studentSelected })
@@ -65,11 +65,10 @@ const StaticDialogModal = (props) => {
               <Button variant="primary" onClick={handleConfirm}>확인</Button>
             </div>
             : <Button variant="secondary" onClick={handleCancel}>확인</Button>}
-
         </Modal.Footer>
       </Modal>
     </>
   );
 }
 
-export default StaticDialogModal;
+export default SelectedDialogModal;
