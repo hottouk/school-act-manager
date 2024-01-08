@@ -47,10 +47,10 @@ const useFirestore = (collectionName) => {
   const addUser = async (userInfo) => {
     console.log(userInfo)
     let uid = userInfo.uid
-      let email = userInfo.email
-      let name = userInfo.name
-      let isTeacher = userInfo.isTeacher
-      let docRef = doc(db, collectionName, uid)
+    let email = userInfo.email
+    let name = userInfo.name
+    let isTeacher = userInfo.isTeacher
+    let docRef = doc(db, collectionName, uid)
     try {
       const createdTime = timeStamp.fromDate(new Date());
       await setDoc(docRef, { uid, name, email, isTeacher, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
@@ -100,15 +100,26 @@ const useFirestore = (collectionName) => {
     }
   }
 
-  // 학생 update 함수
-  const updateStudent = async (newInfo, classId, studentId) => {
+  //학생 추가 함수(2024.1.7)
+  const addStudent = async (newInfo, classId) => {
+    let studentColRef = collection(db, "classRooms", classId, "students");
+    let modifiedTime = timeStamp.fromDate(new Date());
     try {
-      let modifiedTime = timeStamp.fromDate(new Date());
-      let studentRef = doc(db, collectionName, classId, 'students', studentId)
-      const updatePromise = await updateDoc(studentRef, { ...newInfo, modifiedTime })//서버 통신 
-      dispatch({ type: 'addDoc', payload: updatePromise }); //상태 전달
+      addDoc(studentColRef, { ...newInfo, modifiedTime })
+    } catch (error) {
+      window.alert(error);
+    }
+  }
+
+  // 학생 update 함수(2024.1.6)
+  const updateStudent = async (newInfo, classId, studentId) => {
+    let studentRef = doc(db, "classRooms", classId, "students", studentId);
+    let modifiedTime = timeStamp.fromDate(new Date());
+    try {
+      updateDoc(studentRef, { ...newInfo, modifiedTime }) //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
     } catch (error) {
       dispatch({ type: 'error', payload: error.message }) //상태 전달
+      console.log(error)
     }
   }
 
@@ -136,7 +147,7 @@ const useFirestore = (collectionName) => {
   }
 
   return (
-    { addUser, findUser, addDocument, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, response }
+    { addUser, findUser, addDocument, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, response }
   )
 }
 

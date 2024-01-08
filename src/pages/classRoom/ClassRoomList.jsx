@@ -1,25 +1,24 @@
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-const StyledUl = styled.ul`
-  list-style-type: none;
+const StyledListContainer = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
   li {
-    display: inline-block;
     max-width: 500px;
     min-width: 280px;
     height: 155px;
+    margin: 10px;    
+    padding: 15px 25px;
     border: rgb(120, 120, 120, 0.5) 1px solid;
     border-radius: 15px;
-    padding: 15px 25px;
-     cursor: pointer;
+    cursor: pointer;
   }
-  li + li {
-    margin-left: 20px;
+  h4 { 
+    color: royalBlue;
+    font-weight: 600;
   }
-`
-const StyledTitle = styled.h4`
-  color: royalBlue;
-  font-weight: 600;
 `
 
 const ClassRoomList = ({ classRooms }) => {
@@ -29,17 +28,17 @@ const ClassRoomList = ({ classRooms }) => {
   }
 
   return (
-    <StyledUl>
+    <StyledListContainer>
       {classRooms.map((classRoom) => {
         return (
           <li key={classRoom.id} onClick={() => { handleEnterRoom(classRoom.id) }}>
-            <StyledTitle>{classRoom.classTitle}</StyledTitle>
+            <h4>{classRoom.classTitle}</h4>
             <p>{classRoom.intro}</p>
             <p>{classRoom.subject}</p>
           </li>
         )
       })}
-    </StyledUl>
+    </StyledListContainer>
   )
 }
 

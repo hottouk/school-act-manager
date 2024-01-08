@@ -1,8 +1,10 @@
+//라이브러리
 import OpenAI from "openai";
-//
 import { useEffect, useState } from "react"
+//hooks
 import useFirestore from "../../hooks/useFirestore";
-import GraphicDialogModal from "../../components/GraphicDialogModal";
+//컴포넌트
+import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
 //이미지
 import mon_01 from "../../image/enemies/mon_01.png";
 import mon_02 from "../../image/enemies/mon_02.png"
@@ -10,18 +12,19 @@ import mon_03 from "../../image/enemies/mon_03.png"
 //스타일
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
+import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
 
 const StyledForm = styled.form`
   padding: 20px;
-  background-color: teal;
   border-radius: 10px;
+  color: black;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
 `
 const StyledFieldSet = styled.fieldset`
   position: relative;
   border: none;
 `
 const StyledLegend = styled.legend`
-  color: white;
   font-size: 1.5em;
   margin-bottom: 20px;
 `
@@ -41,7 +44,7 @@ const StyledImgPicker = styled.img`
   height: 100px;
   border-radius: 20px;
   border: 1px solid black;
-  background-color: #fff;
+  background-color: royalBlue;
   cursor: pointer;
 `
 const StyledTextarea = styled.textarea`
@@ -68,7 +71,6 @@ const StyledNumberInput = styled.input`
 `
 const StyledLabel = styled.label`
   display: block;
-  color: white; 
 `
 const StyledBtn = styled.button`
   display: flex;
@@ -77,10 +79,9 @@ const StyledBtn = styled.button`
   margin: 8px auto;
   margin-top: 25px;
   width: 80%;
-  color: whitesmoke;
   background-color: transparent;
   border-radius: 15px;
-  border: 2px solid whitesmoke;
+  border: 2px solid black;
   padding: 25px;
 `
 const ActivityForm = ({ uid }) => {
@@ -100,6 +101,7 @@ const ActivityForm = ({ uid }) => {
 
   //3.대화창 보여주기 변수
   const [modalShow, setModalShow] = useState(false)
+  const [timerModalShow, setTimerModalShow] = useState(false)
 
   //4.데이터 쓰기/받기 변수
   const { addDocument, updateAct, deleteDocument, response } = useFirestore('activities');
@@ -110,7 +112,7 @@ const ActivityForm = ({ uid }) => {
 
   //6.ChatGPt
   let openai = new OpenAI({
-    apiKey: "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",
+    apiKey: process.env.REACT_APP_OPENAI_API_KEY,
     dangerouslyAllowBrowser: true
   })
 
@@ -145,6 +147,12 @@ const ActivityForm = ({ uid }) => {
       }
     }
   }, [state]);
+
+  useEffect(() => {
+    if (setTimerModalShow === false){
+      clearTimeout()
+    }
+  }, [setTimerModalShow])
 
   //활동 저장 대화창 ==> 추후 디자인 수정 필요
   const showConfirmWindow = () => {
@@ -251,6 +259,7 @@ const ActivityForm = ({ uid }) => {
         if (title !== '') {
           try {
             askChatGptToWrite()
+            setTimerModalShow(true)
           } catch (error) {
             console.log(error.message)
           }
@@ -333,6 +342,10 @@ const ActivityForm = ({ uid }) => {
         show={modalShow}
         onHide={() => setModalShow(false)}
         setMonImg={setMonImg}
+      />
+      <Wait3SecondsModal
+        show={timerModalShow}
+        onHide={setTimeout(() => { setTimerModalShow(false) }, 5000)}
       />
     </>
   )

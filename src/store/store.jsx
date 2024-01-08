@@ -3,6 +3,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import studentSelected from './studentSelectedSlice'
 import activitySelected from './activitySelectedSlice'
 import allStudents from './allStudentsSlice'
+import allActivities from './allActivitiesSlice';
 import user from './userSlice';
 
 //리덕스 persist
@@ -15,6 +16,7 @@ const reducers = combineReducers(
     studentSelected: studentSelected.reducer, //선택 학생
     activitySelected: activitySelected.reducer, //선택 활동
     allStudents: allStudents.reducer, //반 전체 학생
+    allActivities: allActivities.reducer, //전체 활동
     user: user.reducer
   }
 )

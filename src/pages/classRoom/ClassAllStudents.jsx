@@ -76,7 +76,7 @@ const ClassAllStudents = () => {
   const params = useParams(); //id와 param의 key-value(id:'id') 오브젝트로 반환
   const classId = params.id
 
-  //전역 변수(새로고침하면 초기화)
+  //전역 변수
   const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //ClassRoomDetail에서 저장한 학생List 불러오기(전역)
   const dispatcher = useDispatch()
 
@@ -126,8 +126,8 @@ const ClassAllStudents = () => {
             accRecord = record
           }
           return <StyledContentRow key={student.id}>
-            <StyledSmallDiv>{index + 1}</StyledSmallDiv>
-            <StyledMidlDiv>{studentNumber}</StyledMidlDiv>
+            <StyledSmallDiv>{index + 1}</StyledSmallDiv> {/* 연번 */}
+            <StyledMidlDiv>{studentNumber}</StyledMidlDiv> {/* 학번 */}
             <StyledMidlDiv>
               {isModifying
                 ? <StyledNameInput type="text" defaultValue={name} onChange={(event) => { writtenName = event.target.value }} />

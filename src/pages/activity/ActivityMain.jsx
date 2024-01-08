@@ -54,8 +54,6 @@ const ActivityMain = () => {
     setIsActOn(!isActOn);
   }
 
-
-
 return (
   <StyledGirdContainer>
     <StyledCenteredItem>

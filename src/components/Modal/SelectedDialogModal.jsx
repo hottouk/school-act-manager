@@ -25,7 +25,7 @@ const SelectedDialogModal = (props) => {
     })
     setStudentList(selectedStudentList)
     setActList(selectedActList)
-    //위 코드 실행 하기 전에 실행, unMount시 실행, 첫 마운트에선 실행X
+    //위 코드 실행 하기 전에 실행, unMount시 실행, 첫 마운트에선 실행X unMount 될 때 실행
     return () => {
       setStudentList(null)
       setActList(null)
@@ -35,6 +35,7 @@ const SelectedDialogModal = (props) => {
   const handleConfirm = () => {
     props.onHide()
     props.writeDataOnDB()
+    props.onClearSelect()
   }
 
   const handleCancel = () => {
