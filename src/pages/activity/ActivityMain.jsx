@@ -1,74 +1,94 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+//hooks
 import useCollection from '../../hooks/useCollection'
-
-//컴포넌트
-import ActivityForm from './ActivitityForm'
-import ActivityList from './ActivityList'
-
 //CSS
 import styled from 'styled-components'
 import { useSelector } from 'react-redux'
+import DataList from '../../components/DataList'
+import { useNavigate } from 'react-router-dom'
 
-const StyledGirdContainer = styled.main`
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  padding: 0 30px;
-  margin: 60px auto;
-`
-const StyledCenteredItem = styled.div`
-  grid-column-start: 2;
-  grid-column-end: 5;
-`
-const StyledSideB = styled.div`
-  float: right;
-  grid-column-start: 5;
-  grid-column-end: 6;
-  grid-row-start: 1;
-  grid-row-end: 3;
-`
-const StyledBtn = styled.button`
-  grid-column-start: 3;
-  grid-column-end: 4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 8px auto;
-  margin-top: 35px;
-  width: 80%;
-  color: teal;
-  font-weight: bold;
-  background-color: transparent;
-  border-radius: 15px;
-  border: 2px solid teal;
-  padding: 25px;
-`
-
+//24.01.09
 const ActivityMain = () => {
   //전역변수 user정보
   const user = useSelector(({ user }) => { return user })
+  const navigate = useNavigate()
   //활동 정보
-  const { documents, colErr } = useCollection('activities', ['uid', '==', user.uid], 'title')
-  //활동창 토글
-  const [isActOn, setIsActOn] = useState(false)
-  const handleBtnClick = () => {
-    setIsActOn(!isActOn);
-  }
+  const { documentList, colErr } = useCollection('activities', ['uid', '==', user.uid], 'title')
+  const [_activityList, setActivityList] = useState(null)
 
-return (
-  <StyledGirdContainer>
-    <StyledCenteredItem>
-      <ActivityForm uid={user.uid} />
-    </StyledCenteredItem>
-    <StyledSideB>
-      {/* 토글 상태에 따라 사이드바 보여주기 */}
-      {!isActOn ? null : <div>
-        {colErr && <strong>{colErr}</strong>}
-        {documents && <ActivityList activities={documents} />}
-      </div>}
-    </StyledSideB>
-    <StyledBtn onClick={handleBtnClick}>활동 관리</StyledBtn>
-  </StyledGirdContainer>
-)
+  //2. UseEffect
+  useEffect(() => {
+    setActivityList(documentList)
+  }, [documentList])
+
+  return (
+    <StyledContainer>
+      {_activityList
+        ? <DataList activities={_activityList} />
+        : <h3>아직 활동이 없습니다. 활동을 생성해주세요</h3>
+      }
+      <StyledBtn onClick={() => { navigate("/activities_setting") }}>활동 만들기</StyledBtn>
+    </StyledContainer>
+  )
 }
 
+const StyledContainer = styled.div`
+  box-sizing: border-box;
+  margin: 20px auto;
+  margin-bottom: 50px;
+`
+const StyledBtn = styled.button`
+  appearance: none;
+  backface-visibility: hidden;
+  background-color: #2f80ed;
+  border-radius: 10px;
+  border-style: none;
+  box-shadow: none;
+  box-sizing: border-box;
+  margin: 50px auto;
+  color: #fff;
+  cursor: pointer;
+  display: block;
+  font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  height: 50px;
+  letter-spacing: normal;
+  line-height: 1.5;
+  outline: none;
+  overflow: hidden;
+  padding: 14px 30px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  transform: translate3d(0, 0, 0);
+  transition: all .3s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: top;
+  white-space: nowrap;
+
+  &:hover {
+  background-color: #1366d6;
+  box-shadow: rgba(0, 0, 0, .05) 0 5px 30px, rgba(0, 0, 0, .05) 0 1px 4px;
+  opacity: 1;
+  transform: translateY(0);
+  transition-duration: .35s;
+  }
+  
+  &:hover:after {
+    opacity: .5;
+  }
+
+  &:active {
+    box-shadow: rgba(0, 0, 0, .1) 0 3px 6px 0, rgba(0, 0, 0, .1) 0 0 10px 0, rgba(0, 0, 0, .1) 0 1px 4px -1px;
+    transform: translateY(2px);
+    transition-duration: .35s;
+  }
+
+  &:active:after {
+    opacity: 1;
+  }
+`
 export default ActivityMain

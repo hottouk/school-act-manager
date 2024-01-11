@@ -4,33 +4,38 @@ import { appFireStore } from "../firebase/config"
 
 //문서 여러 개를 한번에 읽어올 때 사용한다.
 const useCollection = (collectionName, myQuery, order) => {
-  const [documents, setDocuments] = useState(null)
+  const [documentList, setDocumentList] = useState(null)
   const [colErr, setColErr] = useState(null)
   const colRef = collection(appFireStore, collectionName)
 
   useEffect(() => {
+    let firstWhere;
+    let secondWhere;
     let q;
-    if (myQuery) {
+    if (myQuery.length > 3) { //쿼리를 2개 이상 입력 했을 때,
+      firstWhere = myQuery.slice(0, 3)
+      secondWhere = myQuery.slice(3)
+      q = query(colRef, where(...firstWhere), where(...secondWhere))
+    } else {
       q = query(colRef, where(...myQuery), orderBy(order, 'desc'))
     }
 
-    const unsubscribe = onSnapshot(
-      (myQuery ? q : colRef),
+    const unsubscribe = onSnapshot(q,
       (snapshot) => {
         let result = []
         snapshot.docs.forEach((doc) => {
           result.push({ ...doc.data(), id: doc.id })
         })
-        setDocuments(result)
+        setDocumentList(result)
+        console.log(result)
       }
       , (error) => {
-        setColErr(error.message)
+        console.log(error.message)
       }
     )
     return unsubscribe
   }, [])
 
-  return { documents, colErr }
+  return { documentList, colErr }
 }
-
 export default useCollection

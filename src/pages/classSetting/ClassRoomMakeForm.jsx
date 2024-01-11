@@ -12,58 +12,6 @@ import useStudent from '../../hooks/useStudent';
 import styled from 'styled-components';
 
 //2024.1.7 수정
-const StyledForm = styled.form`
-  max-width: 480px;
-  margin: 60px auto;
-  padding: 20px;
-  color: whitesmoke;
-  background-color: royalBlue;
-  border-radius: 10px;
-  border: rgb(120, 120, 120, 0.5) 1px solid;
-  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
-
-  filedset {
-    border: none;
-  }
-  legend {
-    font-size: 1.5em;
-    margin-bottom: 20px;
-  }
-  label {
-    display: block;
-    color: whitesmoke;
-  }
-  input {
-    width: 100%;
-    height: 2.2em;
-    margin: 15px 0px;
-  }
-  select {
-    margin: 15px 0px;
-    padding: 5px;
-  }
-  textarea {
-    margin: 15px 0px;
-    width: 100%;
-  }
-  button {
-    display: inline;
-    width: 100%;
-    padding: 10px 15px;
-    border-radius: 15px;
-    border: 2px solid whitesmoke;
-    background-color: transparent;
-    color: whitesmoke;
-    cursor: pointer;
-  }
-  button + button {
-    margin-top: 20px;
-  }
-`
-const StyledSelectDiv = styled.div`
-  display: flex;
-  justify-content: space-between;
-`
 const ClassRoomMakeForm = () => {
   //1. 변수
   //인증
@@ -222,5 +170,56 @@ const ClassRoomMakeForm = () => {
     </StyledForm >
   )
 }
+const StyledForm = styled.form`
+  max-width: 540px;
+  margin: 60px auto;
+  padding: 20px;
+  color: whitesmoke;
+  background-color: royalBlue;
+  border-radius: 10px;
+  border: rgb(120, 120, 120, 0.5) 1px solid;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
 
+  filedset {
+    border: none;
+  }
+  legend {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    color: whitesmoke;
+  }
+  input {
+    width: 100%;
+    height: 2.2em;
+    margin: 15px 0px;
+  }
+  select {
+    margin: 15px 0px;
+    padding: 5px;
+  }
+  textarea {
+    margin: 15px 0px;
+    width: 100%;
+  }
+  button {
+    display: inline;
+    width: 100%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    border: 2px solid whitesmoke;
+    background-color: transparent;
+    color: whitesmoke;
+    cursor: pointer;
+  }
+  button + button {
+    margin-top: 20px;
+  }
+`
+const StyledSelectDiv = styled.div`
+  display: flex;
+  justify-content: space-between;
+`
 export default ClassRoomMakeForm

@@ -16,7 +16,7 @@ const StyledContainer = styled.div`
   min-height: 350px;
   padding: 5px;
 `
-const Styledh4 = styled.h4`
+const StyledTitle = styled.h4`
   display: flex;
   justify-content: center;
   margin: 10px auto;
@@ -50,33 +50,35 @@ const StyledBtn = styled.button`
   color: white;
   padding: 0.25em 1em;
 `
-const MainSelector = ({ studentList, activitiyList, classId }) => {
-  //redux 전역변수
-  const studentSelected = useSelector(({ studentSelected }) => { return studentSelected })
-  const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })
 
-  //지역 변수
-  const [modalShow, setModalShow] = useState(false) //대화창 보여주기 변수
+const MainSelector = ({ studentList, activitiyList, classId }) => {
+  //1. 변수
+  //redux 전역변수
+  const studentSelectedList = useSelector(({ studentSelected }) => { return studentSelected })
+  const activitySelectedList = useSelector(({ activitySelected }) => { return activitySelected })
 
   //MultiSelector 내부 변수
-  const selectStudentRef = useRef(null); //학생 선택 셀렉터, 재랜더링 X 
-  const selectActRef = useRef(null); //활동 선택 셀렉터, 재랜더링 X
+  const selectStudentRef = useRef(null); //학생 선택 셀렉터 객체, 재랜더링 X 
+  const selectActRef = useRef(null); //활동 선택 셀렉터 객체, 재랜더링 X
   const studentCheckBoxRef = useRef(null); //모든 학생 체크박스, 재랜더링 X
   const actCheckBoxRef = useRef(null); //모든 활동 체크박스, 재랜더링 X
+
+  //UseState
   const [isAllStudentChecked, setIsAllStudentChecked] = useState(false) //모든학생 선택 유무
-  const [isAllActivitySelected, setIsAllActivitySelected] = useState(false) //모든활동 선택 유무
+  const [isAllActivityChecked, setIsAllActivityChecked] = useState(false) //모든활동 선택 유무
+  const [modalShow, setModalShow] = useState(false) //대화창 보여setIsAllActivitySelected주기 변수
 
-
+  //2. 함수
   //★★★ 핵심 로직 ★★★ 
   const writeDataOnDB = async () => {
-    studentSelected.map(({ value }) => { //선택된 모든 학생에게서 아래 작업 반복 
+    studentSelectedList.map(({ value }) => { //선택된 모든 학생에게서 아래 작업 반복 
       let studentId = value //id 참조
       const studentRef = doc(appFireStore, "classRooms", classId.id, "students", studentId); //id로 학생 data 위치 참조
       getDoc(studentRef).then((student) => {                                                 //참조한 학생 data 반환 Promise
         try {
           let curAccActList = student.data().actList  //선택 학생 한명의 기존 누가 '활동' 반환
           let accRecord = student.data().accRecord    //선택 학생 한명의 기존 누가 '기록' 반환
-          makeAccWithSelectedActs().then(({ newActList, selectedAccRecord }) => { //선택한 활동의 누적 배열, 누적 기록 반환
+          makeAccWithSelectedActs().then(({ newActList, selectedAccRecord }) => { //선택한 활동의 누가 배열, 누가 기록 반환
             if ((!curAccActList && !accRecord) || curAccActList.length === 0) { //기록 활동 x 누가 기록 x -> 완전한 첫 작성
               setDoc(studentRef, {
                 actList: newActList,         //누가'활동'에 선택 활동 반영
@@ -110,26 +112,12 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
     })
   }
 
-  //셀렉터에서 선택된 값 해제하기
-  const onClearSelect = () => {
-    if (selectStudentRef.current) {
-      selectStudentRef.current.clearValue();
-      studentCheckBoxRef.current.checked = false;
-      setIsAllStudentChecked(false)
-    }
-    if (selectActRef.current) {
-      selectActRef.current.clearValue();
-      actCheckBoxRef.current.checked = false;
-      setIsAllActivitySelected(false)
-    }
-  }
-
   //★★★ 활동기록 누가 함수: 선택 활동과 선택 기록을 누적하여 반환한다.
   const makeAccWithSelectedActs = async () => {
     let newActList = []
     let selectedAccRecord = ''
     await Promise.all( //Promise.All을 사용하면 모든 Promise가 반환될 때까지 기다린다. 캐시에서 해도 될듯한 작업임.
-      activitySelected.map(async ({ value }) => { //선택된 모든 활동에서 아래 작업 반복
+      activitySelectedList.map(async ({ value }) => { //선택된 모든 활동에서 아래 작업 반복
         let activityId = value //id 참조
         const activityRef = doc(appFireStore, "activities", activityId); //id로 활동 data 위치 참조
         const activitySnap = getDoc(activityRef);
@@ -142,6 +130,20 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
     return { newActList, selectedAccRecord }
   }
 
+  //셀렉터에서 선택된 값 해제하기
+  const onClearSelect = () => {
+    if (selectStudentRef.current) {
+      selectStudentRef.current.clearValue();
+      studentCheckBoxRef.current.checked = false;
+      setIsAllStudentChecked(false)
+    }
+    if (selectActRef.current) {
+      selectActRef.current.clearValue();
+      actCheckBoxRef.current.checked = false;
+      setIsAllActivityChecked(false)
+    }
+  }
+
   //선택 완료 버튼 클릭
   const handleSelectComplete = async () => {
     setModalShow(true) //대화창 pop
@@ -151,7 +153,7 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
     <>
       {/* 학생 셀렉터, 활동 셀렉터 */}
       <StyledContainer>
-        <Styledh4>1단계 - 빠른 세특 입력기</Styledh4>
+        <StyledTitle>1단계 - 빠른 세특 입력기</StyledTitle>
         <StyledSelectorDiv>
           <StyledSelector>
             <MultiSelector
@@ -159,20 +161,21 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
               selectStudentRef={selectStudentRef}
               studentCheckBoxRef={studentCheckBoxRef}
               isAllStudentChecked={isAllStudentChecked}
-              isAllActivitySelected={isAllActivitySelected}
+              isAllActivitySelected={isAllActivityChecked}
               setIsAllStudentChecked={setIsAllStudentChecked}
-              setIsAllActivitySelected={setIsAllActivitySelected} />
+              setIsAllActivitySelected={setIsAllActivityChecked} />
           </StyledSelector>
-          <StyledSelector>
+          {activitiyList && <StyledSelector>
             <MultiSelector
               activitiyList={activitiyList}
               selectActRef={selectActRef}
               actCheckBoxRef={actCheckBoxRef}
               isAllStudentChecked={isAllStudentChecked}
-              isAllActivitySelected={isAllActivitySelected}
+              isAllActivitySelected={isAllActivityChecked}
               setIsAllStudentChecked={setIsAllStudentChecked}
-              setIsAllActivitySelected={setIsAllActivitySelected} />
-          </StyledSelector>
+              setIsAllActivitySelected={setIsAllActivityChecked} />
+          </StyledSelector>}
+          {!activitiyList && <StyledSelector>활동이 없습니다. 활동을 추가해주세요.</StyledSelector>}
         </StyledSelectorDiv>
         <StyledBtnDiv>
           <StyledBtn onClick={() => {

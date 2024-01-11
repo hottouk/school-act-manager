@@ -13,84 +13,19 @@ import mon_03 from "../../image/enemies/mon_03.png"
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
+import { useSelector } from "react-redux";
+import ScoreWrapper from "../../components/ScoreWrapper";
 
-const StyledForm = styled.form`
-  padding: 20px;
-  border-radius: 10px;
-  color: black;
-  box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
-`
-const StyledFieldSet = styled.fieldset`
-  position: relative;
-  border: none;
-`
-const StyledLegend = styled.legend`
-  font-size: 1.5em;
-  margin-bottom: 20px;
-`
-const StyledTitleInput = styled.input`
-  display: block;
-  margin-top: 5px;
-  margin-bottom: 15px;
-  width: 60%;
-  max-width: 280px;
-  height: 27px;
-`
-const StyledImgPicker = styled.img`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 100px;
-  height: 100px;
-  border-radius: 20px;
-  border: 1px solid black;
-  background-color: royalBlue;
-  cursor: pointer;
-`
-const StyledTextarea = styled.textarea`
-  display: block;
-  width: 100%;
-  min-width: 400px;
-  min-height: 150px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-`
-const StyledScoreWrapper = styled.div`
-  width: 100%;
-  margin : 20px auto;
-  text-align : center;
-`
-const StyledInputBox = styled.div`
-  display: inline-block;
-  background-color: red;
-`
-const StyledNumberInput = styled.input`
-  width: 72px;
-  height: 30px;
-  margin-top: 7px;
-`
-const StyledLabel = styled.label`
-  display: block;
-`
-const StyledBtn = styled.button`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 8px auto;
-  margin-top: 25px;
-  width: 80%;
-  background-color: transparent;
-  border-radius: 15px;
-  border: 2px solid black;
-  padding: 25px;
-`
-const ActivityForm = ({ uid }) => {
+
+const ActivityForm = () => {
+  //1. 변수
+  const user = useSelector(({ user }) => { return user })
   //1.활동 기본 정보 변수
   const [title, setTitle] = useState('');
+  const [subject, setSubject] = useState('default');
   const [content, setContent] = useState('');
   const [record, setRecord] = useState('');
   const [monImg, setMonImg] = useState(null);
-
   //2.경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
   const [careerScore, setCareerScore] = useState(0);
@@ -98,23 +33,16 @@ const ActivityForm = ({ uid }) => {
   const [coopScore, setCoopScore] = useState(0);
   const [attitudeScore, setAttitudeScore] = useState(0);
   const [coin, setCoin] = useState(0);
-
   //3.대화창 보여주기 변수
   const [modalShow, setModalShow] = useState(false)
   const [timerModalShow, setTimerModalShow] = useState(false)
-
   //4.데이터 쓰기/받기 변수
   const { addDocument, updateAct, deleteDocument, response } = useFirestore('activities');
-
   //5.경로 이동 관련 변수
   const { state } = useLocation()
   const navigate = useNavigate()
-
   //6.ChatGPt
-  let openai = new OpenAI({
-    apiKey: process.env.REACT_APP_OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true
-  })
+  let openai = new OpenAI({ apiKey: process.env.REACT_APP_OPENAI_API_KEY, dangerouslyAllowBrowser: true })
 
   //2. useEffect
   useEffect(() => {
@@ -132,6 +60,7 @@ const ActivityForm = ({ uid }) => {
       setTitle(state.title)
       setContent(state.content)
       setRecord(state.record)
+      setMonImg(state.monImg)
       if (scoresObj) {
         setLeadershipScore(scoresObj.leadership)
         setCareerScore(scoresObj.careerScore)
@@ -149,29 +78,30 @@ const ActivityForm = ({ uid }) => {
   }, [state]);
 
   useEffect(() => {
-    if (setTimerModalShow === false){
+    if (setTimerModalShow === false) {
       clearTimeout()
     }
   }, [setTimerModalShow])
 
   //활동 저장 대화창 ==> 추후 디자인 수정 필요
-  const showConfirmWindow = () => {
-    let scores = { leadership: leadershipScore, careerScore: careerScore, sincerityScore: sincerityScore, coopScore: coopScore, attitudeScore: attitudeScore };
+  const showConfirmModal = () => {
+    let scores = { leadership: leadershipScore, careerScore, sincerityScore, coopScore, attitudeScore };
     let money = coin
     if (state) {
       const confirm = window.confirm('활동을 수정하시겠습니까?')
       let actId = state.id
       let uid = state.uid
       if (confirm) {
-        let modifiedAct = { uid, title, content, record, scores, money };
+        let modifiedAct = { uid, title, subject, content, record, scores, money, monImg };
         updateAct(modifiedAct, actId)
         navigate(`/activities`)
       }
     } else {
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
-        let newAct = { uid, title, content, record, scores, money };
+        let newAct = { uid: user.uid, title, subject, content, record, scores, money, monImg };
         addDocument(newAct)
+        navigate(`/activities`)
       }
     }
   }
@@ -226,6 +156,8 @@ const ActivityForm = ({ uid }) => {
   const handleChange = (event) => {
     if (event.target.id === 'act_title') {
       setTitle(event.target.value)
+    } else if (event.target.id === 'act_subject') {
+      setSubject(event.target.value)
     } else if (event.target.id === 'act_content') {
       setContent(event.target.value)
     } else if (event.target.id === 'act_record') {
@@ -248,7 +180,11 @@ const ActivityForm = ({ uid }) => {
   //저장/수정버튼 클릭 제출
   const handleSubmit = (event) => {
     event.preventDefault();
-    showConfirmWindow();
+    if (subject !== 'default') {
+      showConfirmModal();
+    } else {
+      window.alert('과목을 입력해주세요')
+    }
   }
 
   //버튼 클릭
@@ -264,7 +200,7 @@ const ActivityForm = ({ uid }) => {
             console.log(error.message)
           }
         } else {
-          console.log('활동 제목을 채워주세요')
+          window.alert('활동 제목을 채워주세요. 간단한 설명을 입력하면 더 정확한 문구를 얻을 수 있어요')
         }
         break;
       case 'go_back_btn':
@@ -289,54 +225,49 @@ const ActivityForm = ({ uid }) => {
   return (
     <>
       <StyledForm onSubmit={handleSubmit}>
-        <StyledFieldSet>
-          {state ? <StyledLegend>활동 수정하기</StyledLegend> : <StyledLegend>활동 작성하기</StyledLegend>}
-          {!monImg ? <StyledImgPicker alt="엑스이미지 찾기" onClick={() => { handleImgPickerClick() }} />
-            : (monImg === "mon_01") ? <StyledImgPicker src={mon_01} alt="몬스터1" onClick={() => { handleImgPickerClick() }} />
-              : (monImg === "mon_02") ? <StyledImgPicker src={mon_02} alt="몬스터2" onClick={() => { handleImgPickerClick() }} />
-                : <StyledImgPicker src={mon_03} alt="몬스터3" onClick={() => { handleImgPickerClick() }} />}
+        <fieldset>
+          <StyledFirstDiv>
+            {state ? <legend>활동 수정하기</legend> : <legend>활동 작성하기</legend>}
+            {!monImg ? <StyledImgPicker alt="엑스이미지 찾기" onClick={() => { handleImgPickerClick() }} />
+              : (monImg === "mon_01") ? <StyledImgPicker src={mon_01} alt="몬스터1" onClick={() => { handleImgPickerClick() }} />
+                : (monImg === "mon_02") ? <StyledImgPicker src={mon_02} alt="몬스터2" onClick={() => { handleImgPickerClick() }} />
+                  : <StyledImgPicker src={mon_03} alt="몬스터3" onClick={() => { handleImgPickerClick() }} />}
+          </StyledFirstDiv>
+          <StyledFirstDiv>
+            <div>
+              <label htmlFor="act_title" >활동 제목</label>
+              <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} />
+            </div>
+            <select id='act_subject' required value={subject} onChange={handleChange}>
+              <option value="default" disabled >과목을 선택하세요</option>
+              <option value="kor">국어과</option>
+              <option value="eng">영어과</option>
+              <option value="math">수학과</option>
+              <option value="soc">사회과</option>
+              <option value="sci">과학과</option>
+            </select>
+          </StyledFirstDiv>
 
-          <StyledLabel htmlFor="act_title" >활동 제목</StyledLabel>
-          <StyledTitleInput id="act_title" type="text" required onChange={handleChange} value={title} />
+          <label htmlFor="act_content" >활동 설명</label>
+          <textarea id="act_content" type="text" required onChange={handleChange} value={content} />
+          <label htmlFor="act_record" >생기부 문구</label>
+          <textarea id="act_record" type="text" required onChange={handleChange} value={record} />
 
-          <StyledLabel htmlFor="act_content" >활동 설명</StyledLabel>
-          <StyledTextarea id="act_content" type="text" required onChange={handleChange} value={content} />
+          <ScoreWrapper handleChange={handleChange}
+            leadershipScore={leadershipScore}
+            careerScore={careerScore}
+            coopScore={coopScore}
+            sincerityScore={sincerityScore}
+            attitudeScore={attitudeScore}
+            coin={coin}
+          />
 
-          <StyledLabel htmlFor="act_record" >생기부 문구</StyledLabel>
-          <StyledTextarea id="act_record" type="text" required onChange={handleChange} value={record} />
-
-          <StyledScoreWrapper>
-            <StyledInputBox>
-              <StyledLabel htmlFor="act_leadership">리더십</StyledLabel>
-              <StyledNumberInput id="act_leadership" type="number" value={leadershipScore} onChange={handleChange}></StyledNumberInput>
-            </StyledInputBox>
-            <StyledInputBox>
-              <StyledLabel htmlFor="act_career">진로</StyledLabel>
-              <StyledNumberInput id="act_career" type="number" value={careerScore} onChange={handleChange}></StyledNumberInput>
-            </StyledInputBox>
-            <StyledInputBox>
-              <StyledLabel htmlFor="act_sincerity">성실성</StyledLabel>
-              <StyledNumberInput id="act_sincerity" type="number" value={sincerityScore} onChange={handleChange}></StyledNumberInput>
-            </StyledInputBox>
-            <StyledInputBox>
-              <StyledLabel htmlFor="act_coop">협동성</StyledLabel>
-              <StyledNumberInput id="act_coop" type="number" value={coopScore} onChange={handleChange}></StyledNumberInput>
-            </StyledInputBox>
-            <StyledInputBox>
-              <StyledLabel htmlFor="act_attitude">태도</StyledLabel>
-              <StyledNumberInput id="act_attitudes" type="number" value={attitudeScore} onChange={handleChange}></StyledNumberInput>
-            </StyledInputBox>
-            <StyledInputBox>
-              <StyledLabel htmlFor="act_attitude">리아</StyledLabel>
-              <StyledNumberInput id="act_coin" type="number" value={coin} onChange={handleChange}></StyledNumberInput>
-            </StyledInputBox>
-          </StyledScoreWrapper>
           {/* 아이템List를 클릭하여 이동했을시 다른 폼 보여주기 */}
+          <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성하기</StyledBtn>
           {state ? <StyledBtn type="submit">수정하기</StyledBtn> : <StyledBtn type="submit">저장하기</StyledBtn>}
           {state && <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제하기</StyledBtn>}
-          {state && <StyledBtn type="button" id="go_back_btn" onClick={handleBtnClick}>돌아가기</StyledBtn>}
-          <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성하기</StyledBtn>
-        </StyledFieldSet>
+          <StyledBtn type="button" id="go_back_btn" onClick={handleBtnClick}>돌아가기</StyledBtn>
+        </fieldset>
       </StyledForm>
       <GraphicDialogModal
         show={modalShow}
@@ -351,4 +282,77 @@ const ActivityForm = ({ uid }) => {
   )
 }
 
+const StyledForm = styled.form`
+  max-width: 540px;
+  margin: 60px auto;
+  padding: 20px;
+  color: #efefef;
+  background-color: #3454d1;
+  border-radius: 10px;
+  border: rgb(120, 120, 120, 0.5) 1px solid;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
+  fieldset {
+    position: relative;
+    border: none;
+  }
+  legend {
+    width: 70%;  
+    font-size: 1.5em;
+    margin-bottom: 40px;
+  }
+  label {
+    display: block;
+  }
+  textarea {
+    display: block;
+    width: 100%;
+    min-width: 400px;
+    min-height: 150px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+  }
+`
+
+const StyledFirstDiv = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  select{
+    height: 60%;
+    margin-bottom: 15px;
+  }
+  input.act_title {
+    margin-top: 5px;
+    margin-bottom: 15px;
+    max-width: 280px;
+    height: 35px;
+  }
+  select {
+    height: 35px;
+  }
+`
+const StyledImgPicker = styled.img`
+  position: relative;
+  float: right;
+  width: 100px;
+  height: 100px;
+  border-radius: 20px;
+  border: 1px solid black;
+  background-color: #efefef;
+  cursor: pointer;
+`
+const StyledBtn = styled.button`
+  margin: 8px auto;
+  margin-top: 25px;
+  width: 80%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #efefef;
+  background-color: transparent;
+  border-radius: 15px;
+  border: 2px solid #efefef;
+  padding: 25px;
+`
 export default ActivityForm

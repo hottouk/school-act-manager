@@ -1,14 +1,45 @@
 //라이브러리
 import { useNavigate } from 'react-router-dom'
 //컴포넌트
-import ClassRoomList from './ClassRoomList';
+import DataList from '../../components/DataList';
 //hooks
 import useCollection from '../../hooks/useCollection'
-import { useAuthContext } from '../../hooks/useAuthContext';
 //CSS
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 
+//24.01.09
+const ClassRoomMain = () => {
+  //1. 변수
+  //전역변수 user정보
+  const user = useSelector(({ user }) => { return user })
+  const navigate = useNavigate()
+  const { documentList, err } = useCollection('classRooms', ['uid', '==', user.uid], 'subject')
+  const [_classRoomList, setClassRoomList] = useState(null)
+  
+  //2. UseEffect
+  useEffect(() => {
+    setClassRoomList(documentList)
+   }, [documentList])
+
+   //3. 함수
+  const handleBtnClick = (event) => {
+    event.preventDefault()
+    navigate('/classrooms_setting')
+  }
+
+  return (
+    <StyledContainer>
+      {_classRoomList
+        ? <DataList classRooms={_classRoomList} />
+        : <h3>아직 클래스가 없어요. 클래스를 만들어주세요</h3>
+      }
+      {err && <strong>{err}</strong>}
+      <StyledBtn onClick={handleBtnClick}>클래스 만들기</StyledBtn>
+    </StyledContainer>
+  )
+}
 const StyledContainer = styled.div`
   box-sizing: border-box;
   margin: 20px auto;
@@ -68,28 +99,4 @@ const StyledBtn = styled.button`
     opacity: 1;
   }
 `
-const ClassRoomMain = () => {
-  //전역변수 user정보
-  const user = useSelector(({ user }) => { return user })
-  const { documents, err } = useCollection('classRooms', ['uid', '==', user.uid], 'subject')
-  const navigate = useNavigate()
-  const classroomList = documents
-
-  const handleBtnClick = (event) => {
-    event.preventDefault()
-    navigate('/classrooms_setting')
-  }
-
-  return (
-    <StyledContainer>
-      {classroomList
-        ? <ClassRoomList classRooms={classroomList} />
-        : <h3>아직 클래스가 없어요. 클래스를 만들어주세요</h3>
-      }
-      {err && <strong>{err}</strong>}
-      <StyledBtn onClick={handleBtnClick}>클래스 만들기</StyledBtn>
-    </StyledContainer>
-  )
-}
-
 export default ClassRoomMain

@@ -77,17 +77,17 @@ const useFirestore = (collectionName) => {
   }
 
   //활동 추가 함수
-  const addDocument = async (documnet) => {
+  const addActivity = async (activity) => {
     dispatch({ type: 'isPending' });
     try {
       const createdTime = timeStamp.fromDate(new Date());
-      await addDoc(colRef, { ...documnet, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
+      await addDoc(colRef, { ...activity, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
     } catch (error) {
-      console.log(error.message)
+      window.alert(error.message)
     }
   }
 
-  //활동 데이터 수정 함수: 새로운 활동과 활동 id(제목) 주면 수정
+  //활동 수정 함수: 새로운 활동과 활동 id(제목) 주면 수정
   const updateAct = async (activity, actId) => {
     try {
       let createdTime = timeStamp.fromDate(new Date());
@@ -147,7 +147,7 @@ const useFirestore = (collectionName) => {
   }
 
   return (
-    { addUser, findUser, addDocument, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, response }
+    { addUser, findUser, addDocument: addActivity, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, response }
   )
 }
 

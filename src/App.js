@@ -32,8 +32,11 @@ function App() {
           <Route path="/" element={uid ? <ClassMain /> : <Navigate replace={true} to='/login' />} />
           {/* <Route path="/kakaoLogin" element={<Login />} />
           <Route path="/kakaoLogin/callback" element={<KakaoCallback />} /> */}
+          {/* 활동 관리 */}
           <Route path="/activities" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/:activityId" element={uid ? <ActivityDetails /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/activities_setting" element={uid ? <ActivityDetails /> : <Navigate replace={true} to='/login' />} />
+          {/* 클래스 관리 */}
           <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
           <Route path='/classrooms/:id' element={<ClassRoomDetails />} />
           <Route path='/classrooms/:id/allStudents' element={<ClassAllStudents />} />
