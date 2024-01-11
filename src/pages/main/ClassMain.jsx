@@ -4,13 +4,13 @@ import iphone from '../../image/icon/iphone.png'
 import useCollection from '../../hooks/useCollection'
 
 const ClassMain = () => {
-  // const { documentList } = useCollection('user', ['isTeacher', '==', true], 'name')
+  const { documentList } = useCollection('user', ['isTeacher', '==', true], 'name')
   const [teacherList, setTeacherList] = useState([])
-  // useEffect(() => {
-  //   if (documentList) {
-  //     setTeacherList(documentList)
-  //   }
-  // }, [documentList])
+  useEffect(() => {
+    if (documentList) {
+      setTeacherList(documentList)
+    }
+  }, [documentList])
 
   return (
     <StyledContainer>
