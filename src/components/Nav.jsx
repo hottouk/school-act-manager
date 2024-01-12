@@ -38,12 +38,10 @@ const Nav = () => {
         <li><i className="fa-solid fa-scroll"></i><Link to='/activities'>활동 관리</Link></li>
         <li><i className="fa-solid fa-children"></i><Link to='/classRooms'>클래스 관리</Link></li>
         <li className='mobileOnly'><i class="fa-solid fa-user"></i>MyInfo</li>
+        {/* <button className='button-16' type='button' onClick={logout}>로그아웃</button> */}
       </ul>
+      <img className="logo" src={brandLogo} alt='로고' />
     </>}
-    <ImgDiv>
-      <img src={brandLogo} alt='로고' />
-      <button className='button-16' type='button' onClick={logout}>로그아웃</button>
-    </ImgDiv>
   </StyledNav >
   )
 }
@@ -88,6 +86,10 @@ const StyledNav = styled.nav`
     color: #efefef;
     text-decoration: none;
   }
+  img {
+    width: 50px;
+    height: 50px;
+  }
   @media screen and (max-width: 767px){
     position: fixed;
     bottom: 0;
@@ -128,53 +130,9 @@ const StyledNav = styled.nav`
       color: #3454d1;
       font-size: 12px;
     }
+    img.logo{
+      display: none;
+    }
   }
 `
-const ImgDiv = styled.div`
-  position: relative;
-  cursor: pointer;
-  img {
-    width: 55px;
-    height: 55px;
-  }
- .button-16 {
-  display: none;
-  position: fixed;
-  right: 0;
-  margin-top: 5px;
-  background-color: #f8f9fa;
-  border: 1px solid #f8f9fa;
-  border-radius: 4px;
-  color: #3c4043;
-  cursor: pointer;
-  font-family: arial,sans-serif;
-  font-size: 14px;
-  height: 36px;
-  line-height: 27px;
-  min-width: 54px;
-  padding: 0 16px;
-  text-align: center;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  white-space: pre;
-}
-.button-16:hover {
-  border-color: #dadce0;
-  box-shadow: rgba(0, 0, 0, .1) 0 1px 1px;
-  color: #202124;
-}
-.button-16:focus {
-  border-color: #4285f4;
-  outline: none;
-}
-&:hover button { 
-  display: block;
-  }
-}
-@media screen and (max-width: 767px) {
-  img { display: none;}
-}
-`
-
 export default Nav

@@ -18,7 +18,7 @@ const ClassMain = () => {
         <StyledWrapper>
           <h1>App For the Teacher, by the Teacher, of the Teacher</h1>
           <p>체계적 세특 관리, 이제 (곧) 모바일로 세특쓰세요. (곧) 모바일 출시</p>
-          <img src={iphone} alt="랜딩이미지" />
+          <img className='landing_img' src={iphone} alt="랜딩이미지" />
         </StyledWrapper>
       </StyledLandingBackground>
       <StyledWhiteBackground>
@@ -82,7 +82,7 @@ const StyledLandingBackground = styled.div`
   h1 {
     display: inline-block;
   }
-  img {
+  .landing_img {
     float: right;
     width: 400px;
     position: relative;
@@ -90,26 +90,19 @@ const StyledLandingBackground = styled.div`
     bottom: 27px;
   }
   @media screen and (max-width: 767px) {
-    height: 400px;
     position: relative;
-    padding: 20px 20px 0 20px;
-    h1 {
-      font-size: 1.6em;
-    }
-    img {
-      float: none;
-      position: absolute;
-      right: 50%;
-      left: 50%;
-      bottom: 0;
-      margin: 20px 0 0;
-      width: 250px;
-      transform: translate(-50%, 0%);
-    }
-    p {
+    p{
       display: none;
     }
-  } 
+    .landing_img{
+      position: absolute;
+      width: 300px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+    }
+  }
 `
 const StyledWhiteBackground = styled.div`
   background-color: #efefef;
@@ -122,7 +115,9 @@ const StyledWhiteBackground = styled.div`
     justify-content: center;
   }
   @media screen and (max-width: 767px) {
-    height: 35px;
+    height: 50px;
+    display: flex;
+    align-items: center;
     span {
       display: none;
     }
@@ -173,42 +168,29 @@ const StyledBlueBackground = styled.div`
   p {
     margin-top: 10px;
   }
-  i.heart {
-    position: relative;
-    bottom: 10px;
-    --size: 50px;
-    position: relative;
-    width: var(--size);
-    height: calc(var(--size) * 0.3);
-  }
   @media screen and (max-width: 767px) {
-    p.bible {
+    p.bible{
       width: 100%;
-      margin: auto;
       font-size: 14px;
-      text-align: center;
     }
+
     h3{
-      font-size: 1.2em;
       width: 100%;
-      margin: 10px auto;
-      text-align: center;
     }
     .iconContainer {
-      flex-wrap: wrap;
       width: 232px;
       margin: 0 auto;
-    }
-    .itemContainer{
-      margin: 10px;
-      p {
-        margin: 10px 0 0;
+      flex-wrap: wrap;
+      p{
+        margin-bottom: 4px;
       }
     }
+    .itemContainer {
+      margin: 10px;
+    }
     .iconBackground {
-      width: 70px;
-      height: 70px;
-      border-radius: 35px;
+      width: 75px;
+      height: 75px;
     }
   }
 `

@@ -10,7 +10,6 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 //CSS styles
 import styled from "styled-components"
 
-
 const MainSelector = ({ studentList, activitiyList, classId }) => {
   //1. 변수
   //redux 전역변수
@@ -33,7 +32,7 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
   const writeDataOnDB = async () => {
     studentSelectedList.map(({ value }) => { //선택된 모든 학생에게서 아래 작업 반복 
       let studentId = value //id 참조
-      const studentRef = doc(appFireStore, "classRooms", classId.id, "students", studentId); //id로 학생 data 위치 참조
+      const studentRef = doc(appFireStore, "classRooms", classId, "students", studentId); //id로 학생 data 위치 참조
       getDoc(studentRef).then((student) => {                                                 //참조한 학생 data 반환 Promise
         try {
           let curAccActList = student.data().actList  //선택 학생 한명의 기존 누가 '활동' 반환

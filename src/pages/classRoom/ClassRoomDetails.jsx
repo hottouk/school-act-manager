@@ -24,7 +24,6 @@ const ClassRoomDetails = () => {
   //1.변수
   //개별 클래스 구별해주는 변수
   const navigate = useNavigate()
-  const classId = useParams(); //id와 param의 key-value(id:'id') 오브젝트로 반환
   //데이터 통신 변수
   const { subDocuments, subColErr } = useSubCollection('classRooms', thisClass.id, 'students', 'studentNumber') //모든 학생 List
   const { documentList, colErr } = useCollection('activities', ['uid', '==', user.uid, 'subject', '==', thisClass.subject], 'title') //활동 List)
@@ -53,7 +52,7 @@ const ClassRoomDetails = () => {
       case "delete_btn":
         let deleteConfirm = window.prompt('클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 "삭제합니다"를 입력하세요.')
         if (deleteConfirm === '삭제합니다') {
-          deleteDocument(classId)
+          deleteDocument(thisClass.id)
           navigate(-1)
         } else {
           window.alert('문구가 제대로 입력되지 않았습니다.');
@@ -83,7 +82,7 @@ const ClassRoomDetails = () => {
           </StyeldHeader>
           {/* 셀렉터 */}
           <StyledMain>
-            <MainSelector studentList={subDocuments} activitiyList={documentList} classId={classId.id} />
+            <MainSelector studentList={subDocuments} activitiyList={documentList} classId={thisClass.id} />
           </StyledMain>
           <StyledMain>
             {/* 학생 상세 보기 */}
