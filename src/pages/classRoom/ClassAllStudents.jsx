@@ -11,7 +11,6 @@ import ExportAsExcel from "../../components/ExportAsExcel"
 //CSS
 import styled from "styled-components"
 
-
 const ClassAllStudents = () => {
   //1. 변수
   //경로 이동 props
@@ -48,7 +47,7 @@ const ClassAllStudents = () => {
   return (
     <StyledContainer>
       <StyledXlDiv>
-        <p>※수정 및 다운로드는 PC에서만 가능</p>
+        <p>※수정은 PC에서 가능함</p>
         <ExportAsExcel />
       </StyledXlDiv>
       <StyledGirdContainer>

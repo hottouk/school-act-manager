@@ -7,28 +7,34 @@ const ScoreWrapper = (props) => {
       <div className="scores">
         <div>
           <label htmlFor="act_leadership">리더십</label>
-          <input id="act_leadership" type="number" value={props.leadershipScore} onChange={props.handleChange}></input>
+          <input id="act_leadership" type="number" min="0" max="8"
+            value={props.leadershipScore} onChange={props.handleChange}></input>
         </div>
         <div>
           <label htmlFor="act_career">진로</label>
-          <input id="act_career" type="number" value={props.careerScore} onChange={props.handleChange}></input>
+          <input id="act_career" type="number" min="0" max="8"
+            value={props.careerScore} onChange={props.handleChange}></input>
         </div>
         <div>
           <label htmlFor="act_sincerity">성실성</label>
-          <input id="act_sincerity" type="number" value={props.sincerityScore} onChange={props.handleChange}></input>
+          <input id="act_sincerity" type="number" min="0" max="8"
+            value={props.sincerityScore} onChange={props.handleChange}></input>
         </div>
         <div>
           <label htmlFor="act_coop">협동성</label>
-          <input id="act_coop" type="number" value={props.coopScore} onChange={props.handleChange}></input>
+          <input id="act_coop" type="number" min="0" max="8"
+            value={props.coopScore} onChange={props.handleChange}></input>
         </div>
         <div>
           <label htmlFor="act_attitude">태도</label>
-          <input id="act_attitudes" type="number" value={props.attitudeScore} onChange={props.handleChange}></input>
+          <input id="act_attitudes" type="number" min="0" max="8"
+            value={props.attitudeScore} onChange={props.handleChange}></input>
         </div>
       </div>
       <div className="money">
         <label htmlFor="act_attitude">리아</label>
-        <input id="act_coin" type="number" value={props.coin} onChange={props.handleChange}></input>
+        <input id="act_coin" type="number" min="0" max="100"
+          value={props.coin} onChange={props.handleChange}></input>
       </div>
     </StyledScoreWrapper>
   )

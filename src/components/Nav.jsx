@@ -14,11 +14,11 @@ import { Helmet } from 'react-helmet'
 const Nav = () => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
+  const pageEndSignal = useSelector(({ pageEndSignal }) => { return pageEndSignal })
   const { logout } = useLogout();
-  console.log('Nav', user)
-
-  return (<StyledNav>
+  return (<StyledNav endpoint={String(pageEndSignal)}>
     <Helmet>
+       {/*폰트어썸 라이브러리*/}
       <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
@@ -29,7 +29,7 @@ const Nav = () => {
     {!user.uid && <>
       <ul className='menu_container'>
         <li><i className="fa-solid fa-key"></i><Link to='/login'>로그인</Link></li>
-        <li><i class="fa-solid fa-user-plus"></i><Link to='/signup'>가입하기</Link></li>
+        <li><i className="fa-solid fa-user-plus"></i><Link to='/signup'>가입하기</Link></li>
       </ul></>}
     {user.uid && <>
       <div className='welcome'><p>{user.name} 선생님 사랑합니다.</p></div>
@@ -91,9 +91,22 @@ const StyledNav = styled.nav`
     height: 50px;
   }
   @media screen and (max-width: 767px){
-    position: fixed;
+    display:${(props) => {
+    let result
+    switch (props.endpoint) {
+      case "true":
+        result = "none"
+        break;
+      case "false":
+        result = "flex"
+        break;
+      default: result = "flex"
+    }
+    return result
+  }};
+    position: fixed; 
     bottom: 0;
-    height: 7%;
+    height: 9%;
     background-color: #efefef;
     padding: 0;
     z-index: 999;

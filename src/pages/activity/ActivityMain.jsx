@@ -6,6 +6,7 @@ import styled from 'styled-components'
 import { useSelector } from 'react-redux'
 import DataList from '../../components/DataList'
 import { useNavigate } from 'react-router-dom'
+import useScroll from '../../hooks/useScroll'
 
 //24.01.09
 const ActivityMain = () => {
@@ -15,6 +16,7 @@ const ActivityMain = () => {
   //활동 정보
   const { documentList, colErr } = useCollection('activities', ['uid', '==', user.uid], 'title')
   const [_activityList, setActivityList] = useState(null)
+  useScroll(document.documentElement)
 
   //2. UseEffect
   useEffect(() => {

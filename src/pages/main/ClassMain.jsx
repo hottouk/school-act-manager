@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import iphone from '../../image/icon/iphone.png'
 import useCollection from '../../hooks/useCollection'
+import useScroll from '../../hooks/useScroll'
 
 const ClassMain = () => {
   const { documentList } = useCollection('user', ['isTeacher', '==', true], 'name')
   const [teacherList, setTeacherList] = useState([])
+  useScroll(document.documentElement)
+
   useEffect(() => {
     if (documentList) {
       setTeacherList(documentList)

@@ -14,6 +14,7 @@ import { setAllStudents } from '../../store/allStudentsSlice';
 import { setAllActivities } from '../../store/allActivitiesSlice.jsx';
 //스타일
 import styled from 'styled-components';
+import useScroll from '../../hooks/useScroll.jsx';
 
 //2924.01.08 
 const ClassRoomDetails = () => {
@@ -35,6 +36,7 @@ const ClassRoomDetails = () => {
   console.log(thisClass.id, '반 학생List', subDocuments)
 
   //2.UseEffect
+  useScroll(document.documentElement)  
   useEffect(() => {
     dispatcher(setAllStudents(subDocuments)) //전체 학생 전역변수화
     dispatcher(setAllActivities(documentList)) //전체 활동 전역변수화

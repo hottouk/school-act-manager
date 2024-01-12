@@ -23,12 +23,12 @@ import { Helmet } from "react-helmet";
 function App() {
   const user = useSelector(({ user }) => { return user; })
   const uid = user.uid
-  console.log('App', user)
-
   return (
     <>
       <Helmet>
         <title>생기부 입력 도우미</title>
+        {/* loDash 라이브러리 */}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
       </Helmet>
       <BrowserRouter>
         <Nav />

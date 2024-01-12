@@ -5,6 +5,7 @@ import activitySelected from './activitySelectedSlice'
 import classSelected from './classSelectedSlice';
 import allStudents from './allStudentsSlice'
 import allActivities from './allActivitiesSlice';
+import pageEndSignifier from './pageEndSignifierSlice';
 import user from './userSlice';
 
 //리덕스 persist
@@ -18,7 +19,9 @@ const reducers = combineReducers(
     classSelected: classSelected.reducer, //선택 반
     allStudents: allStudents.reducer, //반 전체 학생
     allActivities: allActivities.reducer, //전체 활동
-    user: user.reducer
+    pageEndSignal: pageEndSignifier.reducer,
+    user: user.reducer,
+
   }
 )
 
@@ -26,7 +29,7 @@ const persistConfig = {
   key: "root",
   storage: storageSession,  // 세션Storage에 저장합니다. 브라우져 종료하면 재로그인이 필요함.
   whiteList: ['allStudents', 'user', 'classSelected'], //계속 저장해둘 값
-  blacksList: ['studentSelected', 'activitySelected'], //휘발성 값
+  blacksList: ['studentSelected', 'activitySelected', 'pageEndSignal'], //휘발성 값
 };
 
 const persistedReducer = persistReducer(persistConfig, reducers);

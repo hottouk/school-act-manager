@@ -8,7 +8,7 @@ const Wait3SecondsModal = (props) => {
       keyboard={false}
     >
       <Modal.Header closeButton>
-        <Modal.Title>활동 이미지 선택</Modal.Title>
+        <Modal.Title>GPT 열일 중</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>세특을 작성 중입니다. 3초만 기다려주세요.</p>

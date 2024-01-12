@@ -8,6 +8,7 @@ import useCollection from '../../hooks/useCollection'
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
+import useScroll from '../../hooks/useScroll';
 
 //24.01.09
 const ClassRoomMain = () => {
@@ -17,7 +18,7 @@ const ClassRoomMain = () => {
   const navigate = useNavigate()
   const { documentList, err } = useCollection('classRooms', ['uid', '==', user.uid], 'subject')
   const [_classRoomList, setClassRoomList] = useState(null)
-
+  useScroll(document.documentElement)
   //2. UseEffect
   useEffect(() => {
     setClassRoomList(documentList)
