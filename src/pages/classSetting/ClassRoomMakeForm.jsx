@@ -174,12 +174,11 @@ const StyledForm = styled.form`
   max-width: 540px;
   margin: 60px auto;
   padding: 20px;
-  color: whitesmoke;
-  background-color: royalBlue;
+  color: #efefef;
+  background-color: #3454d1;
   border-radius: 10px;
   border: rgb(120, 120, 120, 0.5) 1px solid;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
-
   filedset {
     border: none;
   }
@@ -194,19 +193,20 @@ const StyledForm = styled.form`
   input {
     width: 100%;
     height: 2.2em;
-    margin: 15px 0px;
+    margin: 5px 0 15px;
   }
   select {
     margin: 15px 0px;
     padding: 5px;
   }
   textarea {
-    margin: 15px 0px;
+    margin: 5px 0 15px;
     width: 100%;
   }
   button {
     display: inline;
     width: 100%;
+    margin-top: 15px;
     padding: 10px 15px;
     border-radius: 15px;
     border: 2px solid whitesmoke;

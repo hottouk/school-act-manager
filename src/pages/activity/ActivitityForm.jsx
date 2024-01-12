@@ -61,6 +61,7 @@ const ActivityForm = () => {
       setContent(state.content)
       setRecord(state.record)
       setMonImg(state.monImg)
+      setSubject(state.subject)
       if (scoresObj) {
         setLeadershipScore(scoresObj.leadership)
         setCareerScore(scoresObj.careerScore)
@@ -281,9 +282,9 @@ const ActivityForm = () => {
     </>
   )
 }
-
 const StyledForm = styled.form`
   max-width: 540px;
+  height: 870px;
   margin: 60px auto;
   padding: 20px;
   color: #efefef;
@@ -310,6 +311,24 @@ const StyledForm = styled.form`
     min-height: 150px;
     margin-top: 5px;
     margin-bottom: 15px;
+  }
+  @media screen and (max-width: 767px){
+    max-width: 100%;
+    margin: 0;
+    padding: 15px;
+    color: #efefef;
+    background-color: #3454d1;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  fieldset {
+    padding: 2px;
+  }
+  textarea {
+    width: 80%;
+    min-width: 100%;
+    min-height: 75px;
   }
 `
 
@@ -354,5 +373,8 @@ const StyledBtn = styled.button`
   border-radius: 15px;
   border: 2px solid #efefef;
   padding: 25px;
+  @media screen and (max-width: 767px){
+    margin-top: 20px;
+  }
 `
 export default ActivityForm

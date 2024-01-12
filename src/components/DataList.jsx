@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+import { setSelectClass } from '../store/classSelectedSlice'
 
 //2024.01.09
 const DataList = ({ classRooms, activities }) => {
@@ -8,7 +10,8 @@ const DataList = ({ classRooms, activities }) => {
   const navigate = useNavigate()
   const [_classRoomList, setClassRoomList] = useState(null);
   const [_actList, setActList] = useState(null);
-
+  //전역변수
+  const dispatcher = useDispatch()
   //2. UseEffect
   useEffect(() => {
     if (classRooms) { setClassRoomList(classRooms) }
@@ -17,7 +20,10 @@ const DataList = ({ classRooms, activities }) => {
 
   //3. 함수
   const handleItemClick = (item) => {
-    if (_classRoomList) { navigate(`/classrooms/${item.id}`, { state: item }) }
+    if (_classRoomList) {
+      navigate(`/classrooms/${item.id}`) //url 이동
+      dispatcher(setSelectClass(item)) //선택한 item 비휘발성 전역변수화
+    }
     if (_actList) { navigate(`/activities/${item.id}`, { state: item }) }
   }
 
@@ -64,6 +70,11 @@ const StyledListContainer = styled.ul`
   h4 { 
     color: royalBlue;
     font-weight: 600;
+  }
+  @media screen and (max-width: 767px){
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
   }
 `
 

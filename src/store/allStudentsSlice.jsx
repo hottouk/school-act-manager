@@ -17,7 +17,7 @@ let allStudents = createSlice({
       unSelected.push(modifiedStudent)                                        
       return unSelected.sort((a, b) => a.studentNumber.localeCompare(b.studentNumber)) //학번으로 오름차순 정렬
     }
-  },
+  }
 })
 
 export const { setAllStudents, setModifiedStudent } = allStudents.actions

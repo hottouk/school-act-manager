@@ -17,13 +17,13 @@ const ClassRoomMain = () => {
   const navigate = useNavigate()
   const { documentList, err } = useCollection('classRooms', ['uid', '==', user.uid], 'subject')
   const [_classRoomList, setClassRoomList] = useState(null)
-  
+
   //2. UseEffect
   useEffect(() => {
     setClassRoomList(documentList)
-   }, [documentList])
+  }, [documentList])
 
-   //3. 함수
+  //3. 함수
   const handleBtnClick = (event) => {
     event.preventDefault()
     navigate('/classrooms_setting')
@@ -48,12 +48,12 @@ const StyledContainer = styled.div`
 const StyledBtn = styled.button`
   appearance: none;
   backface-visibility: hidden;
-  background-color: #2f80ed;
+  background-color: #3454d1;
   border-radius: 10px;
   border-style: none;
   box-shadow: none;
   box-sizing: border-box;
-  margin: 50px auto;
+  margin: 30px auto;
   color: #fff;
   cursor: pointer;
   display: block;

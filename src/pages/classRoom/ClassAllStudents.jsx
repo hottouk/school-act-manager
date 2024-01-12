@@ -11,65 +11,7 @@ import ExportAsExcel from "../../components/ExportAsExcel"
 //CSS
 import styled from "styled-components"
 
-const StyledContainer = styled.main`
-  margin: 15px 30px;
-`
-const StyledExcelDiv = styled.div`
-  display: flex;
-  justify-content: flex-end;
-`
-const StyledGirdContainer = styled.div`
-  display: grid;
-  grid-template-rows: 40px;
-  grid-auto-rows: minmax(100px, auto);
-  border: 1px solid black;
-`
-const StyledTitleRow = styled.div`
-  display: flex;
-  background-color: royalBlue; 
-  color: white;
-`
-const StyledContentRow = styled.div`
-  display: flex;
-`
-const StyledSmallDiv = styled.div`
-  flex-basis: 60px;
-  justify-content: center;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-`
-const StyledMidlDiv = styled.div`
-  flex-basis: 100px;
-  justify-content: center;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-`
-const StyledAcclDiv = styled.div`
-  flex-grow: 1;
-  justify-content: center;
-  padding: 0 5px;
-  width: 823px;
-  word-wrap: break-word;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-`
-const StyledNameInput = styled.input`
-  display: block;
-  width: 100px;
-  height: 50%;
-`
 
-const StyledTextArea = styled.textarea`
-  display: block;
-  width: 95%;
-  height: 85%;
-`
 const ClassAllStudents = () => {
   //1. 변수
   //경로 이동 props
@@ -105,10 +47,13 @@ const ClassAllStudents = () => {
 
   return (
     <StyledContainer>
-      <StyledExcelDiv><ExportAsExcel /></StyledExcelDiv>
+      <StyledXlDiv>
+        <p>※수정 및 다운로드는 PC에서만 가능</p>
+        <ExportAsExcel />
+      </StyledXlDiv>
       <StyledGirdContainer>
         <StyledTitleRow>
-          <StyledSmallDiv>연번</StyledSmallDiv>
+          <StyledIndexDiv>연번</StyledIndexDiv>
           <StyledMidlDiv>학번</StyledMidlDiv>
           <StyledMidlDiv>이름</StyledMidlDiv>
           <StyledAcclDiv>생기부</StyledAcclDiv>
@@ -126,7 +71,7 @@ const ClassAllStudents = () => {
             accRecord = record
           }
           return <StyledContentRow key={student.id}>
-            <StyledSmallDiv>{index + 1}</StyledSmallDiv> {/* 연번 */}
+            <StyledIndexDiv>{index + 1}</StyledIndexDiv> {/* 연번 */}
             <StyledMidlDiv>{studentNumber}</StyledMidlDiv> {/* 학번 */}
             <StyledMidlDiv>
               {isModifying
@@ -150,5 +95,97 @@ const ClassAllStudents = () => {
     </StyledContainer>
   )
 }
+const StyledContainer = styled.main`
+  margin: 15px 30px;
+  @media screen and (max-width: 767px){
+    margin: 0;
+  }
+`
+const StyledXlDiv = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  p {
+    display: none;
+    color: #3454d1;
+    font-weight: bold;
+    margin-right: 10px;
+    margin-bottom: 5px;
+    @media screen and (max-width: 767px){
+      display: inline-block;
+    }
+  }
+`
+const StyledGirdContainer = styled.div`
+  display: grid;
+  grid-template-rows: 40px;
+  grid-auto-rows: minmax(100px, auto);
+  border: 1px solid black;
+`
+const StyledTitleRow = styled.div`
+  display: flex;
+  background-color: #3454d1; 
+  color: white;
+`
+const StyledContentRow = styled.div`
+  display: flex;
+`
+const StyledIndexDiv = styled.div`
+  flex-basis: 60px;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
+  @media screen and (max-width: 767px){
+    display: none;
+  }
+`
+const StyledSmallDiv = styled.div`
+  flex-basis: 60px;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
+  @media screen and (max-width: 767px){
+    display: none;
+  }
+`
+const StyledMidlDiv = styled.div`
+  flex-basis: 100px;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
+  @media screen and (max-width: 767px){
+    flex-basis: 65px;
+  }
+`
+const StyledAcclDiv = styled.div`
+  flex-grow: 1;
+  justify-content: center;
+  padding: 0 5px;
+  width: 823px;
+  word-wrap: break-word;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
+  @media screen and (max-width: 767px){
+    width: 0;
+  }
+`
+const StyledNameInput = styled.input`
+  display: block;
+  width: 100px;
+  height: 50%;
+`
 
+const StyledTextArea = styled.textarea`
+  display: block;
+  width: 95%;
+  height: 85%;
+`
 export default ClassAllStudents

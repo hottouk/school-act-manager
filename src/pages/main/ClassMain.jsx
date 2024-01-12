@@ -30,29 +30,29 @@ const ClassMain = () => {
       <StyledBlueBackground>
         <StyledWrapper>
           <p className='bible'>너희는 먼저 그의 나라와 그의 의를 구하라. 그리하면 이 모든 것을 너희에게 더하시리라. 마태복음 6:33</p>
-          <h3>사용 가능 서비스(응 아직 다른건 안돼!)</h3>
+          <h3>사용 가능 서비스</h3>
           <div className='iconContainer'>
             <div className="itemContainer">
               <div className="iconBackground">
-                <i className='heart'/>
+                <i />
               </div>
               <p>생기부도우미</p>
             </div>
             <div className="itemContainer">
               <div className="iconBackground">
-                <i/>
+                <i />
               </div>
               <p>생기부도우미</p>
             </div>
             <div className="itemContainer">
               <div className="iconBackground">
-                <i/>
+                <i />
               </div>
               <p>생기부도우미</p>
             </div>
             <div className="itemContainer">
               <div className="iconBackground">
-                <i/>
+                <i />
               </div>
               <p>생기부도우미</p>
             </div>
@@ -64,27 +64,52 @@ const ClassMain = () => {
 }
 
 const StyledContainer = styled.div`
-  box-sizing: border
+  box-sizing: border-box;
 `
 const StyledWrapper = styled.div`
   max-width: 1200px;
   margin: auto;
+  @media screen and (max-width: 767px) {
+    width: 100%;
+  }
 `
 const StyledLandingBackground = styled.div`
-  background-image: linear-gradient(to top, #499add, #3454d1);
+  width: 100%;
   height: 550px;
   padding: 20px;
   color: #efefef;
-  h1{
+  background-image: linear-gradient(to top, #499add, #3454d1);
+  h1 {
     display: inline-block;
   }
-  img{
+  img {
     float: right;
     width: 400px;
     position: relative;
     right: 20px;
     bottom: 27px;
   }
+  @media screen and (max-width: 767px) {
+    height: 400px;
+    position: relative;
+    padding: 20px 20px 0 20px;
+    h1 {
+      font-size: 1.6em;
+    }
+    img {
+      float: none;
+      position: absolute;
+      right: 50%;
+      left: 50%;
+      bottom: 0;
+      margin: 20px 0 0;
+      width: 250px;
+      transform: translate(-50%, 0%);
+    }
+    p {
+      display: none;
+    }
+  } 
 `
 const StyledWhiteBackground = styled.div`
   background-color: #efefef;
@@ -96,20 +121,33 @@ const StyledWhiteBackground = styled.div`
     display: flex;
     justify-content: center;
   }
+  @media screen and (max-width: 767px) {
+    height: 35px;
+    span {
+      display: none;
+    }
+    h3 {
+      font-size: 20px;
+      top: 0;
+      display: block;
+      margin: 3px;
+      text-align: center;
+    }
+  }
 `
 const StyledBlueBackground = styled.div`
   background-color: #499add;
   height: 400px;
   color: #efefef;
   padding: 20px;
-  h3{
-    width: 800px;
-    margin: 10px auto;
-    text-align: center;
-  }
   p.bible {
     width: 400px;
     margin: auto;
+    text-align: center;
+  }
+  h3{
+    width: 800px;
+    margin: 10px auto;
     text-align: center;
   }
   .iconContainer {
@@ -143,25 +181,35 @@ const StyledBlueBackground = styled.div`
     width: var(--size);
     height: calc(var(--size) * 0.3);
   }
-  
-  i.heart:before,
-  i.heart:after {
-    position: absolute;
-    content: "";
-    left: calc(var(--size) * 0.55);
-    top: 0;
-    width: calc(var(--size) * 0.55);
-    height: calc(var(--size) * 0.85);
-    background: #333;
-    border-radius: calc(var(--size) * 0.55) calc(var(--size) * 0.55) 0 0;
-    transform: rotate(-45deg);
-    transform-origin: 0 100%;
-  }
-  
-  i.heart:after {
-    left: 0;
-    transform: rotate(45deg);
-    transform-origin: 100% 100%;
+  @media screen and (max-width: 767px) {
+    p.bible {
+      width: 100%;
+      margin: auto;
+      font-size: 14px;
+      text-align: center;
+    }
+    h3{
+      font-size: 1.2em;
+      width: 100%;
+      margin: 10px auto;
+      text-align: center;
+    }
+    .iconContainer {
+      flex-wrap: wrap;
+      width: 232px;
+      margin: 0 auto;
+    }
+    .itemContainer{
+      margin: 10px;
+      p {
+        margin: 10px 0 0;
+      }
+    }
+    .iconBackground {
+      width: 70px;
+      height: 70px;
+      border-radius: 35px;
+    }
   }
 `
 export default ClassMain

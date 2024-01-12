@@ -18,6 +18,7 @@ import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassRoomMakeForm from './pages/classSetting/ClassRoomMakeForm';
 import { useSelector } from 'react-redux';
 import SignUpWithSNS from './pages/signup/SignUpWithSNS';
+import { Helmet } from "react-helmet";
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -26,6 +27,9 @@ function App() {
 
   return (
     <>
+      <Helmet>
+        <title>생기부 입력 도우미</title>
+      </Helmet>
       <BrowserRouter>
         <Nav />
         <Routes>
@@ -39,8 +43,8 @@ function App() {
           {/* 클래스 관리 */}
           <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
           <Route path='/classrooms/:id' element={<ClassRoomDetails />} />
-          <Route path='/classrooms/:id/allStudents' element={<ClassAllStudents />} />
-          <Route path='/classrooms/:id/:studentId' element={<StudentDetail />} />
+          <Route path='/classrooms/:id/allStudents' element={uid ? <ClassAllStudents /> : <Navigate replace={true} to='/login' />} />
+          <Route path='/classrooms/:id/:studentId' element={uid ? <StudentDetail /> : <Navigate replace={true} to='/login' />} />
           {/* //클래스 만들기 */}
           <Route path="/classrooms_setting" element={uid ? <ClassSortSelection /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms_setting_details" element={uid ? <ClassRoomMakeForm /> : <Navigate replace={true} to='/login' />} />

@@ -48,7 +48,15 @@ const StyledScoreWrapper = styled.div`
   input {
     width: 72px;
     height: 30px;
-    margin-top: 7px;
+    margin-top: 5px;
+  }
+  @media screen and (max-width: 767px){
+    margin: 35px auto;
+    input {
+      width: 57px;
+      height: 40px;
+      margin-top: 5px;
+    }
   }
 `
 export default ScoreWrapper

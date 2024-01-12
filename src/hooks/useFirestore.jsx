@@ -119,7 +119,7 @@ const useFirestore = (collectionName) => {
       updateDoc(studentRef, { ...newInfo, modifiedTime }) //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
     } catch (error) {
       dispatch({ type: 'error', payload: error.message }) //상태 전달
-      console.log(error)
+      window.alert.log(error)
     }
   }
 

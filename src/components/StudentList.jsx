@@ -11,65 +11,11 @@ import useGetLevel from '../hooks/useGetLevel'
 import AddNewStudentModal from './Modal/AddNewStudentModal'
 import { useState } from 'react'
 
-//스타일
-const StyledContainer = styled.div`
-  box-sizing: border-box;  
-  width: 100%;
-  padding: 5px;
-`
-const Styledh4 = styled.h4`
-  display: flex;
-  justify-content: center;
-  margin: 10px auto;
-`
-const StyledListContainer = styled.ul`
-  display: flex;
-  flex-wrap: wrap;
-  list-style: none;
-`
-const StyledListItem = styled.li`
-  width: 80px;
-  margin: 10px;
-  img {
-    width: 100%;
-    height: 80px;
-    transition: transform 0.1s;
-    border: black 1px solid;
-    border-radius: 15px;
-    box-sizing: border-box;
-    object-fit: cover;
-    &:hover {
-      background-color: orange;
-      transform: scale(1.3);
-      z-index: 1;
-    }
-  }
-  p {
-    text-align: center;
-  }
-  p.student_number {
-    margin-bottom: 0px;
-  } 
-`
-const StyledPlusImg = styled.img`
-  width: 100%;
-  height: 80px;
-  transition: transform 0.1s;
-  border-radius: 15px;
-  box-sizing: border-box;
-  object-fit: cover;
-  &:hover {
-    background-color: orange;
-    transform: scale(1.3);
-    z-index: 1;
-  }
-  opacity: 0.8;
-`
+
 const StudentList = ({ studentList }) => {
   const navigate = useNavigate()
-  const classId = useParams().id //반 id
+  const classId = useParams() //반 id
   const { getExpAndLevelByActList } = useGetLevel()
-
   //1. 변수
   //대화창 내부변수
   const [modalShow, setModalShow] = useState(false)
@@ -77,7 +23,7 @@ const StudentList = ({ studentList }) => {
   //함수
   const handleImgClick = (student) => {
     const studentId = student.id //클릭한 학생 id
-    navigate(`/classrooms/${classId}/${studentId}`, { state: student })
+    navigate(`/classrooms/${classId.id}/${studentId}`, { state: student })
   }
 
   return (
@@ -116,5 +62,71 @@ const StudentList = ({ studentList }) => {
     </StyledContainer>
   )
 }
-
+const StyledContainer = styled.div`
+  box-sizing: border-box;  
+  width: 100%;
+  padding: 5px;
+`
+const Styledh4 = styled.h4`
+  display: flex;
+  justify-content: center;
+  margin: 10px auto;
+`
+const StyledListContainer = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  @media screen and (max-width: 767px){
+    padding: 0;
+  }
+`
+const StyledListItem = styled.li`
+  width: 80px;
+  margin: 10px;
+  img {
+    width: 100%;
+    height: 80px;
+    transition: transform 0.1s;
+    border: black 1px solid;
+    border-radius: 15px;
+    box-sizing: border-box;
+    object-fit: cover;
+    &:hover {
+      background-color: orange;
+      transform: scale(1.3);
+      z-index: 1;
+    }
+  }
+  p {
+    text-align: center;
+  }
+  p.student_number {
+    margin-bottom: 0px;
+  }
+  @media screen and (max-width: 767px){
+    width: 70px;
+    margin: 8px;
+    img {
+      height: 70px;
+    }
+    p {
+      font-size: 14px;
+      margin: 0;
+    }
+  }
+`
+const StyledPlusImg = styled.img`
+  width: 100%;
+  height: 80px;
+  transition: transform 0.1s;
+  border-radius: 15px;
+  box-sizing: border-box;
+  object-fit: cover;
+  &:hover {
+    background-color: orange;
+    transform: scale(1.3);
+    z-index: 1;
+  }
+  opacity: 0.8;
+`
 export default StudentList

@@ -17,180 +17,6 @@ import green1 from "../../image/myPet/green_pet1.png"
 import green2 from "../../image/myPet/green_pet2.png"
 import x_btn from "../../image/icon/x_btn.png"
 
-//스타일
-const StyledContainer = styled.div`
-  box-sizing: border-box;
-  width: 80%;
-  margin: 0 auto;
-  margin-bottom: 50px;
-`
-const StyledStudentInfoPannel = styled.div`
-  height: 1000px;
-  padding: 15px;
-  margin: 15px auto;
-  margin-top: 35px;
-  color: black;
-  background-color: royalblue;
-  border: 1px solid black;
-  border-radius: 20px;
-`
-const StyledTopPannel = styled.div`
-  position: relative;
-  height: 30%;
-  padding: 15px;
-  background-color: white;
-  border: 1px solid black;
-  border-radius: 15px;
-`
-const StyledBotPannel = styled.div`
-  position: relative;
-  height: 68%;
-  margin-top: 15px;
-  padding: 15px;
-  background-color: white;
-  border: 1px solid black;
-  border-radius: 15px;
-`
-const StyledPetImg = styled.img`
-  display: inline-block;
-  width: 120px;
-  height: 120px;
-  border: 1px solid black;
-`
-const StyledTopRightInfo = styled.div`
-  position: absolute;
-  width: 75%;
-  top: 0px;
-  bottom: 0px;
-  right: 10px;
-  margin: 10px auto;
-  padding: 15px;
-  border: 1px solid black;
-  border-radius: 10px;
-`
-const StyledP = styled.div`
-  width: 65%;
-`
-const StyeldChartDiv = styled.div`
-  position: absolute;
-  top: 0px;
-  bottom: 0px;
-  width: 25%;
-  right: 10px;
-  margin: 10px auto;
-  padding: 15px;
-  border-left: 1px solid black;
-`
-const StyledBotLeftInfo = styled.div`
-  position: absolute;
-  width: 20%;
-  top: 0px;
-  bottom: 0px;
-  left: 10px;
-  margin: 10px auto;
-  padding: 15px;
-  border: 1px solid black;
-  border-radius: 10px;
-  overflow-y: scroll
-`
-const StyledBotRightInfo = styled.div`
-  position: absolute;
-  width: 75%;
-  top: 0px;
-  bottom: 0px;
-  right: 10px;
-  margin: 10px auto;
-  padding: 15px;
-  border: 1px solid black;
-  border-radius: 10px;
-  overflow-y: scroll
-`
-const StyeldBtnDiv = styled.div`
-  display: flex;
-  justify-content: space-between;
-`
-const StyledBtn = styled.button`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 25px;
-  width: 250px;
-  color: royalBlue;
-  background-color: transparent;
-  border-radius: 15px;
-  border: 2px solid royalBlue;
-  padding: 25px;
-`
-const StyledTitleUl = styled.ul`
-  padding: 0;
-  p {
-    margin-bottom: 2px;
-  }
-  li {
-    margin: 8px auto;
-    border: 1px solid black;
-    border-radius: 10px;
-    height: 89px;
-    padding: 2px;
-  }
-`
-const StyledRecordUl = styled.ul`
-  li {
-    display: flex;
-    border: 1px solid whitesmoke;
-  }
-  img {
-    width: 30px;
-    height: 30px;
-  }
-  textarea {
-    display: block;
-    width: 95%;
-    height: 80px;
-    padding: 5px;
-    margin: 8px auto;
-  }
-`
-const StyledArrowRightBtn = styled.button` 
-  float: right;
-  position: relative;
-  bottom: 500px;
-  left: 40px;
-  width: 25px;
-  height: 25px;
-  border: 10px solid #333;
-  border-left: 0;
-  border-top: 0;
-  transform: rotate(315deg);
-  opacity: 0.8;
-  cursor: pointer;
-  &:hover {
-    border-color: orange;
-    z-index: 1;
-    transform: rotate(315deg) scale(1.3);
-  }
-  opacity: 0.8;
-`
-const StyledArrowLeftBtn = styled.button` 
-  float: left;
-  position: relative;
-  top: 500px;
-  right: 40px;
-  width: 25px;
-  height: 25px;
-  border: 10px solid #333;
-  border-left: 0;
-  border-top: 0;
-  transform: rotate(135deg);
-  cursor: pointer;
-  &:hover {
-    border-color: orange;
-    transform: rotate(135deg) scale(1.3);
-    z-index: 1;
-  }
-  opacity: 0.8;
-`
-
 const StudentDetail = () => {
   //1.변수
   //url 관련
@@ -213,6 +39,7 @@ const StudentDetail = () => {
   const [_studentNumber, setStudentNumber] = useState(null)
   const [_writtenName, setWrittenName] = useState('미등록')
   const [_actList, setActList] = useState(null)
+  const [_newActList, setNewActList] = useState(null)
   if (actList) { //기록된 활동이 있다면
     expAndLevel = getExpAndLevelByActList(actList)
     abilityScores = getAbilityScores(actList)
@@ -250,8 +77,8 @@ const StudentDetail = () => {
     if ((_actList.findIndex(({ id }) => { return id === newId })) === -1) {   //기존 활동과 중복된 활동이 아닐 경우에만
       let newAct = allActivityList.find(({ id }) => { return id === newId }) //전체 활동에서 새로운 클릭한 활동과 id가 일치하는 활동을 찾는다.
       let newUserActList = [..._actList.slice(undefined, index), newAct, ..._actList.slice(index + 1)]
-      setActList(newUserActList)                                  //기존의 actList에 새로이 클릭된 활동을 집어 넣는다.
-      textAreaRef.current[index].value = _actList[index].record  //새로운 활동의 record를 창에 띄운다.
+      setNewActList(newUserActList)
+      textAreaRef.current[index].value = newUserActList[index].record  //새로운 활동의 record를 창에 띄운다.
     } else {
       window.alert("중복된 활동으로는 변경할 수 없습니다.")
     }
@@ -274,10 +101,16 @@ const StudentDetail = () => {
       case "save_btn":
         if (window.confirm('학생정보를 이대로 저장하시겠습니까?')) {
           let accRecord = ""
-          if (_actList) { //누가기록 업데이트
+          if (_newActList) { //누가기록 업데이트
+            setActList(_newActList)
+            accRecord = _newActList.reduce((acc, cur) => { return acc.concat(" ", String(cur.record)) }, "")
+            updateStudent({ writtenName: _writtenName, actList: _newActList, accRecord }, params.id, params.studentId); //데이터 통신
+          } else {
             accRecord = _actList.reduce((acc, cur) => { return acc.concat(" ", String(cur.record)) }, "")
+            updateStudent({ writtenName: _writtenName, actList: _actList, accRecord }, params.id, params.studentId); //데이터 통신
           }
-          updateStudent({ writtenName: _writtenName, actList: _actList, accRecord }, params.id, params.studentId); //데이터 통신
+        } else {
+          setNewActList(null)
         }
         setIsEditable(!isEditable)
         break;
@@ -285,7 +118,6 @@ const StudentDetail = () => {
         let newId = act.id;
         let actIndex = _actList.findIndex(({ id }) => { return id === newId });
         _actList.splice(actIndex, 1)
-        console.log(_actList)
         textAreaRef.current[index].value = ''
         break;
       case "rightArwBtn":
@@ -326,7 +158,7 @@ const StudentDetail = () => {
               : <input id='input_name' type="text" defaultValue={_writtenName} onChange={handleInputOnChange} />
             }</p>
             <p>레벨: {expAndLevel.level}</p>
-            <StyledP>경험치: {expAndLevel.exp}<AnimatedProgressBar exp={expAndLevel.exp} level={expAndLevel.level} /></StyledP>
+            <StyledProgressDiv>경험치: {expAndLevel.exp}<AnimatedProgressBar exp={expAndLevel.exp} level={expAndLevel.level} /></StyledProgressDiv>
           </StyledTopRightInfo>
           <StyeldChartDiv>
             <RadarChart abilityScores={abilityScores} />
@@ -375,7 +207,7 @@ const StudentDetail = () => {
       </StyledStudentInfoPannel>
       <StyledArrowRightBtn id="rightArwBtn" onClick={handleBtnClick} />
       <StyeldBtnDiv>
-        <StyledBtn id='back_btn' onClick={handleBtnClick}>목록으로</StyledBtn>
+        <StyledBtn id='back_btn' onClick={handleBtnClick}>목록</StyledBtn>
         {!isEditable
           ? <StyledBtn id='edit_btn' onClick={handleBtnClick}>수정</StyledBtn>
           : <StyledBtn id='save_btn' onClick={handleBtnClick}>저장</StyledBtn>
@@ -385,5 +217,232 @@ const StudentDetail = () => {
     </StyledContainer>
   )
 }
+const StyledContainer = styled.div`
+  box-sizing: border-box;
+  width: 80%;
+  margin: 0 auto;
+  margin-bottom: 50px;
+  @media screen and (max-width: 767px){
+    width: 100%;
+    height: 1200px;
+    margin: 0;
+  }
+`
+const StyledStudentInfoPannel = styled.div`
+  height: 1000px;
+  padding: 15px;
+  margin: 15px auto;
+  margin-top: 35px;
+  color: black;
+  background-color: royalblue;
+  border: 1px solid black;
+  border-radius: 20px;
+  @media screen and (max-width: 767px){
+    margin-top: 0;
+    border: none;
+    border-radius: 0;
+  }
+`
+const StyledTopPannel = styled.div`
+  position: relative;
+  height: 30%;
+  padding: 15px;
+  background-color: #efefef;
+  border: 1px solid black;
+  border-radius: 15px;
+`
 
+const StyledPetImg = styled.img`
+  display: inline-block;
+  width: 120px;
+  height: 120px;
+  border: 1px solid black;
+  border-radius: 60px;
+  @media screen and (max-width: 767px){
+    width: 80px;
+    height: 80px;
+    border-radius: 40px;
+  }
+`
+const StyledTopRightInfo = styled.div`
+  position: absolute;
+  width: 75%;
+  top: 0px;
+  bottom: 0px;
+  right: 10px;
+  margin: 10px auto;
+  padding: 15px;
+  border: 1px solid black;
+  border-radius: 10px;
+   @media screen and (max-width: 767px){
+    width: 100%;
+    height: 64%;
+    top: 95px;
+    bottom: 0;
+    right: 0;
+    border: none;
+    border-radius: 0;
+    p { 
+      margin-bottom: 8px;
+    }
+  }
+`
+const StyledProgressDiv = styled.div`
+  width: 65%;
+`
+const StyeldChartDiv = styled.div`
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  width: 25%;
+  right: 10px;
+  margin: 10px auto;
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: 1px solid black;
+  @media screen and (max-width: 767px){
+    width: 60%;
+    align-items: flex-start;
+    border-left: none;
+    canvas { 
+      border: 1px solid black;
+      border-radius: 15px;
+    }
+  }
+`
+const StyledBotPannel = styled.div`
+  position: relative;
+  height: 68%;
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #efefef;
+  border: 1px solid black;
+  border-radius: 15px;
+  @media screen and (max-width: 767px){
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+`
+const StyledBotLeftInfo = styled.div`
+  position: absolute;
+  width: 20%;
+  top: 0px;
+  bottom: 0px;
+  left: 10px;
+  margin: 10px auto;
+  padding: 15px;
+  border: 1px solid black;
+  border-radius: 10px;
+  overflow-y: scroll
+`
+const StyledBotRightInfo = styled.div`
+  position: absolute;
+  width: 75%;
+  top: 0px;
+  bottom: 0px;
+  right: 10px;
+  margin: 10px auto;
+  padding: 15px;
+  border: 1px solid black;
+  border-radius: 10px;
+  overflow-y: scroll
+`
+const StyledTitleUl = styled.ul`
+  padding: 0;
+  p {
+    margin-bottom: 2px;
+  }
+  li {
+    margin: 8px auto;
+    border: 1px solid black;
+    border-radius: 10px;
+    height: 89px;
+    padding: 2px;
+  }
+`
+const StyledRecordUl = styled.ul`
+  li {
+    display: flex;
+    border: 1px solid whitesmoke;
+  }
+  img {
+    width: 30px;
+    height: 30px;
+  }
+  textarea {
+    display: block;
+    width: 95%;
+    height: 80px;
+    padding: 5px;
+    margin: 8px auto;
+  }
+`
+const StyeldBtnDiv = styled.div`
+  display: flex;
+  justify-content: space-between;
+`
+const StyledBtn = styled.button`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 25px;
+  width: 250px;
+  color: royalBlue;
+  background-color: transparent;
+  border-radius: 15px;
+  border: 2px solid royalBlue;
+  padding: 25px;
+  @media screen and (max-width: 767px){
+    width: 110px;
+    height: 40px;
+  }
+`
+const StyledArrowRightBtn = styled.button` 
+  float: right;
+  position: relative;
+  bottom: 500px;
+  left: 40px;
+  width: 25px;
+  height: 25px;
+  border: 10px solid #333;
+  border-left: 0;
+  border-top: 0;
+  transform: rotate(315deg);
+  opacity: 0.8;
+  cursor: pointer;
+  &:hover {
+    border-color: orange;
+    z-index: 1;
+    transform: rotate(315deg) scale(1.3);
+  }
+  opacity: 0.8;
+  @media screen and (max-width: 767px){
+    display: none;
+  }
+`
+const StyledArrowLeftBtn = styled.button` 
+  float: left;
+  position: relative;
+  top: 500px;
+  right: 40px;
+  width: 25px;
+  height: 25px;
+  border: 10px solid #333;
+  border-left: 0;
+  border-top: 0;
+  transform: rotate(135deg);
+  cursor: pointer;
+  &:hover {
+    border-color: orange;
+    transform: rotate(135deg) scale(1.3);
+    z-index: 1;
+  }
+  opacity: 0.8;
+  @media screen and (max-width: 767px){
+    display: none;
+  }
+`
 export default StudentDetail

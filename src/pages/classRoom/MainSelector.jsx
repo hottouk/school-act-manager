@@ -10,46 +10,6 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 //CSS styles
 import styled from "styled-components"
 
-//스타일
-const StyledContainer = styled.div`
-  width: 100%;
-  min-height: 350px;
-  padding: 5px;
-`
-const StyledTitle = styled.h4`
-  display: flex;
-  justify-content: center;
-  margin: 10px auto;
-`
-const StyledSelectorDiv = styled.div`
-  width: 80%;
-  height: 300px;
-  margin: 0 auto;
-  padding : 10px;
-`
-const StyledSelector = styled.div`
-  width: 50%;
-  margin: 0 auto;
-  margin-top: 35px;
-`
-const StyledBtnDiv = styled.div`
-  position: relative;
-  bottom: 40px;
-  width: 80%;
-  height: 20%;
-  margin: 0 auto;
-`
-const StyledBtn = styled.button`
-  display: block;
-  margin: 0 auto;
-  width: 240px;
-  height: 50px;
-  background-color: #6495ed;
-  border: none;
-  border-radius: 5px;
-  color: white;
-  padding: 0.25em 1em;
-`
 
 const MainSelector = ({ studentList, activitiyList, classId }) => {
   //1. 변수
@@ -193,5 +153,51 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
     </>
   )
 }
-
+const StyledContainer = styled.div`
+  width: 100%;
+  min-height: 350px;
+  padding: 5px;
+`
+const StyledTitle = styled.h4`
+  display: flex;
+  justify-content: center;
+  margin: 10px auto;
+`
+const StyledSelectorDiv = styled.div`
+  width: 80%;
+  height: 300px;
+  margin: 0 auto;
+  padding : 10px;
+  @media screen and (max-width: 767px){
+    width: 100%;
+    margin: 0;
+  }
+`
+const StyledSelector = styled.div`
+  width: 50%;
+  margin: 0 auto;
+  margin-top: 35px;
+  @media screen and (max-width: 767px){
+    width: 80%;
+    margin-top: 35px;
+  }
+`
+const StyledBtnDiv = styled.div`
+  position: relative;
+  bottom: 40px;
+  width: 80%;
+  height: 20%;
+  margin: 0 auto;
+`
+const StyledBtn = styled.button`
+  display: block;
+  margin: 0 auto;
+  width: 240px;
+  height: 50px;
+  background-color: #6495ed;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  padding: 0.25em 1em;
+`
 export default MainSelector

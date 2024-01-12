@@ -2,6 +2,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit'
 //변수 파일
 import studentSelected from './studentSelectedSlice'
 import activitySelected from './activitySelectedSlice'
+import classSelected from './classSelectedSlice';
 import allStudents from './allStudentsSlice'
 import allActivities from './allActivitiesSlice';
 import user from './userSlice';
@@ -10,11 +11,11 @@ import user from './userSlice';
 import { persistReducer } from 'redux-persist';
 import storageSession from 'redux-persist/lib/storage/session'
 
-
 const reducers = combineReducers(
   {
     studentSelected: studentSelected.reducer, //선택 학생
     activitySelected: activitySelected.reducer, //선택 활동
+    classSelected: classSelected.reducer, //선택 반
     allStudents: allStudents.reducer, //반 전체 학생
     allActivities: allActivities.reducer, //전체 활동
     user: user.reducer
@@ -24,7 +25,7 @@ const reducers = combineReducers(
 const persistConfig = {
   key: "root",
   storage: storageSession,  // 세션Storage에 저장합니다. 브라우져 종료하면 재로그인이 필요함.
-  whiteList: ['allStudents', 'user'], //계속 저장해둘 값
+  whiteList: ['allStudents', 'user', 'classSelected'], //계속 저장해둘 값
   blacksList: ['studentSelected', 'activitySelected'], //휘발성 값
 };
 
