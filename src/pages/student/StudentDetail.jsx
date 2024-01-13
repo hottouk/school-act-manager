@@ -30,7 +30,7 @@ const StudentDetail = () => {
   //hooks
   const { getAbilityScores, getExpAndLevelByActList } = useGetLevel()
   //편집 모드 
-  const [isEditable, setIsEditable] = useState(false)
+  const [isModifiying, setIsModifying] = useState(false)
   const { deleteStudent, updateStudent } = useFirestore('classRooms')
   //학생 관련 정보
   const [nthStudent, setNthStudent] = useState(null)
@@ -40,6 +40,7 @@ const StudentDetail = () => {
   const [_writtenName, setWrittenName] = useState('미등록')
   const [_actList, setActList] = useState(null)
   const [_newActList, setNewActList] = useState(null)
+  const [deletedIndex, setDeletedIndex] = useState([])
   if (actList) { //기록된 활동이 있다면
     expAndLevel = getExpAndLevelByActList(actList)
     abilityScores = getAbilityScores(actList)
@@ -47,6 +48,7 @@ const StudentDetail = () => {
   //객체 접근
   const textAreaRef = useRef({})
   const selectRef = useRef({})
+  const divRef = useRef({})
 
   //2. UseEffect
   useEffect(() => {
@@ -90,7 +92,7 @@ const StudentDetail = () => {
         navigate(`/classrooms/${params.id}`)
         break;
       case "edit_btn":
-        setIsEditable(!isEditable)
+        setIsModifying(!isModifiying)
         break;
       case "delete_btn":
         if (window.confirm('학생을 삭제하시겠습니까? 삭제한 학생은 복구할 수 없습니다.')) {
@@ -101,24 +103,34 @@ const StudentDetail = () => {
       case "save_btn":
         if (window.confirm('학생정보를 이대로 저장하시겠습니까?')) {
           let accRecord = ""
-          if (_newActList) { //누가기록 업데이트
+          if (_newActList) {
             setActList(_newActList)
-            accRecord = _newActList.reduce((acc, cur) => { return acc.concat(" ", String(cur.record)) }, "")
+            accRecord = _newActList.reduce((acc, cur) => { return acc.concat(" ", String(cur.record)) }, "")       //누가기록 업데이트
             updateStudent({ writtenName: _writtenName, actList: _newActList, accRecord }, params.id, params.studentId); //데이터 통신
           } else {
             accRecord = _actList.reduce((acc, cur) => { return acc.concat(" ", String(cur.record)) }, "")
             updateStudent({ writtenName: _writtenName, actList: _actList, accRecord }, params.id, params.studentId); //데이터 통신
           }
         } else {
+          if (deletedIndex) {
+            console.log(deletedIndex)
+            deletedIndex.map((index) => { 
+              divRef.current[index].style = 'display: block;'
+            })
+          }
           setNewActList(null)
+          setDeletedIndex([])
         }
-        setIsEditable(!isEditable)
+        setIsModifying(!isModifiying)
         break;
       case "delete_act_btn":
-        let newId = act.id;
-        let actIndex = _actList.findIndex(({ id }) => { return id === newId });
-        _actList.splice(actIndex, 1)
+        let thisActId = act.id;
+        let actIndex = _actList.findIndex(({ id }) => { return id === thisActId });
+        deletedIndex.push(actIndex)
+        let leftList = _actList.filter((_, index) => { return !deletedIndex.includes(index) })
+        setNewActList(leftList)
         textAreaRef.current[index].value = ''
+        divRef.current[index].style = 'display: none;'
         break;
       case "rightArwBtn":
         if (nthStudent === allStudentList.length - 1) {
@@ -153,7 +165,7 @@ const StudentDetail = () => {
           {expAndLevel.level === 3 && < StyledPetImg src={green2} alt="레벨2풀" />}
           <StyledTopRightInfo>
             <p>학번: {_studentNumber}</p>
-            <p>이름: {!isEditable
+            <p>이름: {!isModifiying
               ? _writtenName ? _writtenName : '미등록'
               : <input id='input_name' type="text" defaultValue={_writtenName} onChange={handleInputOnChange} />
             }</p>
@@ -165,50 +177,47 @@ const StudentDetail = () => {
           </StyeldChartDiv>
         </StyledTopPannel>
         <StyledBotPannel>
-          <StyledBotLeftInfo>
-            {!isEditable
-              ? !_actList || _actList.length === 0 ? <div>활동이 없어유ㅠㅠ</div> : _actList.map((act) => { return <p key={act.id}>{act.title}</p> })
-              : !_actList ? <div>활동이 없어유ㅠㅠ</div> :
-                <StyledTitleUl>
-                  {_actList.map((act, index) => {
-                    return <li key={act.id}>
+          <StyledBotGridInfo>
+            <StyledTitleRow>
+              <StyledMidlDiv>활동</StyledMidlDiv>
+              <StyledAcclDiv style={{ justifyContent: "center" }}>생기부</StyledAcclDiv>
+            </StyledTitleRow>
+            {!_actList || _actList.length === 0 ? <div>활동이 없어유ㅠㅠ</div>
+              : _actList.map((act, index) => {
+                return <StyledContentRow key={act.id}>
+                  <StyledMidlDiv>
+                    <div ref={(element) => { return divRef.current[index] = element }} className='title_change_div'>
                       <p>{act.title}</p>
-                      <Select
-                        ref={(element) => { return selectRef.current[index] = element }}
-                        options={allActivityList.map((activity) => { return { label: activity.title, value: activity.id } })}
-                        onChange={(event) => { handleSelectOnchange(event, index) }} />
-                    </li>
-                  })}
-                </StyledTitleUl>
-            }
-          </StyledBotLeftInfo>
-          <StyledBotRightInfo>
-            {!isEditable
-              ? !_actList ? <div>기록된 활동이 없습니다.</div> :
-                _actList.map((act) => {
-                  return <p key={act.id}>{act.record}</p>
-                })
-              : !_actList ? <div>기록된 활동이 없습니다.</div> :
-                <StyledRecordUl>
-                  {_actList.map((act, index) => {
-                    return <li key={act.id}>
+                      {isModifiying &&
+                        <Select
+                          ref={(element) => { return selectRef.current[index] = element }}
+                          options={allActivityList.map((activity) => { return { label: activity.title, value: activity.id } })}
+                          onChange={(event) => { handleSelectOnchange(event, index) }} />}
+                    </div>
+                  </StyledMidlDiv>
+                  <StyledAcclDiv>
+                    {!isModifiying && <span>{act.record}</span>}
+                    {isModifiying && <>
                       <textarea
                         defaultValue={act.record}
                         ref={(element) => { return textAreaRef.current[index] = element }}
                         disabled>
                       </textarea>
-                      <img src={x_btn} id='delete_act_btn' alt="삭제" onClick={(event) => { return handleBtnClick(event, act, index) }} />
-                    </li>
-                  })}
-                </StyledRecordUl>
+                      <img src={x_btn} id='delete_act_btn' alt="삭제x" onClick={(event) => { return handleBtnClick(event, act, index) }} />
+                    </>
+                    }
+                  </StyledAcclDiv>
+
+                </StyledContentRow>
+              })
             }
-          </StyledBotRightInfo>
+          </StyledBotGridInfo>
         </StyledBotPannel>
       </StyledStudentInfoPannel>
       <StyledArrowRightBtn id="rightArwBtn" onClick={handleBtnClick} />
       <StyeldBtnDiv>
         <StyledBtn id='back_btn' onClick={handleBtnClick}>목록</StyledBtn>
-        {!isEditable
+        {!isModifiying
           ? <StyledBtn id='edit_btn' onClick={handleBtnClick}>수정</StyledBtn>
           : <StyledBtn id='save_btn' onClick={handleBtnClick}>저장</StyledBtn>
         }
@@ -285,6 +294,9 @@ const StyledTopRightInfo = styled.div`
     p { 
       margin-bottom: 8px;
     }
+    p input {
+      width: 25%
+    }
   }
 `
 const StyledProgressDiv = styled.div`
@@ -326,58 +338,70 @@ const StyledBotPannel = styled.div`
     flex-direction: column;
   }
 `
-const StyledBotLeftInfo = styled.div`
-  position: absolute;
-  width: 20%;
+const StyledBotGridInfo = styled.div`
+position: absolute;
+  width: 98%;
   top: 0px;
   bottom: 0px;
-  left: 10px;
+  left: 10px;  
   margin: 10px auto;
-  padding: 15px;
   border: 1px solid black;
   border-radius: 10px;
+display: grid;
+  grid-template-rows: 40px;
+  grid-auto-rows: minmax(5px, 100px);  
   overflow-y: scroll
 `
-const StyledBotRightInfo = styled.div`
-  position: absolute;
-  width: 75%;
-  top: 0px;
-  bottom: 0px;
-  right: 10px;
-  margin: 10px auto;
-  padding: 15px;
-  border: 1px solid black;
-  border-radius: 10px;
-  overflow-y: scroll
+const StyledTitleRow = styled.div`
+  display: flex;
+  background-color: #3454d1; 
+  color: white;
 `
-const StyledTitleUl = styled.ul`
-  padding: 0;
-  p {
-    margin-bottom: 2px;
-  }
-  li {
-    margin: 8px auto;
-    border: 1px solid black;
-    border-radius: 10px;
-    height: 89px;
-    padding: 2px;
-  }
-`
-const StyledRecordUl = styled.ul`
-  li {
-    display: flex;
-    border: 1px solid whitesmoke;
-  }
+const StyledContentRow = styled.div`
+  display: flex;
+  background-color: ${(props) => props.color};
   img {
     width: 30px;
     height: 30px;
+    cursor: pointer;
+    margin: auto;
   }
+`
+const StyledMidlDiv = styled.div`
+  flex-shrink: 0;
+  flex-basis: 130px;
+display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
+  text-align: center;
+  p {
+    margin: 0;
+  }
+  @media screen and (max-width: 767px){
+    flex-basis: 65px;
+  }
+`
+const StyledAcclDiv = styled.div`
+  flex-grow: 1;
+  justify-content: center;
+  padding: 0 5px;
+  word-wrap: break-word;
+display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
   textarea {
-    display: block;
     width: 95%;
-    height: 80px;
+    height: 100%;
     padding: 5px;
-    margin: 8px auto;
+  }
+  overflow-y: scroll;
+  
+  @media screen and (max-width: 767px){
+    width: 0;
   }
 `
 const StyeldBtnDiv = styled.div`
