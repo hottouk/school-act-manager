@@ -16,7 +16,7 @@ const ScoreWrapper = (props) => {
             value={props.careerScore} onChange={props.handleChange}></input>
         </div>
         <div>
-          <label htmlFor="act_sincerity">성실성</label>
+          <label htmlFor="act_sincerity">학업성실성</label>
           <input id="act_sincerity" type="number" min="0" max="8"
             value={props.sincerityScore} onChange={props.handleChange}></input>
         </div>
@@ -55,6 +55,9 @@ const StyledScoreWrapper = styled.div`
     width: 72px;
     height: 30px;
     margin-top: 5px;
+  }
+  label {
+    font-size: 14px;
   }
   @media screen and (max-width: 767px){
     margin: 35px auto;

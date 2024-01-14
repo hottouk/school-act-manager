@@ -122,11 +122,11 @@ const StyledContainer = styled.main`
 const StyeldHeader = styled.header`
   margin-top: 25px;
   padding: 25px;
-  border-left: 12px #6495ed double;
+  border-left: 12px #3454d1 double;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
   @media screen and (max-width: 767px){
     margin-top: 0;
-    border-top: 12px #6495ed double;
+    border-top: 12px #3454d1 double;
     border-left: none;
     box-shadow: none;
   }
@@ -134,7 +134,7 @@ const StyeldHeader = styled.header`
 const StyledMain = styled.main`
   padding: 5px;
   margin-top: 50px;
-  border-left: 12px #6495ed double;
+  border-left: 12px #3454d1 double;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
   h4 {
     display: flex;
@@ -144,7 +144,7 @@ const StyledMain = styled.main`
   @media screen and (max-width: 767px){
     margin-top: 0;
     border-left: none;
-    border-top: 12px #6495ed double;
+    border-top: 12px #3454d1 double;
     box-shadow: none;
   }
 `
@@ -157,7 +157,7 @@ const StyledMoveBtn = styled.button`
   margin: 50px auto;
   width: 240px;
   height: 50px;
-  background-color: #6495ed;
+  background-color: #3454d1;
   border: none;
   border-radius: 5px;
   color: white;

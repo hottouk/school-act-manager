@@ -1,5 +1,10 @@
-//페이지 이동
+//라이브러리
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+//컴포넌트
+import AddNewStudentModal from './Modal/AddNewStudentModal'
+//hooks
+import useGetLevel from '../hooks/useGetLevel'
 //이미지
 import egg from "../image/myPet/egg.png"
 import green1 from "../image/myPet/green_pet1.png"
@@ -7,10 +12,6 @@ import green2 from "../image/myPet/green_pet2.png"
 import plus from "../image/icon/plus.png"
 //CSS
 import styled from "styled-components"
-import useGetLevel from '../hooks/useGetLevel'
-import AddNewStudentModal from './Modal/AddNewStudentModal'
-import { useState } from 'react'
-
 
 const StudentList = ({ studentList }) => {
   const navigate = useNavigate()
@@ -58,7 +59,7 @@ const StudentList = ({ studentList }) => {
       <AddNewStudentModal
         show={modalShow}
         onHide={() => { setModalShow(false) }}
-        classId={classId} />
+        classId={classId.id} />
     </StyledContainer>
   )
 }

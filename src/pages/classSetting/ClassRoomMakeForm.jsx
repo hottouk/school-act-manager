@@ -162,7 +162,7 @@ const ClassRoomMakeForm = () => {
           <button type='submit'>나이스 출석부 파일로 반 생성</button></>}
         {(classKind === "with_number") && <> <label htmlFor='class_number_of_studnets'>학생 수를 입력하여 학번을 자동생성 할까요? 고정반일 경우 선택</label>
           <input type="number" id='class_number_of_studnets' required min='1' value={numberOfStudent} onChange={handleChange} />
-          <button type='submit'>예_자동 반 생성</button> </>}
+          <button type='submit'>예</button> </>}
         {(classKind === "by_hand") && <><label htmlFor='class_number_of_studnets'>학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>
           <button type='submit'>확인</button></>}
         <button type='button' id='cancel' onClick={handleBtnClick}>취소</button>
@@ -188,7 +188,7 @@ const StyledForm = styled.form`
   }
   label {
     display: block;
-    color: whitesmoke;
+    color: #efefef;
   }
   input {
     width: 100%;

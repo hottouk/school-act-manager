@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { appAuth } from '../firebase/config'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-
 import { useAuthContext } from './useAuthContext';
 
 const useSignup = () => {

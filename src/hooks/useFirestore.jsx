@@ -1,6 +1,6 @@
 import { useReducer } from "react"
 import { appFireStore, timeStamp } from "../firebase/config"
-import { addDoc, collection, deleteDoc, doc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore"
 
 const initState = {
   document: null,
@@ -31,22 +31,35 @@ const useFirestore = (collectionName) => {
   const colRef = collection(db, collectionName)
   const [response, dispatch] = useReducer(storeReducer, initState)
 
-  //유저가 기존 DB에 있는지 체크
-  const findUser = async (userInfo) => {
-    let isUserExist = false
-    let uid = userInfo.uid
-    const q = query(colRef, where("uid", "==", uid))
-    const userSnapshot = await getDocs(q);
-    if (userSnapshot) {
-      isUserExist = true
+  //유저가 기존 DB에 있는지 체크(24.01.14)
+  const findUser = async (userInfo, sns) => {
+    let isUserExist = true
+    let uid
+    switch (sns) {
+      case "google":
+        uid = userInfo.uid
+        break;
+      case "kakao":
+        let profile = userInfo.profile
+        uid = String(profile.id)
+        break;
+      default: return
     }
-    return isUserExist
+    try {
+      const q = query(colRef, where("uid", "==", uid))
+      await getDocs(q).then((querySnapshot) => {
+        isUserExist = querySnapshot.docs.length > 0//한명도 없을 경우, 즉 존재하지 않을 경우
+      })
+      return isUserExist
+    } catch (error) {
+
+    }
   }
 
   //유저 추가
   const addUser = async (userInfo) => {
     console.log(userInfo)
-    let uid = userInfo.uid
+    let uid = String(userInfo.uid)
     let email = userInfo.email
     let name = userInfo.name
     let isTeacher = userInfo.isTeacher
@@ -107,7 +120,7 @@ const useFirestore = (collectionName) => {
     try {
       addDoc(studentColRef, { ...newInfo, modifiedTime })
     } catch (error) {
-      window.alert(error);
+      console.log(error);
     }
   }
 

@@ -4,12 +4,15 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/esm/Button';
 //hooks
 import useFirestore from '../../hooks/useFirestore';
+import styled from 'styled-components';
 
 const AddNewStudentModal = (props) => {
+  //1. 변수
   const { addStudent } = useFirestore("classRooms")
   const [name, setName] = useState('')
   const [studentNumber, setStudentNumber] = useState('')
 
+  //2. 함수
   const handleOnChange = (event) => {
     switch (event.target.id) {
       case "student_number":
@@ -21,19 +24,22 @@ const AddNewStudentModal = (props) => {
       default: return;
     }
   }
-
-  const handleBtnClick = (event) => {
-    switch (event.target.id) {
-      case "cancel_btn":
-        props.onHide()
-        break;
-      case "confirm_btn":
-        addStudent({ studentNumber, writtenName: name }, props.classId)
-        break;
-      default: return;
-    }
+  const handleBtnClick = () => {
+    props.onHide()
+    setName('')
+    setStudentNumber('')
   }
 
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    if (name !== '' && studentNumber !== '') {
+      addStudent({ studentNumber, writtenName: name }, props.classId)
+      props.onHide()
+      setName('')
+      setStudentNumber('')
+    }
+  }
+  
   return (
     <Modal
       show={props.show}
@@ -44,17 +50,31 @@ const AddNewStudentModal = (props) => {
         <Modal.Title>학생 추가</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <label htmlFor="student_number">학번</label>
-        <input type="text" id="student_number" value={studentNumber} onChange={handleOnChange} />
-        <label htmlFor="student_number">이름</label>
-        <input type="text" id="student_name" value={name} onChange={handleOnChange} />
+        <form onSubmit={handleSubmit}>
+          <fieldset>
+            <StyeldInputDiv>
+              <label htmlFor="student_number">학번:&nbsp;&nbsp;</label>
+              <input type="text" id="student_number" required value={studentNumber} onChange={handleOnChange} />
+            </StyeldInputDiv>
+            <StyeldInputDiv>
+              <label htmlFor="student_number">이름:&nbsp;&nbsp;</label>
+              <input type="text" id="student_name" required value={name} onChange={handleOnChange} />
+            </StyeldInputDiv>
+          </fieldset>
+          <Modal.Footer>
+            <Button variant="secondary" id="cancel_btn" onClick={handleBtnClick}>취소</Button>
+            <Button type='submit' variant="primary" id="confirm_btn" >확인</Button>
+          </Modal.Footer>
+        </form>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" id="cancel_btn" onClick={handleBtnClick}>취소</Button>
-        <Button variant="primary" id="confirm_btn" onClick={handleBtnClick}>확인</Button>
-      </Modal.Footer>
+
     </Modal >
   )
 }
-
+const StyeldInputDiv = styled.div`
+  margin-top: 10px;  
+  input {
+    display: inline-block;
+  }
+`
 export default AddNewStudentModal

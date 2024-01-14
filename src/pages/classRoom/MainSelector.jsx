@@ -9,23 +9,24 @@ import { appFireStore } from '../../firebase/config.js'
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 //CSS styles
 import styled from "styled-components"
+import { useNavigate } from 'react-router-dom';
 
 const MainSelector = ({ studentList, activitiyList, classId }) => {
   //1. 변수
   //redux 전역변수
   const studentSelectedList = useSelector(({ studentSelected }) => { return studentSelected })
   const activitySelectedList = useSelector(({ activitySelected }) => { return activitySelected })
-
   //MultiSelector 내부 변수
   const selectStudentRef = useRef(null); //학생 선택 셀렉터 객체, 재랜더링 X 
   const selectActRef = useRef(null); //활동 선택 셀렉터 객체, 재랜더링 X
   const studentCheckBoxRef = useRef(null); //모든 학생 체크박스, 재랜더링 X
   const actCheckBoxRef = useRef(null); //모든 활동 체크박스, 재랜더링 X
-
   //UseState
   const [isAllStudentChecked, setIsAllStudentChecked] = useState(false) //모든학생 선택 유무
   const [isAllActivityChecked, setIsAllActivityChecked] = useState(false) //모든활동 선택 유무
-  const [modalShow, setModalShow] = useState(false) //대화창 보여setIsAllActivitySelected주기 변수
+  const [modalShow, setModalShow] = useState(false) //대화창 보여주기 변수
+  //라이브러리
+  const navigate = useNavigate();
 
   //2. 함수
   //★★★ 핵심 로직 ★★★ 
@@ -124,7 +125,7 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
               setIsAllStudentChecked={setIsAllStudentChecked}
               setIsAllActivitySelected={setIsAllActivityChecked} />
           </StyledSelector>
-          {activitiyList && <StyledSelector>
+          {(activitiyList && activitiyList.length !== 0) && <StyledSelector>
             <MultiSelector
               activitiyList={activitiyList}
               selectActRef={selectActRef}
@@ -134,7 +135,10 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
               setIsAllStudentChecked={setIsAllStudentChecked}
               setIsAllActivitySelected={setIsAllActivityChecked} />
           </StyledSelector>}
-          {!activitiyList && <StyledSelector>활동이 없습니다. 활동을 추가해주세요.</StyledSelector>}
+          {(!activitiyList || activitiyList.length === 0) &&
+            <StyledSelector>활동이 없습니다. 활동을 추가해주세요.
+              <button onClick={() => { navigate('/activities_setting') }}>활동 추가</button>
+            </StyledSelector>}
         </StyledSelectorDiv>
         <StyledBtnDiv>
           <StyledBtn onClick={() => {
@@ -176,6 +180,16 @@ const StyledSelector = styled.div`
   width: 50%;
   margin: 0 auto;
   margin-top: 35px;
+  button {
+    display: block;
+    margin: 10px auto;
+    width: 90px;
+    height: 30px;
+    background-color: #3454d1;
+    border: none;
+    border-radius: 5px;
+    color: white;
+  }
   @media screen and (max-width: 767px){
     width: 80%;
     margin-top: 35px;
@@ -193,7 +207,7 @@ const StyledBtn = styled.button`
   margin: 0 auto;
   width: 240px;
   height: 50px;
-  background-color: #6495ed;
+  background-color: #3454d1;
   border: none;
   border-radius: 5px;
   color: white;

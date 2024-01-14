@@ -11,6 +11,7 @@ import user from './userSlice';
 //리덕스 persist
 import { persistReducer } from 'redux-persist';
 import storageSession from 'redux-persist/lib/storage/session'
+import tempUser from './tempUserSlice';
 
 const reducers = combineReducers(
   {
@@ -21,7 +22,7 @@ const reducers = combineReducers(
     allActivities: allActivities.reducer, //전체 활동
     pageEndSignal: pageEndSignifier.reducer,
     user: user.reducer,
-
+    tempUser: tempUser.reducer,
   }
 )
 
@@ -29,7 +30,7 @@ const persistConfig = {
   key: "root",
   storage: storageSession,  // 세션Storage에 저장합니다. 브라우져 종료하면 재로그인이 필요함.
   whiteList: ['allStudents', 'user', 'classSelected'], //계속 저장해둘 값
-  blacksList: ['studentSelected', 'activitySelected', 'pageEndSignal'], //휘발성 값
+  blacksList: ['studentSelected', 'activitySelected', 'pageEndSignal','tempUser'], //휘발성 값
 };
 
 const persistedReducer = persistReducer(persistConfig, reducers);

@@ -10,16 +10,6 @@ import styled from 'styled-components';
 //변수 관리
 import { useState } from 'react';
 
-const StyledImageWrapper = styled.div`
-  display: flex;
-`
-const SelectedMonImg = styled.img`
-  background-color: orange;
-  border-radius: 10px;
-  box-sizing: border-box;
-  border: 1px solid black;
-`
-
 const GraphicDialogModal = (props) => {
   //몬스터 이미지 변수
   const [monImg, setMonImg] = useState('')
@@ -69,5 +59,13 @@ const GraphicDialogModal = (props) => {
     </Modal>
   );
 }
-
+const StyledImageWrapper = styled.div`
+  display: flex;
+`
+const SelectedMonImg = styled.img`
+  background-color: orange;
+  border-radius: 10px;
+  box-sizing: border-box;
+  border: 1px solid black;
+`
 export default GraphicDialogModal;

@@ -2,7 +2,7 @@
 import useGetByte from "../../hooks/useGetByte"
 import useFirestore from "../../hooks/useFirestore"
 import { useParams } from "react-router-dom"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 //Firestore
 import { setModifiedStudent } from "../../store/allStudentsSlice"
@@ -16,24 +16,29 @@ const ClassAllStudents = () => {
   //경로 이동 props
   const params = useParams(); //id와 param의 key-value(id:'id') 오브젝트로 반환
   const classId = params.id
-
   //전역 변수
   const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //ClassRoomDetail에서 저장한 학생List 불러오기(전역)
   const dispatcher = useDispatch()
-
   //hooks
   const { updateStudent } = useFirestore('classRooms')
   const { getByteLengthOfString } = useGetByte()
-
   //특정 학생 정보 수정 판단 key 변수
   const [thisModifying, setThisModifying] = useState('')
+  const [prevIndex, setPrevIndex] = useState(null)
   let writtenName = ''
   let accRecord = ''
+  //객체접근
+  const contentRowRef = useRef({})
 
   //2. 함수
   //수정버튼
-  const handleModifyingBtn = (key) => {
+  const handleModifyingBtn = (key, index) => {
+    if (prevIndex) {
+      contentRowRef.current[prevIndex].style = 'background-color: #efefef;'
+    }
+    contentRowRef.current[index].style = 'background-color: #bad1f7;'
     setThisModifying(key)
+    setPrevIndex(index)
   }
   //저장 버튼
   const handleSaveBtn = (key) => {
@@ -69,7 +74,7 @@ const ClassAllStudents = () => {
             writtenName = name
             accRecord = record
           }
-          return <StyledContentRow key={student.id}>
+          return <StyledContentRow ref={(element) => { return contentRowRef.current[index] = element }} key={student.id}>
             <StyledIndexDiv>{index + 1}</StyledIndexDiv> {/* 연번 */}
             <StyledMidlDiv>{studentNumber}</StyledMidlDiv> {/* 학번 */}
             <StyledMidlDiv>
@@ -86,7 +91,7 @@ const ClassAllStudents = () => {
             <StyledSmallDiv>
               {isModifying
                 ? <button id='save_btn' onClick={() => { handleSaveBtn(student.id) }}>저장</button>
-                : <button id='modi_btn' onClick={() => { handleModifyingBtn(student.id) }}>수정</button>}
+                : <button id='modi_btn' onClick={() => { handleModifyingBtn(student.id, index) }}>수정</button>}
             </StyledSmallDiv>
           </StyledContentRow>
         })}
@@ -128,6 +133,7 @@ const StyledTitleRow = styled.div`
 `
 const StyledContentRow = styled.div`
   display: flex;
+  background-color: #efefef;
 `
 const StyledIndexDiv = styled.div`
   flex-basis: 60px;
@@ -178,7 +184,7 @@ const StyledAcclDiv = styled.div`
 `
 const StyledNameInput = styled.input`
   display: block;
-  width: 100px;
+  width: 85px;
   height: 50%;
 `
 

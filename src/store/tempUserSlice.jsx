@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { PURGE } from "redux-persist";
 
 const initialState = {
   uid: "",
@@ -9,11 +8,11 @@ const initialState = {
   school: "",
 }
 
-let user = createSlice({
-  name: 'user',
+let tempUser = createSlice({
+  name: 'tempUser',
   initialState,
   reducers: {
-    setUser(state, action) {
+    setTempUser(state, action) {
       return {
         ...state,
         uid: action.payload.uid,
@@ -23,11 +22,8 @@ let user = createSlice({
         school: undefined
       };
     }
-  },
-  extraReducers: builder => { //로그아웃 시에 state를 초기화한다.
-    builder.addCase(PURGE, () => initialState);
-  },
+  }
 })
 
-export const { setUser } = user.actions
-export default user
+export const { setTempUser } = tempUser.actions
+export default tempUser

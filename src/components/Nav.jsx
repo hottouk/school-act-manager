@@ -1,24 +1,29 @@
 //라이브러리
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-//hooks
-import useLogout from '../hooks/useLogout'
 //CSS
 import styled from 'styled-components'
 //이미지
 import brandLogo from "../image/icon/h-logo.png";
 import { Helmet } from 'react-helmet'
+import MyInfoModal from './Modal/MyInfoModal'
 
 //24.01.09
 const Nav = () => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
   const pageEndSignal = useSelector(({ pageEndSignal }) => { return pageEndSignal })
-  const { logout } = useLogout();
+  const [isMyInfoShow, setIsMyInfoShow] = useState(false)
+
+  //2. 함수
+  const handleMyinfoClick = () => {
+    setIsMyInfoShow(true)
+  }
+
   return (<StyledNav endpoint={String(pageEndSignal)}>
     <Helmet>
-       {/*폰트어썸 라이브러리*/}
+      {/*폰트어썸 라이브러리*/}
       <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
@@ -36,12 +41,17 @@ const Nav = () => {
       <ul className='menu_container'>
         <li><i className="fa-solid fa-house"></i><Link to='/'>Home</Link></li>
         <li><i className="fa-solid fa-scroll"></i><Link to='/activities'>활동 관리</Link></li>
-        <li><i className="fa-solid fa-children"></i><Link to='/classRooms'>클래스 관리</Link></li>
-        <li className='mobileOnly'><i class="fa-solid fa-user"></i>MyInfo</li>
-        {/* <button className='button-16' type='button' onClick={logout}>로그아웃</button> */}
+        <li><i className="fa-solid fa-school"></i><Link to='/classRooms'>클래스 관리</Link></li>
+        <li className='mobileOnly' onClick={handleMyinfoClick}><i className="fa-solid fa-user"></i>MyInfo</li>
       </ul>
-      <img className="logo" src={brandLogo} alt='로고' />
+      <img className="logo" src={brandLogo} alt='로고' onClick={() => setIsMyInfoShow(true)} />
     </>}
+    <MyInfoModal
+      user={user}
+      show={isMyInfoShow}
+      onHide={() => setIsMyInfoShow(false)}
+    />
+
   </StyledNav >
   )
 }
@@ -145,6 +155,7 @@ const StyledNav = styled.nav`
     }
     img.logo{
       display: none;
+      cursor: pointer;
     }
   }
 `

@@ -6,8 +6,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Login from './pages/login/Login';
 import ClassMain from './pages/main/ClassMain';
 import Nav from './components/Nav';
-import Signup from './pages/signup/Signup';
-import KakaoCallback from './pages/login/KakaoCallback';
 import ActivityMain from './pages/activity/ActivityMain';
 import ActivityDetails from './pages/activity/ActivityDetails';
 import ClassRoomMain from './pages/classRoom/ClassRoomMain';
@@ -17,7 +15,6 @@ import ClassAllStudents from './pages/classRoom/ClassAllStudents';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassRoomMakeForm from './pages/classSetting/ClassRoomMakeForm';
 import { useSelector } from 'react-redux';
-import SignUpWithSNS from './pages/signup/SignUpWithSNS';
 import { Helmet } from "react-helmet";
 
 function App() {
@@ -34,8 +31,6 @@ function App() {
         <Nav />
         <Routes>
           <Route path="/" element={uid ? <ClassMain /> : <Navigate replace={true} to='/login' />} />
-          {/* <Route path="/kakaoLogin" element={<Login />} />
-          <Route path="/kakaoLogin/callback" element={<KakaoCallback />} /> */}
           {/* 활동 관리 */}
           <Route path="/activities" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/:activityId" element={uid ? <ActivityDetails /> : <Navigate replace={true} to='/login' />} />
@@ -50,9 +45,6 @@ function App() {
           <Route path="/classrooms_setting_details" element={uid ? <ClassRoomMakeForm /> : <Navigate replace={true} to='/login' />} />
           {/* 로그인/회원가입 */}
           <Route path="/login" element={!uid ? <Login /> : <Navigate replace={true} to='/' />} />
-          <Route path="/signUpWithSNS" element={!uid ? <SignUpWithSNS /> : <Navigate replace={true} to='/' />} />
-          <Route path="/signup" element={!uid ? <Signup /> : <Navigate replace={true} to='/' />} />
-          {/* // : <Navigate replace={true} to='/' */}
         </Routes>
       </BrowserRouter>
     </>

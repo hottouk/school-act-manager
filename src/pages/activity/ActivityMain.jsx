@@ -42,7 +42,7 @@ const StyledContainer = styled.div`
 const StyledBtn = styled.button`
   appearance: none;
   backface-visibility: hidden;
-  background-color: #2f80ed;
+  background-color: #3454d1;
   border-radius: 10px;
   border-style: none;
   box-shadow: none;

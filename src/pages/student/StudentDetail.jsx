@@ -101,21 +101,18 @@ const StudentDetail = () => {
         }
         break;
       case "save_btn":
-        if (window.confirm('학생정보를 이대로 저장하시겠습니까?')) {
+        if (window.confirm('학생정보를 이대로 저장하시겠습니까?')) { //저장 클릭
           let accRecord = ""
           if (_newActList) {
             setActList(_newActList)
             accRecord = _newActList.reduce((acc, cur) => { return acc.concat(" ", String(cur.record)) }, "")       //누가기록 업데이트
             updateStudent({ writtenName: _writtenName, actList: _newActList, accRecord }, params.id, params.studentId); //데이터 통신
-          } else {
-            accRecord = _actList.reduce((acc, cur) => { return acc.concat(" ", String(cur.record)) }, "")
-            updateStudent({ writtenName: _writtenName, actList: _actList, accRecord }, params.id, params.studentId); //데이터 통신
           }
-        } else {
-          if (deletedIndex) {
-            console.log(deletedIndex)
-            deletedIndex.map((index) => { 
+        } else { //취소 클릭
+          if (deletedIndex && deletedIndex.length !== 0) {
+            deletedIndex.map((index) => {
               divRef.current[index].style = 'display: block;'
+              return null;
             })
           }
           setNewActList(null)
@@ -182,7 +179,7 @@ const StudentDetail = () => {
               <StyledMidlDiv>활동</StyledMidlDiv>
               <StyledAcclDiv style={{ justifyContent: "center" }}>생기부</StyledAcclDiv>
             </StyledTitleRow>
-            {!_actList || _actList.length === 0 ? <div>활동이 없어유ㅠㅠ</div>
+            {!_actList || _actList.length === 0 ? <div className='no_act_record'>활동이 없어유ㅠㅠ</div>
               : _actList.map((act, index) => {
                 return <StyledContentRow key={act.id}>
                   <StyledMidlDiv>
@@ -332,6 +329,10 @@ const StyledBotPannel = styled.div`
   background-color: #efefef;
   border: 1px solid black;
   border-radius: 15px;
+  .no_act_record {
+    margin: auto;
+    font-weight: bold;
+  }
   @media screen and (max-width: 767px){
     width: 100%;
     display: flex;

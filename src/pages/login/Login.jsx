@@ -6,91 +6,45 @@ import useLogin from '../../hooks/useLogin';
 //css
 import styled from 'styled-components';
 import googleIcon from '../../image/icon/g-logo.png'
+import SignUpWithSnsModal from '../../components/Modal/SignUpWithSnsModal';
+import KakaoLogin from 'react-kakao-login';
 
 const Login = () => {
   //1. 변수
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const { err, isPending, loginWithEmail, googleLogin } = useLogin();
-
-  //2. 함수
-  const handleOnChange = (event) => {
-    if (event.target.type === 'email') {
-      setEmail(event.target.value)
-    } else if (event.target.type === 'password') {
-      setPassword(event.target.value)
-    }
-  }
-
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    console.log(email, password)
-    loginWithEmail(email, password)
-  }
+  const { err, isPending, googleLogin, KakaoLoginOnSuccess } = useLogin();
+  //모달창
+  const [isSnsModalShow, setIsSnsModalShow] = useState(false)
 
   return (
     <StyledContainer>
-      <StyledForm onSubmit={handleSubmit}>
-        <fieldset>
-          <legend>로그인</legend>
-          <label htmlFor='myEmailId'>Email ID</label>
-          <input type='email' id='myEmailId' onChange={handleOnChange} value={email} required />
-          <label htmlFor='myPassword'>비밀번호</label>
-          <input type='password' id='myPassword' onChange={handleOnChange} value={password} required />
-          {!isPending && <button type='submit'>로그인</button>}
-          {isPending && <strong>로그인이 진행중입니다.</strong>}
-          {err && <strong>{err}</strong>}
-        </fieldset>
-      </StyledForm>
       <StyledSnsLoginDiv>
         <h3>SNS로 3초만에 가입/로그인</h3>
-        <StyledGoogleLoginBtn onClick={googleLogin}>
-          <img src={googleIcon} alt='구글 로고' />구글 로그인
-        </StyledGoogleLoginBtn>
+        <div className='sns_centered'>
+          <StyledGoogleLoginBtn onClick={() => { googleLogin((open) => { setIsSnsModalShow(open) }) }}>
+            <img src={googleIcon} alt='구글 로고' />구글 로그인
+          </StyledGoogleLoginBtn>
+          <KakaoLogin
+            token={process.env.REACT_APP_KAKAO_JAVASCRIPT_KEY}
+            onSuccess={(data) => { KakaoLoginOnSuccess(data, (open) => { setIsSnsModalShow(open) }) }}
+            onFail={(error) => { window.alert(error) }} />
+        </div>
       </StyledSnsLoginDiv>
-    </StyledContainer>
+      {isPending && <strong>로그인이 진행중입니다.</strong>}
+      {err && <strong>{err}</strong>}
+      <SignUpWithSnsModal
+        show={isSnsModalShow}
+        onHide={() => setIsSnsModalShow(false)}
+      />
+    </StyledContainer >
   )
 }
 const StyledContainer = styled.div`
   box-sizing: border-box;
   width: 80%;
   margin: 0 auto 50px;
-`
-const StyledForm = styled.form`
-  max-width: 540px;
-  margin: 60px auto;
-  padding: 20px;
-  color: #efefef;
-  background-color: #3454d1;
-  border-radius: 10px;
-  border: rgb(120, 120, 120, 0.5) 1px solid;
-  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
-  filedset {
-    border: none;
-  }
-  legend {
-    font-size: 1.5em;
-    margin-bottom: 20px;
-  }
-  label {
-    display: block;
-    color: whitesmoke;
-  }
-  input {
+  @media screen and (max-width: 767px){
     width: 100%;
-    height: 2.2em;
-    margin: 5px 0 15px;
-  }
-  button {
-    display: inline;
-    width: 100%;
-    margin-top: 15px;
-    padding: 10px 15px;
-    border-radius: 15px;
-    border: 2px solid whitesmoke;
-    background-color: transparent;
-    color: whitesmoke;
-    cursor: pointer;
+    margin: auto;
   }
 `
 const StyledSnsLoginDiv = styled.div`
@@ -100,12 +54,29 @@ const StyledSnsLoginDiv = styled.div`
   width: 80%;
   padding: 30px;
   align-items: center;
-  margin: 0 auto;
+  margin: 20px auto;
   border: rgb(120, 120, 120, 0.5) 1px solid;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
-  h3{
+  .sns_centered {
+    button {
+      width: 222px;
+    }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 70%;
+  }
+  h3 {
+    color: #3454d1;
+    font-weight: bold;
     text-align: center;
     width: 100%;
+  }
+  @media screen and (max-width: 767px){
+    width: 100%;
+    height: 320px;
+    margin: auto;
   }
 `
 const StyledGoogleLoginBtn = styled.button`
