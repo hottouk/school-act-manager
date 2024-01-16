@@ -1,33 +1,10 @@
 //컴포넌트
 import ScoreCollertor from '../../components/ScoreCollertor'
-
 //CSS
 import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom'
 import useGetByte from '../../hooks/useGetByte'
 
-const StyledUl = styled.ul`
-  width: 95%;
-  margin : 0 auto;
-  li {
-    position: relative;
-    box-shadow: 3px 3px 5px rgba(50, 50, 50, .1);
-    margin: 0 auto;
-    padding: 20px;
-    background-color: whitesmoke;
-    border-left: 8px teal solid;
-    box-sizing : border-box;
-  }
-  li + li{
-    margin-top: 10px;
-  };
-`
-const StyeldTitle = styled.strong`
-  display: block;
-  margin: 10px;
-  font-size: larger;
-  color: black;
-`
 const ActivityList = ({ activities }) => {
   //경로 이동 변수
   const navigate = useNavigate()
@@ -60,4 +37,26 @@ const ActivityList = ({ activities }) => {
   )
 }
 
+const StyledUl = styled.ul`
+  width: 95%;
+  margin : 0 auto;
+  li {
+    position: relative;
+    box-shadow: 3px 3px 5px rgba(50, 50, 50, .1);
+    margin: 0 auto;
+    padding: 20px;
+    background-color: whitesmoke;
+    border-left: 8px teal solid;
+    box-sizing : border-box;
+  }
+  li + li{
+    margin-top: 10px;
+  };
+`
+const StyeldTitle = styled.strong`
+  display: block;
+  margin: 10px;
+  font-size: larger;
+  color: black;
+`
 export default ActivityList

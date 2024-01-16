@@ -1,6 +1,6 @@
 //라이브러리
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 //컴포넌트
 import MainSelector from './MainSelector.jsx';
 import StudentList from '../../components/StudentList';
@@ -14,7 +14,7 @@ import { setAllStudents } from '../../store/allStudentsSlice';
 import { setAllActivities } from '../../store/allActivitiesSlice.jsx';
 //스타일
 import styled from 'styled-components';
-import useScroll from '../../hooks/useScroll.jsx';
+import useClientHeight from '../../hooks/useClientHeight.jsx';
 
 //2924.01.08 
 const ClassRoomDetails = () => {
@@ -31,12 +31,12 @@ const ClassRoomDetails = () => {
   const { deleteDocument } = useFirestore("classRooms")
   //편집 모드
   const [isEditable, setIsEditable] = useState(false)
+  const clientHeight = useClientHeight(document.documentElement)
 
   console.log(thisClass.id, '반 활동List', documentList)
   console.log(thisClass.id, '반 학생List', subDocuments)
 
   //2.UseEffect
-  useScroll(document.documentElement)  
   useEffect(() => {
     dispatcher(setAllStudents(subDocuments)) //전체 학생 전역변수화
     dispatcher(setAllActivities(documentList)) //전체 활동 전역변수화
@@ -76,7 +76,7 @@ const ClassRoomDetails = () => {
       {/* todo document 정리하기 */}
       {!thisClass && <StyledContainer><h3>반 정보를 불러올 수 없습니다.</h3></StyledContainer>}
       {thisClass &&
-        <StyledContainer>
+        <StyledContainer $clientheight={clientHeight}>
           <StyeldHeader>
             <StyledClassTitle>{thisClass.classTitle}</StyledClassTitle>
             <p>{!subDocuments ? 0 : subDocuments.length}명의 학생들이 있습니다.</p>
@@ -114,9 +114,12 @@ const StyledContainer = styled.main`
   width: 80%;
   margin: 0 auto 50px;
   @media screen and (max-width: 767px){
+    position: fixed;
     width: 100%;
-    height: 2000px;
+    height: ${(props) => props.$clientheight}px;
     margin: 0;
+    padding-bottom: 20px;
+    overflow-y: scroll;
   }
 `
 const StyeldHeader = styled.header`

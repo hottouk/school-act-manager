@@ -21,7 +21,7 @@ const useLogin = () => {
     const provider = new GoogleAuthProvider();
     const loginInfo = signInWithPopup(appAuth, provider)
       .then((userCredential) => {
-        const user = userCredential.user
+        const user = { name: userCredential.user.displayName, ...userCredential.user }
         console.log('구글 로그인 유저 정보', user)
         dispatcher(setTempUser(user))
         setErr(null)

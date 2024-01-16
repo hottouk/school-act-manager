@@ -2,12 +2,13 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from "react-router";
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 //컴포넌트
 import ImportExcelFile from '../../components/ImportExcelFile';
 //hooks
 import useFirestore from '../../hooks/useFirestore';
-import { useAuthContext } from '../../hooks/useAuthContext';
 import useStudent from '../../hooks/useStudent';
+import useClientHeight from '../../hooks/useClientHeight';
 //css
 import styled from 'styled-components';
 
@@ -15,7 +16,7 @@ import styled from 'styled-components';
 const ClassRoomMakeForm = () => {
   //1. 변수
   //인증
-  const { user } = useAuthContext();
+  const user = useSelector(({ user }) => { return user })
   //교실에 필요한 속성 값
   const [classTitle, setClassTitle] = useState('');
   const [subject, setSubject] = useState('default');
@@ -24,6 +25,7 @@ const ClassRoomMakeForm = () => {
   const [numberOfStudent, setNumberOfStudent] = useState(0);
   const [intro, setIntro] = useState('');
   const [xlsxData, setXlsxData] = useState(null) //가공된 학생 정보 from Excel
+
   //hooks
   const navigate = useNavigate()
   const { makeStudent } = useStudent()
@@ -32,6 +34,7 @@ const ClassRoomMakeForm = () => {
   //반 생성 종류에 따라 
   const { state } = useLocation()
   const [classKind, setClassKind] = useState('')
+  const clientHeight = useClientHeight(document.documentElement)
 
   //2. UseEffect
   useEffect(() => {
@@ -110,19 +113,22 @@ const ClassRoomMakeForm = () => {
   }
 
   return (
-    <StyledForm onSubmit={handleSubmit}>
+    <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
       <fieldset>
         <legend>클래스 만들기</legend>
         <label htmlFor='class_title'>클래스 이름</label>
         <input id='class_title' type="text" required onChange={handleChange} value={classTitle} />
         <StyledSelectDiv>
           <select id='class_subject' required value={subject} onChange={handleChange}>
-            <option value="default" disabled >과목을 선택하세요</option>
-            <option value="kor">국어과</option>
-            <option value="eng">영어과</option>
-            <option value="math">수학과</option>
-            <option value="soc">사회과</option>
-            <option value="sci">과학과</option>
+            <option value="default" disabled >과목 선택</option>
+            <option value="국어">국어과</option>
+            <option value="영어">영어과</option>
+            <option value="수학">수학과</option>
+            <option value="사회">사회과</option>
+            <option value="과학">과학과</option>
+            <option value="예체능">음,미,체</option>
+            <option value="제2외국어">제2외국어과</option>
+            <option value="정보">정보</option>
           </select>
           <select id='class_grade' required value={grade} onChange={handleChange}>
             <option value="default" disabled >학년</option>
@@ -131,7 +137,6 @@ const ClassRoomMakeForm = () => {
             <option value="3">3학년</option>
           </select>
           <select id='class_number' required value={classNumber} onChange={handleChange}>
-            <option value="default" disabled >반</option>
             <option value="01">1반</option>
             <option value="02">2반</option>
             <option value="03">3반</option>
@@ -160,8 +165,8 @@ const ClassRoomMakeForm = () => {
           <label htmlFor='class_number_of_studnets'>나이스에서 내려 받은 출석부 엑셀 파일을 등록하세요.</label>
           <ImportExcelFile getData={getData} />
           <button type='submit'>나이스 출석부 파일로 반 생성</button></>}
-        {(classKind === "with_number") && <> <label htmlFor='class_number_of_studnets'>학생 수를 입력하여 학번을 자동생성 할까요? 고정반일 경우 선택</label>
-          <input type="number" id='class_number_of_studnets' required min='1' value={numberOfStudent} onChange={handleChange} />
+        {(classKind === "with_number") && <> <label htmlFor='class_number_of_studnets'>학생 수를 입력하세요. (최대 80명)</label>
+          <input type="number" id='class_number_of_studnets' required min='1' max='80' value={numberOfStudent} onChange={handleChange} />
           <button type='submit'>예</button> </>}
         {(classKind === "by_hand") && <><label htmlFor='class_number_of_studnets'>학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>
           <button type='submit'>확인</button></>}
@@ -217,7 +222,16 @@ const StyledForm = styled.form`
   button + button {
     margin-top: 20px;
   }
+  @media screen and (max-width: 767px) {
+    position: fixed;
+    width: 100%;
+    height: ${(props) => props.$clientheight}px;
+    margin: 0;
+    padding-bottom: 20px;
+    overflow-y: scroll;
+  }
 `
+
 const StyledSelectDiv = styled.div`
   display: flex;
   justify-content: space-between;

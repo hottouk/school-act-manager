@@ -1,13 +1,16 @@
+//라이브러리
 import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import iphone from '../../image/icon/iphone.png'
+//hooks
 import useCollection from '../../hooks/useCollection'
-import useScroll from '../../hooks/useScroll'
-
+//이미지
+import iphone from '../../image/icon/iphone.png'
+//css
+import styled from 'styled-components'
+import useClientHeight from '../../hooks/useClientHeight'
 const ClassMain = () => {
   const { documentList } = useCollection('user', ['isTeacher', '==', true], 'name')
   const [teacherList, setTeacherList] = useState([])
-  useScroll(document.documentElement)
+  const clientHeight = useClientHeight(document.documentElement)
 
   useEffect(() => {
     if (documentList) {
@@ -16,7 +19,7 @@ const ClassMain = () => {
   }, [documentList])
 
   return (
-    <StyledContainer>
+    <StyledContainer $clientheight={clientHeight}>
       <StyledLandingBackground>
         <StyledWrapper>
           <h1>App For the Teacher, by the Teacher, of the Teacher</h1>
@@ -65,9 +68,16 @@ const ClassMain = () => {
     </StyledContainer>
   )
 }
-
 const StyledContainer = styled.div`
   box-sizing: border-box;
+  @media screen and (max-width: 767px) {
+    position: fixed;
+    width: 100%;
+    height: ${(props) => props.$clientheight}px;
+    marign: 0;
+    padding-bottom: 20px;
+    overflow-y: scroll;
+  }
 `
 const StyledWrapper = styled.div`
   max-width: 1200px;

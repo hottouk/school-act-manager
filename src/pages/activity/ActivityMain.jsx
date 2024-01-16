@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import { useSelector } from 'react-redux'
 import DataList from '../../components/DataList'
 import { useNavigate } from 'react-router-dom'
-import useScroll from '../../hooks/useScroll'
+import useClientHeight from '../../hooks/useClientHeight'
 
 //24.01.09
 const ActivityMain = () => {
@@ -16,7 +16,7 @@ const ActivityMain = () => {
   //활동 정보
   const { documentList, colErr } = useCollection('activities', ['uid', '==', user.uid], 'title')
   const [_activityList, setActivityList] = useState(null)
-  useScroll(document.documentElement)
+  const clientHeight = useClientHeight(document.documentElement)
 
   //2. UseEffect
   useEffect(() => {
@@ -24,11 +24,10 @@ const ActivityMain = () => {
   }, [documentList])
 
   return (
-    <StyledContainer>
-      {_activityList
-        ? <DataList activities={_activityList} />
-        : <h3>아직 활동이 없습니다. 활동을 생성해주세요</h3>
-      }
+    <StyledContainer $clientheight={clientHeight}>
+      {_activityList && <DataList activities={_activityList} />}
+      {(!_activityList || _activityList.length === 0) && <h3>아직 활동이 없습니다. 활동을 생성해주세요</h3>}
+      {colErr && <h3 style={{ color: "red" }}>{colErr}</h3>}
       <StyledBtn onClick={() => { navigate("/activities_setting") }}>활동 만들기</StyledBtn>
     </StyledContainer>
   )
@@ -38,6 +37,13 @@ const StyledContainer = styled.div`
   box-sizing: border-box;
   margin: 20px auto;
   margin-bottom: 50px;
+  @media screen and (max-width: 767px) {
+    position: fixed;
+    width: 100%;
+    height: ${(props) => props.$clientheight}px;
+    padding-bottom: 20px;
+    overflow-y: scroll;
+  }
 `
 const StyledBtn = styled.button`
   appearance: none;

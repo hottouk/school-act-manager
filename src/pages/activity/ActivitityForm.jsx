@@ -1,6 +1,8 @@
 //라이브러리
 import { useEffect, useState } from "react"
 //hooks
+import useChatGpt from "../../hooks/useChatGpt";
+import useClientHeight from "../../hooks/useClientHeight";
 import useFirestore from "../../hooks/useFirestore";
 //컴포넌트
 import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
@@ -12,10 +14,9 @@ import question from "../../image/icon/question.png"
 //스타일
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
-import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
 import { useSelector } from "react-redux";
+import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
 import ScoreWrapper from "../../components/ScoreWrapper";
-import useChatGpt from "../../hooks/useChatGpt";
 
 const ActivityForm = () => {
   //1. 변수
@@ -43,6 +44,8 @@ const ActivityForm = () => {
   const navigate = useNavigate()
   //6.ChatGPt
   const { gptAnswer, askChatGpt, gptRes } = useChatGpt()
+  //7.Style
+  const clientHeight = useClientHeight(document.documentElement)
 
   //2. useEffect
   useEffect(() => {
@@ -187,7 +190,7 @@ const ActivityForm = () => {
 
   return (
     <>
-      <StyledForm onSubmit={handleSubmit}>
+      <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
         <fieldset>
           <StyledFirstDiv>
             {state ? <legend>활동 수정하기</legend> : <legend>활동 작성하기</legend>}
@@ -201,13 +204,16 @@ const ActivityForm = () => {
               <label htmlFor="act_title" >활동 제목</label>
               <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} />
             </div>
-            <select id='act_subject' required value={subject} onChange={handleChange}>
+            <select id='act_subject' required value={subject} onChange={handleChange} >
               <option value="default" disabled >과목을 선택하세요</option>
-              <option value="kor">국어과</option>
-              <option value="eng">영어과</option>
-              <option value="math">수학과</option>
-              <option value="soc">사회과</option>
-              <option value="sci">과학과</option>
+              <option value="국어">국어과</option>
+              <option value="영어">영어과</option>
+              <option value="수학">수학과</option>
+              <option value="사회">사회과</option>
+              <option value="과학">과학과</option>
+              <option value="예체능">음,미,체</option>
+              <option value="제2외국어">제2외국어과</option>
+              <option value="정보">정보</option>
             </select>
           </StyledFirstDiv>
           <label htmlFor="act_content" >활동 설명</label>
@@ -273,6 +279,10 @@ const StyledForm = styled.form`
     margin-bottom: 15px;
   }
   @media screen and (max-width: 767px){
+    position: fixed;
+    width: 100%;
+    height: ${(props) => props.$clientheight}px;
+    padding-bottom: 20px;
     max-width: 100%;
     margin: 0;
     padding: 15px;
@@ -281,6 +291,7 @@ const StyledForm = styled.form`
     border: none;
     border-radius: 0;
     box-shadow: none;
+    overflow-y: scroll;
   }
   fieldset {
     padding: 2px;

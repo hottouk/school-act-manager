@@ -1,22 +1,29 @@
+//라이브러리
 import React from 'react'
-//전역 변수 관련
 import { useState } from 'react';
+import KakaoLogin from 'react-kakao-login';
+//컴포넌트
+import SignUpWithSnsModal from '../../components/Modal/SignUpWithSnsModal'
 //hooks
 import useLogin from '../../hooks/useLogin';
+//이미지
+import googleIcon from '../../image/icon/g-logo.png'
+import mainLogo from '../../image/logo.png'
 //css
 import styled from 'styled-components';
-import googleIcon from '../../image/icon/g-logo.png'
-import SignUpWithSnsModal from '../../components/Modal/SignUpWithSnsModal';
-import KakaoLogin from 'react-kakao-login';
+
 
 const Login = () => {
   //1. 변수
   const { err, isPending, googleLogin, KakaoLoginOnSuccess } = useLogin();
   //모달창
   const [isSnsModalShow, setIsSnsModalShow] = useState(false)
-
   return (
     <StyledContainer>
+      <StyledSnsLoginDiv>
+        <h3>생기부 입력 도우미</h3>
+        <img src={mainLogo} alt='메인 로고' />
+      </StyledSnsLoginDiv>
       <StyledSnsLoginDiv>
         <h3>SNS로 3초만에 가입/로그인</h3>
         <div className='sns_centered'>
@@ -28,9 +35,11 @@ const Login = () => {
             onSuccess={(data) => { KakaoLoginOnSuccess(data, (open) => { setIsSnsModalShow(open) }) }}
             onFail={(error) => { window.alert(error) }} />
         </div>
+        {!isPending && <p>카카오 링크로 접속하신분은 카카오 로그인만 가능</p>}
+        {isPending && <strong>로그인이 진행중입니다.</strong>}
+        {err && <strong>{err}</strong>}
       </StyledSnsLoginDiv>
-      {isPending && <strong>로그인이 진행중입니다.</strong>}
-      {err && <strong>{err}</strong>}
+      <p>본 App은 PC 크롬에 최적화 되어 있습니다.</p>
       <SignUpWithSnsModal
         show={isSnsModalShow}
         onHide={() => setIsSnsModalShow(false)}
@@ -45,6 +54,11 @@ const StyledContainer = styled.div`
   @media screen and (max-width: 767px){
     width: 100%;
     margin: auto;
+  }
+  p {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 10px;
   }
 `
 const StyledSnsLoginDiv = styled.div`
@@ -66,6 +80,7 @@ const StyledSnsLoginDiv = styled.div`
     align-items: center;
     gap: 20px;
     width: 70%;
+    margin-bottom: 0;
   }
   h3 {
     color: #3454d1;
@@ -73,10 +88,18 @@ const StyledSnsLoginDiv = styled.div`
     text-align: center;
     width: 100%;
   }
+  p {
+    margin-top: 12px;
+    color: #3454d1;
+    font-size: 14px;
+  }
   @media screen and (max-width: 767px){
     width: 100%;
     height: 320px;
     margin: auto;
+    border: none;
+    border-bottom: rgb(120, 120, 120, 0.5) 1px solid;
+    box-shadow: none;
   }
 `
 const StyledGoogleLoginBtn = styled.button`

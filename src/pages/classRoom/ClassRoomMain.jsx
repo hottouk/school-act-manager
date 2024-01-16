@@ -8,7 +8,7 @@ import useCollection from '../../hooks/useCollection'
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
-import useScroll from '../../hooks/useScroll';
+import useClientHeight from '../../hooks/useClientHeight';
 
 //24.01.09
 const ClassRoomMain = () => {
@@ -18,7 +18,7 @@ const ClassRoomMain = () => {
   const navigate = useNavigate()
   const { documentList, err } = useCollection('classRooms', ['uid', '==', user.uid], 'subject')
   const [_classRoomList, setClassRoomList] = useState(null)
-  useScroll(document.documentElement)
+  const clientHeight = useClientHeight(document.documentElement)
   //2. UseEffect
   useEffect(() => {
     setClassRoomList(documentList)
@@ -31,7 +31,7 @@ const ClassRoomMain = () => {
   }
 
   return (
-    <StyledContainer>
+    <StyledContainer $clientheight={clientHeight}>
       {_classRoomList
         ? <DataList classRooms={_classRoomList} />
         : <h3>아직 클래스가 없어요. 클래스를 만들어주세요</h3>
@@ -45,6 +45,13 @@ const StyledContainer = styled.div`
   box-sizing: border-box;
   margin: 20px auto;
   margin-bottom: 50px;
+  @media screen and (max-width: 767px) {
+    position: fixed;
+    width: 100%;
+    height: ${(props) => props.$clientheight}px;
+    padding-bottom: 20px;
+    overflow-y: scroll;
+  }
 `
 const StyledBtn = styled.button`
   appearance: none;

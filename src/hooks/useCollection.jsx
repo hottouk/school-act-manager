@@ -12,7 +12,7 @@ const useCollection = (collectionName, myQuery, order) => {
     let firstWhere;
     let secondWhere;
     let q;
-    if (myQuery.length > 3) { //쿼리를 2개 이상 입력 했을 때,
+    if (myQuery.length > 3) { //쿼리를 2개 이상 입력 시
       firstWhere = myQuery.slice(0, 3)
       secondWhere = myQuery.slice(3)
       q = query(colRef, where(...firstWhere), where(...secondWhere))
@@ -27,9 +27,9 @@ const useCollection = (collectionName, myQuery, order) => {
           result.push({ ...doc.data(), id: doc.id })
         })
         setDocumentList(result)
-        console.log(result)
       }
       , (error) => {
+        setColErr(error.message)
         console.log(error.message)
       }
     )

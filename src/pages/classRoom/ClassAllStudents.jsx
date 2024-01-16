@@ -10,6 +10,7 @@ import { setModifiedStudent } from "../../store/allStudentsSlice"
 import ExportAsExcel from "../../components/ExportAsExcel"
 //CSS
 import styled from "styled-components"
+import useClientHeight from "../../hooks/useClientHeight"
 
 const ClassAllStudents = () => {
   //1. 변수
@@ -29,6 +30,7 @@ const ClassAllStudents = () => {
   let accRecord = ''
   //객체접근
   const contentRowRef = useRef({})
+  const clientHeight = useClientHeight(document.documentElement)
 
   //2. 함수
   //수정버튼
@@ -50,7 +52,7 @@ const ClassAllStudents = () => {
   }
 
   return (
-    <StyledContainer>
+    <StyledContainer $clientheight={clientHeight}>
       <StyledXlDiv>
         <p>※수정은 PC에서 가능함</p>
         <ExportAsExcel />
@@ -103,6 +105,11 @@ const StyledContainer = styled.main`
   margin: 15px 30px;
   @media screen and (max-width: 767px){
     margin: 0;
+    position: fixed;
+    width: 100%;
+    height: ${(props) => props.$clientheight}px;
+    padding-bottom: 20px;
+    overflow-y: scroll;
   }
 `
 const StyledXlDiv = styled.div`

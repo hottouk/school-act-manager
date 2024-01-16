@@ -16,7 +16,7 @@ const ScoreWrapper = (props) => {
             value={props.careerScore} onChange={props.handleChange}></input>
         </div>
         <div>
-          <label htmlFor="act_sincerity">학업성실성</label>
+          <label htmlFor="act_sincerity">학업</label>
           <input id="act_sincerity" type="number" min="0" max="8"
             value={props.sincerityScore} onChange={props.handleChange}></input>
         </div>

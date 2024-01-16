@@ -1,6 +1,6 @@
 //라이브러리
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 //CSS
 import styled from 'styled-components'
@@ -13,15 +13,29 @@ import MyInfoModal from './Modal/MyInfoModal'
 const Nav = () => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
-  const pageEndSignal = useSelector(({ pageEndSignal }) => { return pageEndSignal })
+  const navigate = useNavigate()
   const [isMyInfoShow, setIsMyInfoShow] = useState(false)
 
   //2. 함수
-  const handleMyinfoClick = () => {
-    setIsMyInfoShow(true)
+  const handleBtnClick = (event) => {
+    switch (event.target.id) {
+      case "home_btn":
+        navigate("/")
+        break;
+      case "acti_btn":
+        navigate("/activities")
+        break;
+      case "class_btn":
+        navigate("/classrooms")
+        break;
+      case "my_info_btn":
+        setIsMyInfoShow(true)
+        break;
+      default: return;
+    }
   }
 
-  return (<StyledNav endpoint={String(pageEndSignal)}>
+  return (<StyledNav>
     <Helmet>
       {/*폰트어썸 라이브러리*/}
       <link rel="stylesheet"
@@ -34,15 +48,14 @@ const Nav = () => {
     {!user.uid && <>
       <ul className='menu_container'>
         <li><i className="fa-solid fa-key"></i><Link to='/login'>로그인</Link></li>
-        <li><i className="fa-solid fa-user-plus"></i><Link to='/signup'>가입하기</Link></li>
       </ul></>}
     {user.uid && <>
       <div className='welcome'><p>{user.name} 선생님 사랑합니다.</p></div>
       <ul className='menu_container'>
-        <li><i className="fa-solid fa-house"></i><Link to='/'>Home</Link></li>
-        <li><i className="fa-solid fa-scroll"></i><Link to='/activities'>활동 관리</Link></li>
-        <li><i className="fa-solid fa-school"></i><Link to='/classRooms'>클래스 관리</Link></li>
-        <li className='mobileOnly' onClick={handleMyinfoClick}><i className="fa-solid fa-user"></i>MyInfo</li>
+        <li id="home_btn" onClick={handleBtnClick}><i className="fa-solid fa-house"></i><Link to='/'>Home</Link></li>
+        <li id="acti_btn" onClick={handleBtnClick}><i className="fa-solid fa-scroll"></i><Link to='/activities'>활동 관리</Link></li>
+        <li id="class_btn" onClick={handleBtnClick}><i className="fa-solid fa-school"></i><Link to='/classRooms'>클래스 관리</Link></li>
+        <li id="my_info_btn" className='mobileOnly' onClick={handleBtnClick}><i className="fa-solid fa-user"></i>MyInfo</li>
       </ul>
       <img className="logo" src={brandLogo} alt='로고' onClick={() => setIsMyInfoShow(true)} />
     </>}
@@ -101,19 +114,7 @@ const StyledNav = styled.nav`
     height: 50px;
   }
   @media screen and (max-width: 767px){
-    display:${(props) => {
-    let result
-    switch (props.endpoint) {
-      case "true":
-        result = "none"
-        break;
-      case "false":
-        result = "flex"
-        break;
-      default: result = "flex"
-    }
-    return result
-  }};
+    display: flex;
     position: fixed; 
     bottom: 0;
     height: 9%;
