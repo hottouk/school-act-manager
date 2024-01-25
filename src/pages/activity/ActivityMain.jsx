@@ -1,12 +1,14 @@
+//라이브러리
 import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+//컴포넌트
+import CardList from '../../components/CardList'
 //hooks
-import useCollection from '../../hooks/useCollection'
+import useClientHeight from '../../hooks/useClientHeight'
+import useGetActivity from '../../hooks/useGetActivity'
 //CSS
 import styled from 'styled-components'
-import { useSelector } from 'react-redux'
-import DataList from '../../components/DataList'
-import { useNavigate } from 'react-router-dom'
-import useClientHeight from '../../hooks/useClientHeight'
 
 //24.01.09
 const ActivityMain = () => {
@@ -14,20 +16,21 @@ const ActivityMain = () => {
   const user = useSelector(({ user }) => { return user })
   const navigate = useNavigate()
   //활동 정보
-  const { documentList, colErr } = useCollection('activities', ['uid', '==', user.uid], 'title')
+  const { activityList, errerrByGetActi } = useGetActivity()
   const [_activityList, setActivityList] = useState(null)
   const clientHeight = useClientHeight(document.documentElement)
 
   //2. UseEffect
   useEffect(() => {
-    setActivityList(documentList)
-  }, [documentList])
+    setActivityList(activityList)
+  }, [activityList])
 
   return (
     <StyledContainer $clientheight={clientHeight}>
-      {_activityList && <DataList activities={_activityList} />}
-      {(!_activityList || _activityList.length === 0) && <h3>아직 활동이 없습니다. 활동을 생성해주세요</h3>}
-      {colErr && <h3 style={{ color: "red" }}>{colErr}</h3>}
+      <CardList dataList={_activityList} type="activity"
+        title="생성 활동 목록"
+        tComment="아직 활동이 없습니다. 활동을 생성해주세요" />
+      {errerrByGetActi && <h3 style={{ color: "red" }}>{errerrByGetActi}</h3>}
       <StyledBtn onClick={() => { navigate("/activities_setting") }}>활동 만들기</StyledBtn>
     </StyledContainer>
   )

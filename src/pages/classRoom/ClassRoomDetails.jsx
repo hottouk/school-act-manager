@@ -1,46 +1,61 @@
 //라이브러리
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'
-//컴포넌트
-import MainSelector from './MainSelector.jsx';
-import StudentList from '../../components/StudentList';
-////파이어베이스 Hooks
-import useCollection from '../../hooks/useCollection';
-import useSubCollection from '../../hooks/useSubCollection';
-import useFirestore from '../../hooks/useFirestore.jsx';
-//리덕스
 import { useDispatch, useSelector } from 'react-redux';
 import { setAllStudents } from '../../store/allStudentsSlice';
 import { setAllActivities } from '../../store/allActivitiesSlice.jsx';
+//컴포넌트
+import MainSelector from './MainSelector.jsx';
+import StudentList from '../../components/StudentList';
+import ActivityList from '../../components/ActivityList.jsx';
+import EmptyResult from '../../components/EmptyResult.jsx';
+//hooks
+import useSubCollection from '../../hooks/useSubCollection';
+import useEnrollClass from '../../hooks/useEnrollClass.jsx';
+import useGetActivity from '../../hooks/useGetActivity.jsx';
+import useClientHeight from '../../hooks/useClientHeight.jsx';
+import useFirestore from '../../hooks/useFirestore.jsx';
 //스타일
 import styled from 'styled-components';
-import useClientHeight from '../../hooks/useClientHeight.jsx';
 
-//2924.01.08 
+//2024.01.23
 const ClassRoomDetails = () => {
+  //1.변수
   //전역 변수
+  const navigate = useNavigate()
   const dispatcher = useDispatch()
   const user = useSelector(({ user }) => { return user; })
   const thisClass = useSelector(({ classSelected }) => { return classSelected })
-  //1.변수
   //개별 클래스 구별해주는 변수
-  const navigate = useNavigate()
   //데이터 통신 변수
-  const { subDocuments, subColErr } = useSubCollection('classRooms', thisClass.id, 'students', 'studentNumber') //모든 학생 List
-  const { documentList, colErr } = useCollection('activities', ['uid', '==', user.uid, 'subject', '==', thisClass.subject], 'title') //활동 List)
+  const { subDocuments, subColErr } = useSubCollection("classRooms", thisClass.id, 'students', 'studentNumber') //모든 학생 List
+  const { activityList, errByGetActi } = useGetActivity(thisClass)
   const { deleteDocument } = useFirestore("classRooms")
-  //편집 모드
-  const [isEditable, setIsEditable] = useState(false)
+  const { signUpUserInClass } = useEnrollClass()
+  //모드
+  const [isModifying, setIsModifying] = useState(false)
+  const [isApplied, setIsApplied] = useState(false)
+  const [isMember, setIsMember] = useState(false)
   const clientHeight = useClientHeight(document.documentElement)
-
-  console.log(thisClass.id, '반 활동List', documentList)
-  console.log(thisClass.id, '반 학생List', subDocuments)
-
-  //2.UseEffect
+  // console.log(thisClass.id, '반 활동List', activityList)
+  // console.log(thisClass.id, '반 학생List', subDocuments)
   useEffect(() => {
     dispatcher(setAllStudents(subDocuments)) //전체 학생 전역변수화
-    dispatcher(setAllActivities(documentList)) //전체 활동 전역변수화
-  }, [subDocuments, documentList])
+    dispatcher(setAllActivities(activityList)) //전체 활동 전역변수화
+  }, [subDocuments, activityList])
+
+  useEffect(() => {
+    if (!user.isTeacher) {
+      if (thisClass.appliedStudentList && thisClass.appliedStudentList.length !== 0) { //신청 중이라면
+        let isApplied = (thisClass.appliedStudentList.filter(({ uid }) => { return uid === user.uid })).length !== 0
+        setIsApplied(isApplied)
+      }
+      if (thisClass.memberList && thisClass.memberList.length !== 0) { //가입 회원이라면
+        let isMemeber = (thisClass.memberList.filter(({ uid }) => { return uid === user.uid })).length !== 0
+        setIsMember(isMemeber)
+      }
+    }
+  }, [thisClass])
 
   //3.함수
   const handleBtnClick = (event) => {
@@ -49,7 +64,7 @@ const ClassRoomDetails = () => {
         navigate("/classRooms")
         break;
       case "edit_btn":
-        setIsEditable(true)
+        setIsModifying(true)
         break;
       case "delete_btn":
         let deleteConfirm = window.prompt('클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 "삭제합니다"를 입력하세요.')
@@ -63,7 +78,13 @@ const ClassRoomDetails = () => {
         break;
       case "save_btn":
         if (window.confirm('반 정보를 이대로 저장하시겠습니까?')) {
-          //todo
+          setIsModifying(false)
+        }
+        break;
+      //학생 전용
+      case "join_btn":
+        if (window.confirm(`${thisClass.classTitle} 클래스에 가입하시겠습니까?`)) {
+          signUpUserInClass(thisClass)
         }
         break;
       default: return
@@ -81,29 +102,42 @@ const ClassRoomDetails = () => {
             <StyledClassTitle>{thisClass.classTitle}</StyledClassTitle>
             <p>{!subDocuments ? 0 : subDocuments.length}명의 학생들이 있습니다.</p>
             <p>{thisClass.intro}</p>
+            {/* 학생 전용 */}
+            {(!user.isTeacher && isApplied) && <StyledMoveBtn $backgroundcolor="gray">가입 신청 중..</StyledMoveBtn>}
+            {(!user.isTeacher && !isMember && !isApplied) && <StyledMoveBtn id="join_btn" onClick={handleBtnClick}>가입하기</StyledMoveBtn>}
           </StyeldHeader>
-          {/* 셀렉터 */}
-          <StyledMain>
-            <MainSelector studentList={subDocuments} activitiyList={documentList} classId={thisClass.id} />
-          </StyledMain>
-          <StyledMain>
-            {/* 학생 상세 보기 */}
-            {!subDocuments ? <h3>반에 학생들이 등록되어 있지 않습니다. {subColErr}</h3>
-              : subDocuments.length === 0 ? <h3>반에 학생들이 등록되어 있지 않습니다. {subColErr}</h3>
-                : <StudentList studentList={subDocuments} />}
-          </StyledMain>
-          <StyledMain>
-            <h4>3단계 - 개별화하기</h4>
+          {/* 셀렉터(교사 전용)*/}
+          {user.isTeacher && <StyledMain>
+            <MainSelector studentList={subDocuments} activitiyList={activityList} classId={thisClass.id} />
+          </StyledMain>}
+          {/* 퀘스트 목록(학생 전용) */}
+          {(!user.isTeacher && isMember) && <StyledMain>
+            {(!activityList || activityList.length === 0)
+              ? <EmptyResult comment="등록된 활동이 없습니다." />
+              : <ActivityList activityList={activityList} />}
+            {errByGetActi && <EmptyResult comment={errByGetActi} />}
+          </StyledMain>}
+          {/* 학생 상세 보기 */}
+          {(!user.isTeacher && isMember) && <StyledMain>
+            {(!subDocuments || subDocuments.length === 0)
+              ? <h3>반에 학생들이 등록되어 있지 않습니다. {subColErr}</h3>
+              : <StudentList studentList={subDocuments} />}
+          </StyledMain>}
+          {/* 반 전체보기(교사 전용)*/}
+          {user.isTeacher && <StyledMain>
+            <h4>개별화하기</h4>
             <StyledMoveBtn onClick={() => { navigate('allStudents', { state: subDocuments }) }}>반 전체 세특보기</StyledMoveBtn>
           </StyledMain>
-          <StyeldBtnDiv>
+          }
+          {user.isTeacher && <StyeldBtnDiv>
             <StyledBtn id='back_btn' onClick={handleBtnClick}>반 목록</StyledBtn>
-            {!isEditable
+            {!isModifying
               ? <StyledBtn id='edit_btn' onClick={handleBtnClick}>수정</StyledBtn>
               : <StyledBtn id='save_btn' onClick={handleBtnClick}>저장</StyledBtn>
             }
             <StyledBtn id='delete_btn' onClick={handleBtnClick}>반 삭제</StyledBtn>
-          </StyeldBtnDiv>
+          </StyeldBtnDiv>}
+
         </StyledContainer>
       }
     </>
@@ -160,7 +194,7 @@ const StyledMoveBtn = styled.button`
   margin: 50px auto;
   width: 240px;
   height: 50px;
-  background-color: #3454d1;
+  background-color: ${(props) => props.$backgroundcolor ? props.$backgroundcolor : "#3454d1"};
   border: none;
   border-radius: 5px;
   color: white;

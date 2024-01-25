@@ -1,22 +1,30 @@
 //라이브러리
 import React, { useEffect, useState } from 'react'
 //hooks
-import useCollection from '../../hooks/useCollection'
+import useDevideTS from '../../hooks/useDevideTS'
 //이미지
 import iphone from '../../image/icon/iphone.png'
 //css
 import styled from 'styled-components'
 import useClientHeight from '../../hooks/useClientHeight'
+
 const ClassMain = () => {
-  const { documentList } = useCollection('user', ['isTeacher', '==', true], 'name')
-  const [teacherList, setTeacherList] = useState([])
+  const { teacherList, studentList, errorByDevideTS } = useDevideTS(null, 'name')
+  const [_teacherList, setTeacherList] = useState([])
+  const [_studentList, setStudentList] = useState([])
   const clientHeight = useClientHeight(document.documentElement)
 
   useEffect(() => {
-    if (documentList) {
-      setTeacherList(documentList)
+    if (teacherList) {
+      setTeacherList(teacherList)
     }
-  }, [documentList])
+    if (studentList) {
+      setStudentList(studentList)
+    }
+    if(errorByDevideTS){
+      console.log(errorByDevideTS)
+    }
+  }, [teacherList])
 
   return (
     <StyledContainer $clientheight={clientHeight}>
@@ -29,7 +37,7 @@ const ClassMain = () => {
       </StyledLandingBackground>
       <StyledWhiteBackground>
         <StyledWrapper>
-          <h3>현재 {teacherList.length}명의 선생님이 이용중입니다.</h3>
+          <h3>현재 {_teacherList.length}명의 선생님, {_studentList.length}명의 학생이 이용중입니다.</h3>
           <span>GPT로 세특쓰기, 이제는 나도 할 수 있다!!! 절찬리 판매중!!</span>
         </StyledWrapper>
       </StyledWhiteBackground>

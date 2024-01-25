@@ -1,39 +1,16 @@
-import { useReducer } from "react"
 import { appFireStore, timeStamp } from "../firebase/config"
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore"
-
-const initState = {
-  document: null,
-  isPending: false,
-  err: null,
-  isSuccess: false
-}
-
-const storeReducer = (state, action) => {
-  switch (action.type) {
-    case 'isPending':
-      return { isPending: true, err: null, isSuccess: false, document: null }
-    case 'addDoc':
-      return { isPending: false, document: action.payload, err: null, isSuccess: true }
-    case 'error':
-      return { isPending: false, document: null, success: false, error: action.payload }
-    case 'deleteDoc':
-      return { isPending: false, document: null, success: true, error: null }
-    case 'setDoc':
-      return { isPending: false, document: action.payload, success: true, error: null }
-    default:
-      return state
-  }
-}
+import { addDoc, collection, deleteDoc, doc, getDocs, query, runTransaction, setDoc, updateDoc, where } from "firebase/firestore"
+import { useDispatch, useSelector } from "react-redux"
 
 const useFirestore = (collectionName) => {
+  const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const colRef = collection(db, collectionName)
-  const [response, dispatch] = useReducer(storeReducer, initState)
 
-  //유저가 기존 DB에 있는지 체크(24.01.14)
+  //유저가 기존 DB에 있는지 체크, 없으면 false, 있다면 true와 회원정보 반환(24.01.21)
   const findUser = async (userInfo, sns) => {
     let isUserExist = true
+    let userInfofromServer = null;
     let uid
     switch (sns) {
       case "google":
@@ -48,17 +25,19 @@ const useFirestore = (collectionName) => {
     try {
       const q = query(colRef, where("uid", "==", uid))
       await getDocs(q).then((querySnapshot) => {
-        isUserExist = querySnapshot.docs.length > 0//한명도 없을 경우, 즉 존재하지 않을 경우
+        isUserExist = querySnapshot.docs.length > 0//한명도 없을 경우, 즉 존재하지 않을 경우 false 존재하면 true
+        querySnapshot.docs.forEach((doc) => {
+          userInfofromServer = doc.data()          //존재할 경우 서버 데이터를 반환
+        })
       })
-      return isUserExist
+      return { isUserExist, userInfofromServer }
     } catch (error) {
-
+      window.alert(`서버 ${error} 오류입니다.`)
     }
   }
 
-  //유저 추가
+  //유저 추가(24.01.21)
   const addUser = async (userInfo) => {
-    console.log(userInfo)
     let uid = String(userInfo.uid)
     let email = userInfo.email
     let name = userInfo.name
@@ -74,7 +53,6 @@ const useFirestore = (collectionName) => {
 
   //클래스룸 추가 함수
   const addClassroom = async (classAtrs, studentList) => {
-    dispatch({ type: 'isPending' });
     try {
       const createdTime = timeStamp.fromDate(new Date());
       const docRef = await addDoc(colRef, { ...classAtrs, createdTime });
@@ -83,15 +61,13 @@ const useFirestore = (collectionName) => {
         addDoc(subColRef, student);
         return student.length
       })
-      dispatch({ type: 'addDoc', payload: colRef }); //상태 전달
     } catch (error) {
-      dispatch({ type: 'error', payload: error.message }) //상태 전달
+      console.error(error.message)
     }
   }
 
   //활동 추가 함수
   const addActivity = async (activity) => {
-    dispatch({ type: 'isPending' });
     try {
       const createdTime = timeStamp.fromDate(new Date());
       await addDoc(colRef, { ...activity, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
@@ -105,10 +81,8 @@ const useFirestore = (collectionName) => {
     try {
       let createdTime = timeStamp.fromDate(new Date());
       let docRef = doc(db, collectionName, actId)
-      const updatePromise = await setDoc(docRef, { ...activity, createdTime }); //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
-      dispatch({ type: 'addDoc', payload: updatePromise }); //상태 전달
+      await setDoc(docRef, { ...activity, createdTime }); //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
     } catch (error) {
-      dispatch({ type: 'error', payload: error.message }) //상태 전달
       console.log(error)
     }
   }
@@ -131,36 +105,31 @@ const useFirestore = (collectionName) => {
     try {
       updateDoc(studentRef, { ...newInfo, modifiedTime }) //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
     } catch (error) {
-      dispatch({ type: 'error', payload: error.message }) //상태 전달
       window.alert.log(error)
     }
   }
 
-  //학생 delete 함수
+  //학생 삭제 함수
   const deleteStudent = async (classId, studentId) => {
-    dispatch({ type: 'isPending' });
     try {
       let studentRef = doc(db, collectionName, classId, 'students', studentId)
-      let deleteTask = await deleteDoc(studentRef)
-      dispatch({ type: 'deleteDoc', payload: deleteTask })
+      await deleteDoc(studentRef)
     } catch (error) {
-      dispatch({ type: 'error', payload: error.message })
+      console.log(error)
     }
   }
 
   //데이터 삭제 함수: 문서 id(제목) 주면 삭제
   const deleteDocument = async (id) => {
-    dispatch({ type: 'isPending' });
     try {
-      let deleteTask = await deleteDoc(doc(colRef, id))
-      dispatch({ type: 'deleteDoc', payload: deleteTask })
+      await deleteDoc(doc(colRef, id))
     } catch (error) {
-      dispatch({ type: 'error', payload: error.message })
+      console.log(error)
     }
   }
 
   return (
-    { addUser, findUser, addDocument: addActivity, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, response }
+    { findUser, addUser, addDocument: addActivity, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent }
   )
 }
 

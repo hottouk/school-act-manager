@@ -13,9 +13,9 @@ import MyInfoModal from './Modal/MyInfoModal'
 const Nav = () => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
+  console.log(user)
   const navigate = useNavigate()
   const [isMyInfoShow, setIsMyInfoShow] = useState(false)
-
   //2. 함수
   const handleBtnClick = (event) => {
     switch (event.target.id) {
@@ -49,12 +49,25 @@ const Nav = () => {
       <ul className='menu_container'>
         <li><i className="fa-solid fa-key"></i><Link to='/login'>로그인</Link></li>
       </ul></>}
-    {user.uid && <>
+    {(user.uid && user.isTeacher) && <>
       <div className='welcome'><p>{user.name} 선생님 사랑합니다.</p></div>
       <ul className='menu_container'>
         <li id="home_btn" onClick={handleBtnClick}><i className="fa-solid fa-house"></i><Link to='/'>Home</Link></li>
         <li id="acti_btn" onClick={handleBtnClick}><i className="fa-solid fa-scroll"></i><Link to='/activities'>활동 관리</Link></li>
         <li id="class_btn" onClick={handleBtnClick}><i className="fa-solid fa-school"></i><Link to='/classRooms'>클래스 관리</Link></li>
+        <li id="class_btn" onClick={handleBtnClick}><i className="fa-solid fa-child"></i><Link to='/students'>학생 관리</Link></li>
+        {/* 모바일 전용 */}
+        <li id="my_info_btn" className='mobileOnly' onClick={handleBtnClick}><i className="fa-solid fa-user"></i>MyInfo</li>
+      </ul>
+      <img className="logo" src={brandLogo} alt='로고' onClick={() => setIsMyInfoShow(true)} />
+    </>}
+    {(user.uid && !user.isTeacher) && <>
+      <div className='welcome'><p>{user.name} 학생 사랑합니다.</p></div>
+      <ul className='menu_container'>
+        <li id="home_btn" onClick={handleBtnClick}><i className="fa-solid fa-house"></i><Link to='/'>Home</Link></li>
+        <li id="acti_btn" onClick={handleBtnClick}><i className="fa-solid fa-scroll"></i><Link to='/activities'>참여 활동</Link></li>
+        <li id="class_btn" onClick={handleBtnClick}><i className="fa-solid fa-school"></i><Link to='/classRooms'>참여 클래스</Link></li>
+        {/* 모바일 전용 */}
         <li id="my_info_btn" className='mobileOnly' onClick={handleBtnClick}><i className="fa-solid fa-user"></i>MyInfo</li>
       </ul>
       <img className="logo" src={brandLogo} alt='로고' onClick={() => setIsMyInfoShow(true)} />
@@ -64,7 +77,6 @@ const Nav = () => {
       show={isMyInfoShow}
       onHide={() => setIsMyInfoShow(false)}
     />
-
   </StyledNav >
   )
 }

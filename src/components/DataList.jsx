@@ -21,8 +21,9 @@ const DataList = ({ classRooms, activities }) => {
   //3. 함수
   const handleItemClick = (item) => {
     if (_classRoomList) {
-      navigate(`/classrooms/${item.id}`) //url 이동
+      console.log(item)
       dispatcher(setSelectClass(item))   //선택한 item 비휘발성 전역변수화
+      navigate(`/classrooms/${item.id}`) //url 이동
     }
     if (_actList) { navigate(`/activities/${item.id}`, { state: item }) }
   }

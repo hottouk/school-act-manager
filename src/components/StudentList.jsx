@@ -12,12 +12,14 @@ import green2 from "../image/myPet/green_pet2.png"
 import plus from "../image/icon/plus.png"
 //CSS
 import styled from "styled-components"
+import { useSelector } from 'react-redux'
 
 const StudentList = ({ studentList }) => {
+  //1. 변수
+  const user = useSelector(({ user }) => { return user })
   const navigate = useNavigate()
   const classId = useParams() //반 id
   const { getExpAndLevelByActList } = useGetLevel()
-  //1. 변수
   //대화창 내부변수
   const [modalShow, setModalShow] = useState(false)
 
@@ -29,7 +31,7 @@ const StudentList = ({ studentList }) => {
 
   return (
     <StyledContainer>
-      <Styledh4>2단계 - 반 학생별로 세부 수정하기</Styledh4>
+      <h4>학생 별 보기</h4>
       <StyledListContainer>
         {studentList.map((student) => {
           let name = '미등록'
@@ -53,7 +55,7 @@ const StudentList = ({ studentList }) => {
             </StyledListItem>
           )
         })}
-        <StyledListItem><StyledPlusImg src={plus} onClick={() => { setModalShow(true) }} /></StyledListItem>
+        {user.isTeacher && <StyledListItem><StyledPlusImg src={plus} onClick={() => { setModalShow(true) }} /></StyledListItem>}
       </StyledListContainer>
       {/* 대화창 */}
       <AddNewStudentModal
@@ -67,12 +69,13 @@ const StyledContainer = styled.div`
   box-sizing: border-box;  
   width: 100%;
   padding: 5px;
+  h4 {
+    display: flex;
+    justify-content: center;
+    margin: 10px auto;
+  }
 `
-const Styledh4 = styled.h4`
-  display: flex;
-  justify-content: center;
-  margin: 10px auto;
-`
+
 const StyledListContainer = styled.ul`
   display: flex;
   flex-wrap: wrap;

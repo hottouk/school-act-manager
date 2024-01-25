@@ -38,7 +38,7 @@ const ActivityForm = () => {
   const [modalShow, setModalShow] = useState(false)
   const [timerModalShow, setTimerModalShow] = useState(false)
   //4.데이터 쓰기/받기 변수
-  const { addDocument, updateAct, deleteDocument, response } = useFirestore('activities');
+  const { addDocument, updateAct, deleteDocument } = useFirestore('activities');
   //5.경로 이동 관련 변수
   const { state } = useLocation()
   const navigate = useNavigate()
@@ -46,15 +46,6 @@ const ActivityForm = () => {
   const { gptAnswer, askChatGpt, gptRes } = useChatGpt()
   //7.Style
   const clientHeight = useClientHeight(document.documentElement)
-
-  //2. useEffect
-  useEffect(() => {
-    if (response.isSuccess) {
-      setTitle('')
-      setContent('')
-      setRecord('')
-    }
-  }, [response.isSuccess]);
 
   useEffect(() => {
     if (state) {
@@ -143,7 +134,7 @@ const ActivityForm = () => {
     }
   }
 
-  //저장/수정버튼 클릭 제출
+  // 저장/수정버튼 클릭 제출
   const handleSubmit = (event) => {
     event.preventDefault();
     if (subject !== 'default') {

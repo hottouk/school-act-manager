@@ -19,9 +19,26 @@ let user = createSlice({
         uid: action.payload.uid,
         name: action.payload.name,
         email: action.payload.email,
-        isTeacher: undefined,
-        school: undefined
+        isTeacher: action.payload.isTeacher,
+        school: undefined,
+        //학생 전용
+        appliedClassList: action.payload.appliedClassList,
+        joinedClassList: action.payload.joinedClassList,
+        //교사 전용
+        appliedStudentClassList: action.payload.appliedStudentClassList
       };
+    },
+    setAppliedClassList(state, action) {
+      return {
+        ...state,
+        appliedClassList: action.payload
+      }
+    },
+    setNewsBoxList(state, action) {
+      return {
+        ...state,
+        appliedStudentClassList: action.payload
+      }
     }
   },
   extraReducers: builder => { //로그아웃 시에 state를 초기화한다.
@@ -29,5 +46,5 @@ let user = createSlice({
   },
 })
 
-export const { setUser } = user.actions
+export const { setUser, setAppliedClassList, setNewsBoxList } = user.actions
 export default user

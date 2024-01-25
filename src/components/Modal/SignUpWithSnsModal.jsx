@@ -5,13 +5,15 @@ import { useDispatch, useSelector } from 'react-redux'
 import Form from 'react-bootstrap/Form';
 //hooks
 import useFirestore from '../../hooks/useFirestore'
+//전역변수
 import { setUser } from '../../store/userSlice';
 //CSS
 import styled from 'styled-components'
 
+//24.01.21
 const SignUpWithSnsModal = (props) => {
   //1. 변수
-  const tempUser = useSelector(({ tempUser }) => { return tempUser }) //회원 가입 전 전역 변수
+  const tempUser = useSelector(({ tempUser }) => { return tempUser }) //회원 가입 전 구글 전역 변수
   const [isTeacher, setIsTeacher] = useState(undefined);
   const { addUser } = useFirestore("user")
   const dispatcher = useDispatch()
@@ -20,6 +22,7 @@ const SignUpWithSnsModal = (props) => {
   const handleBtnClick = () => {
     props.onHide()
   }
+  
   //제출
   const handleSubmit = (event) => {
     event.preventDefault(); //새로고침 방지

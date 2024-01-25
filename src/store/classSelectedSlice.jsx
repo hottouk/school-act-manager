@@ -8,8 +8,15 @@ let classSelected = createSlice({
       const selectedClass = action.payload
       return selectedClass
     },
+    
+    setAppliedStudentList(state, action) {
+      return {
+        ...state,
+        appliedStudentList: action.payload
+      }
+    }
   },
 })
 
-export const { setSelectClass } = classSelected.actions;
+export const { setSelectClass, setAppliedStudentList } = classSelected.actions;
 export default classSelected
