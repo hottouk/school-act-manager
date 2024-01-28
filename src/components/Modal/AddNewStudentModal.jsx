@@ -39,7 +39,7 @@ const AddNewStudentModal = (props) => {
       setStudentNumber('')
     }
   }
-  
+
   return (
     <Modal
       show={props.show}
@@ -49,8 +49,8 @@ const AddNewStudentModal = (props) => {
       <Modal.Header closeButton>
         <Modal.Title>학생 추가</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
+        <Modal.Body>
           <fieldset>
             <StyeldInputDiv>
               <label htmlFor="student_number">학번:&nbsp;&nbsp;</label>
@@ -65,9 +65,8 @@ const AddNewStudentModal = (props) => {
             <Button variant="secondary" id="cancel_btn" onClick={handleBtnClick}>취소</Button>
             <Button type='submit' variant="primary" id="confirm_btn" >확인</Button>
           </Modal.Footer>
-        </form>
-      </Modal.Body>
-
+        </Modal.Body>
+      </form>
     </Modal >
   )
 }

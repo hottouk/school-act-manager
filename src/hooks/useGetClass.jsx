@@ -33,7 +33,6 @@ const useGetClass = () => {
           renewClassData(user.joinedClassList, "joined")
         }
         if (user.appliedClassList) {
-          console.log(user.appliedClassList)
           renewClassData(user.appliedClassList, "applied")
         }
       } catch (error) {
@@ -46,7 +45,6 @@ const useGetClass = () => {
     let result = []
     await Promise.all(
       classList.map(async (item) => {
-        console.log(item)
         const classRef = doc(db, "classRooms", item.id)
         const classDocSnap = getDoc(classRef)
         await classDocSnap.then((classDoc) => {

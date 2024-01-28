@@ -4,9 +4,9 @@ import useGetMyUserInfo from '../../hooks/useGetMyUserInfo'
 import useEnrollClass from '../../hooks/useEnrollClass'
 import { useDispatch, useSelector } from 'react-redux'
 import { setUser } from '../../store/userSlice'
+import EmptyResult from '../../components/EmptyResult'
 
 const StudentManagement = () => {
-  //서버에서 갓잡은 싱싱한 내 정보를 전역변수화
   const user = useSelector(({ user }) => { return user })
   const { myUserInfo, errByGetMyUserInfo } = useGetMyUserInfo()
   const [_errByGetMyUserInfo, setErrByGetMyUserInfo] = useState(null)
@@ -15,22 +15,20 @@ const StudentManagement = () => {
 
   useEffect(() => {
     if (myUserInfo) {
-      dispatch(setUser(myUserInfo))
+      dispatch(setUser(myUserInfo)) //서버에서 갓잡은 내 정보를 전역변수화
     }
     if (errByGetMyUserInfo) {
       setErrByGetMyUserInfo(errByGetMyUserInfo)
     }
   }, [myUserInfo])
 
-  const handleBtnClick = (event, studentInfo, classInfo) => {
+  const handleBtnClick = (event, params) => {
     switch (event.target.id) {
       case "approval_btn":
-        console.log(classInfo, studentInfo)
-        approveMembership(classInfo, studentInfo)
+        approveMembership(params)
         break;
       case "deny_btn":
-        console.log(classInfo, studentInfo)
-        denyMembership(classInfo, studentInfo)
+        denyMembership(params)
         break;
       default: return
     }
@@ -39,18 +37,24 @@ const StudentManagement = () => {
   return (
     <StyledContainer>
       <StyledMain>
-        {(!user.appliedStudentClassList || user.appliedStudentClassList.length === 0) && <p>로딩중</p>}
+        {(!user.appliedStudentClassList || user.appliedStudentClassList.length === 0) && <EmptyResult comment="현재 신청 내역이 없습니다." />}
         {_errByGetMyUserInfo && <strong>_errByGetMyUserInfo</strong>}
         <ul>
-          {user.appliedStudentClassList && user.appliedStudentClassList.map((info) => {
-            let studentInfo = info.student
-            let classInfo = info.classInfo
-            let key = `${studentInfo.uid}${classInfo.id}`
+          {user.appliedStudentClassList && user.appliedStudentClassList.map((params) => {
+            let studentInfo = params.studentInfo;
+            let petInfo = params.petInfo;
+            let classInfo = params.classInfo
+            let key = params.id
             return (<li key={key}>
-              <p>{studentInfo.name}학생이 {classInfo.classTitle}반 가입을 신청했습니다.</p>
+              <p>
+                <span className='important_info'>{studentInfo.studentNumber} {studentInfo.name}</span>학생이
+                <span className='important_info'>{classInfo.grade}</span>학년
+                <span className='important_info'>{classInfo.subject} {classInfo.classTitle}</span>의
+                <span className='important_info'>{petInfo.label}</span>을(를) 구독 신청했습니다.
+              </p>
               <StyledBtnDiv>
-                <button id="approval_btn" onClick={(event) => { handleBtnClick(event, studentInfo, classInfo) }}>승인</button>
-                <button id="deny_btn" onClick={(event) => { handleBtnClick(event, studentInfo, classInfo) }}>거부</button>
+                <button id="approval_btn" onClick={(event) => { handleBtnClick(event, params) }}>승인</button>
+                <button id="deny_btn" onClick={(event) => { handleBtnClick(event,params) }}>거부</button>
               </StyledBtnDiv>
             </li>
             )
@@ -75,14 +79,21 @@ const StyledContainer = styled.main`
   }
 `
 const StyledMain = styled.main`
-  padding: 5px;
   margin-top: 50px;
   border-left: 12px #3454d1 double;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
-  h4 {
+  li { 
     display: flex;
-    justify-content: center;
-    margin: 10px auto;
+    justify-content: space-between;
+    align-items: center; 
+    padding: 10px;
+  }
+  p {
+    margin: 0; 
+  }
+  span.important_info {
+    color: #3454d1;
+    font-weight: bold;
   }
   @media screen and (max-width: 767px){
     margin-top: 0;
@@ -91,8 +102,9 @@ const StyledMain = styled.main`
     box-shadow: none;
   }
 `
-
 const StyledBtnDiv = styled.div`
-
+  button {
+    margin-left: 15px;
+  }
 `
 export default StudentManagement

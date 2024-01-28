@@ -4,21 +4,20 @@ import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
 import { setAllStudents } from '../../store/allStudentsSlice';
 import { setAllActivities } from '../../store/allActivitiesSlice.jsx';
+import styled from 'styled-components';
 //컴포넌트
 import MainSelector from './MainSelector.jsx';
 import StudentList from '../../components/StudentList';
 import ActivityList from '../../components/ActivityList.jsx';
 import EmptyResult from '../../components/EmptyResult.jsx';
+import ClassMemberModal from '../../components/Modal/ClassMemberModal.jsx';
 //hooks
 import useSubCollection from '../../hooks/useSubCollection';
-import useEnrollClass from '../../hooks/useEnrollClass.jsx';
 import useGetActivity from '../../hooks/useGetActivity.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useFirestore from '../../hooks/useFirestore.jsx';
-//스타일
-import styled from 'styled-components';
 
-//2024.01.23
+//2024.01.26
 const ClassRoomDetails = () => {
   //1.변수
   //전역 변수
@@ -31,11 +30,11 @@ const ClassRoomDetails = () => {
   const { subDocuments, subColErr } = useSubCollection("classRooms", thisClass.id, 'students', 'studentNumber') //모든 학생 List
   const { activityList, errByGetActi } = useGetActivity(thisClass)
   const { deleteDocument } = useFirestore("classRooms")
-  const { signUpUserInClass } = useEnrollClass()
   //모드
   const [isModifying, setIsModifying] = useState(false)
   const [isApplied, setIsApplied] = useState(false)
   const [isMember, setIsMember] = useState(false)
+  const [isModalShown, setIsModalShown] = useState(false)
   const clientHeight = useClientHeight(document.documentElement)
   // console.log(thisClass.id, '반 활동List', activityList)
   // console.log(thisClass.id, '반 학생List', subDocuments)
@@ -83,9 +82,7 @@ const ClassRoomDetails = () => {
         break;
       //학생 전용
       case "join_btn":
-        if (window.confirm(`${thisClass.classTitle} 클래스에 가입하시겠습니까?`)) {
-          signUpUserInClass(thisClass)
-        }
+        setIsModalShown(true)
         break;
       default: return
     }
@@ -137,9 +134,13 @@ const ClassRoomDetails = () => {
             }
             <StyledBtn id='delete_btn' onClick={handleBtnClick}>반 삭제</StyledBtn>
           </StyeldBtnDiv>}
-
         </StyledContainer>
       }
+      {isModalShown && <ClassMemberModal
+        show={isModalShown}
+        onHide={() => { setIsModalShown(false) }}
+        thisClass={thisClass}
+      />}
     </>
   )
 }

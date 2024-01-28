@@ -8,7 +8,7 @@ let MultiSelector = (
   //1. 변수
   let dispatcher = useDispatch() //redux dispatcher
 
-  //2. gkatn
+  //2. 함수
   const handleCheckboxOnChange = (event) => {
     switch (event.target.id) {
       case 'allStudent_checkbox':

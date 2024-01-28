@@ -7,9 +7,9 @@ import useFirestore from "../../hooks/useFirestore";
 //컴포넌트
 import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
 //이미지
-import mon_01 from "../../image/enemies/mon_01.png";
-import mon_02 from "../../image/enemies/mon_02.png"
-import mon_03 from "../../image/enemies/mon_03.png"
+import mon01 from "../../image/enemies/mon_01.png";
+import mon02 from "../../image/enemies/mon_02.png"
+import mon03 from "../../image/enemies/mon_03.png"
 import question from "../../image/icon/question.png"
 //스타일
 import styled from "styled-components";
@@ -86,7 +86,7 @@ const ActivityForm = () => {
     }
   }, [gptRes, gptAnswer])
 
-  //활동 저장 대화창 ==> 추후 디자인 수정 필요
+  //활동 저장 대화창 ==> 추후 디자인 수정 필요 (교사전용)
   const showConfirmModal = () => {
     let scores = { leadership: leadershipScore, careerScore, sincerityScore, coopScore, attitudeScore };
     let money = coin
@@ -170,13 +170,37 @@ const ActivityForm = () => {
           navigate(`/activities`)
         }
         break;
+      case "go_back_to_class_btn":
+        navigate(-1)
+        break;
+      case "do_this_act_btn":
+        console.log(state)
+        break;
       default: return
     }
   }
 
-  //활동 이미지 선택
+  //퀘스트 이미지 선택
   const handleImgPickerClick = () => {
     setModalShow(true)
+  }
+
+  const handleQuestImg = (monImg) => {
+    let img = question
+    switch (monImg) {
+      case "mon_01":
+        img = mon01
+        break;
+      case "mon_02":
+        img = mon02
+        break;
+      case "mon_03":
+        img = mon03
+        break;
+      default:
+        img = question;
+    }
+    return img
   }
 
   return (
@@ -184,18 +208,17 @@ const ActivityForm = () => {
       <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
         <fieldset>
           <StyledFirstDiv>
-            {state ? <legend>활동 수정하기</legend> : <legend>활동 작성하기</legend>}
-            {!monImg ? <StyledImgPicker src={question} alt="엑스이미지 찾기" onClick={() => { handleImgPickerClick() }} />
-              : (monImg === "mon_01") ? <StyledImgPicker src={mon_01} alt="몬스터1" onClick={() => { handleImgPickerClick() }} />
-                : (monImg === "mon_02") ? <StyledImgPicker src={mon_02} alt="몬스터2" onClick={() => { handleImgPickerClick() }} />
-                  : <StyledImgPicker src={mon_03} alt="몬스터3" onClick={() => { handleImgPickerClick() }} />}
+            {user.isTeacher && (state ? <legend>활동 수정하기</legend> : <legend>활동 작성하기</legend>)}
+            {!user.isTeacher && <legend>활동 신청하기</legend>}
+            <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
           </StyledFirstDiv>
           <StyledFirstDiv>
             <div>
               <label htmlFor="act_title" >활동 제목</label>
-              <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} />
+              {user.isTeacher && <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} />}
+              {!user.isTeacher && <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled />}
             </div>
-            <select id='act_subject' required value={subject} onChange={handleChange} >
+            {user.isTeacher && <select id='act_subject' required value={subject} onChange={handleChange}>
               <option value="default" disabled >과목을 선택하세요</option>
               <option value="국어">국어과</option>
               <option value="영어">영어과</option>
@@ -205,12 +228,14 @@ const ActivityForm = () => {
               <option value="예체능">음,미,체</option>
               <option value="제2외국어">제2외국어과</option>
               <option value="정보">정보</option>
-            </select>
+            </select>}
           </StyledFirstDiv>
           <label htmlFor="act_content" >활동 설명</label>
-          <textarea id="act_content" type="text" required onChange={handleChange} value={content} />
+          {user.isTeacher && <textarea id="act_content" type="text" required onChange={handleChange} value={content} />}
+          {!user.isTeacher && <textarea id="act_content" type="text" required onChange={handleChange} value={content} disabled />}
           <label htmlFor="act_record" >생기부 문구</label>
-          <textarea id="act_record" type="text" required onChange={handleChange} value={record} />
+          {user.isTeacher && <textarea id="act_record" type="text" required onChange={handleChange} value={record} />}
+          {!user.isTeacher && <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled />}
 
           <ScoreWrapper handleChange={handleChange}
             leadershipScore={leadershipScore}
@@ -221,11 +246,18 @@ const ActivityForm = () => {
             coin={coin}
           />
 
-          {/* 아이템List를 클릭하여 이동했을시 다른 폼 보여주기 */}
-          <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성하기</StyledBtn>
-          {state ? <StyledBtn type="submit">수정하기</StyledBtn> : <StyledBtn type="submit">저장하기</StyledBtn>}
-          {state && <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제하기</StyledBtn>}
-          <StyledBtn type="button" id="go_back_btn" onClick={handleBtnClick}>돌아가기</StyledBtn>
+          {user.isTeacher && <>
+            {/* 아이템List를 클릭하여 이동했을시 다른 폼 보여주기 */}
+            <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성하기</StyledBtn>
+            {state ? <StyledBtn type="submit">수정하기</StyledBtn> : <StyledBtn type="submit">저장하기</StyledBtn>}
+            {state && <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제하기</StyledBtn>}
+            <StyledBtn type="button" id="go_back_btn" onClick={handleBtnClick}>돌아가기</StyledBtn>
+          </>}
+          {!user.isTeacher && <>
+            <StyledBtn type="button" id="do_this_act_btn" onClick={handleBtnClick}>신청하기</StyledBtn>
+            <StyledBtn type="button" id="go_back_to_class_btn" onClick={handleBtnClick}>돌아가기</StyledBtn>
+          </>}
+
         </fieldset>
       </StyledForm>
       <GraphicDialogModal

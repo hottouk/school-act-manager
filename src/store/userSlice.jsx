@@ -24,6 +24,7 @@ let user = createSlice({
         //학생 전용
         appliedClassList: action.payload.appliedClassList,
         joinedClassList: action.payload.joinedClassList,
+        studentNumber: action.payload.studentNumber,
         //교사 전용
         appliedStudentClassList: action.payload.appliedStudentClassList
       };

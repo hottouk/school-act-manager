@@ -1,11 +1,12 @@
 //라이브러리
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
+import { useDispatch } from 'react-redux';
 import { useState } from 'react'
 import { appAuth } from '../firebase/config'
-//redux
-import { useDispatch } from 'react-redux';
-import { setUser } from '../store/userSlice'
+//hooks
 import useFirestore from './useFirestore';
+//redux
+import { setUser } from '../store/userSlice'
 import { setTempUser } from '../store/tempUserSlice';
 
 const useLogin = () => {
@@ -36,7 +37,7 @@ const useLogin = () => {
         setErr(null)
         setIsPending(false)
       }).catch((error) => {
-        window.alert.error(error.code, error.message)
+        window.alert(error.code, error.message)
         setErr(error.message)
         setIsPending(false)
       })

@@ -42,10 +42,11 @@ const useFirestore = (collectionName) => {
     let email = userInfo.email
     let name = userInfo.name
     let isTeacher = userInfo.isTeacher
+    let studentNumber = userInfo.studentNumber
     let docRef = doc(db, collectionName, uid)
     try {
       const createdTime = timeStamp.fromDate(new Date());
-      await setDoc(docRef, { uid, name, email, isTeacher, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
+      await setDoc(docRef, { uid, name, email, isTeacher, createdTime, studentNumber }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
     } catch (error) {
       console.error(error.message)
     }

@@ -6,8 +6,36 @@ import mon01 from '../image/enemies/mon_01.png'
 import mon02 from '../image/enemies/mon_02.png'
 import mon03 from '../image/enemies/mon_03.png'
 import mon04 from '../image/enemies/mon_04.png'
+import { useNavigate } from 'react-router-dom'
 
 const ActivityList = ({ activityList }) => {
+  const navigate = useNavigate()
+
+  const handleOnClick = (acti) => {
+    navigate(`/activities/${acti.id}`, { state: acti }) //url 이동
+  }
+
+  const handleQuestImg = (monImg) => {
+    let img = question
+    switch (monImg) {
+      case "mon_01":
+        img = mon01
+        break;
+      case "mon_02":
+        img = mon02
+        break;
+      case "mon_03":
+        img = mon03
+        break;
+      case "mon_04":
+        img = mon04
+        break;
+      default:
+        img = question;
+    }
+    return img
+  }
+
   return (
     <StyledContainer>
       <h4>퀘스트 목록</h4>
@@ -17,11 +45,7 @@ const ActivityList = ({ activityList }) => {
           let monImg = acti.monImg
           return (
             <StyledListItem key={acti.id}>
-              {!monImg && <img src={question} alt='퀘스트 이미지' ></img>}
-              {monImg === "mon_01" && <img src={mon01} alt='퀘스트 이미지' ></img>}
-              {monImg === "mon_02" && <img src={mon02} alt='퀘스트 이미지' ></img>}
-              {monImg === "mon_03" && <img src={mon03} alt='퀘스트 이미지' ></img>}
-              {monImg === "mon_04" && <img src={mon04} alt='퀘스트 이미지' ></img>}
+              <img src={handleQuestImg(monImg)} alt="퀘스트 img" onClick={() => { handleOnClick(acti) }} />
               <p className="acti_title">{actiTitle}</p>
             </StyledListItem>
           )
