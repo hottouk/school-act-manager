@@ -27,12 +27,12 @@ const ScoreWrapper = (props) => {
         </div>
         <div>
           <label htmlFor="act_attitude">태도</label>
-          <input id="act_attitudes" type="number" min="0" max="8"
+          <input id="act_attitude" type="number" min="0" max="8"
             value={props.attitudeScore} onChange={props.handleChange}></input>
         </div>
       </div>
       <div className="money">
-        <label htmlFor="act_attitude">리아</label>
+        <label htmlFor="act_coin">리아</label>
         <input id="act_coin" type="number" min="0" max="100"
           value={props.coin} onChange={props.handleChange}></input>
       </div>

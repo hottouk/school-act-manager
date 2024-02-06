@@ -3,6 +3,8 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { Timestamp, getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -23,6 +25,7 @@ const app = initializeApp(firebaseConfig);
 const appAuth = getAuth();
 const analytics = getAnalytics(app);
 const appFireStore = getFirestore(app);
+const storage = getStorage(app, "gs://school-act-manager.appspot.com");
 const timeStamp = Timestamp
 
-export { appFireStore, appAuth, timeStamp }
+export { appFireStore, appAuth, storage, timeStamp }

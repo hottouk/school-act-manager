@@ -33,44 +33,14 @@ const DataList = ({ classRooms, activities }) => {
         return (<li className='classRoomItem' key={classRoom.id} onClick={() => { handleItemClick(classRoom) }}>
           <h4>{classRoom.classTitle}</h4>
           <p>{classRoom.intro}</p>
-          <p>{classRoom.subject} 과목</p>
+          <p>과목: {classRoom.subject} </p>
         </li>)
       })}
       {_actList && _actList.map((act) => {
-        let subjectcolor = "rgb(120, 120, 120, 0.5)"
-        if (act.subject) {
-          switch (act.subject) {
-            case "국어":
-              subjectcolor = "#3454d1"
-              break;
-            case "영어":
-              subjectcolor = "aqua"
-              break;
-            case "수학":
-              subjectcolor = "#4542ff"
-              break;
-            case "사회":
-              subjectcolor = "orange"
-              break;
-            case "과학":
-              subjectcolor = "#1fe076"
-              break;
-            case "제2외국어":
-              subjectcolor = "#1fe076"
-              break;
-            case "정보":
-              subjectcolor = "blue"
-              break;
-            case "예체능":
-              subjectcolor = "#f5b0ab"
-              break;
-            default:
-          }
-        }
-        return (<StyledSubjectItem key={act.id} $subjectcolor={subjectcolor} onClick={() => { handleItemClick(act) }}>
+        return (<StyledSubjectItem key={act.id} onClick={() => { handleItemClick(act) }}>
           <h4>{act.title}</h4>
           <p>{act.content}</p>
-          <p>{act.subject} 과목</p>
+          <p>과목: {act.subject}</p>
         </StyledSubjectItem>)
       })}
     </StyledListContainer>
@@ -107,7 +77,6 @@ const StyledSubjectItem = styled.li`
   padding: 15px 25px;
   border: rgb(120, 120, 120, 0.5) 1px solid;
   border-radius: 15px;
-  box-shadow: ${(props) => props.$subjectcolor} 1px 1px 7px 1px inset;
   cursor: pointer;
 `
 export default DataList

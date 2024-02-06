@@ -3,7 +3,7 @@ import { appFireStore } from '../firebase/config'
 import { doc, runTransaction } from 'firebase/firestore'
 import { setAppliedClassList, setNewsBoxList } from '../store/userSlice'
 import { setAppliedStudentList } from '../store/classSelectedSlice'
-import useGetRidOverlap from '../components/useGetRidOverlap'
+import useGetRidOverlap from './useGetRidOverlap'
 
 const useEnrollClass = () => {
   const user = useSelector(({ user }) => { return user })

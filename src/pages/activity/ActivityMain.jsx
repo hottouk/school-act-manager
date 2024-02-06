@@ -27,11 +27,16 @@ const ActivityMain = () => {
 
   return (
     <StyledContainer $clientheight={clientHeight}>
-      <CardList dataList={_activityList} type="activity"
+      {user.isTeacher && <><CardList dataList={_activityList} type="activity"
         title="생성 활동 목록"
         tComment="아직 활동이 없습니다. 활동을 생성해주세요" />
+        <StyledBtn onClick={() => { navigate("/activities_setting") }}>활동 만들기</StyledBtn>
+      </>}
+      {!user.isTeacher && <><CardList dataList={user.myActList} type="activity"
+        title="참여 활동 목록"
+        sComment="참가한 활동이 없습니다. 활동에 참여해주세요" />
+      </>}
       {errerrByGetActi && <h3 style={{ color: "red" }}>{errerrByGetActi}</h3>}
-      <StyledBtn onClick={() => { navigate("/activities_setting") }}>활동 만들기</StyledBtn>
     </StyledContainer>
   )
 }

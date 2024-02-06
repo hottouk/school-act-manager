@@ -4,7 +4,7 @@ const useGetRidOverlap = () => {
   const makeUniqueArrWithEle = (cur, newEle, idName) => {
     let curList = cur
     let newList = [...curList, newEle]
-    let uniqueList
+    let uniqueList = newList
     if (idName === "uid") {
       uniqueList = newList.reduce((acc, cur) => {
         if (acc.findIndex(({ uid }) => uid === cur.uid) === -1) {
@@ -23,21 +23,33 @@ const useGetRidOverlap = () => {
     return uniqueList
   }
 
-  //중복 제거(arr 합산)
-  const makeUniqueArrWithArr = (cur, newArr, uidName) => {
-    let curList = cur
-    let newList = [...curList, ...newArr]
-    let uid = uidName
-    let uniqueList = newList.reduce((acc, cur) => {
-      if (acc.findIndex(({ uid }) => uid === cur.uidName) === -1) {
-        acc.push(cur)
-      }
-      return acc
-    }, []);
-    return uniqueList
+  const replaceItem = (curList, newEle, idName) => {
+    let uArr = []
+    if (idName === "uid") {
+      curList.map((item) => {
+        if (item.uid === newEle.uid) {
+          uArr.push(newEle)
+        } else {
+          uArr.push(item)
+        }
+        return null
+      })
+    }
+    else if (idName === "id") {
+      curList.map((item) => {
+        if (item.id === newEle.id) {
+          uArr.push(newEle)
+        } else {
+          uArr.push(item)
+        }
+        return curList
+      })
+    }
+    console.log(uArr)
+    return uArr
   }
 
-  return { makeUniqueArrWithEle, makeUniqueArrWithArr }
+  return { makeUniqueArrWithEle, replaceItem }
 }
 
 export default useGetRidOverlap

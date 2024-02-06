@@ -1,6 +1,6 @@
 import { appFireStore, timeStamp } from "../firebase/config"
-import { addDoc, collection, deleteDoc, doc, getDocs, query, runTransaction, setDoc, updateDoc, where } from "firebase/firestore"
-import { useDispatch, useSelector } from "react-redux"
+import { addDoc, collection, deleteDoc, doc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore"
+import { useSelector } from "react-redux"
 
 const useFirestore = (collectionName) => {
   const user = useSelector(({ user }) => { return user })

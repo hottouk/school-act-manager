@@ -25,20 +25,39 @@ let user = createSlice({
         appliedClassList: action.payload.appliedClassList,
         joinedClassList: action.payload.joinedClassList,
         studentNumber: action.payload.studentNumber,
+        myActList: action.payload.myActList,
+        myHomeworkList: action.payload.myHomeworkList,
         //교사 전용
-        appliedStudentClassList: action.payload.appliedStudentClassList
+        appliedStudentClassList: action.payload.appliedStudentClassList,
+        homeworkList: action.payload.homeworkList
       };
     },
+
     setAppliedClassList(state, action) {
       return {
         ...state,
         appliedClassList: action.payload
       }
     },
+
     setNewsBoxList(state, action) {
       return {
         ...state,
         appliedStudentClassList: action.payload
+      }
+    },
+
+    setMyActList(state, action) {
+      return {
+        ...state,
+        myActList: action.payload
+      }
+    },
+
+    setMyHomeworkList(state, action) {
+      return {
+        ...state,
+        myHomeworkList: action.payload
       }
     }
   },
@@ -47,5 +66,5 @@ let user = createSlice({
   },
 })
 
-export const { setUser, setAppliedClassList, setNewsBoxList } = user.actions
+export const { setUser, setAppliedClassList, setNewsBoxList, setMyActList, setMyHomeworkList } = user.actions
 export default user

@@ -18,10 +18,9 @@ const useGetActivity = (thisClass) => {
       } else { //반 활동에서 실행
         q = query(collection(db, "activities"), where("uid", "==", user.uid), where("subject", "==", thisClass.subject));
       }
-    } else { //학생용
+    } else { //학생용은
       if (!thisClass) {
-        //todo 신청한 활동만 볼 수 있게 고쳐야 함.
-        q = query(collection(db, "activities"));
+        return //반 활동에서만 작동함.
       } else {
         q = query(collection(db, "activities"), where("uid", "==", thisClass.uid), where("subject", "==", thisClass.subject));
       }

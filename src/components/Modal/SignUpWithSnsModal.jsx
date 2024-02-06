@@ -1,8 +1,8 @@
 //라이브러리
 import React, { useState } from 'react'
 import Modal from 'react-bootstrap/Modal';
-import { useDispatch, useSelector } from 'react-redux'
 import Form from 'react-bootstrap/Form';
+import { useDispatch, useSelector } from 'react-redux'
 //hooks
 import useFirestore from '../../hooks/useFirestore'
 //전역변수
@@ -108,7 +108,7 @@ const SignUpWithSnsModal = (props) => {
                 name='group1'
                 label={'교사 회원'}
                 value={'teacher'} />
-              <Form.Check onChange={handleRadioBtnClick} required
+              <Form.Check onChange={handleRadioBtnClick} 
                 inline
                 type='radio'
                 id={'teacher_radio_btn'}

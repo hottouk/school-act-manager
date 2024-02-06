@@ -13,8 +13,9 @@ const EmptyResult = (props) => {
 
 const StyledEmptyClassRoomDiv = styled.div`
   max-width: 540px;
-  margin: 60px auto 10px;
+  margin: 30px auto 10px;
   padding: 30px 20px 0;
+  border : 1px solid white;
   border-radius: 15px;
   img {
     display: block;

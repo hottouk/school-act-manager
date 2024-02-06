@@ -1,23 +1,26 @@
 //라이브러리
 import { useEffect, useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import Form from 'react-bootstrap/Form';
+import styled from "styled-components";
 //hooks
 import useChatGpt from "../../hooks/useChatGpt";
 import useClientHeight from "../../hooks/useClientHeight";
 import useFirestore from "../../hooks/useFirestore";
 //컴포넌트
 import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
+import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
+import ScoreWrapper from "../../components/ScoreWrapper"
 //이미지
 import mon01 from "../../image/enemies/mon_01.png";
 import mon02 from "../../image/enemies/mon_02.png"
 import mon03 from "../../image/enemies/mon_03.png"
 import question from "../../image/icon/question.png"
-//스타일
-import styled from "styled-components";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
-import ScoreWrapper from "../../components/ScoreWrapper";
+import useDoActivity from "../../hooks/useDoActivity";
+import SubmitHomework from "../../components/SubmitHomework";
 
+//24.01.28 수정
 const ActivityForm = () => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
@@ -27,6 +30,7 @@ const ActivityForm = () => {
   const [content, setContent] = useState('');
   const [record, setRecord] = useState('');
   const [monImg, setMonImg] = useState(null);
+  const [isHomework, setIsHomework] = useState(false)
   //2.경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
   const [careerScore, setCareerScore] = useState(0);
@@ -37,8 +41,9 @@ const ActivityForm = () => {
   //3.대화창 보여주기 변수
   const [modalShow, setModalShow] = useState(false)
   const [timerModalShow, setTimerModalShow] = useState(false)
-  //4.데이터 쓰기/받기 변수
+  //4.데이터 통신 변수
   const { addDocument, updateAct, deleteDocument } = useFirestore('activities');
+  const { takePartInThisActivity, cancelThisActivity } = useDoActivity()
   //5.경로 이동 관련 변수
   const { state } = useLocation()
   const navigate = useNavigate()
@@ -46,6 +51,19 @@ const ActivityForm = () => {
   const { gptAnswer, askChatGpt, gptRes } = useChatGpt()
   //7.Style
   const clientHeight = useClientHeight(document.documentElement)
+  //8. 학생 전용
+  const [isParticipating, setIsParticipating] = useState(false)
+
+  useEffect(() => {
+    if (user.myActList && state) {
+      let thisAct = user.myActList.find((ele) => { return ele.id === state.id })
+      if (thisAct) {
+        setIsParticipating(true)
+      } else {
+        setIsParticipating(false)
+      }
+    }
+  }, [user])
 
   useEffect(() => {
     if (state) {
@@ -55,6 +73,7 @@ const ActivityForm = () => {
       setRecord(state.record)
       setMonImg(state.monImg)
       setSubject(state.subject)
+      setIsHomework(state.isHomework)
       if (scoresObj) {
         setLeadershipScore(scoresObj.leadership)
         setCareerScore(scoresObj.careerScore)
@@ -95,14 +114,14 @@ const ActivityForm = () => {
       let actId = state.id
       let uid = state.uid
       if (confirm) {
-        let modifiedAct = { uid, title, subject, content, record, scores, money, monImg };
+        let modifiedAct = { uid, title, subject, content, record, scores, money, monImg, isHomework };
         updateAct(modifiedAct, actId)
         navigate(`/activities`)
       }
     } else {
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
-        let newAct = { uid: user.uid, title, subject, content, record, scores, money, monImg };
+        let newAct = { uid: user.uid, title, subject, content, record, scores, money, monImg, isHomework };
         addDocument(newAct)
         navigate(`/activities`)
       }
@@ -164,8 +183,7 @@ const ActivityForm = () => {
         navigate(`/activities`)
         break;
       case 'delete_btn':
-        const confirm = window.confirm('활동을 삭제하시겠습니까?')
-        if (confirm) {
+        if (window.confirm('활동을 삭제하시겠습니까?')) {
           deleteDocument(state.id)
           navigate(`/activities`)
         }
@@ -174,7 +192,14 @@ const ActivityForm = () => {
         navigate(-1)
         break;
       case "do_this_act_btn":
-        console.log(state)
+        if (window.confirm("이 활동을 신청하시겠습니까?")) {
+          takePartInThisActivity(state)
+        }
+        break;
+      case "cancel_this_act_btn":
+        if (window.confirm("이 활동을 신청 취소하시겠습니까?")) {
+          cancelThisActivity(state)
+        }
         break;
       default: return
     }
@@ -203,6 +228,17 @@ const ActivityForm = () => {
     return img
   }
 
+  const handleRadioBtnClick = (event) => {
+    switch (event.target.id) {
+      case 'homework_radio_btn':
+        setIsHomework(true)
+        break;
+      case 'activity_radio_btn':
+        setIsHomework(false)
+        break;
+      default: return
+    }
+  }
   return (
     <>
       <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
@@ -210,7 +246,10 @@ const ActivityForm = () => {
           <StyledFirstDiv>
             {user.isTeacher && (state ? <legend>활동 수정하기</legend> : <legend>활동 작성하기</legend>)}
             {!user.isTeacher && <legend>활동 신청하기</legend>}
-            <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
+            {user.isTeacher
+              ? <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
+              : <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" />
+            }
           </StyledFirstDiv>
           <StyledFirstDiv>
             <div>
@@ -230,9 +269,9 @@ const ActivityForm = () => {
               <option value="정보">정보</option>
             </select>}
           </StyledFirstDiv>
-          <label htmlFor="act_content" >활동 설명</label>
-          {user.isTeacher && <textarea id="act_content" type="text" required onChange={handleChange} value={content} />}
-          {!user.isTeacher && <textarea id="act_content" type="text" required onChange={handleChange} value={content} disabled />}
+          <label htmlFor="act_content" >GPT 또는 학생들에게 활동 설명하기</label>
+          {user.isTeacher && <textarea id="act_content" type="text" onChange={handleChange} value={content} />}
+          {!user.isTeacher && <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled />}
           <label htmlFor="act_record" >생기부 문구</label>
           {user.isTeacher && <textarea id="act_record" type="text" required onChange={handleChange} value={record} />}
           {!user.isTeacher && <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled />}
@@ -245,21 +284,49 @@ const ActivityForm = () => {
             attitudeScore={attitudeScore}
             coin={coin}
           />
-
+          {user.isTeacher &&
+            <div className='radio_div'>
+              <div>활동구분</div>
+              <Form.Check onChange={handleRadioBtnClick}
+                inline
+                type='radio'
+                id={'activity_radio_btn'}
+                name='isHomework_radio'
+                label={'교사 생기부 기록용'}
+                value={isHomework}
+              ></Form.Check>
+              <Form.Check onChange={handleRadioBtnClick}
+                inline
+                type='radio'
+                id={'homework_radio_btn'}
+                name='isHomework_radio'
+                label={'학생 과제 제출용'}
+                value={isHomework}
+              ></Form.Check>
+            </div>}
+          {/* 교사용 버튼 모음: 아이템List를 클릭하여 이동했을시 다른 폼 보여주기 */}
           {user.isTeacher && <>
-            {/* 아이템List를 클릭하여 이동했을시 다른 폼 보여주기 */}
             <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성하기</StyledBtn>
             {state ? <StyledBtn type="submit">수정하기</StyledBtn> : <StyledBtn type="submit">저장하기</StyledBtn>}
             {state && <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제하기</StyledBtn>}
             <StyledBtn type="button" id="go_back_btn" onClick={handleBtnClick}>돌아가기</StyledBtn>
           </>}
+          {/* 학생용 버튼 모음*/}
           {!user.isTeacher && <>
-            <StyledBtn type="button" id="do_this_act_btn" onClick={handleBtnClick}>신청하기</StyledBtn>
-            <StyledBtn type="button" id="go_back_to_class_btn" onClick={handleBtnClick}>돌아가기</StyledBtn>
+            {isHomework &&
+              (!isParticipating
+                ? <StyledBtn type="button" id="do_this_act_btn" onClick={handleBtnClick}>신청하기</StyledBtn>
+                : <><StyledBtn type="button" $color={"#3454d1"} $background={"#efefef"}>참여중</StyledBtn>
+                  <StyledBtn type="button" id="cancel_this_act_btn" onClick={handleBtnClick}>신청 취소</StyledBtn></>
+              )
+            }
+            <StyledBtn type="button" id="go_back_to_class_btn" onClick={handleBtnClick}>확인</StyledBtn>
+            {state && <>
+            </>}
           </>}
-
         </fieldset>
       </StyledForm>
+      {isParticipating && <SubmitHomework activity={state} />}
       <GraphicDialogModal
         show={modalShow}
         onHide={() => setModalShow(false)}
@@ -273,8 +340,7 @@ const ActivityForm = () => {
 }
 const StyledForm = styled.form`
   max-width: 540px;
-  height: 870px;
-  margin: 60px auto;
+  margin: 60px auto 30px;
   padding: 20px;
   color: #efefef;
   background-color: #3454d1;
@@ -363,8 +429,8 @@ const StyledBtn = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #efefef;
-  background-color: transparent;
+  color: ${(props) => { return props.$color ? props.$color : "#efefef" }};
+  background-color: ${(props) => { return props.$background ? props.$background : "#3454d1" }};
   border-radius: 15px;
   border: 2px solid #efefef;
   padding: 25px;
