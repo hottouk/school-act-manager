@@ -54,10 +54,17 @@ let user = createSlice({
       }
     },
 
-    setMyHomeworkList(state, action) {
+    setMyHomeworkList(state, action) { //학생용
       return {
         ...state,
         myHomeworkList: action.payload
+      }
+    },
+
+    setHomeworkList(state, action) {
+      return {
+        ...state,
+        homeworkList: action.payload
       }
     }
   },
@@ -66,5 +73,5 @@ let user = createSlice({
   },
 })
 
-export const { setUser, setAppliedClassList, setNewsBoxList, setMyActList, setMyHomeworkList } = user.actions
+export const { setUser, setAppliedClassList, setNewsBoxList, setMyActList, setMyHomeworkList, setHomeworkList } = user.actions
 export default user

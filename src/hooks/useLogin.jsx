@@ -29,7 +29,6 @@ const useLogin = () => {
             openSnsModal(true)     //sns 가입창 열기
           }
           else { //기존 유저라면 유저 정보 전역변수에 저장
-            console.log(userInfofromServer)
             dispatcher(setUser(userInfofromServer))
             window.confirm(`${userInfofromServer.name}으로 로그인 되었습니다.`)
           }

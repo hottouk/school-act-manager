@@ -188,7 +188,9 @@ const StudentDetail = () => {
                       {isModifiying &&
                         <Select
                           ref={(element) => { return selectRef.current[index] = element }}
-                          options={allActivityList.map((activity) => { return { label: activity.title, value: activity.id } })}
+                          options={allActivityList.map((activity) => {
+                            return { label: activity.title, value: activity.id, key: activity.id }
+                          })}
                           onChange={(event) => { handleSelectOnchange(event, index) }} />}
                     </div>
                   </StyledMidlDiv>
@@ -204,7 +206,6 @@ const StudentDetail = () => {
                     </>
                     }
                   </StyledAcclDiv>
-
                 </StyledContentRow>
               })
             }
@@ -358,7 +359,7 @@ const StyledTitleRow = styled.div`
   background-color: #3454d1; 
   color: white;
 `
-const StyledContentRow = styled.div`
+const StyledContentRow = styled.li`
   display: flex;
   background-color: ${(props) => props.color};
   img {

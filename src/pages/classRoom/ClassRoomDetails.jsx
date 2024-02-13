@@ -111,11 +111,11 @@ const ClassRoomDetails = () => {
           {(!user.isTeacher && isMember) && <StyledMain>
             {(!activityList || activityList.length === 0)
               ? <EmptyResult comment="등록된 활동이 없습니다." />
-              : <ActivityList activityList={activityList} />}
+              : <ActivityList activityList={activityList} classInfo={thisClass} />} 
             {errByGetActi && <EmptyResult comment={errByGetActi} />}
           </StyledMain>}
           {/* 학생 상세 보기 */}
-          {(!user.isTeacher && isMember) && <StyledMain>
+          {((!user.isTeacher && isMember) || user.isTeacher) && <StyledMain>
             {(!subDocuments || subDocuments.length === 0)
               ? <h3>반에 학생들이 등록되어 있지 않습니다. {subColErr}</h3>
               : <StudentList studentList={subDocuments} />}

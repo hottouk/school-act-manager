@@ -1,31 +1,28 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import EmptyResult from './EmptyResult'
 import DataList from './DataList'
 import styled from 'styled-components'
 
-const CardList = ({ dataList, type, title, tComment, sComment }) => {
-  const user = useSelector(({ user }) => { return user })
+const CardList = ({ dataList, type, title, comment }) => {
   return (<>
-    {(dataList && dataList.length !== 0) && <>
+    {(dataList && dataList.length > 0) && <>
       <h4>{title}</h4>
-      {type === "classroom" && <StyledClassRoomListDiv>
+      {type === "classroom" && <StyledListDiv>
         <DataList classRooms={dataList} />
-      </StyledClassRoomListDiv>}
-      {type === "activity" && <StyledClassRoomListDiv>
+      </StyledListDiv>}
+      {type === "activity" && <StyledListDiv>
         <DataList activities={dataList} />
-      </StyledClassRoomListDiv>}
+      </StyledListDiv>}
     </>}
     {(!dataList || dataList.length === 0) && <>
       <h4>{title}</h4>
-      <StyledClassRoomListDiv>
-        {user.isTeacher && < EmptyResult comment={tComment} />}
-        {!user.isTeacher && < EmptyResult comment={sComment} />}
-      </StyledClassRoomListDiv></>}
+      <StyledListDiv>
+        < EmptyResult comment={comment} />
+      </StyledListDiv></>}
   </>)
 }
 
-const StyledClassRoomListDiv = styled.div`
+const StyledListDiv = styled.div`
   margin: 4px auto 50px;
   border-radius: 15px;
   border: 4px dotted #3454d1;

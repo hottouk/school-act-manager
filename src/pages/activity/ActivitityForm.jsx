@@ -18,7 +18,8 @@ import mon02 from "../../image/enemies/mon_02.png"
 import mon03 from "../../image/enemies/mon_03.png"
 import question from "../../image/icon/question.png"
 import useDoActivity from "../../hooks/useDoActivity";
-import SubmitHomework from "../../components/SubmitHomework";
+import Homework from "../../components/Homework";
+import CircleList from "../../components/CircleList";
 
 //24.01.28 수정
 const ActivityForm = () => {
@@ -56,7 +57,7 @@ const ActivityForm = () => {
 
   useEffect(() => {
     if (user.myActList && state) {
-      let thisAct = user.myActList.find((ele) => { return ele.id === state.id })
+      let thisAct = user.myActList.find((item) => { return item.id === state.acti.id })
       if (thisAct) {
         setIsParticipating(true)
       } else {
@@ -67,13 +68,15 @@ const ActivityForm = () => {
 
   useEffect(() => {
     if (state) {
-      const scoresObj = state.scores
-      setTitle(state.title)
-      setContent(state.content)
-      setRecord(state.record)
-      setMonImg(state.monImg)
-      setSubject(state.subject)
-      setIsHomework(state.isHomework)
+      console.log(state.acti)
+      let scoresObj = state.acti.scores
+      let acti = state.acti
+      setTitle(acti.title)
+      setContent(acti.content)
+      setRecord(acti.record)
+      setMonImg(acti.monImg)
+      setSubject(acti.subject)
+      setIsHomework(acti.isHomework)
       if (scoresObj) {
         setLeadershipScore(scoresObj.leadership)
         setCareerScore(scoresObj.careerScore)
@@ -111,8 +114,8 @@ const ActivityForm = () => {
     let money = coin
     if (state) {
       const confirm = window.confirm('활동을 수정하시겠습니까?')
-      let actId = state.id
-      let uid = state.uid
+      let actId = state.acti.id
+      let uid = state.acti.uid
       if (confirm) {
         let modifiedAct = { uid, title, subject, content, record, scores, money, monImg, isHomework };
         updateAct(modifiedAct, actId)
@@ -167,7 +170,7 @@ const ActivityForm = () => {
   const handleBtnClick = (event) => {
     event.preventDefault();
     switch (event.target.id) {
-      case 'gpt_btn':
+      case 'gpt_btn': //교사 전용
         if (title !== '' && subject !== 'default') {
           try {
             askChatGpt(title, subject, content)
@@ -179,27 +182,28 @@ const ActivityForm = () => {
           window.alert('활동 제목과 과목을 채워주세요. 간단한 설명을 입력하면 더 정확한 문구를 얻을 수 있어요')
         }
         break;
-      case 'go_back_btn':
-        navigate(`/activities`)
-        break;
+
       case 'delete_btn':
         if (window.confirm('활동을 삭제하시겠습니까?')) {
-          deleteDocument(state.id)
+          deleteDocument(state.acti.id)
           navigate(`/activities`)
         }
         break;
       case "go_back_to_class_btn":
         navigate(-1)
         break;
-      case "do_this_act_btn":
+      case "do_this_act_btn": //학생 전용
         if (window.confirm("이 활동을 신청하시겠습니까?")) {
-          takePartInThisActivity(state)
+          takePartInThisActivity(state.acti, state.classInfo)
         }
         break;
       case "cancel_this_act_btn":
         if (window.confirm("이 활동을 신청 취소하시겠습니까?")) {
-          cancelThisActivity(state)
+          cancelThisActivity(state.acti)
         }
+        break;
+      case 'go_back_btn': //공용
+        navigate(`/activities`)
         break;
       default: return
     }
@@ -284,6 +288,7 @@ const ActivityForm = () => {
             attitudeScore={attitudeScore}
             coin={coin}
           />
+          {/* 활동구분 */}
           {user.isTeacher &&
             <div className='radio_div'>
               <div>활동구분</div>
@@ -292,16 +297,17 @@ const ActivityForm = () => {
                 type='radio'
                 id={'activity_radio_btn'}
                 name='isHomework_radio'
-                label={'교사 생기부 기록용'}
-                value={isHomework}
+                label={'생기부 기록 전용'}
+                // value={isHomework}
+                checked
               ></Form.Check>
               <Form.Check onChange={handleRadioBtnClick}
                 inline
                 type='radio'
                 id={'homework_radio_btn'}
                 name='isHomework_radio'
-                label={'학생 과제 제출용'}
-                value={isHomework}
+                label={'과제 제출도 가능'}
+              // value={isHomework}
               ></Form.Check>
             </div>}
           {/* 교사용 버튼 모음: 아이템List를 클릭하여 이동했을시 다른 폼 보여주기 */}
@@ -321,12 +327,11 @@ const ActivityForm = () => {
               )
             }
             <StyledBtn type="button" id="go_back_to_class_btn" onClick={handleBtnClick}>확인</StyledBtn>
-            {state && <>
-            </>}
           </>}
         </fieldset>
       </StyledForm>
-      {isParticipating && <SubmitHomework activity={state} />}
+      {isParticipating && <Homework activity={state.acti} />}
+      <CircleList dataList={state.acti.studentParticipatingList} acti={state.acti}/>
       <GraphicDialogModal
         show={modalShow}
         onHide={() => setModalShow(false)}

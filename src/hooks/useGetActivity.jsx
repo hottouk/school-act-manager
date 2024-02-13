@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { appFireStore } from '../firebase/config'
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore'
 
-const useGetActivity = (thisClass) => {
+const useGetActivity = (thisClass) => { //데이터 통신
   const db = appFireStore
   const user = useSelector(({ user }) => { return user }) //전역변수 user정보
   const isTeacher = user.isTeacher;

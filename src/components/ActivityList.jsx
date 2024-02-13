@@ -8,11 +8,13 @@ import mon03 from '../image/enemies/mon_03.png'
 import mon04 from '../image/enemies/mon_04.png'
 import { useNavigate } from 'react-router-dom'
 
-const ActivityList = ({ activityList }) => {
+//학생 전용
+const ActivityList = ({ activityList, classInfo }) => {
   const navigate = useNavigate()
 
   const handleOnClick = (acti) => {
-    navigate(`/activities/${acti.id}`, { state: acti }) //url 이동
+    console.log(acti)
+    navigate(`/activities/${acti.id}`, { state: { acti: { ...acti, fromWhere: classInfo.id }, classInfo } }) //url 이동 --> activityForm
   }
 
   const handleQuestImg = (monImg) => {

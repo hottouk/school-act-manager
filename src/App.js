@@ -17,6 +17,7 @@ import { useSelector } from 'react-redux';
 import { Helmet } from "react-helmet";
 import StudentManagement from './pages/student/StudentManagement';
 import ActivityForm from './pages/activity/ActivitityForm';
+import Homework from './components/Homework';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -35,6 +36,7 @@ function App() {
           {/* 활동 관리 */}
           <Route path="/activities" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/:activityId" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/activities/:activityId/:studentId" element={uid ? <Homework /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities_setting" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 관리 */}
           <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />

@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import { setSelectClass } from '../store/classSelectedSlice'
 
 //2024.01.09
-const DataList = ({ classRooms, activities }) => {
+const DataList = ({ classRooms, activities }) => {//todo 데이터 리스트, 타입으로 정리하기
   //1. 변수
   const navigate = useNavigate()
   const [_classRoomList, setClassRoomList] = useState(null);
@@ -21,10 +21,12 @@ const DataList = ({ classRooms, activities }) => {
   //3. 함수
   const handleItemClick = (item) => {
     if (_classRoomList) {
-      dispatcher(setSelectClass(item))   //선택한 item 비휘발성 전역변수화
+      dispatcher(setSelectClass(item))   //선택한 교실 비휘발성 전역변수화
       navigate(`/classrooms/${item.id}`) //url 이동
     }
-    if (_actList) { navigate(`/activities/${item.id}`, { state: item }) }
+    if (_actList) {
+      navigate(`/activities/${item.id}`, { state: { acti: item } })
+    }
   }
 
   return (
@@ -36,11 +38,11 @@ const DataList = ({ classRooms, activities }) => {
           <p>과목: {classRoom.subject} </p>
         </li>)
       })}
-      {_actList && _actList.map((act) => {
-        return (<StyledSubjectItem key={act.id} onClick={() => { handleItemClick(act) }}>
-          <h4>{act.title}</h4>
-          <p>{act.content}</p>
-          <p>과목: {act.subject}</p>
+      {_actList && _actList.map((acti) => {
+        return (<StyledSubjectItem key={acti.id} onClick={() => { handleItemClick(acti) }}>
+          <h4>{acti.title}</h4>
+          <p>{acti.content}</p>
+          <p>과목: {acti.subject}</p>
         </StyledSubjectItem>)
       })}
     </StyledListContainer>

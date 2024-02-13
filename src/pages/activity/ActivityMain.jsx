@@ -16,8 +16,9 @@ const ActivityMain = () => {
   const user = useSelector(({ user }) => { return user })
   const navigate = useNavigate()
   //활동 정보
-  const { activityList, errerrByGetActi } = useGetActivity()
+  const { activityList, errByGetActi } = useGetActivity() //데이터 통신
   const [_activityList, setActivityList] = useState(null)
+  //CSS
   const clientHeight = useClientHeight(document.documentElement)
 
   //2. UseEffect
@@ -29,14 +30,14 @@ const ActivityMain = () => {
     <StyledContainer $clientheight={clientHeight}>
       {user.isTeacher && <><CardList dataList={_activityList} type="activity"
         title="생성 활동 목록"
-        tComment="아직 활동이 없습니다. 활동을 생성해주세요" />
+        comment="아직 활동이 없습니다. 활동을 생성해주세요" />
         <StyledBtn onClick={() => { navigate("/activities_setting") }}>활동 만들기</StyledBtn>
       </>}
       {!user.isTeacher && <><CardList dataList={user.myActList} type="activity"
         title="참여 활동 목록"
-        sComment="참가한 활동이 없습니다. 활동에 참여해주세요" />
+        comment="참가한 활동이 없습니다. 활동에 참여해주세요" />
       </>}
-      {errerrByGetActi && <h3 style={{ color: "red" }}>{errerrByGetActi}</h3>}
+      {errByGetActi && <h3 style={{ color: "red" }}>{errByGetActi}</h3>}
     </StyledContainer>
   )
 }
