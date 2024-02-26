@@ -20,8 +20,9 @@ import question from "../../image/icon/question.png"
 import useDoActivity from "../../hooks/useDoActivity";
 import Homework from "../../components/Homework";
 import CircleList from "../../components/CircleList";
+import QuestModal from "../../components/Modal/QuestModal";
 
-//24.01.28 수정
+//24.02.13 수정
 const ActivityForm = () => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
@@ -35,13 +36,15 @@ const ActivityForm = () => {
   //2.경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
   const [careerScore, setCareerScore] = useState(0);
-  const [sincerityScore, setSincerityScore] = useState(0);
+  const [sincerityScore, setSincerityScore] = useState(1);
   const [coopScore, setCoopScore] = useState(0);
   const [attitudeScore, setAttitudeScore] = useState(0);
   const [coin, setCoin] = useState(0);
   //3.대화창 보여주기 변수
-  const [modalShow, setModalShow] = useState(false)
+  const [graphicModalShow, setgraphicModalShow] = useState(false)
   const [timerModalShow, setTimerModalShow] = useState(false)
+  const [questModalShow, setQuestModalShow] = useState(false)
+  const [isHomeworkSubmit, setIsHomeworkSubmit] = useState(false)
   //4.데이터 통신 변수
   const { addDocument, updateAct, deleteDocument } = useFirestore('activities');
   const { takePartInThisActivity, cancelThisActivity } = useDoActivity()
@@ -68,7 +71,6 @@ const ActivityForm = () => {
 
   useEffect(() => {
     if (state) {
-      console.log(state.acti)
       let scoresObj = state.acti.scores
       let acti = state.acti
       setTitle(acti.title)
@@ -135,7 +137,7 @@ const ActivityForm = () => {
   const handleChange = (event) => {
     if (event.target.id === 'act_title') {
       setTitle(event.target.value)
-    } else if (event.target.id === 'act_subject') {
+    } else if (event.target.id === "act_subject") {
       setSubject(event.target.value)
     } else if (event.target.id === 'act_content') {
       setContent(event.target.value)
@@ -149,7 +151,7 @@ const ActivityForm = () => {
       setSincerityScore(Number(event.target.value))
     } else if (event.target.id === 'act_coop') {
       setCoopScore(Number(event.target.value))
-    } else if (event.target.id === 'act_attitudes') {
+    } else if (event.target.id === 'act_attitude') {
       setAttitudeScore(Number(event.target.value))
     } else if (event.target.id === 'act_coin') {
       setCoin(Number(event.target.value))
@@ -183,7 +185,7 @@ const ActivityForm = () => {
         }
         break;
 
-      case 'delete_btn':
+      case "delete_btn":
         if (window.confirm('활동을 삭제하시겠습니까?')) {
           deleteDocument(state.acti.id)
           navigate(`/activities`)
@@ -211,7 +213,7 @@ const ActivityForm = () => {
 
   //퀘스트 이미지 선택
   const handleImgPickerClick = () => {
-    setModalShow(true)
+    setgraphicModalShow(true)
   }
 
   const handleQuestImg = (monImg) => {
@@ -298,8 +300,7 @@ const ActivityForm = () => {
                 id={'activity_radio_btn'}
                 name='isHomework_radio'
                 label={'생기부 기록 전용'}
-                // value={isHomework}
-                checked
+                checked={!isHomework}
               ></Form.Check>
               <Form.Check onChange={handleRadioBtnClick}
                 inline
@@ -307,7 +308,7 @@ const ActivityForm = () => {
                 id={'homework_radio_btn'}
                 name='isHomework_radio'
                 label={'과제 제출도 가능'}
-              // value={isHomework}
+                checked={isHomework}
               ></Form.Check>
             </div>}
           {/* 교사용 버튼 모음: 아이템List를 클릭하여 이동했을시 다른 폼 보여주기 */}
@@ -323,22 +324,26 @@ const ActivityForm = () => {
               (!isParticipating
                 ? <StyledBtn type="button" id="do_this_act_btn" onClick={handleBtnClick}>신청하기</StyledBtn>
                 : <><StyledBtn type="button" $color={"#3454d1"} $background={"#efefef"}>참여중</StyledBtn>
-                  <StyledBtn type="button" id="cancel_this_act_btn" onClick={handleBtnClick}>신청 취소</StyledBtn></>
+                  {!isHomeworkSubmit && <StyledBtn type="button" id="cancel_this_act_btn" onClick={handleBtnClick}>신청 취소</StyledBtn>}</>
               )
             }
             <StyledBtn type="button" id="go_back_to_class_btn" onClick={handleBtnClick}>확인</StyledBtn>
           </>}
         </fieldset>
       </StyledForm>
-      {isParticipating && <Homework activity={state.acti} />}
-      <CircleList dataList={state.acti.studentParticipatingList} acti={state.acti}/>
+      {isParticipating && <Homework activity={state.acti} homeworkSubmit={(isSubmit) => { setIsHomeworkSubmit(isSubmit) }} />}
+      {state && <CircleList dataList={state.acti.studentParticipatingList} acti={state.acti} />}
       <GraphicDialogModal
-        show={modalShow}
-        onHide={() => setModalShow(false)}
+        show={graphicModalShow}
+        onHide={() => setgraphicModalShow(false)}
         setMonImg={setMonImg}
       />
       <Wait3SecondsModal
         show={timerModalShow}
+      />
+      <QuestModal
+        show={questModalShow}
+        onHide={() => setQuestModalShow(false)}
       />
     </>
   )
@@ -371,6 +376,7 @@ const StyledForm = styled.form`
     min-height: 150px;
     margin-top: 5px;
     margin-bottom: 15px;
+    border-radius: 7px;
   }
   @media screen and (max-width: 767px){
     position: fixed;
@@ -410,9 +416,11 @@ const StyledFirstDiv = styled.div`
     margin-bottom: 15px;
     max-width: 280px;
     height: 35px;
+    border-radius: 7px;
   }
   select {
     height: 35px;
+    border-radius: 7px;
   }
 `
 const StyledImgPicker = styled.img`

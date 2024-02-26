@@ -15,7 +15,7 @@ import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassRoomMakeForm from './pages/classSetting/ClassRoomMakeForm';
 import { useSelector } from 'react-redux';
 import { Helmet } from "react-helmet";
-import StudentManagement from './pages/student/StudentManagement';
+import News from './pages/main/News';
 import ActivityForm from './pages/activity/ActivitityForm';
 import Homework from './components/Homework';
 
@@ -40,13 +40,14 @@ function App() {
           <Route path="/activities_setting" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 관리 */}
           <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
-          <Route path='/classrooms/:id' element={uid ? <ClassRoomDetails /> : <Navigate replace={true} to='/login' />} />
-          <Route path='/classrooms/:id/allStudents' element={uid ? <ClassAllStudents /> : <Navigate replace={true} to='/login' />} />
-          <Route path='/classrooms/:id/:studentId' element={uid ? <StudentDetail /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/classrooms/:id" element={uid ? <ClassRoomDetails /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/classrooms/:id/allStudents" element={uid ? <ClassAllStudents /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/classrooms/:id/:studentId" element={uid ? <StudentDetail /> : <Navigate replace={true} to='/login' />} />
           {/* //클래스 만들기, 교사 회원만 가능 */}
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
           <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassRoomMakeForm /> : <Navigate replace={true} to='/' />} />
-          <Route path="/students" element={user.isTeacher ? <StudentManagement /> : <Navigate replace={true} to='/' />} />
+          {/* 새소식 관리 */}
+          <Route path="/news" element={uid ? <News /> : <Navigate replace={true} to='/' />} />
           {/* 로그인/회원가입 */}
           <Route path="/login" element={!uid ? <Login /> : <Navigate replace={true} to='/' />} />
         </Routes>

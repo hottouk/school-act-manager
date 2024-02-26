@@ -1,6 +1,6 @@
 const useGetRidOverlap = () => {
 
-  //중복 제거(ele 합산)
+  //중복 제거(ele 기존 배열 합산)
   const makeUniqueArrWithEle = (curList, newEle, idName) => {
     let newList = [...curList, newEle]
     let uniqueList
@@ -22,27 +22,16 @@ const useGetRidOverlap = () => {
     return uniqueList
   }
 
+  //교체(ele 기존 item 교체)
   const replaceItem = (curList, newEle, idName) => {
-    let uArr = []
+    let uArr
     if (idName === "uid") {
-      curList.map((item) => {
-        if (item.uid === newEle.uid) { //기존 item들과 신규 ele비교
-          uArr.push(newEle) //같으면 신규
-        } else { //다르면 기존
-          uArr.push(item)
-        }
-        return null
-      })
+      let deletedArr = curList.filter(({ uid }) => uid !== newEle.uid)
+      uArr = [...deletedArr, newEle]
     }
     else if (idName === "id") {
-      curList.map((item) => {
-        if (item.id === newEle.id) {
-          uArr.push(newEle)
-        } else {
-          uArr.push(item)
-        }
-        return curList
-      })
+      let deletedArr = curList.filter(({ id }) => id !== newEle.id)
+      uArr = [...deletedArr, newEle]
     }
     return uArr
   }

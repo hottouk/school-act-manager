@@ -5,6 +5,30 @@ import { useSelector } from "react-redux"
 const useStorage = () => {
   const user = useSelector(({ user }) => user)
 
+  //프로필 변경
+  const saveProfileImgStorage = async (file) => {
+    const profileRef = ref(storage, `profile/${user.uid}`)
+    const createdTime = timeStamp.fromDate(new Date());
+    await uploadBytes(profileRef, file).then((snapshot) => {
+      console.log('Uploaded a blob or file!', snapshot, createdTime);
+    }).catch((err) => {
+      window.alert(err)
+      console.log(err)
+    })
+  }
+
+  //프로필 url
+  const getProfileImgUrl = async (setProfileImg, voidImg) => {
+    let url
+    const profileRef = ref(storage, `profile/${user.uid}`)
+    await getDownloadURL(profileRef).then((downloadUrl) => {
+      url = downloadUrl
+    }).catch((err) => {
+      console.log(err);
+    })
+    return (url)
+  }
+
   const submitHomeworkStorage = (file, actiParam) => {
     const homeworkRef = ref(storage, `assignments/${user.uid}/${actiParam.id}/${file.name}`)
     const createdTime = timeStamp.fromDate(new Date());
@@ -15,16 +39,21 @@ const useStorage = () => {
     })
   }
 
-  const modifyHomeworkStorage = (newfile, curFileName, actiParam) => {
+  const modifyHomeworkStorage = (newFile, curFileName, actiParam) => {
+    console.log(newFile, curFileName, actiParam)
     const oldWorkRef = ref(storage, `assignments/${user.uid}/${actiParam.id}/${curFileName}`)
-    const newWorkRef = ref(storage, `assignments/${user.uid}/${actiParam.id}/${newfile.name}`)
+    const newWorkRef = ref(storage, `assignments/${user.uid}/${actiParam.id}/${newFile.name}`)
     const createdTime = timeStamp.fromDate(new Date());
-    deleteObject(oldWorkRef).catch((err) => { 
+    deleteObject(oldWorkRef).then((snapshot) => {
+      console.log("File deleted successfully", snapshot, createdTime)
+    }).catch((err) => {
+      window.alert(err)
       console.log(err)
     })
-    uploadBytes(newWorkRef, newfile).then((snapshot) => {
+    uploadBytes(newWorkRef, newFile).then((snapshot) => {
       console.log('Uploaded a blob or file!', snapshot, createdTime);
     }).catch((err) => {
+      window.alert(err)
       console.log(err)
     })
   }
@@ -75,7 +104,7 @@ const useStorage = () => {
     })
   }
   return (
-    { submitHomeworkStorage, modifyHomeworkStorage, cancelHomeworkStorage, getImgUrl, getDownloadHomeworkFile }
+    { submitHomeworkStorage, modifyHomeworkStorage, cancelHomeworkStorage, getImgUrl, getDownloadHomeworkFile, saveProfileImgStorage, getProfileImgUrl }
   )
 }
 

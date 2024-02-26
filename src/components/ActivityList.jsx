@@ -1,20 +1,34 @@
-import React from 'react'
 import styled from 'styled-components'
-
 import question from '../image/icon/question.png'
 import mon01 from '../image/enemies/mon_01.png'
 import mon02 from '../image/enemies/mon_02.png'
 import mon03 from '../image/enemies/mon_03.png'
 import mon04 from '../image/enemies/mon_04.png'
+import doneIcon from "../image/icon/done_icon.png"
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { useEffect, useState } from 'react'
 
 //학생 전용
 const ActivityList = ({ activityList, classInfo }) => {
+  const user = useSelector(({ user }) => user)
+  const [studentUser, setStudentUser] = useState(null)
   const navigate = useNavigate()
+  useEffect(() => { //공용
+    if (user.isTeacher) {
+      //todo
+    } else {
+      setStudentUser(
+        { email: user.email, name: user.name, studentNumber: user.studentNumber, uid: user.uid }
+      )
+    }
+  }, [user])
+
+
 
   const handleOnClick = (acti) => {
     console.log(acti)
-    navigate(`/activities/${acti.id}`, { state: { acti: { ...acti, fromWhere: classInfo.id }, classInfo } }) //url 이동 --> activityForm
+    navigate(`/activities/${acti.id}`, { state: { acti: { ...acti, fromWhere: classInfo.id }, student: studentUser, classInfo } }) //url 이동 --> activityForm
   }
 
   const handleQuestImg = (monImg) => {
@@ -45,9 +59,15 @@ const ActivityList = ({ activityList, classInfo }) => {
         {activityList.map((acti) => {
           let actiTitle = acti.title
           let monImg = acti.monImg
+          let done = null;
+          if (acti.studentDoneList) {
+            done = acti.studentDoneList.find((item) => { return item.uid === user.uid })
+          }
           return (
             <StyledListItem key={acti.id}>
-              <img src={handleQuestImg(monImg)} alt="퀘스트 img" onClick={() => { handleOnClick(acti) }} />
+              {done
+                ? <img src={doneIcon} alt="완료" onClick={() => { window.alert("완료된 활동입니다. 나의 정보에서 확인하세요.") }} />
+                : <img src={handleQuestImg(monImg)} alt="퀘스트 img" onClick={() => { handleOnClick(acti) }} />}
               <p className="acti_title">{actiTitle}</p>
             </StyledListItem>
           )

@@ -6,15 +6,19 @@ import AddNewStudentModal from './Modal/AddNewStudentModal'
 //hooks
 import useGetLevel from '../hooks/useGetLevel'
 //이미지
-import egg from "../image/myPet/egg.png"
-import green1 from "../image/myPet/green_pet1.png"
-import green2 from "../image/myPet/green_pet2.png"
+import eggBlue from "../image/myPet/egg_b.png"
+import eggGreen from "../image/myPet/egg_g.png"
+import eggYellow from "../image/myPet/egg_y.png"
+import water01 from "../image/myPet/water/pet_water_01.png"
+import water02 from "../image/myPet/water/pet_water_02.png"
+import water03 from "../image/myPet/water/pet_water_03.png"
 import plus from "../image/icon/plus.png"
 //CSS
 import styled from "styled-components"
 import { useSelector } from 'react-redux'
+import PetImg from './PetImg'
 
-const StudentList = ({ studentList }) => {
+const StudentList = ({ petList }) => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
   const navigate = useNavigate()
@@ -24,38 +28,35 @@ const StudentList = ({ studentList }) => {
   const [modalShow, setModalShow] = useState(false)
 
   //함수
-  const handleImgClick = (student) => {
-    const studentId = student.id //클릭한 학생 id
-    navigate(`/classrooms/${classId.id}/${studentId}`, { state: student })
+  const handleImgClick = (pet) => {
+    const petId = pet.id //클릭한 펫 id
+    navigate(`/classrooms/${classId.id}/${petId}`, { state: pet })
   }
 
   return (
     <StyledContainer>
       <h4>학생 별 보기</h4>
       <StyledListContainer>
-        {studentList.map((student) => {
+        {petList.map((item) => {
           let name = '미등록'
-          if (student.writtenName) {
-            name = student.writtenName
+          if (item.writtenName) {
+            name = item.writtenName
           }
           let expAndLevel = { exp: 0, level: 0 }
-          let actList = student.actList
+          let actList = item.actList
           if (actList) { //기록된 활동이 있다면
             expAndLevel = getExpAndLevelByActList(actList)
           }
-          let studentNumber = student.studentNumber
+          let studentNumber = item.studentNumber
           return (
-            <StyledListItem key={student.id}>
-              {(expAndLevel.level === 0) && <img src={egg} alt='펫' onClick={() => { handleImgClick(student) }} />}
-              {(expAndLevel.level === 1) && <img src={green1} alt='펫' onClick={() => { handleImgClick(student) }} />}
-              {(expAndLevel.level === 2) && <img src={green2} alt='펫' onClick={() => { handleImgClick(student) }} />}
-              {(expAndLevel.level === 3) && <img src={green2} alt='펫' onClick={() => { handleImgClick(student) }} />}
+            <StyledLi key={item.id}>
+              <PetImg subject={item.subject} level={expAndLevel.level} onClick={() => { handleImgClick(item) }} />
               <p className="student_number">{studentNumber}</p>
               <p className="student_name">{name}</p>
-            </StyledListItem>
+            </StyledLi>
           )
         })}
-        {user.isTeacher && <StyledListItem><StyledPlusImg src={plus} onClick={() => { setModalShow(true) }} /></StyledListItem>}
+        {user.isTeacher && <StyledLi><StyledPlusImg src={plus} onClick={() => { setModalShow(true) }} /></StyledLi>}
       </StyledListContainer>
       {/* 대화창 */}
       <AddNewStudentModal
@@ -84,12 +85,13 @@ const StyledListContainer = styled.ul`
     padding: 0;
   }
 `
-const StyledListItem = styled.li`
+const StyledLi = styled.li`
   width: 80px;
   margin: 10px;
   img {
     width: 100%;
     height: 80px;
+    padding: 4px;
     transition: transform 0.1s;
     border: black 1px solid;
     border-radius: 15px;

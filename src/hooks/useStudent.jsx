@@ -1,7 +1,7 @@
 
 const useStudent = () => {
 
-  //주어진 학년 반에 번호+1에 따라 학번을 만든다. 
+  //주어진 학년 반에 번호+1에 -> 학번 string 반환
   const createStudentNumber = (number, grade, classNumber) => {
     let studentNumber = 0
     let _number = Number(number) //숫자로 변환
@@ -13,7 +13,7 @@ const useStudent = () => {
     return studentNumber
   }
 
-  //전달받은 학생의 수 만큼 학생 개체를 만들어 반환한다.
+  //학생 obj * 학생 수 -> List 반환
   const makeStudent = (numberOfStudent, grade, classNumber) => {
     let studentList = []
     for (let i = 0; i < numberOfStudent; i++) {

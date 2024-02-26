@@ -16,31 +16,37 @@ import egg from "../../image/myPet/egg.png";
 import green1 from "../../image/myPet/green_pet1.png"
 import green2 from "../../image/myPet/green_pet2.png"
 import x_btn from "../../image/icon/x_btn.png"
+import PetImg from '../../components/PetImg';
+import useGetMyUserInfo from '../../hooks/useGetMyUserInfo';
 
 const StudentDetail = () => {
   //1.변수
   //url 관련
+  const user = useSelector(({ user }) => user)
   const navigate = useNavigate();
   const { state } = useLocation()
   const params = useParams()
-  let { studentNumber, actList, writtenName } = state //개별 학생 props 변수
+  let { studentNumber, actList, writtenName, master, subject } = state //개별 학생 url 이동 변수
   //전역 변수
   const allActivityList = useSelector(({ allActivities }) => { return allActivities })
   const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //전체 학생 전역 변수
   //hooks
   const { getAbilityScores, getExpAndLevelByActList } = useGetLevel()
+  const { fetchMyPetInfo } = useGetMyUserInfo()
   //편집 모드 
   const [isModifiying, setIsModifying] = useState(false)
-  const { deleteStudent, updateStudent } = useFirestore('classRooms')
+  const { deleteStudent, updateStudent } = useFirestore("classRooms")
   //학생 관련 정보
   const [nthStudent, setNthStudent] = useState(null)
-  let expAndLevel = { exp: 0, level: 0 }
-  let abilityScores = {}
   const [_studentNumber, setStudentNumber] = useState(null)
   const [_writtenName, setWrittenName] = useState('미등록')
   const [_actList, setActList] = useState(null)
   const [_newActList, setNewActList] = useState(null)
   const [deletedIndex, setDeletedIndex] = useState([])
+  const [_isMaster, setIsMaster] = useState(false)
+  const [_subject, setSubject] = useState('')
+  let expAndLevel = { exp: 0, level: 0 }
+  let abilityScores = {}
   if (actList) { //기록된 활동이 있다면
     expAndLevel = getExpAndLevelByActList(actList)
     abilityScores = getAbilityScores(actList)
@@ -56,18 +62,28 @@ const StudentDetail = () => {
     if (writtenName) {
       setWrittenName(writtenName)
     }
+    setSubject(subject)
     setActList(actList)
+    setIsMaster(master === user.uid) //누른 학생 본인 여부 확인
     setNthStudent(allStudentList.findIndex(({ id }) => { return id === params.studentId })) //전체 학생에서 몇번째인지 index 찾는다.
-  }, [studentNumber])
+  }, [state])
+
+  useEffect(() => {
+    if (!user.isTeacher) { //학생만 실행
+      if (user.uid === master) {
+        fetchMyPetInfo(state) //학생 펫정보 업데이트
+      }
+    }
+  }, [])
 
   //3.함수
-  const moveStudent = (student) => {
+  const moveStudent = (student) => { //화살표 이동
     navigate(`/classrooms/${params.id}/${student.id}`, { state: student })
   }
 
   const handleInputOnChange = (event) => { //이름 수정
     switch (event.target.id) {
-      case 'input_name':
+      case "input_name":
         setWrittenName(event.target.value)
         break;
       default: return
@@ -153,13 +169,10 @@ const StudentDetail = () => {
 
   return (
     <StyledContainer>
-      <StyledArrowLeftBtn id="leftArwBtn" onClick={handleBtnClick} />
+      {user.isTeacher && <StyledArrowLeftBtn id="leftArwBtn" onClick={handleBtnClick} />}
       <StyledStudentInfoPannel>
         <StyledTopPannel>
-          {expAndLevel.level === 0 && < StyledPetImg src={egg} alt="레벨0 알" />}
-          {expAndLevel.level === 1 && < StyledPetImg src={green1} alt="레벨1풀" />}
-          {expAndLevel.level === 2 && < StyledPetImg src={green2} alt="레벨2풀" />}
-          {expAndLevel.level === 3 && < StyledPetImg src={green2} alt="레벨2풀" />}
+          <PetImg subject={_subject} level={expAndLevel.level} />
           <StyledTopRightInfo>
             <p>학번: {_studentNumber}</p>
             <p>이름: {!isModifiying
@@ -179,48 +192,57 @@ const StudentDetail = () => {
               <StyledMidlDiv>활동</StyledMidlDiv>
               <StyledAcclDiv style={{ justifyContent: "center" }}>생기부</StyledAcclDiv>
             </StyledTitleRow>
-            {!_actList || _actList.length === 0 ? <div className='no_act_record'>활동이 없어유ㅠㅠ</div>
-              : _actList.map((act, index) => {
-                return <StyledContentRow key={act.id}>
-                  <StyledMidlDiv>
-                    <div ref={(element) => { return divRef.current[index] = element }} className='title_change_div'>
-                      <p>{act.title}</p>
-                      {isModifiying &&
-                        <Select
+            {(user.isTeacher || _isMaster) && <>
+              {!_actList || _actList.length === 0 ? <div className='no_act_record'>활동이 없어유ㅠㅠ</div>
+                : _actList.map((act, index) => {
+                  return <StyledContentRow key={act.id}>
+                    <StyledMidlDiv>
+                      <div ref={(element) => { return divRef.current[index] = element }} className='title_change_div'>
+                        <p>{act.title}</p>
+                        {isModifiying && <Select
                           ref={(element) => { return selectRef.current[index] = element }}
                           options={allActivityList.map((activity) => {
                             return { label: activity.title, value: activity.id, key: activity.id }
                           })}
                           onChange={(event) => { handleSelectOnchange(event, index) }} />}
-                    </div>
-                  </StyledMidlDiv>
-                  <StyledAcclDiv>
-                    {!isModifiying && <span>{act.record}</span>}
-                    {isModifiying && <>
-                      <textarea
-                        defaultValue={act.record}
-                        ref={(element) => { return textAreaRef.current[index] = element }}
-                        disabled>
-                      </textarea>
-                      <img src={x_btn} id='delete_act_btn' alt="삭제x" onClick={(event) => { return handleBtnClick(event, act, index) }} />
-                    </>
-                    }
-                  </StyledAcclDiv>
-                </StyledContentRow>
-              })
-            }
+                      </div>
+                    </StyledMidlDiv>
+                    <StyledAcclDiv>
+                      {!isModifiying && <span>{act.record}</span>}
+                      {isModifiying && <>
+                        <textarea
+                          defaultValue={act.record}
+                          ref={(element) => { return textAreaRef.current[index] = element }}
+                          disabled>
+                        </textarea>
+                        <img src={x_btn} id='delete_act_btn' alt="삭제x" onClick={(event) => { return handleBtnClick(event, act, index) }} />
+                      </>}
+                    </StyledAcclDiv>
+                  </StyledContentRow>
+                })}
+            </>}
+            {(!user.isTeacher && !_isMaster) && <div className='no_act_record'>볼 권한이 없습니다. 본인만 열람 가능합니다.</div>}
           </StyledBotGridInfo>
         </StyledBotPannel>
       </StyledStudentInfoPannel>
-      <StyledArrowRightBtn id="rightArwBtn" onClick={handleBtnClick} />
-      <StyeldBtnDiv>
-        <StyledBtn id='back_btn' onClick={handleBtnClick}>목록</StyledBtn>
-        {!isModifiying
-          ? <StyledBtn id='edit_btn' onClick={handleBtnClick}>수정</StyledBtn>
-          : <StyledBtn id='save_btn' onClick={handleBtnClick}>저장</StyledBtn>
-        }
-        <StyledBtn id='delete_btn' onClick={handleBtnClick}>삭제</StyledBtn>
-      </StyeldBtnDiv>
+      {/* 교사전용 */}
+      {user.isTeacher && <>
+        <StyledArrowRightBtn id="rightArwBtn" onClick={handleBtnClick} />
+        <StyeldBtnDiv>
+          <StyledBtn id='back_btn' onClick={handleBtnClick}>목록</StyledBtn>
+          {!isModifiying
+            ? <StyledBtn id='edit_btn' onClick={handleBtnClick}>수정</StyledBtn>
+            : <StyledBtn id='save_btn' onClick={handleBtnClick}>저장</StyledBtn>
+          }
+          <StyledBtn id='delete_btn' onClick={handleBtnClick}>삭제</StyledBtn>
+        </StyeldBtnDiv>
+      </>}
+      {/* 학생전용 */}
+      {!user.isTeacher &&
+        <StyeldBtnDiv>
+          <StyledBtn id='back_btn' onClick={handleBtnClick} $width="100%">목록</StyledBtn>
+        </StyeldBtnDiv>
+      }
     </StyledContainer>
   )
 }
@@ -257,19 +279,24 @@ const StyledTopPannel = styled.div`
   background-color: #efefef;
   border: 1px solid black;
   border-radius: 15px;
-`
-
-const StyledPetImg = styled.img`
+  img {
   display: inline-block;
-  width: 120px;
-  height: 120px;
-  border: 1px solid black;
-  border-radius: 60px;
+    width: 120px;
+    height: 120px;
+    padding: 7px;
+    border: 1px solid black;
+    border-radius: 60px;
+    background-color: white;
   @media screen and (max-width: 767px){
     width: 80px;
     height: 80px;
     border-radius: 40px;
   }
+  }
+`
+
+const StyledPetImg = styled.img`
+  
 `
 const StyledTopRightInfo = styled.div`
   position: absolute;
@@ -415,7 +442,7 @@ const StyledBtn = styled.button`
   justify-content: center;
   align-items: center;
   margin-top: 25px;
-  width: 250px;
+  width: ${(props) => { return props.$width ? props.$width : "250px" }};
   color: royalBlue;
   background-color: transparent;
   border-radius: 15px;

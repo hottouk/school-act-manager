@@ -34,7 +34,7 @@ const SelectedDialogModal = (props) => {
 
   const handleConfirm = () => {
     props.onHide()
-    props.writeDataOnDB()
+    props.writeAccDataOnDB()
     props.onClearSelect()
   }
 

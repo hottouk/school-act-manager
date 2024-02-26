@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 //hooks
 import useDevideTS from '../../hooks/useDevideTS'
 //이미지
-import iphone from '../../image/icon/iphone.png'
+import main from '../../image/main.png'
 //css
 import styled from 'styled-components'
 import useClientHeight from '../../hooks/useClientHeight'
@@ -32,7 +32,7 @@ const ClassMain = () => {
         <StyledWrapper>
           <h1>App For the Teacher, by the Teacher, of the Teacher</h1>
           <p>체계적 세특 관리, 이제 (곧) 모바일로 세특쓰세요. (곧) 모바일 출시</p>
-          <img className='landing_img' src={iphone} alt="랜딩이미지" />
+          <img className='landing_img' src={main} alt="랜딩이미지" />
         </StyledWrapper>
       </StyledLandingBackground>
       <StyledWhiteBackground>
@@ -44,33 +44,6 @@ const ClassMain = () => {
       <StyledBlueBackground>
         <StyledWrapper>
           <p className='bible'>너희는 먼저 그의 나라와 그의 의를 구하라. 그리하면 이 모든 것을 너희에게 더하시리라. 마태복음 6:33</p>
-          <h3>사용 가능 서비스</h3>
-          <div className='iconContainer'>
-            <div className="itemContainer">
-              <div className="iconBackground">
-                <i />
-              </div>
-              <p>생기부도우미</p>
-            </div>
-            <div className="itemContainer">
-              <div className="iconBackground">
-                <i />
-              </div>
-              <p>생기부도우미</p>
-            </div>
-            <div className="itemContainer">
-              <div className="iconBackground">
-                <i />
-              </div>
-              <p>생기부도우미</p>
-            </div>
-            <div className="itemContainer">
-              <div className="iconBackground">
-                <i />
-              </div>
-              <p>생기부도우미</p>
-            </div>
-          </div>
         </StyledWrapper>
       </StyledBlueBackground>
     </StyledContainer>
@@ -108,7 +81,7 @@ const StyledLandingBackground = styled.div`
     width: 400px;
     position: relative;
     right: 20px;
-    bottom: 27px;
+    bottom: -12px;
   }
   @media screen and (max-width: 767px) {
     position: relative;
@@ -153,7 +126,6 @@ const StyledWhiteBackground = styled.div`
 `
 const StyledBlueBackground = styled.div`
   background-color: #499add;
-  height: 400px;
   color: #efefef;
   padding: 20px;
   p.bible {

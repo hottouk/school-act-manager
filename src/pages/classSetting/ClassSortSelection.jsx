@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import classSort1 from '../../image/class/class_sort1.png'
+import classSort2 from '../../image/class/class_sort2.png'
+import classSort3 from '../../image/class/class_sort3.png'
+import classSort4 from '../../image/class/class_sort4.png'
+import classSort5 from '../../image/class/class_sort5.png'
+import classSort6 from '../../image/class/class_sort6.png'
+
+
 import styled from 'styled-components'
 import useClientHeight from '../../hooks/useClientHeight'
 
@@ -46,33 +54,39 @@ const ClassSortSelection = () => {
           <legend>나이스 출석부</legend>
           <p>나이스 출석부가 있을 때</p>
           <p>학번, 이름 자동 생성</p>
+          <img src={classSort5} alt="클래스5" id="with_neis" onClick={handleCardBtnClick}></img>
           <StyledSelectBtn id="with_neis" onClick={handleCardBtnClick}>선택</StyledSelectBtn>
         </StyledCardDiv>
         <StyledCardDiv $color={"#3454d1"} id="with_number" onClick={handleCardBtnClick}>
           <legend>학번 생성</legend>
           <p>학번 자동 생성, 이름 수기 입력</p>
+          <img src={classSort4} alt="클래스4" id="with_number" onClick={handleCardBtnClick}></img>
           <StyledSelectBtn id="with_number" onClick={handleCardBtnClick}>선택</StyledSelectBtn>
         </StyledCardDiv>
         <StyledCardDiv $color={"#3454d1"} id="by_hand" onClick={handleCardBtnClick}>
           <legend>수기 입력</legend>
           <p>학생을 수작업으로 등록</p>
+          <img src={classSort6} alt="클래스6" id="by_hand" onClick={handleCardBtnClick}></img>
           <StyledSelectBtn id="by_hand" onClick={handleCardBtnClick}>선택</StyledSelectBtn>
         </StyledCardDiv>
       </StyledCardContainer> : <StyledCardContainer $clientheight={clientHeight}>
         <h3>클래스 종류 선택</h3>
         <StyledCardDiv id="subject" $color={"#3454d1"} onClick={handleCardBtnClick}>
-          <legend>교과반</legend>
-          <p>과세특 기록용</p>
+          <legend id="subject" onClick={handleCardBtnClick}>교과반</legend>
+          <p id="subject" onClick={handleCardBtnClick}>과세특 기록용</p>
+          <img src={classSort1} alt="클래스1" id="subject" onClick={handleCardBtnClick}></img>
         </StyledCardDiv>
         <StyledCardDiv id="homeroom" onClick={handleCardBtnClick}>
           <legend>담임반</legend>
           <p>행발, 진로, 자율활동기록용, </p>
           <p className='ban'>추후 서비스</p>
+          <img src={classSort2} alt="클래스2"></img>
         </StyledCardDiv>
         <StyledCardDiv id="club" onClick={handleCardBtnClick}>
           <legend>동아리</legend>
           <p>동아리 활동 기록용, 추후 서비스</p>
           <p className='ban'>추후 서비스</p>
+          <img src={classSort3} alt="클래스3"></img>
         </StyledCardDiv>
       </StyledCardContainer>}
     </>
@@ -90,10 +104,11 @@ const StyledCardContainer = styled.div`
   justify-content: space-around;
   h3 {
     width: 100%;
-    margin: 0 auto 45px;
+    margin: 0 auto 35px;
     display: flex;
     justify-content: center;
   }
+ 
   @media screen and (max-width: 767px){
     position: fixed;
     width: 100%;
@@ -102,9 +117,9 @@ const StyledCardContainer = styled.div`
     gap: 20px;
     padding-bottom: 20px;
     overflow-y: scroll;
-  }
-  h3 {
-    margin: 0 auto 15px;
+    h3 {
+      margin: 0 auto 15px;
+    }
   }
 `
 const StyledCardDiv = styled.div`
@@ -114,6 +129,7 @@ const StyledCardDiv = styled.div`
   border-radius: 15px;
   cursor: pointer;
   box-shadow: ${(props) => { return props.$color }} 1px 1px 7px 1px;
+  position: relative;
   legend {
     color: #3454d1;
     font-weight: bold;
@@ -129,6 +145,14 @@ const StyledCardDiv = styled.div`
     diplay: inline-block;
     font-size: 14px;
     margin-bottom: 2px;
+  }
+  img {
+    width: 70%;
+    margin: 50px auto;
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    left: 4px;
   }
   @media screen and (max-width: 767px){
     position: relative;

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { appFireStore } from '../firebase/config'
-import { useSelector } from 'react-redux'
-import { doc, getDoc } from 'firebase/firestore'
+import { useDispatch, useSelector } from 'react-redux'
+import { doc, getDoc, runTransaction, updateDoc } from 'firebase/firestore'
+import useGetRidOverlap from './useGetRidOverlap'
+import { setmyPetList } from '../store/userSlice'
 
 const useGetMyUserInfo = () => {
   const db = appFireStore
@@ -9,6 +11,9 @@ const useGetMyUserInfo = () => {
   const [myUserInfo, setMyUserinfo] = useState(null)
   const [appliedStudentClassList, setappliedStudentClassList] = useState(null)
   const [error, setError] = useState(null)
+  const { replaceItem } = useGetRidOverlap()
+  const { makeUniqueArrWithEle } = useGetRidOverlap()
+  const dispatcher = useDispatch()
 
   useEffect(() => {
     try {
@@ -18,15 +23,76 @@ const useGetMyUserInfo = () => {
     }
   }, [])
 
-  const fetchMyUserInfo = async () => {
-    const myUserInfoRef = doc(db, "user", user.uid)
-    await getDoc(myUserInfoRef).then((myInfo) => {
+  const fetchMyUserInfo = async () => { //교사가 학생 클래스 가입 승인 시
+    const userRef = doc(db, "user", user.uid)
+    await getDoc(userRef).then((myInfo) => {
       setMyUserinfo(myInfo.data())
-      setappliedStudentClassList(myInfo.data().appliedStudentClassList)
+      if (user.isTeacher) { //학생의 경우 제외
+        setappliedStudentClassList(myInfo.data().appliedStudentClassList)
+      }
     })
   }
 
-  return ({ myUserInfo, appliedStudentClassList, errByGetMyUserInfo: error })
+  //2024.2.19
+  const fetchMyPetInfo = async (petInfo) => {//학생
+    let userRef = doc(db, "user", user.uid)
+    let petActList = petInfo.actList //교사가 기입한 actList
+    let myPetList;
+    let myDoneActList;
+    await runTransaction(db, async (transaction) => {
+      let userDoc = await transaction.get(userRef)
+      myPetList = userDoc.data().myPetList
+      myDoneActList = userDoc.data().myDoneActList
+      if (myPetList) {
+        myPetList = replaceItem(myPetList, petInfo, "id")
+      } else {
+        myPetList = [petInfo]
+      }
+      //petActList가 있다면
+      let diffActList = []
+      if (petActList) {
+        if (!myDoneActList) { //myDone이 없음. 교사 기록 첫 열람.
+          diffActList = [...petActList]
+        } else {
+          petActList.map((petActItem) => { //myDone 있음.
+            let isFound = (myDoneActList.findIndex((doneActItem) => { return doneActItem.id === petActItem.id }) !== -1) //같은 요소 찾기
+            if (!isFound) { //못 찾음 -> 차이 발생.
+              diffActList.push(petActItem)
+            }
+            return null
+          })
+        }
+      }
+      //차이가 있는 경우
+      if (diffActList) { //acti DoneList에 본인 정보 저장
+        Promise.all(diffActList.map(async (item) => {
+          let actiRef = doc(db, "activities", item.id)
+          let studentInfo = { name: user.name, studentNumber: user.studentNumber, uid: user.uid }
+          let studentDoneList
+          await transaction.get(actiRef).then((actiDoc) => {
+            studentDoneList = actiDoc.data().studentDoneList
+            if (studentDoneList) { //기존
+              studentDoneList = makeUniqueArrWithEle(studentDoneList, studentInfo, "uid")
+            } else { //신규
+              studentDoneList = [studentInfo]
+            }
+          })
+          updateDoc(actiRef, { studentDoneList })
+          return null
+        }))
+        myDoneActList = petActList
+        transaction.update(userRef, { myPetList, myDoneActList })
+      }
+    }).then(() => {
+      dispatcher(setmyPetList(myPetList))
+    }).catch((err) => {
+      window.alert(err)
+      console.log(err)
+    })
+
+  }
+
+  return ({ myUserInfo, appliedStudentClassList, fetchMyPetInfo, errByGetMyUserInfo: error })
 }
 
 export default useGetMyUserInfo

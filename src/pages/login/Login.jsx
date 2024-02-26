@@ -12,7 +12,7 @@ import mainLogo from '../../image/logo.png'
 //css
 import styled from 'styled-components';
 
-
+//24.2.21
 const Login = () => {
   //1. 변수
   const { err, isPending, googleLogin, KakaoLoginOnSuccess } = useLogin();
@@ -21,14 +21,14 @@ const Login = () => {
   return (
     <StyledContainer>
       <StyledSnsLoginDiv>
-        <h3>생기부 입력 도우미</h3>
-        <img src={mainLogo} alt='메인 로고' />
+        <h3>생기부 쫑알이</h3>
+        <img src={mainLogo} alt="메인 로고" />
       </StyledSnsLoginDiv>
       <StyledSnsLoginDiv>
         <h3>SNS로 3초만에 가입/로그인</h3>
-        <div className='sns_centered'>
+        <div className="sns_centered">
           <StyledGoogleLoginBtn onClick={() => { googleLogin((open) => { setIsSnsModalShow(open) }) }}>
-            <img src={googleIcon} alt='구글 로고' />구글 로그인
+            <img src={googleIcon} alt="구글 로고" />구글 로그인
           </StyledGoogleLoginBtn>
           <KakaoLogin
             token={process.env.REACT_APP_KAKAO_JAVASCRIPT_KEY}
@@ -42,6 +42,7 @@ const Login = () => {
       <p>본 App은 PC 크롬에 최적화 되어 있습니다.</p>
       <SignUpWithSnsModal
         show={isSnsModalShow}
+        backdrop="static"
         onHide={() => setIsSnsModalShow(false)}
       />
     </StyledContainer >

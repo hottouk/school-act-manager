@@ -1,36 +1,48 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { PURGE } from "redux-persist";
 
-const initialState = {
-  uid: "",
-  name: "",
-  email: "",
-  isTeacher: undefined,
-  school: "",
-}
+const initialState = {}
 
 let user = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
   reducers: {
     setUser(state, action) {
       return {
-        ...state,
+        ...state, //현재 상태
         uid: action.payload.uid,
         name: action.payload.name,
         email: action.payload.email,
         isTeacher: action.payload.isTeacher,
-        school: undefined,
+        phoneNumber: action.payload.phoneNumber,
+        profileImg: action.payload.profileImg,
+        school: action.payload.school,
         //학생 전용
+        studentNumber: action.payload.studentNumber,
+          //교실 가입        
         appliedClassList: action.payload.appliedClassList,
         joinedClassList: action.payload.joinedClassList,
-        studentNumber: action.payload.studentNumber,
+        myPetList: action.payload.myPetList,
+          //과제
         myActList: action.payload.myActList,
         myHomeworkList: action.payload.myHomeworkList,
+        myDoneActList: action.payload.myDoneActList,
+        classNewsList: action.payload.classNewsList,
         //교사 전용
         appliedStudentClassList: action.payload.appliedStudentClassList,
         homeworkList: action.payload.homeworkList
       };
+    },
+
+    setUserPersonalInfo(state, action) {
+      return {
+        ...state,
+        email: action.payload.email,
+        phoneNumber: action.payload.phoneNumber,
+        isTeacher: action.payload.isTeacher,
+        studentNumber: action.payload.studentNumber,
+        profileImg: action.payload.profileImg,
+      }
     },
 
     setAppliedClassList(state, action) {
@@ -40,10 +52,31 @@ let user = createSlice({
       }
     },
 
+    setJoinedClassList(state, action) {
+      return {
+        ...state,
+        joinedClassList: action.payload
+      }
+    },
+
+    setClassNewsList(state, action) {
+      return {
+        ...state,
+        classNewsList: action.payload
+      }
+    },
+
     setNewsBoxList(state, action) {
       return {
         ...state,
         appliedStudentClassList: action.payload
+      }
+    },
+
+    setmyPetList(state, action) {
+      return {
+        ...state,
+        myPetList: action.payload
       }
     },
 
@@ -73,5 +106,5 @@ let user = createSlice({
   },
 })
 
-export const { setUser, setAppliedClassList, setNewsBoxList, setMyActList, setMyHomeworkList, setHomeworkList } = user.actions
+export const { setUser, setUserPersonalInfo, setAppliedClassList, setJoinedClassList, setNewsBoxList, setMyActList, setMyHomeworkList, setHomeworkList, setClassNewsList, setmyPetList } = user.actions
 export default user

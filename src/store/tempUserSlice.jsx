@@ -1,15 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {
-  uid: "",
-  name: "",
-  email: "",
-  isTeacher: undefined,
-  school: "",
-}
+const initialState = {}
 
 let tempUser = createSlice({
-  name: 'tempUser',
+  name: "tempUser",
   initialState,
   reducers: {
     setTempUser(state, action) {
@@ -18,8 +12,9 @@ let tempUser = createSlice({
         uid: action.payload.uid,
         name: action.payload.name,
         email: action.payload.email,
+        profileImg: action.payload.profileImg,
+        phoneNumber: action.payload.phoneNumber,
         isTeacher: undefined,
-        school: undefined
       };
     }
   }

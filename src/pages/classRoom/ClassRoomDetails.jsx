@@ -36,15 +36,14 @@ const ClassRoomDetails = () => {
   const [isMember, setIsMember] = useState(false)
   const [isModalShown, setIsModalShown] = useState(false)
   const clientHeight = useClientHeight(document.documentElement)
-  // console.log(thisClass.id, '반 활동List', activityList)
-  // console.log(thisClass.id, '반 학생List', subDocuments)
+
   useEffect(() => {
     dispatcher(setAllStudents(subDocuments)) //전체 학생 전역변수화
     dispatcher(setAllActivities(activityList)) //전체 활동 전역변수화
   }, [subDocuments, activityList])
 
   useEffect(() => {
-    if (!user.isTeacher) {
+    if (!user.isTeacher) { //학생이
       if (thisClass.appliedStudentList && thisClass.appliedStudentList.length !== 0) { //신청 중이라면
         let isApplied = (thisClass.appliedStudentList.filter(({ uid }) => { return uid === user.uid })).length !== 0
         setIsApplied(isApplied)
@@ -89,60 +88,58 @@ const ClassRoomDetails = () => {
     return null
   }
 
-  return (
-    <>
-      {/* todo document 정리하기 */}
-      {!thisClass && <StyledContainer><h3>반 정보를 불러올 수 없습니다.</h3></StyledContainer>}
-      {thisClass &&
-        <StyledContainer $clientheight={clientHeight}>
-          <StyeldHeader>
-            <StyledClassTitle>{thisClass.classTitle}</StyledClassTitle>
-            <p>{!subDocuments ? 0 : subDocuments.length}명의 학생들이 있습니다.</p>
-            <p>{thisClass.intro}</p>
-            {/* 학생 전용 */}
-            {(!user.isTeacher && isApplied) && <StyledMoveBtn $backgroundcolor="gray">가입 신청 중..</StyledMoveBtn>}
-            {(!user.isTeacher && !isMember && !isApplied) && <StyledMoveBtn id="join_btn" onClick={handleBtnClick}>가입하기</StyledMoveBtn>}
-          </StyeldHeader>
-          {/* 셀렉터(교사 전용)*/}
-          {user.isTeacher && <StyledMain>
-            <MainSelector studentList={subDocuments} activitiyList={activityList} classId={thisClass.id} />
-          </StyledMain>}
-          {/* 퀘스트 목록(학생 전용) */}
-          {(!user.isTeacher && isMember) && <StyledMain>
-            {(!activityList || activityList.length === 0)
-              ? <EmptyResult comment="등록된 활동이 없습니다." />
-              : <ActivityList activityList={activityList} classInfo={thisClass} />} 
-            {errByGetActi && <EmptyResult comment={errByGetActi} />}
-          </StyledMain>}
-          {/* 학생 상세 보기 */}
-          {((!user.isTeacher && isMember) || user.isTeacher) && <StyledMain>
-            {(!subDocuments || subDocuments.length === 0)
-              ? <h3>반에 학생들이 등록되어 있지 않습니다. {subColErr}</h3>
-              : <StudentList studentList={subDocuments} />}
-          </StyledMain>}
-          {/* 반 전체보기(교사 전용)*/}
-          {user.isTeacher && <StyledMain>
-            <h4>개별화하기</h4>
-            <StyledMoveBtn onClick={() => { navigate('allStudents', { state: subDocuments }) }}>반 전체 세특보기</StyledMoveBtn>
-          </StyledMain>
+  return (<>
+    {/* todo document 정리하기 */}
+    {!thisClass && <StyledContainer><h3>반 정보를 불러올 수 없습니다.</h3></StyledContainer>}
+    {thisClass &&
+      <StyledContainer $clientheight={clientHeight}>
+        <StyeldHeader>
+          <StyledClassTitle>{thisClass.classTitle}</StyledClassTitle>
+          <p>{!subDocuments ? 0 : subDocuments.length}명의 학생들이 있습니다.</p>
+          <p>{thisClass.intro}</p>
+          {/* 학생 전용 */}
+          {(!user.isTeacher && isApplied) && <StyledMoveBtn $backgroundcolor="gray">가입 신청 중..</StyledMoveBtn>}
+          {(!user.isTeacher && !isMember && !isApplied) && <StyledMoveBtn id="join_btn" onClick={handleBtnClick}>가입하기</StyledMoveBtn>}
+        </StyeldHeader>
+        {/* 셀렉터(교사 전용)*/}
+        {user.isTeacher && <StyledMain>
+          <MainSelector studentList={subDocuments} activitiyList={activityList} classId={thisClass.id} />
+        </StyledMain>}
+        {/* 퀘스트 목록(학생 전용) */}
+        {(!user.isTeacher && isMember) && <StyledMain>
+          {(!activityList || activityList.length === 0)
+            ? <EmptyResult comment="등록된 활동이 없습니다." />
+            : <ActivityList activityList={activityList} classInfo={thisClass} />}
+          {errByGetActi && <EmptyResult comment={errByGetActi} />}
+        </StyledMain>}
+        {/* 학생 상세 보기 */}
+        {((!user.isTeacher && isMember) || user.isTeacher) && <StyledMain>
+          {(!subDocuments || subDocuments.length === 0)
+            ? <h3>반에 학생들이 없습니다. {subColErr}</h3>
+            : <StudentList petList={subDocuments} />}
+        </StyledMain>}
+        {/* 반 전체보기(교사 전용)*/}
+        {user.isTeacher && <StyledMain>
+          <h4>개별화하기</h4>
+          <StyledMoveBtn onClick={() => { navigate('allStudents', { state: subDocuments }) }}>반 전체 세특보기</StyledMoveBtn>
+        </StyledMain>
+        }
+        {user.isTeacher && <StyeldBtnDiv>
+          <StyledBtn id='back_btn' onClick={handleBtnClick}>반 목록</StyledBtn>
+          {!isModifying
+            ? <StyledBtn id='edit_btn' onClick={handleBtnClick}>수정</StyledBtn>
+            : <StyledBtn id='save_btn' onClick={handleBtnClick}>저장</StyledBtn>
           }
-          {user.isTeacher && <StyeldBtnDiv>
-            <StyledBtn id='back_btn' onClick={handleBtnClick}>반 목록</StyledBtn>
-            {!isModifying
-              ? <StyledBtn id='edit_btn' onClick={handleBtnClick}>수정</StyledBtn>
-              : <StyledBtn id='save_btn' onClick={handleBtnClick}>저장</StyledBtn>
-            }
-            <StyledBtn id='delete_btn' onClick={handleBtnClick}>반 삭제</StyledBtn>
-          </StyeldBtnDiv>}
-        </StyledContainer>
-      }
-      {isModalShown && <ClassMemberModal
-        show={isModalShown}
-        onHide={() => { setIsModalShown(false) }}
-        thisClass={thisClass}
-      />}
-    </>
-  )
+          <StyledBtn id='delete_btn' onClick={handleBtnClick}>반 삭제</StyledBtn>
+        </StyeldBtnDiv>}
+      </StyledContainer>
+    }
+    {isModalShown && <ClassMemberModal
+      show={isModalShown}
+      onHide={() => { setIsModalShown(false) }}
+      thisClass={thisClass}
+    />}
+  </>)
 }
 const StyledContainer = styled.main`
   box-sizing: border-box;

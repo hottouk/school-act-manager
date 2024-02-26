@@ -3,24 +3,19 @@ import React, { useState } from 'react'
 import Select from 'react-select'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/esm/Button';
-import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 //hooks
 import useEnrollClass from '../../hooks/useEnrollClass';
-//이미지
-import egg01 from "../../image/myPet/egg_b.png";
-import egg02 from "../../image/myPet/egg_g.png";
-import egg03 from "../../image/myPet/egg_y.png";
+//컴포넌트
+import Reward from '../Reward';
 
 const ClassMemberModal = (props) => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
   const allStudents = useSelector(({ allStudents }) => { return allStudents })
-  const [petImgSrc, setPetImgSrc] = useState('')
   const [studentPetInfo, setStudentPetInfo] = useState('')
   //가입 로직
   const { signUpUserInClass } = useEnrollClass()
-
   //2. 함수
   const createSelectOptions = () => {
     let options = []
@@ -40,9 +35,9 @@ const ClassMemberModal = (props) => {
 
   const handleOnSubmit = (event) => {
     event.preventDefault()
-    if (studentPetInfo !== '' && petImgSrc !== '') {
+    if (studentPetInfo !== '') {
       let id = `${user.uid}/${Math.floor((Math.random() * Date.now()))}`
-      let petInfo = { ...studentPetInfo, petImgSrc }
+      let petInfo = { ...studentPetInfo }
       let studentWithPetInfo = { id, studentInfo: user, petInfo, classInfo: props.thisClass }
       signUpUserInClass(studentWithPetInfo)
       props.onHide()
@@ -53,10 +48,6 @@ const ClassMemberModal = (props) => {
 
   const handleBtnClick = () => {
     props.onHide()
-  }
-
-  const handlePetImgClick = (event) => {
-    setPetImgSrc(event.target.id)
   }
 
   return (
@@ -70,25 +61,14 @@ const ClassMemberModal = (props) => {
       </Modal.Header>
       <form onSubmit={handleOnSubmit}>
         <Modal.Body>
-          <p>{ }반에 가입하시겠습니까?</p>
-          <Select
-            options={createSelectOptions()}
-            placeholder="자신의 학번을 선택하세요"
-            onChange={handleOnChange} />
-          <p>받을 펫을 선택하세요.</p>
-          <StyledImageWrapper>
-            {/* 선택하면 몬스터 배경색을 바꿔준다. */}
-            {(petImgSrc === 'egg01')
-              ? <SelectedMonImg id='egg01' src={egg01} alt="펫" width="100px" height="100px" onClick={handlePetImgClick} />
-              : <img id='egg01' src={egg01} alt="펫" width="100px" height="100px" onClick={handlePetImgClick} />}
-            {(petImgSrc === 'egg02')
-              ? <SelectedMonImg id='egg02' src={egg02} alt="펫" width="100px" height="100px" onClick={handlePetImgClick} />
-              : <img id='egg02' src={egg02} alt="펫" width="100px" height="100px" onClick={handlePetImgClick} />}
-            {(petImgSrc === 'egg03')
-              ? <SelectedMonImg id='egg03' src={egg03} alt="펫" width="100px" height="100px" onClick={handlePetImgClick} />
-              : <img id='egg03' src={egg03} alt="펫" width="100px" height="100px" onClick={handlePetImgClick} />}
-          </StyledImageWrapper>
-          <p>잘못 기입할 경우 가입이 거부될 수 있습니다.</p>
+          <div>
+            <p>{props.thisClass.classTitle}반에 가입하시겠습니까?</p>
+            <Select
+              options={createSelectOptions()}
+              placeholder="자신의 학번을 선택하세요"
+              onChange={handleOnChange} />
+            <Reward reward="eng" quest="교사로부터 반 가입 승인 받기" />
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" id="cancel_btn" onClick={handleBtnClick}>취소</Button>
@@ -99,23 +79,5 @@ const ClassMemberModal = (props) => {
   )
 }
 
-const StyledImageWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  img { 
-    padding: 10px;
-  }
-  p {
-    margin-top: 1rem;
-  }
-  margin: 10px;
-  gap: 8px;
-`
-const SelectedMonImg = styled.img`
-  background-color: orange;
-  border-radius: 10px;
-  box-sizing: border-box;
-  border: 1px solid black;
-`
 
 export default ClassMemberModal

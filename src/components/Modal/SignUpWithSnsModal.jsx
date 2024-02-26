@@ -4,50 +4,63 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { useDispatch, useSelector } from 'react-redux'
 //hooks
-import useFirestore from '../../hooks/useFirestore'
+import useStudent from '../../hooks/useStudent';
+import useLogin from '../../hooks/useLogin';
 //전역변수
 import { setUser } from '../../store/userSlice';
 //CSS
 import styled from 'styled-components'
-import useStudent from '../../hooks/useStudent';
+import CSInfoSelect from '../CSInfoSelect';
+import FindSchoolSelect from '../FindSchoolSelect';
 
-//24.01.21
+//24.02.17
 const SignUpWithSnsModal = (props) => {
   //1. 변수
+  //학번 info
   const tempUser = useSelector(({ tempUser }) => { return tempUser }) //회원 가입 전 구글 전역 변수
-  const [isTeacher, setIsTeacher] = useState(undefined);
+  const [_isTeacher, setIsTeacher] = useState(false);
+  const [_grade, setGrade] = useState("default");
+  const [_classNumber, setClassNumber] = useState("default");
+  const [_number, setNumber] = useState(1)
+  const [_school, setSchool] = useState(null)
+  const [_isSearchSchool, setIsSearchSchool] = useState(false) //학교 검색창 보이기
+  //hooks
   const { createStudentNumber } = useStudent()
-  //학번 재료
-  const [grade, setGrade] = useState("default");
-  const [classNumber, setClassNumber] = useState("default");
-  const [number, setNumber] = useState(1)
-  const { addUser } = useFirestore("user")
+  const { addUser } = useLogin()
+  //전역변수
   const dispatcher = useDispatch()
   //2. 함수
   //취소
   const handleBtnClick = () => {
     props.onHide()
+    setIsSearchSchool(false)
+    setSchool(null)
   }
 
   //제출
   const handleSubmit = (event) => {
     event.preventDefault(); //새로고침 방지
-    let studentNumber = "00000"
-    let user = { ...tempUser, isTeacher, studentNumber }
-    if (isTeacher) {
-      if (window.confirm(`교사회원으로 가입 하시겠습니까?`)) {
-        addUser(user)
-        dispatcher(setUser(user))
-      }
-    } else {
-      if (grade !== "default" && classNumber !== "default") {
-        user.studentNumber = createStudentNumber(number - 1, grade, classNumber)
-        if (window.confirm(`학번 ${user.studentNumber}로 회원가입 하시겠습니까?`)) {
-          addUser(user)
-          dispatcher(setUser(user))
+    let userInfo = { ...tempUser, isTeacher: _isTeacher }
+    if (_isTeacher) { //교사
+      if (_school) {
+        userInfo.school = _school
+        if (window.confirm(`교사회원으로 가입 하시겠습니까?`)) {
+          addUser(userInfo)
+          dispatcher(setUser(userInfo))
         }
       } else {
-        window.alert("학년과 반을 선택하세요.")
+        window.alert("학교를 입력하세요.")
+      }
+    } else { //학생
+      if (_grade !== "default" && _classNumber !== "default" && _school) {
+        userInfo.studentNumber = createStudentNumber(_number - 1, _grade, _classNumber)
+        userInfo.school = _school
+        if (window.confirm(`${_school.schoolName} 학번 ${userInfo.studentNumber}로 회원가입 하시겠습니까?`)) {
+          addUser(userInfo)
+          dispatcher(setUser(userInfo))
+        }
+      } else {
+        window.alert("학교, 학년, 반을 입력하세요.")
       }
     }
   }
@@ -69,12 +82,12 @@ const SignUpWithSnsModal = (props) => {
   }
 
   //라디오 버튼
-  const handleRadioBtnClick = (event) => {
+  const handleRadioBtnOnChange = (event) => {
     switch (event.target.value) {
-      case 'teacher':
+      case "teacher":
         setIsTeacher(true)
         break;
-      case 'student':
+      case "student":
         setIsTeacher(false)
         break;
       default: return
@@ -84,6 +97,7 @@ const SignUpWithSnsModal = (props) => {
   return (
     <Modal
       show={props.show}
+      backdrop={props.backdrop}
       onHide={props.onHide}>
       <Modal.Header>
         <legend>추가 정보 기입</legend>
@@ -99,60 +113,34 @@ const SignUpWithSnsModal = (props) => {
               <label htmlFor="email">email</label>
               <h4>{tempUser.email}</h4>
             </div>
-            <div className='radio_div'>
-              <label>회원구분</label>
-              <Form.Check onChange={handleRadioBtnClick}
+            <div className="radio_div">
+              <label>회원 구분</label>
+              <Form.Check onChange={handleRadioBtnOnChange}
                 inline
-                type='radio'
-                id={'teacher_radio_btn'}
-                name='group1'
-                label={'교사 회원'}
-                value={'teacher'} />
-              <Form.Check onChange={handleRadioBtnClick} 
+                type="radio"
+                id={"isTeacher_radio_btn"}
+                name="group1"
+                label={"교사 회원"}
+                value={"teacher"}
+                checked={_isTeacher} />
+              <Form.Check onChange={handleRadioBtnOnChange}
                 inline
-                type='radio'
-                id={'teacher_radio_btn'}
-                name='group1'
-                label={'학생 회원'}
-                value={'student'} />
+                type="radio"
+                id={"isStudent_radio_btn"}
+                name="group1"
+                label={"학생 회원"}
+                value={"student"}
+                checked={!_isTeacher} />
             </div>
-            {/* todo 학교정보 api 불러오기*/}
-            <label>학번</label>
-            {isTeacher === false && <StyledSelectDiv>
-              <select id="class_grade" required value={grade} onChange={handleOnChange}>
-                <option value="default" disabled >학년</option>
-                <option value="1">1학년</option>
-                <option value="2">2학년</option>
-                <option value="3">3학년</option>
-              </select>
-              <select id="class_number" required value={classNumber} onChange={handleOnChange}>
-                <option value="default" disabled >반</option>
-                <option value="01">1반</option>
-                <option value="02">2반</option>
-                <option value="03">3반</option>
-                <option value="04">4반</option>
-                <option value="05">5반</option>
-                <option value="06">6반</option>
-                <option value="07">7반</option>
-                <option value="08">8반</option>
-                <option value="09">9반</option>
-                <option value="10">10반</option>
-                <option value="11">11반</option>
-                <option value="12">12반</option>
-                <option value="13">13반</option>
-                <option value="14">14반</option>
-                <option value="15">15반</option>
-                <option value="16">16반</option>
-                <option value="17">17반</option>
-                <option value="18">18반</option>
-                <option value="19">19반</option>
-                <option value="20">기타</option>
-              </select>
-              <input type="number" id="number_input" value={number} onChange={handleOnChange} required min={1} max={99} />
-            </StyledSelectDiv>}
+            {_isTeacher === false && <CSInfoSelect grade={_grade} classNumber={_classNumber} number={_number} handleOnChange={handleOnChange} />}
+            <div className="find_school_section">
+              <p>학교: </p>
+              {_school ? <input type="text" value={_school.schoolName} readOnly /> : <input type="text" value={''} readOnly onClick={() => { setIsSearchSchool(true) }} />}
+            </div>
+            {_isSearchSchool && <FindSchoolSelect setSchool={setSchool} />}
           </fieldset>
-          <button type='submit'>회원가입</button>
-          <button type='button' onClick={handleBtnClick}>취소</button>
+          <button type="submit">회원가입</button>
+          <button type="button" onClick={handleBtnClick}>취소</button>
         </StyledForm>
       </Modal.Body>
     </Modal>
@@ -199,16 +187,23 @@ const StyledForm = styled.form`
     color: whitesmoke;
     cursor: pointer;
   }
+
+  div.find_school_section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    p {
+      margin: 0 25px 0 0;
+    }
+    input {
+      padding: 5px;
+      border-radius: 7px;
+      flex-grow: 1;
+    }
+  }
   @media screen and (max-width: 767px) {
     width: 100%;
     margin-top: 0;
   }
-`
-
-const StyledSelectDiv = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
 `
 export default SignUpWithSnsModal

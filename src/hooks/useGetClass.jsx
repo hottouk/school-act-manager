@@ -39,12 +39,12 @@ const useGetClass = () => {
 
       }
     }
-  }, [])
+  }, [user])
 
   const renewClassData = async (classList, type) => {
     let result = []
     await Promise.all(
-      classList.map(async (item) => {
+      classList.map(async (item) => { //학생 유저정보 id로 classRoom 정보 데이터 통신
         const classRef = doc(db, "classRooms", item.id)
         const classDocSnap = getDoc(classRef)
         await classDocSnap.then((classDoc) => {

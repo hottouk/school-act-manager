@@ -1,5 +1,5 @@
 //라이브러리
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 //CSS
@@ -8,14 +8,36 @@ import styled from 'styled-components'
 import brandLogo from "../image/icon/h-logo.png";
 import { Helmet } from 'react-helmet'
 import MyInfoModal from './Modal/MyInfoModal'
+import newIcon from "../image/icon/new_icon.png"
+import unknown from '../image/icon/unkown_icon.png'
 
-//24.01.09
+//24.02.22
 const Nav = () => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
+  const [_profileImg, setProfileImg] = useState(null)
   console.log(user)
-  const navigate = useNavigate()
+  //모달
   const [isMyInfoShow, setIsMyInfoShow] = useState(false)
+  const [_isNew, setIsNew] = useState(false) //새소식 아이콘
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    setProfileImg(user.profileImg)//프로필 사진
+    if (user.isTeacher) { //교사
+      if (user.appliedStudentClassList && user.appliedStudentClassList.length > 0) {
+        setIsNew(true)
+      } else { setIsNew(false) }
+      if (user.homeworkList && user.homeworkList.length > 0) {
+        setIsNew(true)
+      } else { setIsNew(false) }
+    } else if (!user.isTeacher) { //학생
+      if (user.classNewsList && user.classNewsList.length > 0) {
+        setIsNew(true)
+      } else { setIsNew(false) }
+    }
+  }, [user])
+
   //2. 함수
   const handleBtnClick = (event) => {
     switch (event.target.id) {
@@ -44,33 +66,45 @@ const Nav = () => {
         crossorigin="anonymous"
         referrerpolicy="no-referrer" />
     </Helmet>
-    <h3>생기부 입력 도우미</h3>
+    <img className="logo" src={brandLogo} alt="로고" />
+    <h3>생기부 쫑알이</h3>
     {!user.uid && <>
       <ul className='menu_container'>
         <li><i className="fa-solid fa-key"></i><Link to='/login'>로그인</Link></li>
       </ul></>}
     {(user.uid && user.isTeacher) && <>
+      {/* 교사 */}
       <div className='welcome'><p>{user.name} 선생님 사랑합니다.</p></div>
       <ul className='menu_container'>
-        <li id="home_btn" onClick={handleBtnClick}><i className="fa-solid fa-house"></i><Link to='/'>Home</Link></li>
-        <li id="acti_btn" onClick={handleBtnClick}><i className="fa-solid fa-scroll"></i><Link to='/activities'>활동 관리</Link></li>
-        <li id="class_btn" onClick={handleBtnClick}><i className="fa-solid fa-school"></i><Link to='/classRooms'>클래스 관리</Link></li>
-        <li id="class_btn" onClick={handleBtnClick}><i className="fa-solid fa-child"></i><Link to='/students'>학생 관리</Link></li>
+        <li id="home_btn" ><Link to="/"><i className="fa-solid fa-house"></i>Home</Link></li>
+        <li id="acti_btn" ><Link to="/activities"><i className="fa-solid fa-scroll"></i>활동 관리</Link></li>
+        <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>클래스 관리</Link></li>
+        <li className="news_btn" >
+          {_isNew && <StyledNewIcon src={newIcon} className="new_icon" alt="새소식" />}
+          <Link to="/news"><i className="fa-solid fa-bell"></i></Link></li>
         {/* 모바일 전용 */}
-        <li id="my_info_btn" className='mobileOnly' onClick={handleBtnClick}><i className="fa-solid fa-user"></i>MyInfo</li>
+        <li id="my_info_btn" className="mobileOnly" onClick={handleBtnClick}><i className="fa-solid fa-user"></i>MyInfo</li>
       </ul>
-      <img className="logo" src={brandLogo} alt='로고' onClick={() => setIsMyInfoShow(true)} />
+      {_profileImg && <img className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
+      {!_profileImg && <img className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
     </>}
+    {/* 학생 */}
     {(user.uid && !user.isTeacher) && <>
       <div className='welcome'><p>{user.name} 학생 사랑합니다.</p></div>
-      <ul className='menu_container'>
-        <li id="home_btn" onClick={handleBtnClick}><i className="fa-solid fa-house"></i><Link to='/'>Home</Link></li>
-        <li id="acti_btn" onClick={handleBtnClick}><i className="fa-solid fa-scroll"></i><Link to='/activities'>참여 활동</Link></li>
-        <li id="class_btn" onClick={handleBtnClick}><i className="fa-solid fa-school"></i><Link to='/classRooms'>참여 클래스</Link></li>
+      <ul className="menu_container">
+        <li id="home_btn"><Link to="/"><i className="fa-solid fa-house"></i>Home</Link></li>
+        <li id="acti_btn"><Link to="/activities"><i className="fa-solid fa-scroll"></i>참여 활동</Link></li>
+        <li id="class_btn"><Link to="/classRooms"><i className="fa-solid fa-school"></i>참여 클래스 </Link></li>
+        <li className="news_btn">
+          {_isNew && <StyledNewIcon src={newIcon} className="new_icon" alt="새소식" />}
+          <Link to="/news" ><i className="fa-solid fa-bell" /></Link>
+        </li>
         {/* 모바일 전용 */}
-        <li id="my_info_btn" className='mobileOnly' onClick={handleBtnClick}><i className="fa-solid fa-user"></i>MyInfo</li>
+        <li id="my_info_btn" className="mobileOnly" onClick={handleBtnClick}><i className="fa-solid fa-user"></i>MyInfo</li>
       </ul>
-      <img className="logo" src={brandLogo} alt='로고' onClick={() => setIsMyInfoShow(true)} />
+      {_profileImg && <img className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
+      {!_profileImg && <img className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
+
     </>}
     <MyInfoModal
       user={user}
@@ -85,6 +119,7 @@ const StyledNav = styled.nav`
   width: 100%;
   display: flex;
   background-color: #3454d1;
+  align-items: center;
   padding: 20px 30px;
   color: #efefef;
   h3 {
@@ -114,6 +149,10 @@ const StyledNav = styled.nav`
     align-items: center;
     gap: 30px;
   }
+  li.news_btn {
+    position: relative;
+  }
+
   i {
     margin-right: 5px;
   }
@@ -121,9 +160,15 @@ const StyledNav = styled.nav`
     color: #efefef;
     text-decoration: none;
   }
-  img {
+  img.profileImg {
     width: 50px;
     height: 50px;
+    border-radius: 25px;
+  }
+  img.logo {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
   }
   @media screen and (max-width: 767px){
     display: flex;
@@ -166,10 +211,17 @@ const StyledNav = styled.nav`
       color: #3454d1;
       font-size: 12px;
     }
-    img.logo{
+    img.profileImg {
       display: none;
       cursor: pointer;
     }
   }
+`
+const StyledNewIcon = styled.img`
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  top: -10px;
+  right: -5px;
 `
 export default Nav

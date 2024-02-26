@@ -1,5 +1,5 @@
 import { appFireStore, timeStamp } from "../firebase/config"
-import { addDoc, collection, deleteDoc, doc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 import { useSelector } from "react-redux"
 
 const useFirestore = (collectionName) => {
@@ -7,63 +7,38 @@ const useFirestore = (collectionName) => {
   const db = appFireStore
   const colRef = collection(db, collectionName)
 
-  //유저가 기존 DB에 있는지 체크, 없으면 false, 있다면 true와 회원정보 반환(24.01.21)
-  const findUser = async (userInfo, sns) => {
-    let isUserExist = true
-    let userInfofromServer = null;
-    let uid
-    switch (sns) {
-      case "google":
-        uid = userInfo.uid
+  const getInfo = async (id, type) => {
+    let info = null
+    switch (type) {
+      case "student":
+        let studentRef = doc(db, "user", id)
+        let studentSnapshot = await getDoc(studentRef)
+        studentSnapshot.then((studentSnap) => {
+          info = studentSnap.data()
+        })
         break;
-      case "kakao":
-        let profile = userInfo.profile
-        uid = String(profile.id)
+      case "acti":
+        let actiRef = doc(db, "activities", id)
+        info = await getDoc(actiRef);
         break;
       default: return
     }
-    try {
-      const q = query(colRef, where("uid", "==", uid))
-      await getDocs(q).then((querySnapshot) => {
-        isUserExist = querySnapshot.docs.length > 0//한명도 없을 경우, 즉 존재하지 않을 경우 false 존재하면 true
-        querySnapshot.docs.forEach((doc) => {
-          userInfofromServer = doc.data()          //존재할 경우 서버 데이터를 반환
-        })
-      })
-      return { isUserExist, userInfofromServer }
-    } catch (error) {
-      window.alert(`서버 ${error} 오류입니다.`)
-    }
+    return info
   }
 
-  //유저 추가(24.01.21)
-  const addUser = async (userInfo) => {
-    let uid = String(userInfo.uid)
-    let email = userInfo.email
-    let name = userInfo.name
-    let isTeacher = userInfo.isTeacher
-    let studentNumber = userInfo.studentNumber
-    let docRef = doc(db, collectionName, uid)
+  //클래스룸 추가 함수(24.2.18)
+  const addClassroom = async (classParams, studentPetList) => {
     try {
       const createdTime = timeStamp.fromDate(new Date());
-      await setDoc(docRef, { uid, name, email, isTeacher, createdTime, studentNumber }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
-    } catch (error) {
-      console.error(error.message)
-    }
-  }
-
-  //클래스룸 추가 함수
-  const addClassroom = async (classAtrs, studentList) => {
-    try {
-      const createdTime = timeStamp.fromDate(new Date());
-      const docRef = await addDoc(colRef, { ...classAtrs, createdTime });
-      const subColRef = collection(docRef, 'students')
-      await studentList.map(student => {
-        addDoc(subColRef, student);
-        return student.length
+      const docRef = await addDoc(colRef, { ...classParams, createdTime });
+      const subColRef = collection(docRef, "students")
+      await studentPetList.map(item => {
+        addDoc(subColRef, { ...item, subject: classParams.subject });
+        return null;
       })
-    } catch (error) {
-      console.error(error.message)
+    } catch (err) {
+      window.alert(err)
+      console.error(err)
     }
   }
 
@@ -81,9 +56,15 @@ const useFirestore = (collectionName) => {
   const updateAct = async (activity, actId) => {
     try {
       let createdTime = timeStamp.fromDate(new Date());
-      let docRef = doc(db, collectionName, actId)
-      await setDoc(docRef, { ...activity, createdTime }); //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
+      let actiRef = doc(db, collectionName, actId)
+      let actiDoc = await getDoc(actiRef)
+      let studentDoneList = []
+      let studentParticipatingList = []
+      if (actiDoc.data().studentDoneList) { studentDoneList = actiDoc.data().studentDoneList }
+      if (actiDoc.data().studentParticipatingList) { studentParticipatingList = actiDoc.data().studentParticipatingList }
+      await setDoc(actiRef, { ...activity, studentDoneList, studentParticipatingList, createdTime }); //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
     } catch (error) {
+      window.alert(error)
       console.log(error)
     }
   }
@@ -122,15 +103,25 @@ const useFirestore = (collectionName) => {
 
   //데이터 삭제 함수: 문서 id(제목) 주면 삭제
   const deleteDocument = async (id) => {
-    try {
-      await deleteDoc(doc(colRef, id))
-    } catch (error) {
-      console.log(error)
+    deleteDoc(doc(colRef, id)).then(() => {
+      window.alert("삭제 되었습니다.")
+    }).catch((err) => {
+      console.log(err)
+    })
+  }
+
+  //학생 클래스 정보 업데이트
+  const updateClassListInfo = async (classList, type) => {
+    let userRef = doc(db, "user", user.uid)
+    if (type === "joinedClassList") {
+      updateDoc(userRef, { joinedClassList: classList })
+    } else if (type === "appliedClassList") {
+      updateDoc(userRef, { appliedClassList: classList })
     }
   }
 
   return (
-    { findUser, addUser, addDocument: addActivity, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent }
+    { getInfo, addDocument: addActivity, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, updateClassListInfo }
   )
 }
 
