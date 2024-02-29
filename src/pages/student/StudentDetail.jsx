@@ -12,9 +12,6 @@ import AnimatedProgressBar from '../../components/ProgressBar';
 //스타일
 import styled from 'styled-components';
 //이미지
-import egg from "../../image/myPet/egg.png";
-import green1 from "../../image/myPet/green_pet1.png"
-import green2 from "../../image/myPet/green_pet2.png"
 import x_btn from "../../image/icon/x_btn.png"
 import PetImg from '../../components/PetImg';
 import useGetMyUserInfo from '../../hooks/useGetMyUserInfo';

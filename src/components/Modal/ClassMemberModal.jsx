@@ -67,7 +67,7 @@ const ClassMemberModal = (props) => {
               options={createSelectOptions()}
               placeholder="자신의 학번을 선택하세요"
               onChange={handleOnChange} />
-            <Reward reward="eng" quest="교사로부터 반 가입 승인 받기" />
+            <Reward rewards={{ type: "class", subject: "eng" }} />
           </div>
         </Modal.Body>
         <Modal.Footer>

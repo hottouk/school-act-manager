@@ -33,7 +33,7 @@ const ActivityMain = () => {
         comment="아직 활동이 없습니다. 활동을 생성해주세요" />
         <StyledBtn onClick={() => { navigate("/activities_setting") }}>활동 만들기</StyledBtn>
       </>}
-      {!user.isTeacher && <><CardList dataList={user.myActList} type="activity" //학생
+      {!user.isTeacher && <><CardList dataList={_activityList} type="activity" //학생
         title="참여 활동 목록"
         comment="참가한 활동이 없습니다. 활동에 참여해주세요" />
       </>}

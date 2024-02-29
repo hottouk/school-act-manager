@@ -6,10 +6,9 @@ import { setSelectClass } from '../store/classSelectedSlice'
 import { setAppliedClassList, setJoinedClassList } from '../store/userSlice'
 import useFirestore from '../hooks/useFirestore'
 import useFetchFireData from '../hooks/useFetchFireData'
-import { setTeacherClasses } from '../store/teacherClassSlice'
 
 //2024.01.09
-const DataList = ({ dataList, type }) => {//todo 데이터 리스트, 타입으로 정리하기
+const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 리스트, 타입으로 정리하기
   //1. 변수
   const navigate = useNavigate()
   const user = useSelector(({ user }) => user)
@@ -29,7 +28,6 @@ const DataList = ({ dataList, type }) => {//todo 데이터 리스트, 타입으�
     switch (type) {
       case "classroom":
         if (item.subject) {
-          console.log(item)
           dispatcher(setSelectClass(item))   //선택한 교실 비휘발성 전역변수화
           navigate(`/classrooms/${item.id}`) //url 이동
         } else { //교사가 클래스 삭제 -> 가입 교실 갱신. 
@@ -51,8 +49,9 @@ const DataList = ({ dataList, type }) => {//todo 데이터 리스트, 타입으�
         else { navigate(`/activities/${item.id}`, { state: { acti: item, student: studentUser } }) }
         break;
       case "teacher":
-        fetchDataList("classRooms", "uid", item.uid).then((dataList) => {
-          dispatcher(setTeacherClasses(dataList))
+        fetchDataList("classRooms", "uid", item.uid).then((classroomList) => {
+          classroomList.sort((a, b) => a.subject.localeCompare(b.subject)) //정렬
+          setTeacherClassList(classroomList)
         })
         break;
       default: return;
@@ -113,12 +112,10 @@ const StyledListContainer = styled.ul`
 `
 
 const StyledClassroomLi = styled.li`
-  background-color: #efefef;
 `
 
 const StyledTeacherLi = styled.li`
   display: flex;
-  background-color: #efefef;
   .t_info {
     flex-grow: 1;
   }

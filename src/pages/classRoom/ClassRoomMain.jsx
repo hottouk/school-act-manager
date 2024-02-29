@@ -1,16 +1,15 @@
 //라이브러리
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 //컴포넌트
 import CardList from '../../components/CardList';
-import EmptyResult from '../../components/EmptyResult';
 //hooks
 import useGetClass from '../../hooks/useGetClass';
 import useClientHeight from '../../hooks/useClientHeight';
 //CSS
 import styled from 'styled-components';
-import TeacherSearchBtn from '../../components/TSearchInputBtn';
+import TSearchInputBtn from '../../components/TSearchInputBtn';
 
 //24.01.23
 const ClassRoomMain = () => {
@@ -19,34 +18,24 @@ const ClassRoomMain = () => {
   //전역변수 
   const user = useSelector(({ user }) => user)
   const teacherClasses = useSelector(({ teacherClasses }) => teacherClasses)
-  const { classList, searchResult, appliedClassList, errByGetClass, getClassByTeacherId } = useGetClass() //useEffect 실행 함수
+  const { classList, searchResult, appliedClassList, errByGetClass } = useGetClass() //useEffect 실행 함수
   const [_teacherList, setTeacherList] = useState(null)
   const [_teacherClassList, setTeacherClassList] = useState(null)
   const [_classRoomList, setClassRoomList] = useState(null)
-  const [_searchResult, setSearchResult] = useState(null)
   const [_appliedClassList, setAppliedClassList] = useState(null)
-  const [_teacherId, setTeacherId] = useState("")
-  const [isSearchBtnClicked, setIsSearchBtnClicked] = useState(false) //고앵이 서치
   const clientHeight = useClientHeight(document.documentElement)   //화면 높이
   //2. UseEffect
   useEffect(() => {
     setClassRoomList(classList)
-    setSearchResult(searchResult)
     setAppliedClassList(appliedClassList)
-    setTeacherClassList(teacherClasses)
   }, [classList, appliedClassList, searchResult, teacherClasses])
+
   //3. 함수
   const handleBtnClick = (event) => {
     event.preventDefault()
     switch (event.target.id) {
       case "create_btn":
         navigate('/classrooms_setting')
-        break;
-      case "search_btn":
-        if ((_teacherId !== "")) {
-          getClassByTeacherId(_teacherId)
-          setIsSearchBtnClicked(true)
-        } else { window.alert("교사 id를 입력해주세요.") }
         break;
       default: return;
     }
@@ -65,7 +54,9 @@ const ClassRoomMain = () => {
       {!user.isTeacher && <>
         {_teacherList && <CardList dataList={_teacherList} type="teacher"
           title="선생님"
-          comment="선생님 id를 확인해주세요." />}
+          comment="선생님 id를 확인해주세요."
+          setTeacherClassList={setTeacherClassList}
+        />}
         {_teacherClassList && <CardList dataList={_teacherClassList} type="classroom"
           title="선생님이 만든 교실"
           comment="선생님이 아직 생성하신 교실이 없습니다. "
@@ -75,13 +66,9 @@ const ClassRoomMain = () => {
           comment="가입한 클래스가 없어요. 클래스에 가입해주세요" />
         <CardList dataList={_appliedClassList} type="appliedClassList"
           title="승인 대기중 클래스"
-          comment="가입 신청한 클래스가 없어요." /></>}
-      {(_searchResult && _searchResult.length !== 0) &&
-        <CardList dataList={_searchResult} type="classroom" title="선생님 클래스" />
-      }
-      {((!_searchResult || _searchResult.length === 0) && isSearchBtnClicked) && < EmptyResult comment="찾는 클래스가 없네요...선생님 Id를 확인해주세요" />}
-      {errByGetClass && <strong>{errByGetClass}</strong>}
-      <TeacherSearchBtn setTeacherList={setTeacherList} />
+          comment="가입 신청한 클래스가 없어요." />
+        <TSearchInputBtn setTeacherList={setTeacherList} />
+      </>}
     </StyledContainer>
   )
 }
@@ -89,10 +76,7 @@ const ClassRoomMain = () => {
 const StyledContainer = styled.div`
   box-sizing: border-box;
   margin: 20px auto;
-  h4 {
-    margin: 10px 10px 0;
-  }
-
+  
   button {
   appearance: none;
   backface-visibility: hidden;
@@ -104,11 +88,12 @@ const StyledContainer = styled.div`
   margin: 30px auto;
   color: #fff;
   cursor: pointer;
-  display: block;
+  display: flex;
+  align-items: center;
   font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
   font-size: 15px;
   font-weight: 500;
-  height: 50px;
+  height: 40px;
   letter-spacing: normal;
   line-height: 1.5;
   outline: none;

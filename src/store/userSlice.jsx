@@ -24,7 +24,6 @@ let user = createSlice({
         joinedClassList: action.payload.joinedClassList,
         myPetList: action.payload.myPetList,
           //과제
-        myActList: action.payload.myActList,
         myHomeworkList: action.payload.myHomeworkList,
         myDoneActList: action.payload.myDoneActList,
         classNewsList: action.payload.classNewsList,
@@ -80,13 +79,6 @@ let user = createSlice({
       }
     },
 
-    setMyActList(state, action) {
-      return {
-        ...state,
-        myActList: action.payload
-      }
-    },
-
     setMyHomeworkList(state, action) { //학생용
       return {
         ...state,
@@ -106,5 +98,5 @@ let user = createSlice({
   },
 })
 
-export const { setUser, setUserPersonalInfo, setAppliedClassList, setJoinedClassList, setNewsBoxList, setMyActList, setMyHomeworkList, setHomeworkList, setClassNewsList, setmyPetList } = user.actions
+export const { setUser, setUserPersonalInfo, setAppliedClassList, setJoinedClassList, setNewsBoxList, setMyHomeworkList, setHomeworkList, setClassNewsList, setmyPetList } = user.actions
 export default user

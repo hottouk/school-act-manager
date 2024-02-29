@@ -19,9 +19,9 @@ const useGetActivity = (thisClass) => { //데이터 통신
         q = query(collection(db, "activities"), where("uid", "==", user.uid), where("subject", "==", thisClass.subject));
       }
     } else { //학생
-      if (!thisClass) {
-        return //반 활동에서만
-      } else {
+      if (!thisClass) { //활동 관리
+        q = query(collection(db, "activities"), where("particiSIdList", "array-contains", user.uid));
+      } else { //반 활동
         q = query(collection(db, "activities"), where("uid", "==", thisClass.uid), where("subject", "==", thisClass.subject));
       }
     }

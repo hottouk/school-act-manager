@@ -27,11 +27,10 @@ const ClassRoomDetails = () => {
   const thisClass = useSelector(({ classSelected }) => { return classSelected })
   //개별 클래스 구별해주는 변수
   //데이터 통신 변수
-  const { subDocuments, subColErr } = useSubCollection("classRooms", thisClass.id, 'students', 'studentNumber') //모든 학생 List
+  const { subDocuments, subColErr } = useSubCollection("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
   const { activityList, errByGetActi } = useGetActivity(thisClass)
   const { deleteDocument } = useFirestore("classRooms")
   //모드
-  const [isModifying, setIsModifying] = useState(false)
   const [isApplied, setIsApplied] = useState(false)
   const [isMember, setIsMember] = useState(false)
   const [isModalShown, setIsModalShown] = useState(false)
@@ -61,9 +60,6 @@ const ClassRoomDetails = () => {
       case "back_btn":
         navigate("/classRooms")
         break;
-      case "edit_btn":
-        setIsModifying(true)
-        break;
       case "delete_btn":
         let deleteConfirm = window.prompt('클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 "삭제합니다"를 입력하세요.')
         if (deleteConfirm === '삭제합니다') {
@@ -72,11 +68,6 @@ const ClassRoomDetails = () => {
         } else {
           window.alert('문구가 제대로 입력되지 않았습니다.');
           return;
-        }
-        break;
-      case "save_btn":
-        if (window.confirm('반 정보를 이대로 저장하시겠습니까?')) {
-          setIsModifying(false)
         }
         break;
       //학생 전용
@@ -126,10 +117,6 @@ const ClassRoomDetails = () => {
         }
         {user.isTeacher && <StyeldBtnDiv>
           <StyledBtn id='back_btn' onClick={handleBtnClick}>반 목록</StyledBtn>
-          {!isModifying
-            ? <StyledBtn id='edit_btn' onClick={handleBtnClick}>수정</StyledBtn>
-            : <StyledBtn id='save_btn' onClick={handleBtnClick}>저장</StyledBtn>
-          }
           <StyledBtn id='delete_btn' onClick={handleBtnClick}>반 삭제</StyledBtn>
         </StyeldBtnDiv>}
       </StyledContainer>

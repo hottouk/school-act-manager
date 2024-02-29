@@ -36,22 +36,25 @@ const useGetMyUserInfo = () => {
   //2024.2.19
   const fetchMyPetInfo = async (petInfo) => {//학생
     let userRef = doc(db, "user", user.uid)
-    let petActList = petInfo.actList //교사가 기입한 actList
-    let myPetList;
-    let myDoneActList;
+    let petActList = petInfo.actList //교사가 기록한 actList
+    let myPetList = []
+    let myDoneActList = []
     await runTransaction(db, async (transaction) => {
       let userDoc = await transaction.get(userRef)
-      myPetList = userDoc.data().myPetList
-      myDoneActList = userDoc.data().myDoneActList
-      if (myPetList) {
+      if (userDoc.data().myPetList) { //undefined 방지
+        myPetList = userDoc.data().myPetList
+      }
+      if (userDoc.data().myDoneActList) { //undefined 방지
+        myDoneActList = userDoc.data().myDoneActList
+      }
+      if (myPetList.length !== 0) {
         myPetList = replaceItem(myPetList, petInfo, "id")
       } else {
         myPetList = [petInfo]
       }
-      //petActList가 있다면
       let diffActList = []
-      if (petActList) {
-        if (!myDoneActList) { //myDone이 없음. 교사 기록 첫 열람.
+      if (petActList) { //petActList가 있다면
+        if (!myDoneActList) { //myDone이 없음. 생기부 기록 첫 열람.
           diffActList = [...petActList]
         } else {
           petActList.map((petActItem) => { //myDone 있음.
@@ -64,7 +67,7 @@ const useGetMyUserInfo = () => {
         }
       }
       //차이가 있는 경우
-      if (diffActList) { //acti DoneList에 본인 정보 저장
+      if (diffActList.length !== 0) { //acti DoneList에 본인 정보 저장
         Promise.all(diffActList.map(async (item) => {
           let actiRef = doc(db, "activities", item.id)
           let studentInfo = { name: user.name, studentNumber: user.studentNumber, uid: user.uid }
@@ -89,9 +92,7 @@ const useGetMyUserInfo = () => {
       window.alert(err)
       console.log(err)
     })
-
   }
-
   return ({ myUserInfo, appliedStudentClassList, fetchMyPetInfo, errByGetMyUserInfo: error })
 }
 

@@ -2,11 +2,11 @@ import crying_cat from '../image/cat.png'
 import styled from 'styled-components'
 
 //24.01.24
-const EmptyResult = (props) => {
+const EmptyResult = ({ comment, color }) => {
   return (
-    <StyledEmptyClassRoomDiv>
+    <StyledEmptyClassRoomDiv $color={color}>
       <img src={crying_cat} alt="우는고양이" />
-      <p>{props.comment}</p>
+      <p>{comment}</p>
     </StyledEmptyClassRoomDiv>
   )
 }
@@ -25,7 +25,7 @@ const StyledEmptyClassRoomDiv = styled.div`
   }
   p {
     text-align: center;
-    color: gray;
+    color: ${({ $color }) => { return $color ? $color : "gray" }};
   }
   @media screen and (max-width: 767px) {
     margin: 0 auto 50px;

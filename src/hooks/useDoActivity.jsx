@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { appFireStore } from '../firebase/config'
 import { doc, getDoc, runTransaction, updateDoc } from 'firebase/firestore'
 import useGetRidOverlap from './useGetRidOverlap'
-import { setHomeworkList, setMyActList, setMyHomeworkList, setClassNewsList } from '../store/userSlice'
+import { setHomeworkList, setMyHomeworkList, setClassNewsList } from '../store/userSlice'
 import { useNavigate } from 'react-router-dom'
 
 const useDoActivity = () => {
@@ -14,70 +14,54 @@ const useDoActivity = () => {
 
   //학생의 활동 참가 신청
   const takePartInThisActivity = async (activityParam, classParam) => {
-    const studentRef = doc(db, "user", user.uid)
     const activityRef = doc(db, "activities", activityParam.id)
-    const studentInfo = { uid: user.uid, name: user.name, email: user.email, studentNumber: user.studentNumber };
-    const acitivityInfo = { ...activityParam, fromWhere: classParam.id }
-    let myActList = []
-    let studentParticipatingList = []
+    const studentInfo = {
+      uid: user.uid, name: user.name, email: user.email, studentNumber: user.studentNumber, profileImg: user.profileImg, fromWhere: classParam.id
+    }
+    let particiList = []
+    let particiSIdList = []
     await runTransaction(db, async (transaction) => {
-      const studentDoc = await transaction.get(studentRef)
       const activityDoc = await transaction.get(activityRef)
-      if (!studentDoc.exists()) {
-        throw new Error("student does not exist")
-      }
-      if (!activityDoc.exists()) {
-        throw new Error("activity does not exist")
-      }
-      myActList = studentDoc.data().myActList
-      studentParticipatingList = activityDoc.data().studentParticipatingList
-      //학생
-      if (myActList) { //기존
-        myActList = makeUniqueArrWithEle(myActList, acitivityInfo, "id")
-      } else { myActList = [acitivityInfo] } //신규
-      transaction.update(studentRef, { myActList })
+      if (!activityDoc.exists()) { throw new Error("활동 읽기 에러") }
+      //기존 데이터 or 신규 undefined 반환
+      particiSIdList = activityDoc.data().particiIdList;
+      particiList = activityDoc.data().particiList;
       //활동
-      if (studentParticipatingList) {
-        studentParticipatingList = makeUniqueArrWithEle(studentParticipatingList, studentInfo, "uid")
-      } else { studentParticipatingList = [studentInfo] }
-      transaction.update(activityRef, { studentParticipatingList })
-
+      if (particiSIdList) {
+        particiSIdList = makeUniqueArrWithEle(particiSIdList, user.uid, "uid")
+        particiList = makeUniqueArrWithEle(particiList, studentInfo, "uid")
+      } else {
+        particiList = [studentInfo]
+        particiSIdList = [user.uid]
+      }
+      transaction.update(activityRef, { particiList, particiSIdList })
     }).then(() => {
-      dispatcher(setMyActList(myActList))
       window.alert("활동이 신청되었습니다.")
     }).catch(err => {
       window.alert(err);
+      console.log(err);
     })
   }
 
   //학생의 활동 참가 취소
   const cancelThisActivity = async (activityParam) => {
-    const studentRef = doc(db, "user", user.uid)
     const activityRef = doc(db, "activities", activityParam.id)
-    let id = activityParam.id
-    let myActList = []
-    let studentParticipatingList = []
+    let particiList = []
+    let particiSIdList = []
     await runTransaction(db, async (transaction) => {
-      const studentDoc = await transaction.get(studentRef)
       const activityDoc = await transaction.get(activityRef)
-      myActList = studentDoc.data().myActList
-      studentParticipatingList = activityDoc.data().studentParticipatingList
-      if (myActList && myActList.length > 0) {
-        myActList = myActList.filter((item) => { return item.id !== id })
+      particiList = activityDoc.data().particiList
+      particiSIdList = activityDoc.data().particiSIdList;
+      if (particiSIdList) {
+        particiSIdList = particiSIdList.filter((item) => { return item !== user.uid })
+        particiList = particiList.filter((item) => { return item.uid !== user.uid })
       }
-      transaction.update(studentRef, { myActList })
-      if (studentParticipatingList && studentParticipatingList.length > 0) {
-        studentParticipatingList = studentParticipatingList.filter((item) => {
-          return item.uid !== user.uid
-        })
-        console.log(studentParticipatingList)
-      }
-      transaction.update(activityRef, { studentParticipatingList })
+      transaction.update(activityRef, { particiList, particiSIdList })
     }).then(() => {
-      dispatcher(setMyActList(myActList))
-      window.alert("활동 신청이 취소되었습니다.")
+      window.alert("활동이 신청 취소되었습니다.")
       navigate(-1)
     }).catch((err) => {
+      window.alert(err)
       console.log(err)
     })
   };
@@ -86,8 +70,12 @@ const useDoActivity = () => {
   const submitHomework = async (fileParam, actiParam, isModified) => {
     const id = `${user.uid}/${actiParam.id}`
     const fileName = fileParam.name
-    const homeworkInfo = { id, studentName: user.name, fileName, actTitle: actiParam.title, fromWhere: actiParam.fromWhere }
-    const myHomeworkInfo = { id, actTitle: actiParam.title, fileName, fromWhere: actiParam.fromWhere }
+    let fromWhere;
+    if (!actiParam.fromWhere) { //*노션 참고
+      fromWhere = actiParam.particiList.find((item) => { return item.uid === user.uid }).fromWhere
+    } else { fromWhere = actiParam.fromWhere }
+    const homeworkInfo = { id, fileName, actTitle: actiParam.title, fromWhere: fromWhere, studentName: user.name, }
+    const myHomeworkInfo = { id, fileName, actTitle: actiParam.title, fromWhere: fromWhere }
     let homeworkList = [] //교사
     let myHomeworkList = [] //학생
     const studentRef = doc(db, "user", user.uid)
@@ -97,30 +85,22 @@ const useDoActivity = () => {
       const teacherDoc = await transaction.get(teacherRef)
       homeworkList = teacherDoc.data().homeworkList
       myHomeworkList = studentDoc.data().myHomeworkList
-      if (!studentDoc.exists()) {
-        throw new Error("학생 정보 없음")
-      }
-      if (!teacherDoc.exists()) {
-        throw new Error("교사 정보 없음")
-      }
+      //에러 처리
+      if (!studentDoc.exists()) { throw new Error("학생 읽기 에러") }
+      if (!teacherDoc.exists()) { throw new Error("교사 읽기 에러") }
       //교사 
-      if (homeworkList && homeworkList.length > 0) {
-        if (!isModified) {
-          homeworkList = makeUniqueArrWithEle(homeworkList, homeworkInfo, "id")
-        } else {
-          homeworkList = replaceItem(homeworkList, homeworkInfo, "id")
-        }
+      if (homeworkList) {
+        if (!isModified) { homeworkList = makeUniqueArrWithEle(homeworkList, homeworkInfo, "id") }
+        else { homeworkList = replaceItem(homeworkList, homeworkInfo, "id") }
       } else { homeworkList = [homeworkInfo] } //기존
-      transaction.update(teacherRef, { homeworkList })
       //학생
-      if (myHomeworkList && myHomeworkList.length > 0) {
-        if (!isModified) {
-          myHomeworkList = makeUniqueArrWithEle(myHomeworkList, myHomeworkInfo, "id")
-        } else {
-          myHomeworkList = replaceItem(myHomeworkList, myHomeworkInfo, "id")
-        }
+      if (myHomeworkList) {
+        if (!isModified) { myHomeworkList = makeUniqueArrWithEle(myHomeworkList, myHomeworkInfo, "id") }
+        else { myHomeworkList = replaceItem(myHomeworkList, myHomeworkInfo, "id") }
       } else { myHomeworkList = [myHomeworkInfo] } //기존
-      transaction.update(studentRef, { myHomeworkList })
+      //업데이트
+      transaction.update(teacherRef, { homeworkList }) //교사
+      transaction.update(studentRef, { myHomeworkList }) //학생
     }).then(() => {
       dispatcher(setMyHomeworkList(myHomeworkList))
     }).catch((err) => {
@@ -144,9 +124,7 @@ const useDoActivity = () => {
           let itemId = item.id.split("/")[1]
           return itemId !== id
         })
-      } else {
-        throw new Error("교사가 받은 과제 목록이 없음.")
-      }
+      } else { throw new Error("교사가 받은 과제 목록이 없음.") }
       transaction.update(teacherRef, { homeworkList })
 
       if (studentDoc.data().myHomeworkList) {
@@ -154,13 +132,13 @@ const useDoActivity = () => {
           let itemId = item.id.split("/")[1]
           return itemId !== id
         })
-      } else {
-        throw new Error("학생 제출 과제 목록이 없음.")
-      }
+      } else { throw new Error("학생 제출 과제 목록이 없음.") }
       transaction.update(studentRef, { myHomeworkList })
-    }).then(() => {
-      dispatcher(setMyHomeworkList(myHomeworkList))
-    }).catch((err) => { window.alert(err) });
+    }).then(() => { dispatcher(setMyHomeworkList(myHomeworkList)) })
+      .catch((err) => {
+        window.alert(err)
+        console.log(err)
+      });
   }
 
   //학생의 과제 결과 확인
@@ -185,11 +163,10 @@ const useDoActivity = () => {
     })
   }
 
-  //교사의 과제 승인 -> 학생
+  //교사의 과제 승인
   const approveHomework = async (studentParam, actiParam, fromWhere) => {
     //id
     const homeworkId = `${studentParam.uid}/${actiParam.id}`
-    const actId = actiParam.id
     const studentId = studentParam.uid
     const classId = fromWhere
     //ref
@@ -206,11 +183,11 @@ const useDoActivity = () => {
       money: actiParam.money,
       content: actiParam.content,
     }
-    let myActList; //학생 
     let myHomeworkList;
     let classNewsList;
     let homeworkList; //교사용
-    let studentParticipatingList; //활동
+    let particiList; //활동
+    let particiSIdList
     let studentDoneList;
     let actList; //펫
     let accRecord = ""
@@ -234,13 +211,13 @@ const useDoActivity = () => {
         throw new Error("펫 정보 없음")
       }
       //학생
-      myActList = studentDoc.data().myActList
       myHomeworkList = studentDoc.data().myHomeworkList
       classNewsList = studentDoc.data().classNewsList
       //교사
       homeworkList = teacherDoc.data().homeworkList
       //활동
-      studentParticipatingList = activityDoc.data().studentParticipatingList
+      particiList = activityDoc.data().particiList
+      particiSIdList = activityDoc.data().particiSIdList
       studentDoneList = activityDoc.data().studentDoneList
       //펫
       actList = petDoc.data().actList
@@ -257,31 +234,31 @@ const useDoActivity = () => {
         actList = makeUniqueArrWithEle(actList, actiInfo, "id")
         accRecord = accRecord.concat(" ", actiInfo.record)
       }
-      transaction.update(petRef, { actList, accRecord })
       //학생(삭제 및 기록)
-      if (myActList && myActList.length > 0) { myActList = myActList.filter((item) => { return item.id !== actId }) } //삭제
-      if (myHomeworkList && myHomeworkList.length > 0) { myHomeworkList = myHomeworkList.filter((item) => { return item.id !== homeworkId }) } //삭제
-      if (classNewsList && classNewsList.length > 0) { //기록
+      if (myHomeworkList) { myHomeworkList = myHomeworkList.filter((item) => { return item.id !== homeworkId }) } //삭제
+      if (classNewsList) { //기록
         classNewsList = makeUniqueArrWithEle(classNewsList, { ...actiInfo, type: "homework", isApproved: true }, "id")
       } else { classNewsList = [{ ...actiInfo, type: "homework", isApproved: true }] }
-      transaction.update(studentRef, { myHomeworkList, myActList, classNewsList }) //업데이트
       //교사(삭제)
-      if (homeworkList && homeworkList.length > 0) { homeworkList = homeworkList.filter((item) => { return item.id !== homeworkId }) }
-      transaction.update(teacherRef, { homeworkList }) //업데이트
-      //활동(이동)
-      if (studentParticipatingList && studentParticipatingList.length > 0) {
-        studentParticipatingList = studentParticipatingList.filter((item) => { return item.uid !== studentId })
-      } //삭제
+      if (homeworkList) { homeworkList = homeworkList.filter((item) => { return item.id !== homeworkId }) }
+      //활동(삭제 및 기록)
+      if (particiList) { particiList = particiList.filter((item) => { return item.uid !== studentId }) } //삭제
+      if (particiSIdList) { particiSIdList = particiSIdList.filter((item) => { return item !== studentId }) }
       if (studentDoneList) { //기록
-        studentDoneList = makeUniqueArrWithEle(studentDoneList, { studentInfo }, "uid")
+        studentDoneList = makeUniqueArrWithEle(studentDoneList, studentInfo, "uid")
       } else { studentDoneList = [studentInfo] }
-      transaction.update(activityRef, { studentParticipatingList, studentDoneList }) //업데이트
+      //업데이트
+      transaction.update(petRef, { actList, accRecord }) //펫
+      transaction.update(teacherRef, { homeworkList }) //교사
+      transaction.update(studentRef, { myHomeworkList, classNewsList }) //학생
+      transaction.update(activityRef, { particiList, particiSIdList, studentDoneList }) //활동 
     }).then(() => {
       window.alert("과제가 승인되었습니다.")
       dispatcher(setHomeworkList(homeworkList))
       navigate(-1)
     }).catch((err) => {
       window.alert(err.message)
+      console.log(err.message)
     })
   }
 

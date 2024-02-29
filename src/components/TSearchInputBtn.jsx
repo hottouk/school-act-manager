@@ -4,9 +4,8 @@ import useFetchFireData from '../hooks/useFetchFireData'
 
 const TSearchInputBtn = ({ setTeacherList }) => {
   const [_teacherPropKind, setTeacherPropKind] = useState("name")
-  const [_teacherProp, setTeacherProp] = useState('')
+  const [_teacherProp, setTeacherProp] = useState("교사 검색")
   const { fetchDataList } = useFetchFireData()
-
   const handleOnClick = () => {
     fetchDataList("teacher", _teacherPropKind, _teacherProp).then((teacherList) => {
       teacherList.sort((a, b) => a.name.localeCompare(b.name)) //정렬
@@ -19,7 +18,6 @@ const TSearchInputBtn = ({ setTeacherList }) => {
       <input className="teacher_search_input" type="text" value={_teacherProp} onChange={(event) => { setTeacherProp(event.target.value) }} />
       <select id="teacher_props_select" value={_teacherPropKind} onChange={(event) => { setTeacherPropKind(event.target.value) }}>
         <option value="name">이름</option>
-        <option value="uid">아이디</option>
         <option value="schoolName">학교</option>
       </select>
     </div>

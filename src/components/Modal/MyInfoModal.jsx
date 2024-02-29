@@ -6,7 +6,7 @@ import useLogout from '../../hooks/useLogout';
 import { Badge } from 'react-bootstrap';
 import styled from 'styled-components';
 //컴포넌트
-import TeacherRadio from '../TeacherRadio';
+import TeacherRadio from '../Radio/TeacherRadio';
 import CSInfoSelect from '../CSInfoSelect';
 //hooks
 import useStudent from '../../hooks/useStudent';

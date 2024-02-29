@@ -59,24 +59,7 @@ const useGetClass = () => {
     }
   }
 
-  //교사 ID로 클래스 검색하기
-  const getClassByTeacherId = (teacherId) => {
-    let q = query(collection(db, "classRooms"), where('uid', '==', teacherId), orderBy("subject", 'desc'))
-    onSnapshot(q,
-      (snapshot) => {
-        let result = []
-        snapshot.docs.forEach((doc) => {
-          result.push({ ...doc.data(), id: doc.id })
-        })
-        setSearchResult(result)
-      }
-      , (error) => {
-        setError(error.message)
-        console.log(error.message)
-      }
-    )
-  }
-  return { classList, appliedClassList, searchResult, errByGetClass: error, getClassByTeacherId }
+  return { classList, appliedClassList, searchResult, errByGetClass: error }
 }
 
 export default useGetClass

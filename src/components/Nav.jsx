@@ -8,8 +8,8 @@ import styled from 'styled-components'
 import brandLogo from "../image/icon/h-logo.png";
 import { Helmet } from 'react-helmet'
 import MyInfoModal from './Modal/MyInfoModal'
-import newIcon from "../image/icon/new_icon.png"
 import unknown from '../image/icon/unkown_icon.png'
+import { Badge } from 'react-bootstrap';
 
 //24.02.22
 const Nav = () => {
@@ -25,10 +25,7 @@ const Nav = () => {
   useEffect(() => {
     setProfileImg(user.profileImg)//프로필 사진
     if (user.isTeacher) { //교사
-      if (user.appliedStudentClassList && user.appliedStudentClassList.length > 0) {
-        setIsNew(true)
-      } else { setIsNew(false) }
-      if (user.homeworkList && user.homeworkList.length > 0) {
+      if ((user.appliedStudentClassList && user.appliedStudentClassList.length > 0) || ((user.homeworkList && user.homeworkList.length > 0))) {
         setIsNew(true)
       } else { setIsNew(false) }
     } else if (!user.isTeacher) { //학생
@@ -80,7 +77,7 @@ const Nav = () => {
         <li id="acti_btn" ><Link to="/activities"><i className="fa-solid fa-scroll"></i>활동 관리</Link></li>
         <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>클래스 관리</Link></li>
         <li className="news_btn" >
-          {_isNew && <StyledNewIcon src={newIcon} className="new_icon" alt="새소식" />}
+          {_isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news"><i className="fa-solid fa-bell"></i></Link></li>
         {/* 모바일 전용 */}
         <li id="my_info_btn" className="mobileOnly" onClick={handleBtnClick}><i className="fa-solid fa-user"></i>MyInfo</li>
@@ -96,7 +93,7 @@ const Nav = () => {
         <li id="acti_btn"><Link to="/activities"><i className="fa-solid fa-scroll"></i>참여 활동</Link></li>
         <li id="class_btn"><Link to="/classRooms"><i className="fa-solid fa-school"></i>참여 클래스 </Link></li>
         <li className="news_btn">
-          {_isNew && <StyledNewIcon src={newIcon} className="new_icon" alt="새소식" />}
+          {_isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news" ><i className="fa-solid fa-bell" /></Link>
         </li>
         {/* 모바일 전용 */}
@@ -217,11 +214,9 @@ const StyledNav = styled.nav`
     }
   }
 `
-const StyledNewIcon = styled.img`
+const StyledNewIcon = styled.div`
   position: absolute;
-  width: 15px;
-  height: 15px;
-  top: -10px;
-  right: -5px;
+  top: -25px;
+  right: -8px;
 `
 export default Nav

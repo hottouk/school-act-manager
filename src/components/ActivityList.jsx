@@ -12,23 +12,16 @@ import { useEffect, useState } from 'react'
 //학생 전용
 const ActivityList = ({ activityList, classInfo }) => {
   const user = useSelector(({ user }) => user)
-  const [studentUser, setStudentUser] = useState(null)
   const navigate = useNavigate()
+  const [_studentUser, setStudentUser] = useState(null)
+
   useEffect(() => { //공용
-    if (user.isTeacher) {
-      //todo
-    } else {
-      setStudentUser(
-        { email: user.email, name: user.name, studentNumber: user.studentNumber, uid: user.uid }
-      )
-    }
+    if (user.isTeacher) { } //todo
+    else { setStudentUser({ email: user.email, name: user.name, studentNumber: user.studentNumber, uid: user.uid }) }
   }, [user])
 
-
-
   const handleOnClick = (acti) => {
-    console.log(acti)
-    navigate(`/activities/${acti.id}`, { state: { acti: { ...acti, fromWhere: classInfo.id }, student: studentUser, classInfo } }) //url 이동 --> activityForm
+    navigate(`/activities/${acti.id}`, { state: { acti: { ...acti, fromWhere: classInfo.id }, classInfo, student: _studentUser } }) //url 이동 --> activityForm
   }
 
   const handleQuestImg = (monImg) => {
@@ -60,16 +53,14 @@ const ActivityList = ({ activityList, classInfo }) => {
           let actiTitle = acti.title
           let monImg = acti.monImg
           let done = null;
-          if (acti.studentDoneList) {
-            done = acti.studentDoneList.find((item) => { return item.uid === user.uid })
-          }
+          if (acti.studentDoneList) { done = acti.studentDoneList.find((item) => { return item.uid === user.uid }) }
           return (
-            <StyledListItem key={acti.id}>
+            <StyledLi key={acti.id}>
               {done
                 ? <img src={doneIcon} alt="완료" onClick={() => { window.alert("완료된 활동입니다. 나의 정보에서 확인하세요.") }} />
                 : <img src={handleQuestImg(monImg)} alt="퀘스트 img" onClick={() => { handleOnClick(acti) }} />}
               <p className="acti_title">{actiTitle}</p>
-            </StyledListItem>
+            </StyledLi>
           )
         })}
       </StyledListContainer>
@@ -94,13 +85,13 @@ const StyledListContainer = styled.ul`
     padding: 0;
   }
 `
-const StyledListItem = styled.li`
+const StyledLi = styled.li`
   width: 80px;
   margin: 10px;
   img {
     width: 100%;
     height: 80px;
-    padding: 10px;
+    padding: 3px;
     transition: transform 0.1s;
     border: black 1px solid;
     border-radius: 15px;

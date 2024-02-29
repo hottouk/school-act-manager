@@ -47,14 +47,14 @@ const News = () => {
           myDoneActList: user.myDoneActList, myHomeworkList: user.myHomeworkList, myPetList: user.myPetList,
         }
       )
-      if(user.classNewsList){ //새소식 존재?
+      if (user.classNewsList) { //새소식 존재?
         setSignUpNewsList(user.classNewsList.filter((item) => { return item.type === "class" })) //가입 소식
         setHomeworkNewsList(user.classNewsList.filter((item) => { return item.type === "homework" })) //과제 소식
       }
     }
   }, [user])
 
-  const handleBtnClick = (event, params) => {
+  const handleBtnClick = (event, params) => { //prams는 actiInfo
     switch (event.target.id) {
       case "approval_btn":
         approveMembership(params)
@@ -66,9 +66,9 @@ const News = () => {
         let studentId = params.id.split("/")[0]
         let actId = params.id.split("/")[1]
         getInfo(actId, "acti").then((acti) => {
-          let studentParticipatingList = acti.data().studentParticipatingList
+          let particiList = acti.data().particiList
           let actInfo = { id: acti.id, ...acti.data() }
-          let student = studentParticipatingList.find((item) => { return item.uid === studentId })
+          let student = particiList.find((item) => { return item.uid === studentId })
           navigate(`/activities/${actId}/${studentId}`, { state: { acti: actInfo, student } })
         })
         break;
@@ -90,7 +90,7 @@ const News = () => {
   return (<><StyledContainer>
     {/* 교사용 */}
     {user.isTeacher && <>
-      <h4>클래스 가입 신청</h4>
+      <p>클래스 가입 신청</p>
       <StyledMain>
         {(!user.appliedStudentClassList || user.appliedStudentClassList.length === 0) && <EmptyResult comment="현재 신청 내역이 없습니다." />}
         {_errByGetMyUserInfo && <strong>_errByGetMyUserInfo</strong>}
@@ -115,7 +115,7 @@ const News = () => {
           })}
         </ul>
       </StyledMain>
-      <h4>과제 제출</h4>
+      <p>과제 제출</p>
       <StyledMain>
         {(!user.homeworkList || user.homeworkList.length === 0) && <EmptyResult comment="현재 과제 제출 내역이 없습니다." />}
         {_errByGetMyUserInfo && <strong>_errByGetMyUserInfo</strong>}
@@ -135,7 +135,7 @@ const News = () => {
     </>}
     {/* 학생용 */}
     {!user.isTeacher && <>
-      <h4>클래스 신청 결과</h4>
+      <p>클래스 신청 결과</p>
       <StyledMain>
         {(!signUpNewsList || signUpNewsList.length === 0) && <EmptyResult comment="현재 승인 내역이 없습니다." />}
         {_errByGetMyUserInfo && <strong>_errByGetMyUserInfo</strong>}
@@ -154,7 +154,7 @@ const News = () => {
           })}
         </ul>}
       </StyledMain>
-      <h4>과제 결과</h4>
+      <p>과제 결과</p>
       <StyledMain>
         {(!homeworkNewsList || homeworkNewsList.length === 0) && < EmptyResult comment="과제 결과 내역이 없습니다." />}
         {homeworkNewsList && <ul>
@@ -172,7 +172,7 @@ const News = () => {
       </StyledMain>
     </>}
   </StyledContainer>
-    <RewardModal show={isModalShown} onHide={() => { setIsModalShown(false) }} reward={reward} />
+    <RewardModal show={isModalShown} onHide={() => { setIsModalShown(false) }} rewards={reward} />
   </>)
 }
 
@@ -180,7 +180,7 @@ const StyledContainer = styled.main`
   box-sizing: border-box;
   width: 80%;
   margin: 0 auto 50px;
-  h4 {
+  p {
     margin-bottom: 0;
     margin-top: 1rem;
   }

@@ -1,12 +1,12 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const InputFile = (props) => {
+const InputFile = ({ handleOnChange, fileName }) => {
   return (
     <StyledInputDiv>
       <label className="input_file_btn" htmlFor="input_file_btn">파일 첨부</label>
-      <p>{props.fileName}</p>
-      <input type="file" id="input_file_btn" onChange={props.handleOnChange} style={{ display: "none" }} />
+      <p>{fileName}</p>
+      <input type="file" id="input_file_btn" onChange={handleOnChange} style={{ display: "none" }} />
     </StyledInputDiv>
   )
 }

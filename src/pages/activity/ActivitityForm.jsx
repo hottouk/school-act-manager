@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import Form from 'react-bootstrap/Form';
 import styled from "styled-components";
 //hooks
 import useChatGpt from "../../hooks/useChatGpt";
@@ -21,6 +20,9 @@ import useDoActivity from "../../hooks/useDoActivity";
 import Homework from "../../components/Homework";
 import CircleList from "../../components/CircleList";
 import QuestModal from "../../components/Modal/QuestModal";
+import SubjectSelect from "../../components/SubjectSelect";
+import HomeworkRadio from "../../components/Radio/HomeworkRadio";
+import useFireActi from "../../hooks/useFireActi";
 
 //24.02.13 수정
 const ActivityForm = () => {
@@ -28,11 +30,12 @@ const ActivityForm = () => {
   const user = useSelector(({ user }) => { return user })
   //1.활동 기본 정보 변수
   const [title, setTitle] = useState('');
-  const [subject, setSubject] = useState('default');
+  const [_subject, setSubject] = useState('default');
   const [content, setContent] = useState('');
   const [record, setRecord] = useState('');
   const [monImg, setMonImg] = useState(null);
-  const [isHomework, setIsHomework] = useState(false)
+  const [_isHomework, setIsHomework] = useState(false)
+  const [_anyPartici, setAnyPartici] = useState(false)
   //2.경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
   const [careerScore, setCareerScore] = useState(0);
@@ -45,9 +48,11 @@ const ActivityForm = () => {
   const [timerModalShow, setTimerModalShow] = useState(false)
   const [questModalShow, setQuestModalShow] = useState(false)
   const [isHomeworkSubmit, setIsHomeworkSubmit] = useState(false)
+  const [isModified, setIsModified] = useState(false)
   //4.데이터 통신 변수
-  const { addDocument, updateAct, deleteDocument } = useFirestore('activities');
-  const { takePartInThisActivity, cancelThisActivity } = useDoActivity()
+  const { addDocument, updateAct } = useFirestore('activities');
+  const { takePartInThisActivity, cancelThisActivity } = useDoActivity();
+  const { deleteActi } = useFireActi();
   //5.경로 이동 관련 변수
   const { state } = useLocation()
   const navigate = useNavigate()
@@ -57,18 +62,6 @@ const ActivityForm = () => {
   const clientHeight = useClientHeight(document.documentElement)
   //8. 학생 전용
   const [isParticipating, setIsParticipating] = useState(false)
-
-  useEffect(() => {
-    if (user.myActList && state) {
-      let thisAct = user.myActList.find((item) => { return item.id === state.acti.id })
-      if (thisAct) {
-        setIsParticipating(true)
-      } else {
-        setIsParticipating(false)
-      }
-    }
-  }, [user])
-
   useEffect(() => {
     if (state) {
       let scoresObj = state.acti.scores
@@ -79,6 +72,10 @@ const ActivityForm = () => {
       setMonImg(acti.monImg)
       setSubject(acti.subject)
       setIsHomework(acti.isHomework)
+      if (acti.particiSIdList) {
+        setIsParticipating(acti.particiSIdList.find((item) => { return item === user.uid })) //학생 본인 활동 참여 중 여부
+        setAnyPartici(true)
+      }
       if (scoresObj) {
         setLeadershipScore(scoresObj.leadership)
         setCareerScore(scoresObj.careerScore)
@@ -92,6 +89,8 @@ const ActivityForm = () => {
         setCoopScore(0)
         setAttitudeScore(0)
       }
+    } else {
+      setIsModified(true)
     }
   }, [state]);
 
@@ -115,30 +114,29 @@ const ActivityForm = () => {
     let scores = { leadership: leadershipScore, careerScore, sincerityScore, coopScore, attitudeScore };
     let money = coin
     if (state) {
-      const confirm = window.confirm('활동을 수정하시겠습니까?')
+      const confirm = window.confirm("활동을 수정하시겠습니까?")
       let actId = state.acti.id
       let uid = state.acti.uid
       if (confirm) {
-        let modifiedAct = { uid, title, subject, content, record, scores, money, monImg, isHomework };
+        let modifiedAct = { uid, title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework };
         updateAct(modifiedAct, actId)
         navigate(`/activities`)
+        setIsModified(false)
       }
     } else {
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
-        let newAct = { uid: user.uid, title, subject, content, record, scores, money, monImg, isHomework };
+        let newAct = { uid: user.uid, title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework };
         addDocument(newAct)
         navigate(`/activities`)
       }
     }
   }
 
-  //변화 감지 변수 수정
+  //변화 감지
   const handleChange = (event) => {
     if (event.target.id === 'act_title') {
       setTitle(event.target.value)
-    } else if (event.target.id === "act_subject") {
-      setSubject(event.target.value)
     } else if (event.target.id === 'act_content') {
       setContent(event.target.value)
     } else if (event.target.id === 'act_record') {
@@ -158,10 +156,10 @@ const ActivityForm = () => {
     }
   }
 
-  // 저장/수정버튼 클릭 제출
+  // 저장버튼 클릭 제출
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (subject !== 'default') {
+    if (_subject !== 'default') {
       showConfirmModal();
     } else {
       window.alert('과목을 입력해주세요')
@@ -172,10 +170,10 @@ const ActivityForm = () => {
   const handleBtnClick = (event) => {
     event.preventDefault();
     switch (event.target.id) {
-      case 'gpt_btn': //교사 전용
-        if (title !== '' && subject !== 'default') {
+      case "gpt_btn": //교사 전용
+        if (title !== '' && _subject !== 'default') {
           try {
-            askChatGpt(title, subject, content)
+            askChatGpt(title, _subject, content)
             setTimerModalShow(true)
           } catch (error) {
             window.alert.log(error.message)
@@ -184,12 +182,11 @@ const ActivityForm = () => {
           window.alert('활동 제목과 과목을 채워주세요. 간단한 설명을 입력하면 더 정확한 문구를 얻을 수 있어요')
         }
         break;
-
       case "delete_btn":
-        if (window.confirm('활동을 삭제하시겠습니까?')) {
-          deleteDocument(state.acti.id)
-          navigate(`/activities`)
-        }
+        if (window.confirm("이 활동을 정말로 삭제하시겠습니까?")) { deleteActi(state.acti.id) }
+        break;
+      case "modi_btn":
+        setIsModified(true)
         break;
       case "go_back_to_class_btn":
         navigate(-1)
@@ -197,11 +194,13 @@ const ActivityForm = () => {
       case "do_this_act_btn": //학생 전용
         if (window.confirm("이 활동을 신청하시겠습니까?")) {
           takePartInThisActivity(state.acti, state.classInfo)
+          setIsParticipating(true)
         }
         break;
       case "cancel_this_act_btn":
         if (window.confirm("이 활동을 신청 취소하시겠습니까?")) {
           cancelThisActivity(state.acti)
+          setIsParticipating(false)
         }
         break;
       case 'go_back_btn': //공용
@@ -210,10 +209,11 @@ const ActivityForm = () => {
       default: return
     }
   }
-
   //퀘스트 이미지 선택
   const handleImgPickerClick = () => {
-    setgraphicModalShow(true)
+    if (isModified) {
+      setgraphicModalShow(true)
+    }
   }
 
   const handleQuestImg = (monImg) => {
@@ -247,92 +247,90 @@ const ActivityForm = () => {
   }
   return (
     <>
-      <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
-        <fieldset>
-          <StyledFirstDiv>
-            {user.isTeacher && (state ? <legend>활동 수정하기</legend> : <legend>활동 작성하기</legend>)}
-            {!user.isTeacher && <legend>활동 신청하기</legend>}
-            {user.isTeacher
-              ? <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
-              : <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" />
-            }
-          </StyledFirstDiv>
-          <StyledFirstDiv>
-            <div>
-              <label htmlFor="act_title" >활동 제목</label>
-              {user.isTeacher && <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} />}
-              {!user.isTeacher && <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled />}
-            </div>
-            {user.isTeacher && <select id='act_subject' required value={subject} onChange={handleChange}>
-              <option value="default" disabled >과목을 선택하세요</option>
-              <option value="국어">국어과</option>
-              <option value="영어">영어과</option>
-              <option value="수학">수학과</option>
-              <option value="사회">사회과</option>
-              <option value="과학">과학과</option>
-              <option value="예체능">음,미,체</option>
-              <option value="제2외국어">제2외국어과</option>
-              <option value="정보">정보</option>
-            </select>}
-          </StyledFirstDiv>
-          <label htmlFor="act_content" >GPT 또는 학생들에게 활동 설명하기</label>
-          {user.isTeacher && <textarea id="act_content" type="text" onChange={handleChange} value={content} />}
-          {!user.isTeacher && <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled />}
-          <label htmlFor="act_record" >생기부 문구</label>
-          {user.isTeacher && <textarea id="act_record" type="text" required onChange={handleChange} value={record} />}
-          {!user.isTeacher && <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled />}
-
-          <ScoreWrapper handleChange={handleChange}
-            leadershipScore={leadershipScore}
-            careerScore={careerScore}
-            coopScore={coopScore}
-            sincerityScore={sincerityScore}
-            attitudeScore={attitudeScore}
-            coin={coin}
-          />
-          {/* 활동구분 */}
-          {user.isTeacher &&
-            <div className='radio_div'>
-              <div>활동구분</div>
-              <Form.Check onChange={handleRadioBtnClick}
-                inline
-                type='radio'
-                id={'activity_radio_btn'}
-                name='isHomework_radio'
-                label={'생기부 기록 전용'}
-                checked={!isHomework}
-              ></Form.Check>
-              <Form.Check onChange={handleRadioBtnClick}
-                inline
-                type='radio'
-                id={'homework_radio_btn'}
-                name='isHomework_radio'
-                label={'과제 제출도 가능'}
-                checked={isHomework}
-              ></Form.Check>
-            </div>}
-          {/* 교사용 버튼 모음: 아이템List를 클릭하여 이동했을시 다른 폼 보여주기 */}
-          {user.isTeacher && <>
-            <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성하기</StyledBtn>
-            {state ? <StyledBtn type="submit">수정하기</StyledBtn> : <StyledBtn type="submit">저장하기</StyledBtn>}
-            {state && <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제하기</StyledBtn>}
-            <StyledBtn type="button" id="go_back_btn" onClick={handleBtnClick}>돌아가기</StyledBtn>
-          </>}
-          {/* 학생용 버튼 모음*/}
-          {!user.isTeacher && <>
-            {isHomework &&
+      {/* 교사 */}
+      {user.isTeacher && <>
+        <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
+          <fieldset>
+            <StyledFirstDiv>
+              {state ? <legend>{_subject} 활동 수정</legend> : <legend>활동 생성</legend>}
+              <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
+            </StyledFirstDiv>
+            <StyledFirstDiv>
+              <div>
+                <label htmlFor="act_title" >활동 제목</label>
+                <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled={!isModified} />
+              </div>
+              {!state && <SubjectSelect subject={_subject} onChange={setSubject} />}
+            </StyledFirstDiv>
+            <label htmlFor="act_content" >활동 설명하기</label>
+            <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled={!isModified} />
+            <label htmlFor="act_record" >생기부 문구</label>
+            <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled={!isModified} />
+            <ScoreWrapper handleChange={handleChange}
+              leadershipScore={leadershipScore}
+              careerScore={careerScore}
+              coopScore={coopScore}
+              sincerityScore={sincerityScore}
+              attitudeScore={attitudeScore}
+              coin={coin}
+              disabled={!isModified} />
+            {!_anyPartici &&
+              < HomeworkRadio isHomework={_isHomework} onChange={handleRadioBtnClick} disabled={!isModified} />}
+            {_anyPartici && <p>참여중인 학생이 있으므로 생기부 기록 전용으로는 바꿀 수 없습니다.</p>}
+            {state
+              ? isModified && <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>
+              : <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>}
+            {state
+              ? !isModified
+                ? <StyledBtn type="button" id="modi_btn" onClick={handleBtnClick}>수정</StyledBtn>
+                : <StyledBtn type="submit">저장</StyledBtn>
+              : <StyledBtn type="submit">저장</StyledBtn>}
+            {state && <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제</StyledBtn>}
+            <StyledBtn type="button" id="go_back_btn" onClick={handleBtnClick}>목록</StyledBtn>
+          </fieldset>
+        </StyledForm>
+      </>}
+      {/* 학생 */}
+      {!user.isTeacher && <>
+        <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
+          <fieldset>
+            <StyledFirstDiv>
+              <legend>활동 신청하기</legend>
+              <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" />
+            </StyledFirstDiv>
+            <StyledFirstDiv>
+              <div>
+                <label htmlFor="act_title" >활동 제목</label>
+                <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled />
+              </div>
+            </StyledFirstDiv>
+            <label htmlFor="act_content" >GPT 또는 학생들에게 활동 설명하기</label>
+            <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled />
+            <label htmlFor="act_record" >생기부 문구</label>
+            <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled />
+            <ScoreWrapper handleChange={handleChange}
+              leadershipScore={leadershipScore}
+              careerScore={careerScore}
+              coopScore={coopScore}
+              sincerityScore={sincerityScore}
+              attitudeScore={attitudeScore}
+              coin={coin}
+              disabled={true}
+            />
+            {_isHomework &&
               (!isParticipating
-                ? <StyledBtn type="button" id="do_this_act_btn" onClick={handleBtnClick}>신청하기</StyledBtn>
+                ? <StyledBtn type="button" id="do_this_act_btn" onClick={handleBtnClick}>신청</StyledBtn>
                 : <><StyledBtn type="button" $color={"#3454d1"} $background={"#efefef"}>참여중</StyledBtn>
                   {!isHomeworkSubmit && <StyledBtn type="button" id="cancel_this_act_btn" onClick={handleBtnClick}>신청 취소</StyledBtn>}</>
               )
             }
-            <StyledBtn type="button" id="go_back_to_class_btn" onClick={handleBtnClick}>확인</StyledBtn>
-          </>}
-        </fieldset>
-      </StyledForm>
+            <StyledBtn type="button" id="go_back_to_class_btn" onClick={handleBtnClick}>목록</StyledBtn>
+          </fieldset>
+        </StyledForm>
+      </>}
       {isParticipating && <Homework activity={state.acti} homeworkSubmit={(isSubmit) => { setIsHomeworkSubmit(isSubmit) }} />}
-      {state && <CircleList dataList={state.acti.studentParticipatingList} acti={state.acti} />}
+      {state && <CircleList dataList={state.acti.particiList} acti={state.acti} />}
+      {/* 모달 */}
       <GraphicDialogModal
         show={graphicModalShow}
         onHide={() => setgraphicModalShow(false)}

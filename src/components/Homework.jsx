@@ -9,9 +9,9 @@ import nonPreview from "../image/non_preview.png"
 import InputFile from './InputFile';
 
 //todo 문서쓰기
-const Homework = (props) => {
+const Homework = ({ activity, homeworkSubmit }) => {
   const user = useSelector(({ user }) => { return user })
-  const activityInfo = props.activity
+  const activityInfo = activity
   const [_file, setFile] = useState(null)         //사용자 선택한 파일
   const [_fileName, setFileName] = useState(null) //기존 파일명 from DB
   const [_newFileName, setNewFileName] = useState(null) //과제 수정시 새 파일명
@@ -30,42 +30,45 @@ const Homework = (props) => {
 
   //2.useEffect
   useEffect(() => { //입장 시
-    if (user.myHomeworkList) { //학생
-      let thisHomework = user.myHomeworkList.find((item) => {
-        let itemId = item.id.split('/')[1]
-        return itemId === activityInfo.id
-      })
-      if (thisHomework) {
-        setThisHomework(thisHomework)
-        setFileName(thisHomework.fileName);
-        if (getIsImageCheck(thisHomework.fileName)) {
-          getImgUrl(thisHomework.fileName, state.acti.id, prevImgRef, state.student.uid)
-          setNoImgPrev('')
-        } else {
-          setPrevImgSrc(nonPreview)
-          setNoImgPrev("미리 볼 수 없는 형식의 파일입니다.")
+    if (!user.isTeacher) { //학생
+      if (user.myHomeworkList) { //학생 숙제 제출시
+        let thisHomework = user.myHomeworkList.find((item) => {
+          let itemId = item.id.split('/')[1]
+          return itemId === activityInfo.id
+        })
+        if (thisHomework) {
+          setThisHomework(thisHomework)
+          setFileName(thisHomework.fileName);
+          if (getIsImageCheck(thisHomework.fileName)) {
+            getImgUrl(thisHomework.fileName, state.acti.id, prevImgRef, state.student.uid)
+            setNoImgPrev('')
+          } else {
+            setPrevImgSrc(nonPreview)
+            setNoImgPrev("미리 볼 수 없는 형식의 파일입니다.")
+          }
+          setFromWhere(thisHomework.fromWhere)
+          setIsHomeworkDone(true)
+          homeworkSubmit(true)
         }
-        setFromWhere(thisHomework.fromWhere)
-        setIsHomeworkDone(true)
-        props.homeworkSubmit(true)
       }
-    }
-    if (user.homeworkList) { //교사
-      setActInfo(state.acti)        //acti 정보
-      setStudentInfo(state.student) //학생 정보
-      let thisHomework = user.homeworkList.find((item) => { return item.id === `${state.student.uid}/${state.acti.id}` })
-      if (thisHomework) {
-        setThisHomework(thisHomework) //todo 정리하기
-        setFileName(thisHomework.fileName);
-        if (getIsImageCheck(thisHomework.fileName)) {
-          getImgUrl(thisHomework.fileName, state.acti.id, prevImgRef, state.student.uid)
-          setNoImgPrev('')
-        } else {
-          setPrevImgSrc(nonPreview)
-          setNoImgPrev("미리 볼 수 없는 형식의 파일입니다.")
+    } else {
+      if (user.homeworkList) { //교사
+        setActInfo(state.acti)        //acti 정보
+        setStudentInfo(state.student) //학생 정보
+        let thisHomework = user.homeworkList.find((item) => { return item.id === `${state.student.uid}/${state.acti.id}` })
+        if (thisHomework) {
+          setThisHomework(thisHomework) //todo 정리하기
+          setFileName(thisHomework.fileName);
+          if (getIsImageCheck(thisHomework.fileName)) {
+            getImgUrl(thisHomework.fileName, state.acti.id, prevImgRef, state.student.uid)
+            setNoImgPrev('')
+          } else {
+            setPrevImgSrc(nonPreview)
+            setNoImgPrev("미리 볼 수 없는 형식의 파일입니다.")
+          }
+          setFromWhere(thisHomework.fromWhere);
+          setIsHomeworkDone(true)
         }
-        setFromWhere(thisHomework.fromWhere);
-        setIsHomeworkDone(true)
       }
     }
   }, [user])
@@ -136,7 +139,7 @@ const Homework = (props) => {
           if (window.confirm("과제를 제출 하시겠습니까?")) {
             submitHomeworkStorage(_file, activityInfo) //storage에 파일 저장
             submitHomework(_file, activityInfo, false) //db에 파일 정보 저장
-            props.homeworkSubmit(true)
+            homeworkSubmit(true)
           }
         }
         break;
@@ -147,7 +150,7 @@ const Homework = (props) => {
           if (window.confirm("과제를 수정 제출 하시겠습니까?")) {
             modifyHomeworkStorage(_file, _fileName, activityInfo) //storage에 파일 수정
             submitHomework(_file, activityInfo, true) //db에 파일 정보 수정
-            props.homeworkSubmit(true)
+            homeworkSubmit(true)
           }
         }
         break;
@@ -155,9 +158,12 @@ const Homework = (props) => {
         if (window.confirm("과제 제출을 취소하시겠습니까?")) {
           setPrevImgSrc(null); //화면변경
           setIsHomeworkDone(false);
-          cancelHomeworkStorage(_fileName, activityInfo); //Storage
+          cancelHomeworkStorage(_fileName, activityInfo); //Storage에서 삭제
           cancelSubmission(activityInfo); //DB통신
-          props.homeworkSubmit(false)
+          setFile(null)
+          setFileName(null)
+          setNewFileName(null)
+          homeworkSubmit(false)
         }
         break;
       default: return
@@ -166,6 +172,7 @@ const Homework = (props) => {
 
   return (
     <StyledForm>
+      {/* 교사 */}
       {user.isTeacher && <>
         <legend>{state.student.name} 학생의 과제 확인</legend>
         {_isHomeworkDone && <StyledStudentInfo>
@@ -179,6 +186,9 @@ const Homework = (props) => {
           <StyledBtn type="button" id="confirm_btn" onClick={handleBtnClick}>승인</StyledBtn>
           <StyledBtn type="button" id="deny_btn" onClick={handleBtnClick}>반려</StyledBtn>
           <StyledBtn type="button" id="download_btn" onClick={handleBtnClick}>다운로드</StyledBtn></StyledStudentInfo>}
+        {!_isHomeworkDone && <><legend>과제 제출</legend>
+          {!_prevImgSrc && <EmptyResult comment="제출된 과제가 없습니다." color="#efefef" />}
+        </>}
       </>}
       {/* 학생 */}
       {!user.isTeacher && <>
@@ -192,7 +202,7 @@ const Homework = (props) => {
           <StyledBtn type="button" id="cancel_submit_btn" onClick={handleBtnClick}>제출 취소</StyledBtn>
         </>}
         {!_isHomeworkDone && <><legend>과제 제출</legend>
-          {!_prevImgSrc && <EmptyResult comment="제출된 과제가 없습니다." />}
+          {!_prevImgSrc && <EmptyResult comment="제출된 과제가 없습니다." color="#efefef" />}
           {_prevImgSrc &&
             <>{(_prevImgSrc === nonPreview) && <StyledImgDiv $height="200px"><img src={_prevImgSrc} ref={prevImgRef} alt="미리보기 없음" /></StyledImgDiv>}
               {(_prevImgSrc !== nonPreview) && <StyledImgDiv><img src={_prevImgSrc} ref={prevImgRef} alt="미리보기" /></StyledImgDiv>}</>}

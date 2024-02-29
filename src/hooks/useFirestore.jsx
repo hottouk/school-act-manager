@@ -59,10 +59,12 @@ const useFirestore = (collectionName) => {
       let actiRef = doc(db, collectionName, actId)
       let actiDoc = await getDoc(actiRef)
       let studentDoneList = []
-      let studentParticipatingList = []
+      let particiList = []
+      let particiSIdList = []
       if (actiDoc.data().studentDoneList) { studentDoneList = actiDoc.data().studentDoneList }
-      if (actiDoc.data().studentParticipatingList) { studentParticipatingList = actiDoc.data().studentParticipatingList }
-      await setDoc(actiRef, { ...activity, studentDoneList, studentParticipatingList, createdTime }); //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
+      if (actiDoc.data().particiList) { particiList = actiDoc.data().particiList }
+      if (actiDoc.data().particiSIdList) { particiSIdList = actiDoc.data().particiSIdList }
+      await setDoc(actiRef, { ...activity, studentDoneList, particiList, particiSIdList, createdTime }); //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
     } catch (error) {
       window.alert(error)
       console.log(error)
