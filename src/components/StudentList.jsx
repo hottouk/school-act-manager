@@ -6,12 +6,6 @@ import AddNewStudentModal from './Modal/AddNewStudentModal'
 //hooks
 import useGetLevel from '../hooks/useGetLevel'
 //이미지
-import eggBlue from "../image/myPet/egg_b.png"
-import eggGreen from "../image/myPet/egg_g.png"
-import eggYellow from "../image/myPet/egg_y.png"
-import water01 from "../image/myPet/water/pet_water_01.png"
-import water02 from "../image/myPet/water/pet_water_02.png"
-import water03 from "../image/myPet/water/pet_water_03.png"
 import plus from "../image/icon/plus.png"
 //CSS
 import styled from "styled-components"

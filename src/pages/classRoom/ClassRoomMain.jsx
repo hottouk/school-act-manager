@@ -1,6 +1,6 @@
 //라이브러리
 import { useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 //컴포넌트
 import CardList from '../../components/CardList';

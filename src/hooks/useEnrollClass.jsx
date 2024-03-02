@@ -27,36 +27,30 @@ const useEnrollClass = () => {
       classNumber: classParam.classNumber,
       subject: classParam.subject
     }
-    let appliedClassList //학생의 신청 클래스 리스트
-    let appliedStudentList //클래스의 신청 학생 리스트
-    let appliedStudentClassList
+    let appliedClassList //학생의 신청 클래스 arr
+    let appliedStudentList //클래스의 신청 학생 arr
+    let appliedStudentClassList //교사의 반가입신청 arr
     await runTransaction(db, async (transaction) => {
       //1. 읽기
       const classRoomDoc = await transaction.get(classRoomRef);
       const studentDoc = await transaction.get(studentUserRef);
       const teacherDoc = await transaction.get(teacherRef);
-      if (!classRoomDoc.exists()) {
-        throw new Error("ClassRoom does not exist!");
-      }
-      if (!studentDoc.exists()) {
-        throw new Error("Student does not exist!");
-      }
-      if (!studentDoc.exists()) {
-        throw new Error("Teacher does not exist!");
-      }
+      if (!classRoomDoc.exists()) { throw new Error("ClassRoom does not exist!"); }
+      if (!studentDoc.exists()) { throw new Error("Student does not exist!"); }
+      if (!studentDoc.exists()) { throw new Error("Teacher does not exist!"); }
       //2. 업데이트
-      //학생 side
+      //학생
       appliedClassList = studentDoc.data().appliedClassList
       appliedStudentList = classRoomDoc.data().appliedStudentList
       appliedStudentClassList = teacherDoc.data().appliedStudentClassList
       if (appliedClassList) { //가입 신청한 클래스가 있다면
         appliedClassList = makeUniqueArrWithEle(appliedClassList, classInfo, "id") //중복 제거
-      } else { appliedClassList = [classInfo] } //첫 클래스 가입 
-      //클래스 side
+      } else { appliedClassList = [classInfo] } //첫 클래스 
+      //교실
       if (appliedStudentList) { //기존 학생 배열이 있다면
         appliedStudentList = makeUniqueArrWithEle(appliedStudentList, studentInfo, "uid")
-      } else { appliedStudentList = [studentInfo] } //첫 가입 학생
-      //교사 side
+      } else { appliedStudentList = [studentInfo] } //첫 가입 
+      //교사
       if (appliedStudentClassList) { //가입 신청한 다른 학생이 있다면
         appliedStudentClassList = makeUniqueArrWithEle(teacherDoc.data().appliedStudentClassList, { id: paramId, petInfo: petParam, studentInfo, classInfo }, "id")
       } else { appliedStudentClassList = [{ id: paramId, petInfo: petParam, studentInfo, classInfo }] } //클래스 첫 학생
@@ -69,12 +63,50 @@ const useEnrollClass = () => {
       window.alert("가입 신청 되었습니다.")
     }).catch(err => {
       window.alert(err)
+      console.log(err)
     });
+  }
+
+  //학생의 가입 취소
+  const cancelSignUpInClass = async (classParam) => {
+    const classInfo = classParam;
+    const studentRef = doc(db, "user", user.uid);
+    const classRoomRef = doc(db, "classRooms", classInfo.id)
+    const teacherRef = doc(db, "user", classInfo.uid)
+    let appliedStudentClassList //교사
+    let appliedClassList //학생
+    let appliedStudentList //교실
+    await runTransaction(db, async (transaction) => {
+      let classRoomDoc = await transaction.get(classRoomRef);
+      let studentDoc = await transaction.get(studentRef);
+      let teacherDoc = await transaction.get(teacherRef);
+      appliedStudentClassList = teacherDoc.data().appliedStudentClassList
+      appliedClassList = studentDoc.data().appliedClassList
+      appliedStudentList = classRoomDoc.data().appliedStudentList
+      //1. 신청 정보 삭제
+      if (appliedStudentClassList) {  //교사
+        appliedStudentClassList = appliedStudentClassList.filter((item) => {
+          let itemId = item.id.split("/")[0]
+          return itemId !== user.uid
+        })
+      }
+      if (appliedClassList) { appliedClassList = appliedClassList.filter((item) => { return item.id !== classInfo.id }) }          //학생   
+      if (appliedStudentList) { appliedStudentList = appliedStudentList.filter((item) => { return item.uid !== user.uid }) }       //교실 
+      transaction.update(teacherRef, { appliedStudentClassList })
+      transaction.update(studentRef, { appliedClassList })
+      transaction.update(classRoomRef, { appliedStudentList })
+    }).then(() => {
+      dispatcher(setAppliedClassList(appliedClassList))
+      dispatcher(setAppliedStudentList(appliedStudentList))
+      window.alert("신청이 취소 되었습니다.")
+    }).catch((err) => {
+      window.alert(err)
+      console.log(err)
+    })
   }
 
   //학생의 가입 결과 확인 
   const confirmApplyResult = async (params, callRewardModal) => {
-    console.log(params)
     let isApproved = params.isApproved
     let id = params.id
     let classNewsList
@@ -177,29 +209,22 @@ const useEnrollClass = () => {
       let teacherUserDoc = await transaction.get(teacherUserRef);
       appliedStudentClassList = teacherUserDoc.data().appliedStudentClassList
       appliedClassList = studentDoc.data().appliedClassList
-      appliedStudentList = classRoomDoc.data().appliedStudentList
       classNewsList = studentDoc.data().classNewsList
+      appliedStudentList = classRoomDoc.data().appliedStudentList
       //1. 신청 정보 삭제
-      //교사 side
-      if (appliedStudentClassList) {
-        appliedStudentClassList = appliedStudentClassList.filter((item) => { return item.id !== paramId })
-        transaction.update(teacherUserRef, { appliedStudentClassList })
-      } else { throw new Error("교사 news 지우기 에러"); }
-      //학생 side        
-      if (appliedClassList) {
-        appliedClassList = appliedClassList.filter((item) => { return item.id !== classInfo.id })
-        transaction.update(studentRef, { appliedClassList })
-      } else { throw new Error("학생 유저 신청반 지우기 에러"); }
-      //교실 side
-      if (appliedStudentList) {
-        appliedStudentList = appliedStudentList.filter((item) => { return item.uid !== studentInfo.uid })
-        transaction.update(classRoomRef, { appliedStudentList })
-      } else { throw new Error("교실반 학생 지우기 에러"); }
+      //교사
+      if (appliedStudentClassList) { appliedStudentClassList = appliedStudentClassList.filter((item) => { return item.id !== paramId }) }
+      //학생   
+      if (appliedClassList) { appliedClassList = appliedClassList.filter((item) => { return item.id !== classInfo.id }) }
+      //교실 
+      if (appliedStudentList) { appliedStudentList = appliedStudentList.filter((item) => { return item.uid !== studentInfo.uid }) }
       //2. 학생에게 알리기
       if (classNewsList) {
         classNewsList = makeUniqueArrWithEle(classNewsList, { ...classInfo, type: "class", isApproved: false }, "id")
       } else { classNewsList = [{ ...classInfo, type: "class", isApproved: false }] }
-      transaction.update(studentRef, { classNewsList })
+      transaction.update(teacherUserRef, { appliedStudentClassList })
+      transaction.update(studentRef, { appliedClassList, classNewsList })
+      transaction.update(classRoomRef, { appliedStudentList })
     }).then(() => {
       dispatcher(setNewsBoxList(appliedStudentClassList)) //user 전역변수 변경(바로 화면 반영)
     }).catch((err) => {
@@ -207,7 +232,7 @@ const useEnrollClass = () => {
       console.log(err)
     })
   }
-  return { signUpUserInClass, confirmApplyResult, approveMembership, denyMembership }
+  return { signUpUserInClass, cancelSignUpInClass, confirmApplyResult, approveMembership, denyMembership }
 }
 
 export default useEnrollClass

@@ -137,7 +137,7 @@ const StyledRewardContainer = styled.div`
   .img_container {
     display: flex;
     justify-content: flex-start;
-    overflow-x: scroll;
+    overflow-x: auto;
     gap: 12px;
   }
   .img_wrapper {

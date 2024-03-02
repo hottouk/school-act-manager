@@ -6,6 +6,8 @@ import { setSelectClass } from '../store/classSelectedSlice'
 import { setAppliedClassList, setJoinedClassList } from '../store/userSlice'
 import useFirestore from '../hooks/useFirestore'
 import useFetchFireData from '../hooks/useFetchFireData'
+//이미지
+import unknown from '../image/icon/unkown_icon.png'
 
 //2024.01.09
 const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 리스트, 타입으로 정리하기
@@ -66,7 +68,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
             <p className="t_name">{item.name} 선생님</p>
             <p>소속: {item.school.schoolName}</p>
           </div>
-          <div><img src={item.profileImg} alt="프사" /></div>
+          <div><img src={item.profileImg ? item.profileImg : unknown} alt="프사" /></div>
         </StyledTeacherLi>)
       })}
       {(type === "classroom" || type === "appliedClassList") && dataList.map((item) => { //교실
@@ -127,7 +129,6 @@ const StyledTeacherLi = styled.li`
     width: 50px;
     height: 50px;
     padding: 2px;
-    border : 1px solid gray;
     border-radius: 25px;
   }
 `

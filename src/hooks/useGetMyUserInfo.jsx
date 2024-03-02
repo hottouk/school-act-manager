@@ -1,37 +1,36 @@
 import { useEffect, useState } from 'react'
 import { appFireStore } from '../firebase/config'
 import { useDispatch, useSelector } from 'react-redux'
-import { doc, getDoc, runTransaction, updateDoc } from 'firebase/firestore'
+import { doc, onSnapshot, runTransaction, updateDoc } from 'firebase/firestore'
 import useGetRidOverlap from './useGetRidOverlap'
-import { setmyPetList } from '../store/userSlice'
+import { setUser, setmyPetList } from '../store/userSlice'
 
 const useGetMyUserInfo = () => {
   const db = appFireStore
   const user = useSelector(({ user }) => { return user })
-  const [myUserInfo, setMyUserinfo] = useState(null)
-  const [appliedStudentClassList, setappliedStudentClassList] = useState(null)
   const [error, setError] = useState(null)
   const { replaceItem } = useGetRidOverlap()
   const { makeUniqueArrWithEle } = useGetRidOverlap()
   const dispatcher = useDispatch()
 
   useEffect(() => {
-    try {
-      fetchMyUserInfo()
-    } catch (error) {
-      setError(error)
+    let unsub
+    if (Object.keys(user).length !== 0 && user.constructor === Object) {
+      const userRef = doc(db, "user", user.uid)
+      unsub = onSnapshot(
+        userRef,
+        (snapshot) => {
+          dispatcher(setUser(snapshot.data()))
+          console.log("데이터 수신")
+        },
+        (err) => {
+          setError(err)
+          window.alert(err)
+          console.log(err)
+        })
     }
+    return unsub
   }, [])
-
-  const fetchMyUserInfo = async () => { //교사가 학생 클래스 가입 승인 시
-    const userRef = doc(db, "user", user.uid)
-    await getDoc(userRef).then((myInfo) => {
-      setMyUserinfo(myInfo.data())
-      if (user.isTeacher) { //학생의 경우 제외
-        setappliedStudentClassList(myInfo.data().appliedStudentClassList)
-      }
-    })
-  }
 
   //2024.2.19
   const fetchMyPetInfo = async (petInfo) => {//학생
@@ -93,7 +92,7 @@ const useGetMyUserInfo = () => {
       console.log(err)
     })
   }
-  return ({ myUserInfo, appliedStudentClassList, fetchMyPetInfo, errByGetMyUserInfo: error })
+  return ({ fetchMyPetInfo, errByGetMyUserInfo: error })
 }
 
 export default useGetMyUserInfo

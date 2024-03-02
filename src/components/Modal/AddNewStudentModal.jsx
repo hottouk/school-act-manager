@@ -5,13 +5,15 @@ import Button from 'react-bootstrap/esm/Button';
 //hooks
 import useFirestore from '../../hooks/useFirestore';
 import styled from 'styled-components';
+import { useSelector } from 'react-redux';
 
-const AddNewStudentModal = (props) => {
+const AddNewStudentModal = ({ show, onHide, classId }) => {
   //1. 변수
+  const selectedClassInfo = useSelector(({ classSelected }) => classSelected)
   const { addStudent } = useFirestore("classRooms")
   const [name, setName] = useState('')
   const [studentNumber, setStudentNumber] = useState('')
-
+  console.log()
   //2. 함수
   const handleOnChange = (event) => {
     switch (event.target.id) {
@@ -25,7 +27,7 @@ const AddNewStudentModal = (props) => {
     }
   }
   const handleBtnClick = () => {
-    props.onHide()
+    onHide()
     setName('')
     setStudentNumber('')
   }
@@ -33,8 +35,8 @@ const AddNewStudentModal = (props) => {
   const handleSubmit = (event) => {
     event.preventDefault()
     if (name !== '' && studentNumber !== '') {
-      addStudent({ studentNumber, writtenName: name }, props.classId)
-      props.onHide()
+      addStudent({ studentNumber, writtenName: name, subject: selectedClassInfo.subject }, classId,)
+      onHide()
       setName('')
       setStudentNumber('')
     }
@@ -42,8 +44,8 @@ const AddNewStudentModal = (props) => {
 
   return (
     <Modal
-      show={props.show}
-      onHide={props.onHide}
+      show={show}
+      onHide={onHide}
       backdrop="static"
       keyboard={false}>
       <Modal.Header closeButton>

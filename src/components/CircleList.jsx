@@ -16,18 +16,44 @@ const CircleList = ({ dataList, acti }) => {
 
   return (<StyledContainer>
     {(dataList && dataList.length > 0) && <>
-      <p>참여 학생</p>
+      <div><p>참여 중..</p></div>
       <StyledCircleListUl>
         {dataList.map((item) => {
           let src = item.profileImg ? item.profileImg : unknwon
           return (<StyledLi key={item.uid} onClick={() => { handleItemClick(item) }}>
-            <img src={src} alt="로고" />
+            <img src={src} alt="프사" />
             <p>{item.name} </p></StyledLi>)
         })}
-      </StyledCircleListUl>    </>
+      </StyledCircleListUl>
+    </>
     }
   </StyledContainer>)
 }
+
+const StyledContainer = styled.div`
+  max-width: 540px;
+  background-color: #3454d1;
+  color: #efefef;
+  border-radius: 10px;
+  border: rgb(120, 120, 120, 0.5) 1px solid;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
+  box-sizing: border-box;
+  margin: 20px auto 50px;
+  padding: 15px;
+  @media screen and (max-width: 767px) {
+    width: 100%;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    overflow-y: scroll;
+    box-shadow: none;
+  }
+`
+const StyledCircleListUl = styled.ul`
+  color: #efefef;
+  display: flex;
+  padding: 0;
+`
 const StyledLi = styled.li`
   img {
     width: 50px;
@@ -41,27 +67,4 @@ const StyledLi = styled.li`
   margin-right: 10px;
   cursor: pointer;
   `
-const StyledCircleListUl = styled.ul`
-  margin: 0 auto 30px;
-  padding: 20px;
-  color: #efefef;
-  background-color: #3454d1;
-  border-radius: 10px;
-  display: flex;
-  border: rgb(120, 120, 120, 0.5) 1px solid;
-  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
-`
-const StyledContainer = styled.div`
-  max-width: 540px;
-  box-sizing: border-box;
-  margin: 20px auto;
-  margin-bottom: 50px;
-  p { margin: 0; }
-  @media screen and (max-width: 767px) {
-    position: fixed;
-    width: 100%;
-    padding-bottom: 20px;
-    overflow-y: scroll;
-  }
-`
 export default CircleList

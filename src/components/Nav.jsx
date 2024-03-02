@@ -10,13 +10,15 @@ import { Helmet } from 'react-helmet'
 import MyInfoModal from './Modal/MyInfoModal'
 import unknown from '../image/icon/unkown_icon.png'
 import { Badge } from 'react-bootstrap';
+import useGetMyUserInfo from '../hooks/useGetMyUserInfo';
 
 //24.02.22
 const Nav = () => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
   const [_profileImg, setProfileImg] = useState(null)
-  console.log(user)
+  const { errByGetMyUserInfo } = useGetMyUserInfo()
+  console.log(user, errByGetMyUserInfo)
   //모달
   const [isMyInfoShow, setIsMyInfoShow] = useState(false)
   const [_isNew, setIsNew] = useState(false) //새소식 아이콘
@@ -73,14 +75,17 @@ const Nav = () => {
       {/* 교사 */}
       <div className='welcome'><p>{user.name} 선생님 사랑합니다.</p></div>
       <ul className='menu_container'>
-        <li id="home_btn" ><Link to="/"><i className="fa-solid fa-house"></i>Home</Link></li>
-        <li id="acti_btn" ><Link to="/activities"><i className="fa-solid fa-scroll"></i>활동 관리</Link></li>
-        <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>클래스 관리</Link></li>
+        <li id="home_btn" ><Link to="/"><i className="fa-solid fa-house"></i>
+          <span className="pcOnly">Home</span></Link></li>
+        <li id="acti_btn" ><Link to="/activities"><i className="fa-solid fa-scroll"></i>
+          <span className="pcOnly">활동 관리</span></Link></li>
+        <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>
+          <span className="pcOnly">클래스 관리</span></Link></li>
         <li className="news_btn" >
           {_isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news"><i className="fa-solid fa-bell"></i></Link></li>
         {/* 모바일 전용 */}
-        <li id="my_info_btn" className="mobileOnly" onClick={handleBtnClick}><i className="fa-solid fa-user"></i>MyInfo</li>
+        <li className="mobileOnly"><i id="my_info_btn" className="fa-solid fa-user" onClick={handleBtnClick}></i></li>
       </ul>
       {_profileImg && <img className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
       {!_profileImg && <img className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
@@ -89,15 +94,18 @@ const Nav = () => {
     {(user.uid && !user.isTeacher) && <>
       <div className='welcome'><p>{user.name} 학생 사랑합니다.</p></div>
       <ul className="menu_container">
-        <li id="home_btn"><Link to="/"><i className="fa-solid fa-house"></i>Home</Link></li>
-        <li id="acti_btn"><Link to="/activities"><i className="fa-solid fa-scroll"></i>참여 활동</Link></li>
-        <li id="class_btn"><Link to="/classRooms"><i className="fa-solid fa-school"></i>참여 클래스 </Link></li>
+        <li id="home_btn"><Link to="/"><i className="fa-solid fa-house"></i>
+          <span className="pcOnly">Home</span></Link></li>
+        <li id="acti_btn"><Link to="/activities"><i className="fa-solid fa-scroll"></i>
+          <span className="pcOnly">참여 활동</span></Link></li>
+        <li id="class_btn"><Link to="/classRooms"><i className="fa-solid fa-school"></i>
+        <span className="pcOnly">참여 클래스</span></Link></li>
         <li className="news_btn">
           {_isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news" ><i className="fa-solid fa-bell" /></Link>
         </li>
         {/* 모바일 전용 */}
-        <li id="my_info_btn" className="mobileOnly" onClick={handleBtnClick}><i className="fa-solid fa-user"></i>MyInfo</li>
+        <li className="mobileOnly"><i id="my_info_btn" className="fa-solid fa-user" onClick={handleBtnClick}></i></li>
       </ul>
       {_profileImg && <img className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
       {!_profileImg && <img className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
@@ -167,18 +175,25 @@ const StyledNav = styled.nav`
     height: 30px;
     margin-right: 10px;
   }
+
   @media screen and (max-width: 767px){
     display: flex;
     position: fixed; 
     bottom: 0;
-    height: 9%;
+    height: 10%;
     background-color: #efefef;
-    padding: 0;
+    padding: 5px;
     z-index: 999;
     h3 {
       display: none;
     }
     .welcome {
+      display: none;
+    }
+    .logo {
+      display: none;
+    }
+    .pcOnly {
       display: none;
     }
     ul.menu_container {
@@ -201,7 +216,7 @@ const StyledNav = styled.nav`
       text-align: center; 
     }
     i {
-      font-size: 23px;
+      font-size: 25px;
       margin: 0;
     }
     a {

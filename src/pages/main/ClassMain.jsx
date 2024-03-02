@@ -85,7 +85,7 @@ const StyledLandingBackground = styled.div`
   }
   @media screen and (max-width: 767px) {
     position: relative;
-    p{
+    p {
       display: none;
     }
     .landing_img{
@@ -109,7 +109,7 @@ const StyledWhiteBackground = styled.div`
     justify-content: center;
   }
   @media screen and (max-width: 767px) {
-    height: 50px;
+    height: 130px;
     display: flex;
     align-items: center;
     span {
@@ -125,6 +125,7 @@ const StyledWhiteBackground = styled.div`
   }
 `
 const StyledBlueBackground = styled.div`
+  height: 100px;
   background-color: #499add;
   color: #efefef;
   padding: 20px;
@@ -138,52 +139,17 @@ const StyledBlueBackground = styled.div`
     margin: 10px auto;
     text-align: center;
   }
-  .iconContainer {
-    display: flex;
-    justify-content: center;
-  }
-  .itemContainer {
-    margin: 30px; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .iconBackground {
-    width: 100px;
-    height: 100px;
-    background-color: #efefef;
-    border: 1px solid #efefef;
-    border-radius: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
   p {
     margin-top: 10px;
   }
+  
   @media screen and (max-width: 767px) {
     p.bible{
       width: 100%;
       font-size: 14px;
     }
-
-    h3{
+    h3 {
       width: 100%;
-    }
-    .iconContainer {
-      width: 232px;
-      margin: 0 auto;
-      flex-wrap: wrap;
-      p{
-        margin-bottom: 4px;
-      }
-    }
-    .itemContainer {
-      margin: 10px;
-    }
-    .iconBackground {
-      width: 75px;
-      height: 75px;
     }
   }
 `

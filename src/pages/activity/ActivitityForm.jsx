@@ -7,22 +7,24 @@ import styled from "styled-components";
 import useChatGpt from "../../hooks/useChatGpt";
 import useClientHeight from "../../hooks/useClientHeight";
 import useFirestore from "../../hooks/useFirestore";
+import useFireActi from "../../hooks/useFireActi";
+import useDoActivity from "../../hooks/useDoActivity";
 //컴포넌트
 import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
 import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
 import ScoreWrapper from "../../components/ScoreWrapper"
-//이미지
-import mon01 from "../../image/enemies/mon_01.png";
-import mon02 from "../../image/enemies/mon_02.png"
-import mon03 from "../../image/enemies/mon_03.png"
-import question from "../../image/icon/question.png"
-import useDoActivity from "../../hooks/useDoActivity";
-import Homework from "../../components/Homework";
 import CircleList from "../../components/CircleList";
 import QuestModal from "../../components/Modal/QuestModal";
 import SubjectSelect from "../../components/SubjectSelect";
 import HomeworkRadio from "../../components/Radio/HomeworkRadio";
-import useFireActi from "../../hooks/useFireActi";
+import Homework from "../../components/Homework";
+//이미지
+import mon01 from "../../image/enemies/mon_01.png";
+import mon02 from "../../image/enemies/mon_02.png"
+import mon03 from "../../image/enemies/mon_03.png"
+import mon04 from "../../image/enemies/mon_04.png"
+import mon05 from "../../image/enemies/mon_05.png"
+import question from "../../image/icon/question.png"
 
 //24.02.13 수정
 const ActivityForm = () => {
@@ -72,9 +74,12 @@ const ActivityForm = () => {
       setMonImg(acti.monImg)
       setSubject(acti.subject)
       setIsHomework(acti.isHomework)
-      if (acti.particiSIdList) {
+      setCoin(acti.money)
+      if (acti.particiSIdList && acti.particiSIdList.length > 0) {
         setIsParticipating(acti.particiSIdList.find((item) => { return item === user.uid })) //학생 본인 활동 참여 중 여부
         setAnyPartici(true)
+      } else {
+        setAnyPartici(false)
       }
       if (scoresObj) {
         setLeadershipScore(scoresObj.leadership)
@@ -228,8 +233,13 @@ const ActivityForm = () => {
       case "mon_03":
         img = mon03
         break;
-      default:
-        img = question;
+      case "mon_04":
+        img = mon04
+        break;
+      case "mon_05":
+        img = mon05
+        break;
+      default: img = question;
     }
     return img
   }
@@ -246,10 +256,10 @@ const ActivityForm = () => {
     }
   }
   return (
-    <>
+    <StyledContainer $clientheight={clientHeight}>
       {/* 교사 */}
       {user.isTeacher && <>
-        <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
+        <StyledForm onSubmit={handleSubmit}>
           <fieldset>
             <StyledFirstDiv>
               {state ? <legend>{_subject} 활동 수정</legend> : <legend>활동 생성</legend>}
@@ -343,9 +353,17 @@ const ActivityForm = () => {
         show={questModalShow}
         onHide={() => setQuestModalShow(false)}
       />
-    </>
+    </StyledContainer>
   )
 }
+
+const StyledContainer = styled.div`
+  @media screen and (max-width: 767px){
+    width: 100%;
+    height: ${(props) => { return props.$clientheight}}px;
+    overflow-y: auto;
+  }
+`
 const StyledForm = styled.form`
   max-width: 540px;
   margin: 60px auto 30px;
@@ -377,9 +395,6 @@ const StyledForm = styled.form`
     border-radius: 7px;
   }
   @media screen and (max-width: 767px){
-    position: fixed;
-    width: 100%;
-    height: ${(props) => props.$clientheight}px;
     padding-bottom: 20px;
     max-width: 100%;
     margin: 0;
@@ -389,7 +404,6 @@ const StyledForm = styled.form`
     border: none;
     border-radius: 0;
     box-shadow: none;
-    overflow-y: scroll;
   }
   fieldset {
     padding: 2px;
@@ -426,7 +440,7 @@ const StyledImgPicker = styled.img`
   float: right;
   width: 100px;
   height: 100px;
-  padding: 10px;
+  padding: 3px;
   border-radius: 20px;
   border: 1px solid black;
   background-color: #efefef;

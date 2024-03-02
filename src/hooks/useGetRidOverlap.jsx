@@ -1,25 +1,33 @@
 const useGetRidOverlap = () => {
 
-  //중복 제거(ele 기존 배열 합산)
+  //중복 제거(배열 구성이 obj일때)
   const makeUniqueArrWithEle = (curList, newEle, idName) => {
-    let newList = [...curList, newEle]
-    let uniqueList
+    let newArr = [...curList, newEle]
+    let uArr
     if (idName === "uid") {
-      uniqueList = newList.reduce((acc, cur) => {
+      uArr = newArr.reduce((acc, cur) => {
         if (acc.findIndex(({ uid }) => uid === cur.uid) === -1) {
           acc.push(cur)
         }
         return acc
       }, []);
     } else if (idName === "id") {
-      uniqueList = newList.reduce((acc, cur) => {
+      uArr = newArr.reduce((acc, cur) => {
         if (acc.findIndex(({ id }) => id === cur.id) === -1) {
           acc.push(cur)
         }
         return acc
       }, []);
     }
-    return uniqueList
+    return uArr
+  }
+
+  const makeUniqueArrOfEle = (curList, newEle) => {//배열 구성이 원시형일때
+    let newArr = [...curList, newEle]
+    let jsonString = newArr.map(JSON.stringify)
+    let uSet = new Set(jsonString)
+    let uArr = Array.from(uSet).map(JSON.parse);
+    return uArr
   }
 
   //교체(ele 기존 item 교체)
@@ -36,7 +44,7 @@ const useGetRidOverlap = () => {
     return uArr
   }
 
-  return { makeUniqueArrWithEle, replaceItem }
+  return { makeUniqueArrWithEle, makeUniqueArrOfEle, replaceItem }
 }
 
 export default useGetRidOverlap

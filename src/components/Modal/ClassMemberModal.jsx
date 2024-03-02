@@ -67,17 +67,16 @@ const ClassMemberModal = (props) => {
               options={createSelectOptions()}
               placeholder="자신의 학번을 선택하세요"
               onChange={handleOnChange} />
-            <Reward rewards={{ type: "class", subject: "eng" }} />
+            <Reward rewards={{ type: "class", subject: "영어" }} />
           </div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" id="cancel_btn" onClick={handleBtnClick}>취소</Button>
-          <Button type='submit' variant="primary" id="confirm_btn" >확인</Button>
+          <Button type="submit" variant="primary" id="confirm_btn" >확인</Button>
         </Modal.Footer>
       </form>
     </Modal>
   )
 }
-
 
 export default ClassMemberModal

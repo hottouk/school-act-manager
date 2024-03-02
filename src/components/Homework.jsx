@@ -192,7 +192,7 @@ const Homework = ({ activity, homeworkSubmit }) => {
       </>}
       {/* 학생 */}
       {!user.isTeacher && <>
-        {_isHomeworkDone && <><legend>{_thisHomework && _thisHomework.feedback ? "과제 반려됨" : `과제 제출됨: ${_fileName}`}</legend>
+        {_isHomeworkDone && <><p>{_thisHomework && _thisHomework.feedback ? "과제 반려됨" : `과제 제출됨: ${_fileName}`}</p>
           {(_prevImgSrc === nonPreview) && <StyledImgDiv $height="200px"><img src={_prevImgSrc} ref={prevImgRef} alt="미리보기 없음" /></StyledImgDiv>}
           {(_prevImgSrc !== nonPreview) && <StyledImgDiv><img src={_prevImgSrc} ref={prevImgRef} alt="미리보기" /></StyledImgDiv>}
           <p>{_noImgPrev}</p>
@@ -201,7 +201,7 @@ const Homework = ({ activity, homeworkSubmit }) => {
           <StyledBtn type="button" id="submit_modification_btn" onClick={handleBtnClick}>수정 제출</StyledBtn>
           <StyledBtn type="button" id="cancel_submit_btn" onClick={handleBtnClick}>제출 취소</StyledBtn>
         </>}
-        {!_isHomeworkDone && <><legend>과제 제출</legend>
+        {!_isHomeworkDone && <><p>과제 제출</p>
           {!_prevImgSrc && <EmptyResult comment="제출된 과제가 없습니다." color="#efefef" />}
           {_prevImgSrc &&
             <>{(_prevImgSrc === nonPreview) && <StyledImgDiv $height="200px"><img src={_prevImgSrc} ref={prevImgRef} alt="미리보기 없음" /></StyledImgDiv>}
@@ -230,16 +230,9 @@ const StyledForm = styled.form`
   border-radius: 10px;
   border: rgb(120, 120, 120, 0.5) 1px solid;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
-  legend {
-    width: 70%;  
-    font-size: 1.5em;
-    margin-bottom: 20px;
-  }
   @media screen and (max-width: 767px){
-    position: fixed;
     width: 100%;
     height: ${(props) => props.$clientheight}px;
-    padding-bottom: 20px;
     max-width: 100%;
     margin: 0;
     padding: 15px;

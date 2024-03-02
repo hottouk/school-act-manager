@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 let classSelected = createSlice({
-  name: 'classSelected',
+  name: "classSelected",
   initialState: null,
   reducers: {
     setSelectClass(state, action) {

@@ -25,7 +25,6 @@ const Login = () => {
         <img src={mainLogo} alt="메인 로고" />
       </StyledSnsLoginDiv>
       <StyledSnsLoginDiv>
-        <h3>SNS로 3초만에 가입/로그인</h3>
         <div className="sns_centered">
           <StyledGoogleLoginBtn onClick={() => { googleLogin((open) => { setIsSnsModalShow(open) }) }}>
             <img src={googleIcon} alt="구글 로고" />구글 로그인
@@ -35,7 +34,6 @@ const Login = () => {
             onSuccess={(data) => { KakaoLoginOnSuccess(data, (open) => { setIsSnsModalShow(open) }) }}
             onFail={(error) => { window.alert(error) }} />
         </div>
-        {!isPending && <p>카카오 링크로 접속하신분은 카카오 로그인만 가능</p>}
         {isPending && <strong>로그인이 진행중입니다.</strong>}
         {err && <strong>{err}</strong>}
       </StyledSnsLoginDiv>
@@ -62,8 +60,8 @@ const StyledContainer = styled.div`
     margin-top: 10px;
   }
 `
+
 const StyledSnsLoginDiv = styled.div`
-  max-width: 540px;
   display: flex;
   flex-direction: column;
   width: 80%;
@@ -96,30 +94,40 @@ const StyledSnsLoginDiv = styled.div`
   }
   @media screen and (max-width: 767px){
     width: 100%;
-    height: 320px;
     margin: auto;
     border: none;
-    border-bottom: rgb(120, 120, 120, 0.5) 1px solid;
     box-shadow: none;
+    .sns_centered {
+      margin: 20px auto; 
+    }
+    h3 {
+      color: #3454d1;
+      font-size: 14px;
+      text-align: center;
+      width: 100%;
+    }
   }
 `
 const StyledGoogleLoginBtn = styled.button`
   background: white;
   color: #444;
   width: 190px;
-  margin: 20px 0 auto;
   padding:5px;
   border: thin solid #888;
   border-radius: 5px;
   box-shadow: 1px 1px 1px grey;
   white-space: nowrap;
   cursor: pointer;
-  img{
+  img {
     width: 30px;
     height: 30px;
     margin-right: 8px;
     display: inline-block;
     vertical-align: middle;
+  }
+  @media screen and (max-width: 767px){
+    display: none;
+  }
 `
 export default Login
 

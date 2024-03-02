@@ -24,8 +24,8 @@ const MyInfoModal = (props) => {
   const [_isTeacher, setIsTeacher] = useState(user.isTeacher)
   const [_profileImg, setProfileImg] = useState(null)
   const [_profileFile, setProfileFile] = useState(null)
-  const [_email, setEmail] = useState('')
-  const [_phoneNumber, setPhoneNumber] = useState('')
+  const [_email, setEmail] = useState(user.email ? user.email : '')
+  const [_phoneNumber, setPhoneNumber] = useState(user.phoneNumber ? user.phoneNumber : '')
   const [_grade, setGrade] = useState("1")
   const [_classNumber, setClassNumber] = useState("01")
   const [_number, setNumber] = useState(1);
@@ -45,10 +45,11 @@ const MyInfoModal = (props) => {
   //2. useEffect
   useEffect(() => { //유저 
     setIsTeacher(user.isTeacher)
+    setSchool(user.school)
     if (user.profileImg) { setProfileImg(user.profileImg) }
   }, [user])
 
-  useEffect(() => { //프로필 사진
+  useEffect(() => { //프로필 사진 변경
     if (_profileFile) {
       if (getIsImageCheck(_profileFile.name)) {
         let reader = new FileReader();
@@ -106,8 +107,8 @@ const MyInfoModal = (props) => {
         setIsSearchSchool(false)
         setProfileFile(null)
         setProfileImg(user.profileImg)
-        setEmail('')
-        setPhoneNumber('')
+        setEmail(user.email ? user.email : '')
+        setPhoneNumber(user.phoneNumber ? user.phoneNumber : '')
         break;
       case "save_btn":
         if (window.confirm("이대로 회원정보를 저장하시겠습니까?")) {
@@ -193,7 +194,7 @@ const MyInfoModal = (props) => {
                   {!_profileImg && <img src={unknown} alt="프로필 이미지" onClick={handleOnClick} />}
                 </label>
                 <input id="profile_img_btn" type="file" onChange={handleInputFielOnChange} accept={"image/*"} style={{ display: "none" }} />
-                <Badge bg="primary" id="delete_img_btn"  onClick={handleOnClick}>사진 삭제</Badge>
+                <Badge bg="primary" id="delete_img_btn" onClick={handleOnClick}>사진 삭제</Badge>
               </div>
             </div>
             <div className="d-grid gap-2">
@@ -246,6 +247,14 @@ const StyledMyinfo = styled.div`
     border: 2px solid whitesmoke;
     cursor: pointer;
   }
+
+  @media screen and (max-width: 767px){
+    img {
+      width: 75px;
+      height: 75px;
+    }
+    p { font-size: 11px;}
+  }  
 `
 
 const StyledLogoutBtn = styled.button`

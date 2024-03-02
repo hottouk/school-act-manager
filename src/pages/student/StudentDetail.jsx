@@ -169,7 +169,7 @@ const StudentDetail = () => {
       {user.isTeacher && <StyledArrowLeftBtn id="leftArwBtn" onClick={handleBtnClick} />}
       <StyledStudentInfoPannel>
         <StyledTopPannel>
-          <PetImg subject={_subject} level={expAndLevel.level} />
+          <PetImg subject={_subject} level={expAndLevel.level} onClick={()=>{}}/>
           <StyledTopRightInfo>
             <p>학번: {_studentNumber}</p>
             <p>이름: {!isModifiying
@@ -424,7 +424,7 @@ display: flex;
     height: 100%;
     padding: 5px;
   }
-  overflow-y: scroll;
+  overflow-y: auto;
   
   @media screen and (max-width: 767px){
     width: 0;

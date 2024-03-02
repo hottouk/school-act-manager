@@ -9,7 +9,7 @@ const useDoActivity = () => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const dispatcher = useDispatch()
-  const { makeUniqueArrWithEle, replaceItem } = useGetRidOverlap()
+  const { makeUniqueArrWithEle, makeUniqueArrOfEle, replaceItem } = useGetRidOverlap()
   const navigate = useNavigate()
 
   //학생의 활동 참가 신청
@@ -24,13 +24,15 @@ const useDoActivity = () => {
       const activityDoc = await transaction.get(activityRef)
       if (!activityDoc.exists()) { throw new Error("활동 읽기 에러") }
       //기존 데이터 or 신규 undefined 반환
-      particiSIdList = activityDoc.data().particiIdList;
+      particiSIdList = activityDoc.data().particiSIdList;
       particiList = activityDoc.data().particiList;
       //활동
+      console.log(particiSIdList)
       if (particiSIdList) {
-        particiSIdList = makeUniqueArrWithEle(particiSIdList, user.uid, "uid")
-        particiList = makeUniqueArrWithEle(particiList, studentInfo, "uid")
+        particiSIdList = makeUniqueArrOfEle(particiSIdList, user.uid)
+        particiList = makeUniqueArrWithEle(particiList, studentInfo, "uid") 
       } else {
+        console.log("?")
         particiList = [studentInfo]
         particiSIdList = [user.uid]
       }
@@ -294,6 +296,5 @@ const useDoActivity = () => {
   }
   return { takePartInThisActivity, cancelThisActivity, submitHomework, cancelSubmission, approveHomework, denyHomework, confirmHomeworkResult }
 }
-
 
 export default useDoActivity

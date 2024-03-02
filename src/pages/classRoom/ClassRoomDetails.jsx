@@ -16,6 +16,7 @@ import useSubCollection from '../../hooks/useSubCollection';
 import useGetActivity from '../../hooks/useGetActivity.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useFirestore from '../../hooks/useFirestore.jsx';
+import useEnrollClass from '../../hooks/useEnrollClass.jsx';
 
 //2024.01.26
 const ClassRoomDetails = () => {
@@ -25,6 +26,8 @@ const ClassRoomDetails = () => {
   const dispatcher = useDispatch()
   const user = useSelector(({ user }) => { return user; })
   const thisClass = useSelector(({ classSelected }) => { return classSelected })
+  const { cancelSignUpInClass } = useEnrollClass()
+
   //개별 클래스 구별해주는 변수
   //데이터 통신 변수
   const { subDocuments, subColErr } = useSubCollection("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
@@ -42,7 +45,7 @@ const ClassRoomDetails = () => {
   }, [subDocuments, activityList])
 
   useEffect(() => {
-    if (!user.isTeacher) { //학생이
+    if (!user.isTeacher) { //학생
       if (thisClass.appliedStudentList && thisClass.appliedStudentList.length !== 0) { //신청 중이라면
         let isApplied = (thisClass.appliedStudentList.filter(({ uid }) => { return uid === user.uid })).length !== 0
         setIsApplied(isApplied)
@@ -61,18 +64,24 @@ const ClassRoomDetails = () => {
         navigate("/classRooms")
         break;
       case "delete_btn":
-        let deleteConfirm = window.prompt('클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 "삭제합니다"를 입력하세요.')
-        if (deleteConfirm === '삭제합니다') {
+        let deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
+        if (deleteConfirm === "삭제합니다") {
           deleteDocument(thisClass.id)
           navigate(-1)
         } else {
-          window.alert('문구가 제대로 입력되지 않았습니다.');
+          window.alert("문구가 제대로 입력되지 않았습니다.");
           return;
         }
         break;
       //학생 전용
       case "join_btn":
         setIsModalShown(true)
+        break;
+      case "cancel_btn":
+        if (window.confirm("클래스 가입 신청을 취소하겠습니까?")) {
+          cancelSignUpInClass(thisClass)
+          setIsApplied(false)
+        }
         break;
       default: return
     }
@@ -88,15 +97,18 @@ const ClassRoomDetails = () => {
           <StyledClassTitle>{thisClass.classTitle}</StyledClassTitle>
           <p>{!subDocuments ? 0 : subDocuments.length}명의 학생들이 있습니다.</p>
           <p>{thisClass.intro}</p>
-          {/* 학생 전용 */}
-          {(!user.isTeacher && isApplied) && <StyledMoveBtn $backgroundcolor="gray">가입 신청 중..</StyledMoveBtn>}
+          {/* 학생*/}
+          {(!user.isTeacher && isApplied) && <div className="btn_wrapper">
+            <StyledSignupBtn $backgroundcolor="gray">가입 신청 중..</StyledSignupBtn>
+            <StyledSignupBtn id="cancel_btn" onClick={handleBtnClick}>신청 취소</StyledSignupBtn>
+          </div>}
           {(!user.isTeacher && !isMember && !isApplied) && <StyledMoveBtn id="join_btn" onClick={handleBtnClick}>가입하기</StyledMoveBtn>}
         </StyeldHeader>
-        {/* 셀렉터(교사 전용)*/}
+        {/* 셀렉터(교사)*/}
         {user.isTeacher && <StyledMain>
           <MainSelector studentList={subDocuments} activitiyList={activityList} classId={thisClass.id} />
         </StyledMain>}
-        {/* 퀘스트 목록(학생 전용) */}
+        {/* 퀘스트 목록(학생) */}
         {(!user.isTeacher && isMember) && <StyledMain>
           {(!activityList || activityList.length === 0)
             ? <EmptyResult comment="등록된 활동이 없습니다." />
@@ -109,15 +121,15 @@ const ClassRoomDetails = () => {
             ? <h3>반에 학생들이 없습니다. {subColErr}</h3>
             : <StudentList petList={subDocuments} />}
         </StyledMain>}
-        {/* 반 전체보기(교사 전용)*/}
+        {/* 반 전체보기(교사)*/}
         {user.isTeacher && <StyledMain>
           <h4>개별화하기</h4>
           <StyledMoveBtn onClick={() => { navigate('allStudents', { state: subDocuments }) }}>반 전체 세특보기</StyledMoveBtn>
         </StyledMain>
         }
         {user.isTeacher && <StyeldBtnDiv>
-          <StyledBtn id='back_btn' onClick={handleBtnClick}>반 목록</StyledBtn>
-          <StyledBtn id='delete_btn' onClick={handleBtnClick}>반 삭제</StyledBtn>
+          <StyledBtn id="back_btn" onClick={handleBtnClick}>반 목록</StyledBtn>
+          <StyledBtn id="delete_btn" onClick={handleBtnClick}>반 삭제</StyledBtn>
         </StyeldBtnDiv>}
       </StyledContainer>
     }
@@ -146,6 +158,10 @@ const StyeldHeader = styled.header`
   padding: 25px;
   border-left: 12px #3454d1 double;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
+  .btn_wrapper {
+    display: flex;
+    justify-content: center;
+  }
   @media screen and (max-width: 767px){
     margin-top: 0;
     border-top: 12px #3454d1 double;
@@ -158,6 +174,7 @@ const StyledMain = styled.main`
   margin-top: 50px;
   border-left: 12px #3454d1 double;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
+  
   h4 {
     display: flex;
     justify-content: center;
@@ -173,6 +190,17 @@ const StyledMain = styled.main`
 const StyledClassTitle = styled.h2`
   display: flex;
   justify-content: center;
+`
+const StyledSignupBtn = styled.button`
+  display: block;
+  width: 200px;
+  height: 50px;
+  margin: 50px 20px;
+  background-color: ${(props) => props.$backgroundcolor ? props.$backgroundcolor : "#3454d1"};
+  border: none;
+  border-radius: 5px;
+  color: white;
+  padding: 0.25em 1em;
 `
 const StyledMoveBtn = styled.button`
   display: block;

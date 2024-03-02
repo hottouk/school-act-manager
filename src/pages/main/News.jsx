@@ -13,9 +13,7 @@ import useDoActivity from '../../hooks/useDoActivity'
 //todo 문서쓰기
 const News = () => {
   const user = useSelector(({ user }) => { return user })
-  const { myUserInfo, errByGetMyUserInfo } = useGetMyUserInfo()
-  const [teacherUser, setTeacherUser] = useState(null); //교사
-  const [studentUser, setStudentUser] = useState(null); //학생
+  const { errByGetMyUserInfo } = useGetMyUserInfo()
   const [_errByGetMyUserInfo, setErrByGetMyUserInfo] = useState(null)
   const [signUpNewsList, setSignUpNewsList] = useState(null) //가입 소식
   const [homeworkNewsList, setHomeworkNewsList] = useState(null) //과제 소식
@@ -25,28 +23,17 @@ const News = () => {
   const { approveMembership, confirmApplyResult, denyMembership } = useEnrollClass()
   const { confirmHomeworkResult } = useDoActivity()
   const { getInfo } = useFirestore("activities")
-  const dispatch = useDispatch()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (myUserInfo) {
-      dispatch(setUser(myUserInfo)) //내 유저정보 갱신 DB
-    }
     if (errByGetMyUserInfo) {
       setErrByGetMyUserInfo(errByGetMyUserInfo)
     }
-  }, [myUserInfo])
+  }, [errByGetMyUserInfo])
 
   useEffect(() => {
     if (user.isTeacher) { //todo
     } else {
-      setStudentUser( //학생
-        {
-          email: user.email, name: user.name, studentNumber: user.studentNumber, uid: user.uid, classNewsList: user.classNewsList,
-          appliedClassList: user.appliedClassList, joinedClassList: user.joinedClassList, myActList: user.myActList,
-          myDoneActList: user.myDoneActList, myHomeworkList: user.myHomeworkList, myPetList: user.myPetList,
-        }
-      )
       if (user.classNewsList) { //새소식 존재?
         setSignUpNewsList(user.classNewsList.filter((item) => { return item.type === "class" })) //가입 소식
         setHomeworkNewsList(user.classNewsList.filter((item) => { return item.type === "homework" })) //과제 소식
