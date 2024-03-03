@@ -8,6 +8,7 @@ import useFirestore from '../hooks/useFirestore'
 import useFetchFireData from '../hooks/useFetchFireData'
 //이미지
 import unknown from '../image/icon/unkown_icon.png'
+import MonImg from './MonImg'
 
 //2024.01.09
 const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 리스트, 타입으로 정리하기
@@ -80,9 +81,11 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
       })}
       {type === "activity" && dataList.map((item) => { //활동
         return (<StyledSubjectLi key={item.id} onClick={() => { handleOnClick(item) }}>
-          <h4>{item.title}</h4>
-          <p>{item.content}</p>
-          <p>과목: {item.subject}</p>
+          <div className="acti_info">
+            <h4>{item.title}</h4>
+            <p>과목: {item.subject}</p>
+          </div>
+          <div><MonImg monImg={item.monImg}></MonImg></div>
         </StyledSubjectLi>)
       })}
     </StyledListContainer>
@@ -134,5 +137,16 @@ const StyledTeacherLi = styled.li`
 `
 
 const StyledSubjectLi = styled.li`
+  display: flex;
+  .acti_info {
+    flex-grow: 1;
+  }
+  img {
+    width: 60px;
+    height: 60px;
+    padding: 2px;
+    border: 1px solid rgba(25, 31, 52, 0.3);
+    border-radius: 30px;
+  }
 `
 export default DataList

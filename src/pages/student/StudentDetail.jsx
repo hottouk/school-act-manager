@@ -291,10 +291,6 @@ const StyledTopPannel = styled.div`
   }
   }
 `
-
-const StyledPetImg = styled.img`
-  
-`
 const StyledTopRightInfo = styled.div`
   position: absolute;
   width: 75%;
