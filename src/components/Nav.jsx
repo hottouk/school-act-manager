@@ -81,6 +81,8 @@ const Nav = () => {
           <span className="pcOnly">활동 관리</span></Link></li>
         <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>
           <span className="pcOnly">클래스 관리</span></Link></li>
+        <li id="student_btn" ><Link to="/users"><i class="fa-solid fa-user-group"></i>
+          <span className="pcOnly">학생 관리</span></Link></li>
         <li className="news_btn" >
           {_isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news"><i className="fa-solid fa-bell"></i></Link></li>
@@ -99,7 +101,7 @@ const Nav = () => {
         <li id="acti_btn"><Link to="/activities"><i className="fa-solid fa-scroll"></i>
           <span className="pcOnly">참여 활동</span></Link></li>
         <li id="class_btn"><Link to="/classRooms"><i className="fa-solid fa-school"></i>
-        <span className="pcOnly">참여 클래스</span></Link></li>
+          <span className="pcOnly">참여 클래스</span></Link></li>
         <li className="news_btn">
           {_isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news" ><i className="fa-solid fa-bell" /></Link>

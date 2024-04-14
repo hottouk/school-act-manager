@@ -46,6 +46,8 @@ function App() {
           {/* //클래스 만들기, 교사 회원만 가능 */}
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
           <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassRoomMakeForm /> : <Navigate replace={true} to='/' />} />
+          {/* 학생 관리 */}
+          <Route path="/users" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
           {/* 새소식 관리 */}
           <Route path="/news" element={uid ? <News /> : <Navigate replace={true} to='/' />} />
           {/* 로그인/회원가입 */}

@@ -7,11 +7,14 @@ import main from '../../image/main.png'
 //css
 import styled from 'styled-components'
 import useClientHeight from '../../hooks/useClientHeight'
+import NoticeModal from '../../components/Modal/NoticeModal'
 
 const ClassMain = () => {
   const { teacherList, studentList, errorByDevideTS } = useDevideTS(null, 'name')
   const [_teacherList, setTeacherList] = useState([])
   const [_studentList, setStudentList] = useState([])
+  const [isNoticeModalShown, setIsNoticeModalShown] = useState(true)
+  const RENEW_POPUP_TIME = localStorage.getItem("recentVisited") //공지사항 팝업, 최근 방문시간 다음날
   const clientHeight = useClientHeight(document.documentElement)
 
   useEffect(() => {
@@ -21,10 +24,23 @@ const ClassMain = () => {
     if (studentList) {
       setStudentList(studentList)
     }
-    if(errorByDevideTS){
+    if (errorByDevideTS) {
       console.log(errorByDevideTS)
     }
+    window.setTimeout(handleMainPop, 500)
   }, [teacherList])
+
+  const handleMainPop = () => { //공지사항 띄우기
+    const today = new Date();
+    console.log(Number(RENEW_POPUP_TIME))
+    console.log(today.getTime())
+    if (RENEW_POPUP_TIME && RENEW_POPUP_TIME > today) {
+      return;
+    }
+    if (!RENEW_POPUP_TIME || RENEW_POPUP_TIME < today) {
+      setIsNoticeModalShown(true);
+    }
+  };
 
   return (
     <StyledContainer $clientheight={clientHeight}>
@@ -46,9 +62,17 @@ const ClassMain = () => {
           <p className='bible'>너희는 먼저 그의 나라와 그의 의를 구하라. 그리하면 이 모든 것을 너희에게 더하시리라. 마태복음 6:33</p>
         </StyledWrapper>
       </StyledBlueBackground>
+      {/* 공지사항팝업 */}
+      <NoticeModal
+        show={isNoticeModalShown}
+        onHide={() => setIsNoticeModalShown(false)}
+      />
     </StyledContainer>
   )
 }
+
+
+
 const StyledContainer = styled.div`
   box-sizing: border-box;
   @media screen and (max-width: 767px) {

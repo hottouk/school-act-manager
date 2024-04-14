@@ -31,6 +31,7 @@ const useGetActivity = (thisClass) => { //데이터 통신
       snapshot.docs.forEach((doc) => {
         result.push({ ...doc.data(), id: doc.id })
       })
+      result.sort((a, b) =>a.title.localeCompare(b.title))
       setActivityList(result)
     }, (error) => {
       setError(error.message)

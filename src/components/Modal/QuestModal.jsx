@@ -3,8 +3,6 @@ import Button from 'react-bootstrap/esm/Button';
 import React from 'react'
 
 const QuestModal = (props) => {
-
-  
   const handleBtnClick = () => {
     props.onHide()
   }
