@@ -1,6 +1,6 @@
 //Hooks
 import useGetByte from "../../hooks/useGetByte"
-import useFirestore from "../../hooks/useFirestore"
+import useAddUpdFireStore from "../../hooks/useAddUpdFirestore"
 import { useParams } from "react-router-dom"
 import { useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
@@ -11,6 +11,7 @@ import ExportAsExcel from "../../components/ExportAsExcel"
 //CSS
 import styled from "styled-components"
 import useClientHeight from "../../hooks/useClientHeight"
+//이미지
 
 const ClassAllStudents = () => {
   //1. 변수
@@ -21,7 +22,7 @@ const ClassAllStudents = () => {
   const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //ClassRoomDetail에서 저장한 학생List 불러오기(전역)
   const dispatcher = useDispatch()
   //hooks
-  const { updateStudent } = useFirestore('classRooms')
+  const { updateStudent } = useAddUpdFireStore('classRooms')
   const { getByteLengthOfString } = useGetByte()
   //특정 학생 정보 수정 판단 key 변수
   const [thisModifying, setThisModifying] = useState('')
@@ -31,6 +32,7 @@ const ClassAllStudents = () => {
   //객체접근
   const contentRowRef = useRef({})
   const clientHeight = useClientHeight(document.documentElement)
+  //모달
 
   //2. 함수
   //수정버튼
@@ -59,12 +61,12 @@ const ClassAllStudents = () => {
       </StyledXlDiv>
       <StyledGirdContainer>
         <StyledTitleRow>
-          <StyledIndexDiv>연번</StyledIndexDiv>
+          <StyledSmallDiv>연번</StyledSmallDiv>
           <StyledMidlDiv>학번</StyledMidlDiv>
           <StyledMidlDiv>이름</StyledMidlDiv>
-          <StyledAcclDiv>생기부</StyledAcclDiv>
-          <StyledSmallDiv>Byte</StyledSmallDiv>
-          <StyledSmallDiv>수정</StyledSmallDiv>
+          <StyledLargeDiv>생기부</StyledLargeDiv>
+          <StyledSmallLastDiv>Byte</StyledSmallLastDiv>
+          <StyledSmallLastDiv>수정</StyledSmallLastDiv>
         </StyledTitleRow>
         {allStudentList.map((student, index) => {
           let isModifying = (thisModifying === student.id)
@@ -77,27 +79,29 @@ const ClassAllStudents = () => {
             accRecord = record
           }
           return <StyledContentRow ref={(element) => { return contentRowRef.current[index] = element }} key={student.id}>
-            <StyledIndexDiv>{index + 1}</StyledIndexDiv> {/* 연번 */}
+            <StyledSmallDiv>{index + 1}</StyledSmallDiv> {/* 연번 */}
             <StyledMidlDiv>{studentNumber}</StyledMidlDiv> {/* 학번 */}
             <StyledMidlDiv>
               {isModifying
                 ? <StyledNameInput type="text" defaultValue={name} onChange={(event) => { writtenName = event.target.value }} />
                 : name}
             </StyledMidlDiv>
-            <StyledAcclDiv>
+            <StyledLargeDiv>
               {isModifying
                 ? <StyledTextArea defaultValue={record} onChange={(event) => { accRecord = event.target.value }} />
                 : record}
-            </StyledAcclDiv>
-            <StyledSmallDiv>{bytes}</StyledSmallDiv>
-            <StyledSmallDiv>
+            </StyledLargeDiv>
+            <StyledSmallLastDiv>{bytes}</StyledSmallLastDiv>
+            <StyledSmallLastDiv>
               {isModifying
                 ? <button id='save_btn' onClick={() => { handleSaveBtn(student.id) }}>저장</button>
                 : <button id='modi_btn' onClick={() => { handleModifyingBtn(student.id, index) }}>수정</button>}
-            </StyledSmallDiv>
+            </StyledSmallLastDiv>
           </StyledContentRow>
         })}
       </StyledGirdContainer >
+      {/* 매크로 모달 */}
+     
     </StyledContainer>
   )
 }
@@ -131,7 +135,6 @@ const StyledGirdContainer = styled.div`
   display: grid;
   grid-template-rows: 40px;
   grid-auto-rows: minmax(100px, auto);
-  border: 1px solid black;
 `
 const StyledTitleRow = styled.div`
   display: flex;
@@ -142,18 +145,19 @@ const StyledContentRow = styled.div`
   display: flex;
   background-color: #efefef;
 `
-const StyledIndexDiv = styled.div`
+const StyledSmallDiv = styled.div`
   flex-basis: 60px;
   justify-content: center;
   display: flex;
   align-items: center;
   border-bottom: 1px solid black;
   border-right: 1px solid black;
+  border-left: 1px solid black;
   @media screen and (max-width: 767px){
     display: none;
   }
 `
-const StyledSmallDiv = styled.div`
+const StyledSmallLastDiv = styled.div`
   flex-basis: 60px;
   justify-content: center;
   display: flex;
@@ -175,7 +179,7 @@ const StyledMidlDiv = styled.div`
     flex-basis: 65px;
   }
 `
-const StyledAcclDiv = styled.div`
+const StyledLargeDiv = styled.div`
   flex-grow: 1;
   justify-content: center;
   padding: 0 5px;
@@ -194,10 +198,17 @@ const StyledNameInput = styled.input`
   width: 85px;
   height: 50%;
 `
-
 const StyledTextArea = styled.textarea`
   display: block;
   width: 95%;
   height: 85%;
+`
+const StyledMacroIcon = styled.img`
+  width: 45px;
+  height: 45px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-right: 25px;
+  cursor: pointer;
 `
 export default ClassAllStudents

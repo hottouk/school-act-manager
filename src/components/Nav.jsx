@@ -2,14 +2,16 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { Helmet } from 'react-helmet'
+import { Badge } from 'react-bootstrap';
+//모달
+import MyInfoModal from './Modal/MyInfoModal'
 //CSS
 import styled from 'styled-components'
 //이미지
 import brandLogo from "../image/icon/h-logo.png";
-import { Helmet } from 'react-helmet'
-import MyInfoModal from './Modal/MyInfoModal'
 import unknown from '../image/icon/unkown_icon.png'
-import { Badge } from 'react-bootstrap';
+//hooks
 import useGetMyUserInfo from '../hooks/useGetMyUserInfo';
 
 //24.02.22
@@ -40,15 +42,7 @@ const Nav = () => {
   //2. 함수
   const handleBtnClick = (event) => {
     switch (event.target.id) {
-      case "home_btn":
-        navigate("/")
-        break;
-      case "acti_btn":
-        navigate("/activities")
-        break;
-      case "class_btn":
-        navigate("/classrooms")
-        break;
+
       case "my_info_btn":
         setIsMyInfoShow(true)
         break;
@@ -81,8 +75,12 @@ const Nav = () => {
           <span className="pcOnly">활동 관리</span></Link></li>
         <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>
           <span className="pcOnly">클래스 관리</span></Link></li>
-        <li id="student_btn" ><Link to="/users"><i class="fa-solid fa-user-group"></i>
-          <span className="pcOnly">학생 관리</span></Link></li>
+        <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>
+          <span className="pcOnly">사람 찾기</span></Link></li>
+        <li id="word_btn" ><Link to="/wordbattle"><i className="fa-solid fa-khanda"></i>
+          <span className="pcOnly">단어 배틀</span></Link></li>
+        {user.isMaster && <li id="master_btn" ><Link to="/master"><i className="fa-solid fa-key"></i>
+          <span className="pcOnly">마스터</span></Link></li>}
         <li className="news_btn" >
           {_isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news"><i className="fa-solid fa-bell"></i></Link></li>
@@ -113,6 +111,7 @@ const Nav = () => {
       {!_profileImg && <img className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
 
     </>}
+    {/*개인 정보 수정 Modal 창 */}
     <MyInfoModal
       user={user}
       show={isMyInfoShow}

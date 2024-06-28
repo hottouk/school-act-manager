@@ -3,17 +3,16 @@ import { useState } from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/esm/Button';
 //hooks
-import useFirestore from '../../hooks/useFirestore';
+import useAddUpdFireStore from '../../hooks/useAddUpdFirestore';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 
 const AddNewStudentModal = ({ show, onHide, classId }) => {
   //1. 변수
   const selectedClassInfo = useSelector(({ classSelected }) => classSelected)
-  const { addStudent } = useFirestore("classRooms")
+  const { addStudent } = useAddUpdFireStore("classRooms")
   const [name, setName] = useState('')
   const [studentNumber, setStudentNumber] = useState('')
-  console.log()
   //2. 함수
   const handleOnChange = (event) => {
     switch (event.target.id) {

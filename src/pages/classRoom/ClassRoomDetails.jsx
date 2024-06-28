@@ -15,7 +15,7 @@ import ClassMemberModal from '../../components/Modal/ClassMemberModal.jsx';
 import useSubCollection from '../../hooks/useSubCollection';
 import useGetActivity from '../../hooks/useGetActivity.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
-import useFirestore from '../../hooks/useFirestore.jsx';
+import useAddUpdFireStore from '../../hooks/useAddUpdFirestore.jsx';
 import useEnrollClass from '../../hooks/useEnrollClass.jsx';
 
 //2024.01.26
@@ -32,7 +32,7 @@ const ClassRoomDetails = () => {
   //데이터 통신 변수
   const { subDocuments, subColErr } = useSubCollection("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
   const { activityList, errByGetActi } = useGetActivity(thisClass)
-  const { deleteDocument } = useFirestore("classRooms")
+  const { deleteDocument } = useAddUpdFireStore("classRooms")
   //모드
   const [isApplied, setIsApplied] = useState(false)
   const [isMember, setIsMember] = useState(false)

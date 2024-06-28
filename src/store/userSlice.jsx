@@ -14,16 +14,17 @@ let user = createSlice({
         name: action.payload.name,
         email: action.payload.email,
         isTeacher: action.payload.isTeacher,
+        isMaster: action.payload.isMaster,
         phoneNumber: action.payload.phoneNumber,
         profileImg: action.payload.profileImg,
         school: action.payload.school,
         //학생 전용
         studentNumber: action.payload.studentNumber,
-          //교실 가입        
+        //교실 가입        
         appliedClassList: action.payload.appliedClassList,
         joinedClassList: action.payload.joinedClassList,
         myPetList: action.payload.myPetList,
-          //과제
+        //과제
         myHomeworkList: action.payload.myHomeworkList,
         myDoneActList: action.payload.myDoneActList,
         classNewsList: action.payload.classNewsList,

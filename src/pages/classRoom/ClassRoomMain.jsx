@@ -10,6 +10,7 @@ import useClientHeight from '../../hooks/useClientHeight';
 //CSS
 import styled from 'styled-components';
 import TSearchInputBtn from '../../components/TSearchInputBtn';
+import NewBtn from '../../components/Btn/NewBtn';
 
 //24.01.23
 const ClassRoomMain = () => {
@@ -48,7 +49,7 @@ const ClassRoomMain = () => {
         <CardList dataList={_classRoomList} type="classroom"
           title="나의 클래스"
           comment="아직 클래스가 없어요. 클래스를 만들어주세요" />
-        <button id="create_btn" onClick={handleBtnClick}>클래스 만들기</button>
+        <NewBtn btnOnClick={handleBtnClick} btnName="클래스 만들기" />
       </>}
       {/* 학생 */}
       {!user.isTeacher && <>
@@ -75,64 +76,7 @@ const ClassRoomMain = () => {
 
 const StyledContainer = styled.div`
   box-sizing: border-box;
-  margin: 20px auto;
-  
-  button {
-  appearance: none;
-  backface-visibility: hidden;
-  background-color: #3454d1;
-  border-radius: 10px;
-  border-style: none;
-  box-shadow: none;
-  box-sizing: border-box;
-  margin: 30px auto;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
-  font-size: 15px;
-  font-weight: 500;
-  height: 40px;
-  letter-spacing: normal;
-  line-height: 1.5;
-  outline: none;
-  overflow: hidden;
-  padding: 14px 30px;
-  position: relative;
-  text-align: center;
-  text-decoration: none;
-  transform: translate3d(0, 0, 0);
-  transition: all .3s;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  vertical-align: top;
-  white-space: nowrap;
-
-  &:hover {
-  background-color: #1366d6;
-  box-shadow: rgba(0, 0, 0, .05) 0 5px 30px, rgba(0, 0, 0, .05) 0 1px 4px;
-  opacity: 1;
-  transform: translateY(0);
-  transition-duration: .35s;
-  }
-  
-  &:hover:after {
-    opacity: .5;
-  }
-
-  &:active {
-    box-shadow: rgba(0, 0, 0, .1) 0 3px 6px 0, rgba(0, 0, 0, .1) 0 0 10px 0, rgba(0, 0, 0, .1) 0 1px 4px -1px;
-    transform: translateY(2px);
-    transition-duration: .35s;
-  }
-
-  &:active:after {
-    opacity: 1;
-  }
-  }
-
+  margin: 20px auto;  
   @media screen and (max-width: 767px) {
     position: fixed;
     width: 100%;
@@ -141,5 +85,4 @@ const StyledContainer = styled.div`
     overflow-y: scroll;
   }
 `
-
 export default ClassRoomMain

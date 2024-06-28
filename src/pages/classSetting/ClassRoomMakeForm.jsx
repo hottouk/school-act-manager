@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 //컴포넌트
 import ImportExcelFile from '../../components/ImportExcelFile';
 //hooks
-import useFirestore from '../../hooks/useFirestore';
+import useAddUpdFireStore from '../../hooks/useAddUpdFirestore';
 import useStudent from '../../hooks/useStudent';
 import useClientHeight from '../../hooks/useClientHeight';
 //css
@@ -30,8 +30,8 @@ const ClassRoomMakeForm = () => {
   //hooks
   const navigate = useNavigate()
   const { makeStudent } = useStudent()
-  //데이터 통신 변수
-  const { addClassroom, response } = useFirestore('classRooms');
+  //데이터 통신 변수s
+  const { addClassroom, response } = useAddUpdFireStore('classRooms');
   //반 생성 종류에 따라 
   const { state } = useLocation()
   const [classKind, setClassKind] = useState('')

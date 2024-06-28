@@ -13,11 +13,16 @@ import StudentDetail from './pages/student/StudentDetail';
 import ClassAllStudents from './pages/classRoom/ClassAllStudents';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassRoomMakeForm from './pages/classSetting/ClassRoomMakeForm';
-import { useSelector } from 'react-redux';
-import { Helmet } from "react-helmet";
 import News from './pages/main/News';
 import ActivityForm from './pages/activity/ActivitityForm';
 import Homework from './components/Homework';
+import UserMain from './pages/student/UserMain';
+import { useSelector } from 'react-redux';
+import { Helmet } from "react-helmet";
+//단어 배틀
+import WordSetMain from './pages/wordBattle/WordSetMain';
+import WordBattle from './pages/wordBattle/WordBattle';
+import WordForm from './pages/wordBattle/WordForm';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -38,6 +43,7 @@ function App() {
           <Route path="/activities/:activityId" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/:activityId/:studentId" element={uid ? <Homework /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities_setting" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/activities/others" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 관리 */}
           <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms/:id" element={uid ? <ClassRoomDetails /> : <Navigate replace={true} to='/login' />} />
@@ -47,7 +53,10 @@ function App() {
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
           <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassRoomMakeForm /> : <Navigate replace={true} to='/' />} />
           {/* 학생 관리 */}
-          <Route path="/users" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/users" element={uid ? <UserMain /> : <Navigate replace={true} to='/login' />} />
+          {/* 단어장 관리 */}
+          <Route path="/wordbattle" element={uid ? <WordSetMain /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/words_setting" element={uid ? <WordForm /> : <Navigate replace={true} to='/login' />} />
           {/* 새소식 관리 */}
           <Route path="/news" element={uid ? <News /> : <Navigate replace={true} to='/' />} />
           {/* 로그인/회원가입 */}

@@ -5,7 +5,7 @@ import Select from 'react-select';
 import { useSelector } from 'react-redux';
 //Hooks
 import useGetLevel from '../../hooks/useGetLevel';
-import useFirestore from '../../hooks/useFirestore';
+import useAddUpdFireStore from '../../hooks/useAddUpdFirestore';
 //컴포넌트
 import RadarChart from '../../components/RadarChart';
 import AnimatedProgressBar from '../../components/ProgressBar';
@@ -32,7 +32,7 @@ const StudentDetail = () => {
   const { fetchMyPetInfo } = useGetMyUserInfo()
   //편집 모드 
   const [isModifiying, setIsModifying] = useState(false)
-  const { deleteStudent, updateStudent } = useFirestore("classRooms")
+  const { deleteStudent, updateStudent } = useAddUpdFireStore("classRooms")
   //학생 관련 정보
   const [nthStudent, setNthStudent] = useState(null)
   const [_studentNumber, setStudentNumber] = useState(null)
@@ -169,7 +169,7 @@ const StudentDetail = () => {
       {user.isTeacher && <StyledArrowLeftBtn id="leftArwBtn" onClick={handleBtnClick} />}
       <StyledStudentInfoPannel>
         <StyledTopPannel>
-          <PetImg subject={_subject} level={expAndLevel.level} onClick={()=>{}}/>
+          <PetImg subject={_subject} level={expAndLevel.level} onClick={() => { }} />
           <StyledTopRightInfo>
             <p>학번: {_studentNumber}</p>
             <p>이름: {!isModifiying

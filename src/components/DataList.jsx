@@ -4,8 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { setSelectClass } from '../store/classSelectedSlice'
 import { setAppliedClassList, setJoinedClassList } from '../store/userSlice'
-import useFirestore from '../hooks/useFirestore'
+import useAddUpdFireStore from '../hooks/useAddUpdFirestore'
 import useFetchFireData from '../hooks/useFetchFireData'
+//컴포넌트
+import SmallBtn from './Btn/SmallBtn'
+
 //이미지
 import unknown from '../image/icon/unkown_icon.png'
 import MonImg from './MonImg'
@@ -16,7 +19,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
   const navigate = useNavigate()
   const user = useSelector(({ user }) => user)
   const [studentUser, setStudentUser] = useState(null);
-  const { updateClassListInfo } = useFirestore("user")
+  const { updateClassListInfo } = useAddUpdFireStore("user")
   const { fetchDataList } = useFetchFireData()
   //전역변수
   const dispatcher = useDispatch()
@@ -52,10 +55,17 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
         else { navigate(`/activities/${item.id}`, { state: { acti: item, student: studentUser } }) }
         break;
       case "teacher":
-        fetchDataList("classRooms", "uid", item.uid).then((classroomList) => {
-          classroomList.sort((a, b) => a.subject.localeCompare(b.subject)) //정렬
-          setTeacherClassList(classroomList)
-        })
+        if (setTeacherClassList) {
+          fetchDataList("classRooms", "uid", item.uid).then((classroomList) => {
+            classroomList.sort((a, b) => a.subject.localeCompare(b.subject)) //정렬
+            setTeacherClassList(classroomList)
+          })
+        } else {
+          navigate(`/activities/others`, { state: { otherTrId: item.id } })
+        }
+        break;
+      case "word":
+        //todo 단어 목록 만들기
         break;
       default: return;
     }
@@ -64,6 +74,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
   return (
     <StyledListContainer>
       {type === "teacher" && dataList.map((item) => { //교사
+        console.log(item)
         return (<StyledTeacherLi key={item.uid} onClick={() => { handleOnClick(item) }}>
           <div className="t_info">
             <p className="t_name">{item.name} 선생님</p>
@@ -86,6 +97,18 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
             <p>과목: {item.subject}</p>
           </div>
           <div><MonImg monImg={item.monImg}></MonImg></div>
+        </StyledSubjectLi>)
+      })}
+      {type === "word" && dataList.map((item) => { //단어
+        return (<StyledSubjectLi key={item.id} >
+          <div>
+            <h4>{item.setTitle}</h4>
+            <StyledFlexDiv>
+              <SmallBtn btnColor={"#3454d1"} btnName={"전투입장"} />
+              <SmallBtn btnColor={"#B22222"} btnName={"편집하기"} btnOnClick={() => { navigate("/words_setting") }} />
+            </StyledFlexDiv>
+          </div>
+          {/* <div><MonImg monImg={item.monImg}></MonImg></div> */}
         </StyledSubjectLi>)
       })}
     </StyledListContainer>
@@ -148,5 +171,8 @@ const StyledSubjectLi = styled.li`
     border: 1px solid rgba(25, 31, 52, 0.3);
     border-radius: 30px;
   }
+`
+const StyledFlexDiv = styled.div`
+  display: flex;
 `
 export default DataList

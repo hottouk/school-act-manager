@@ -6,7 +6,7 @@ import styled from "styled-components";
 //hooks
 import useChatGpt from "../../hooks/useChatGpt";
 import useClientHeight from "../../hooks/useClientHeight";
-import useFirestore from "../../hooks/useFirestore";
+import useAddUpdFireStore from "../../hooks/useAddUpdFirestore";
 import useFireActi from "../../hooks/useFireActi";
 import useDoActivity from "../../hooks/useDoActivity";
 //컴포넌트
@@ -52,7 +52,7 @@ const ActivityForm = () => {
   const [isHomeworkSubmit, setIsHomeworkSubmit] = useState(false)
   const [isModified, setIsModified] = useState(false)
   //4.데이터 통신 변수
-  const { addDocument, updateAct } = useFirestore('activities');
+  const { addActivity, updateAct } = useAddUpdFireStore('activities');
   const { takePartInThisActivity, cancelThisActivity } = useDoActivity();
   const { deleteActi } = useFireActi();
   //5.경로 이동 관련 변수
@@ -132,7 +132,7 @@ const ActivityForm = () => {
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
         let newAct = { uid: user.uid, title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework };
-        addDocument(newAct)
+        addActivity(newAct)
         navigate(`/activities`)
       }
     }
@@ -360,7 +360,7 @@ const ActivityForm = () => {
 const StyledContainer = styled.div`
   @media screen and (max-width: 767px){
     width: 100%;
-    height: ${(props) => { return props.$clientheight}}px;
+    height: ${(props) => { return props.$clientheight }}px;
     overflow-y: auto;
   }
 `

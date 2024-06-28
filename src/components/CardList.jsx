@@ -5,25 +5,18 @@ import styled from 'styled-components'
 
 const CardList = ({ dataList, type, title, comment, setTeacherClassList }) => {
   return (<StyledContainer>
-    {/* 데이터 */}
-    {(dataList && dataList.length > 0) && <>
-      <h6 className="title">{title}</h6>
-      {type === "teacher" && <StyledListDiv>
-        <DataList dataList={dataList} type={type} setTeacherClassList={setTeacherClassList} />
+    <h6 className="title">{title}</h6>
+    {/* 데이터 존재*/}
+    {(dataList && dataList.length > 0) &&
+      <StyledListDiv>
+        {type === "teacher" ?
+          <DataList dataList={dataList} type={type} setTeacherClassList={setTeacherClassList} />
+          :
+          <DataList dataList={dataList} type={type} /> 
+        }
       </StyledListDiv>}
-      {type === "classroom" && <StyledListDiv>
-        <DataList dataList={dataList} type={type} />
-      </StyledListDiv>}
-      {type === "appliedClassList" && <StyledListDiv>
-        <DataList dataList={dataList} type={type} />
-      </StyledListDiv>}
-      {type === "activity" && <StyledListDiv>
-        <DataList dataList={dataList} type={type} />
-      </StyledListDiv>}
-    </>}
     {/* 데이터 없음*/}
     {(!dataList || dataList.length === 0) && <>
-      <h6 className="title">{title}</h6>
       <StyledListDiv>
         < EmptyResult comment={comment} />
       </StyledListDiv></>}

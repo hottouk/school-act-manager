@@ -1,4 +1,4 @@
-import { collection, doc, runTransaction } from 'firebase/firestore'
+import { doc, runTransaction } from 'firebase/firestore'
 import { appFireStore } from '../firebase/config'
 import { useDispatch, useSelector } from 'react-redux'
 import { setHomeworkList } from '../store/userSlice'

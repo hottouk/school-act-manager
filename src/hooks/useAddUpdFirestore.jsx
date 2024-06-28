@@ -2,7 +2,7 @@ import { appFireStore, timeStamp } from "../firebase/config"
 import { addDoc, collection, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 import { useSelector } from "react-redux"
 
-const useFirestore = (collectionName) => {
+const useAddUpdFireStore = (collectionName) => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const colRef = collection(db, collectionName)
@@ -42,13 +42,27 @@ const useFirestore = (collectionName) => {
     }
   }
 
+  //워드set 추가 함수(24.6.22)
+  const addWordSet = async (wordInfo) => {
+    try {
+      const createdTime = timeStamp.fromDate(new Date());
+      let setTitle = wordInfo.title
+      let wordSet = wordInfo.wordSet
+      let result = await addDoc(colRef, { setTitle, wordSet, createdTime, madeBy: user.uid });
+      return result;
+    } catch (err) {
+      window.alert(err.message)
+      console.error(err)
+    }
+  }
+
   //활동 추가 함수
   const addActivity = async (activity) => {
     try {
       const createdTime = timeStamp.fromDate(new Date());
       await addDoc(colRef, { ...activity, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
-    } catch (error) {
-      window.alert(error.message)
+    } catch (err) {
+      window.alert(err.message)
     }
   }
 
@@ -123,8 +137,8 @@ const useFirestore = (collectionName) => {
   }
 
   return (
-    { getInfo, addDocument: addActivity, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, updateClassListInfo }
+    { getInfo, addActivity, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, addWordSet, updateClassListInfo }
   )
 }
 
-export default useFirestore
+export default useAddUpdFireStore
