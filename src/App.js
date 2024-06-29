@@ -40,6 +40,7 @@ function App() {
           <Route path="/" element={uid ? <ClassMain /> : <Navigate replace={true} to='/login' />} />
           {/* 활동 관리 */}
           <Route path="/activities" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/activities_all" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/:activityId" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/:activityId/:studentId" element={uid ? <Homework /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities_setting" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />

@@ -9,6 +9,24 @@ const useFetchFireData = () => {
   const { getExpAndLevelByActList } = useGetLevel()
   const user = useSelector(({ user }) => { return user })
 
+  //6. 전체 Acti 리스트 출력
+  const fetchAlActiiBySubjList = async (sbuj) => {
+    let allActiBySubj = []
+    let actiColRef = collection(appFireStore, "activities")
+    let q = query(actiColRef, where("subject", "==", sbuj));
+    try {
+      let querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        allActiBySubj.push({ id: doc.id, ...doc.data() })
+        allActiBySubj.sort((a, b) => a.title.localeCompare(b.title))
+      })
+    } catch (err) {
+      window.alert(err.message)
+      console.log(err)
+    }
+    return allActiBySubj
+  }
+
   //5. 다른 교사 Acti 리스트 출력
   const fetchOtrActiList = async (otherTrId) => {
     let otrActiList = []
@@ -175,10 +193,7 @@ const useFetchFireData = () => {
     }
     return q
   }
-
-
-
-  return ({ fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList })
+  return ({ fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList })
 }
 
 export default useFetchFireData

@@ -74,7 +74,6 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
   return (
     <StyledListContainer>
       {type === "teacher" && dataList.map((item) => { //교사
-        console.log(item)
         return (<StyledTeacherLi key={item.uid} onClick={() => { handleOnClick(item) }}>
           <div className="t_info">
             <p className="t_name">{item.name} 선생님</p>

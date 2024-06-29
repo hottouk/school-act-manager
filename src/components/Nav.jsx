@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet'
 import { Badge } from 'react-bootstrap';
+
 //모달
 import MyInfoModal from './Modal/MyInfoModal'
 //CSS
@@ -13,6 +14,7 @@ import brandLogo from "../image/icon/h-logo.png";
 import unknown from '../image/icon/unkown_icon.png'
 //hooks
 import useGetMyUserInfo from '../hooks/useGetMyUserInfo';
+import DropDownBtn from './Btn/DropDownBtn';
 
 //24.02.22
 const Nav = () => {
@@ -24,7 +26,6 @@ const Nav = () => {
   //모달
   const [isMyInfoShow, setIsMyInfoShow] = useState(false)
   const [_isNew, setIsNew] = useState(false) //새소식 아이콘
-  const navigate = useNavigate()
 
   useEffect(() => {
     setProfileImg(user.profileImg)//프로필 사진
@@ -42,7 +43,6 @@ const Nav = () => {
   //2. 함수
   const handleBtnClick = (event) => {
     switch (event.target.id) {
-
       case "my_info_btn":
         setIsMyInfoShow(true)
         break;
@@ -71,8 +71,12 @@ const Nav = () => {
       <ul className='menu_container'>
         <li id="home_btn" ><Link to="/"><i className="fa-solid fa-house"></i>
           <span className="pcOnly">Home</span></Link></li>
-        <li id="acti_btn" ><Link to="/activities"><i className="fa-solid fa-scroll"></i>
-          <span className="pcOnly">활동 관리</span></Link></li>
+        <li id="acti_btn" ><i className="fa-solid fa-scroll"></i>
+          <DropDownBtn btnName={"활동 관리"}
+            dropDownItems={[
+              { href: "activities", label: "나의 활동" },
+              { href: "activities_all", label: '다른 선생님 활동', itemState: "acti_all" }]} />
+        </li>
         <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>
           <span className="pcOnly">클래스 관리</span></Link></li>
         <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>

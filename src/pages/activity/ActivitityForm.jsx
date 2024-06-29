@@ -123,7 +123,7 @@ const ActivityForm = () => {
       let actId = state.acti.id
       let uid = state.acti.uid
       if (confirm) {
-        let modifiedAct = { uid, title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework };
+        let modifiedAct = { uid, title, subject: _subject, content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework };
         updateAct(modifiedAct, actId)
         navigate(`/activities`)
         setIsModified(false)
@@ -131,7 +131,7 @@ const ActivityForm = () => {
     } else {
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
-        let newAct = { uid: user.uid, title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework };
+        let newAct = { uid: user.uid, title, subject: _subject, content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework };
         addActivity(newAct)
         navigate(`/activities`)
       }

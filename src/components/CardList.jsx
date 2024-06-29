@@ -29,7 +29,6 @@ const StyledContainer = styled.div`
   margin: 0 0 0 10px;
   }
 `
-
 const StyledListDiv = styled.div`
   margin: 4px auto 50px;
   border-top: 1px solid #d1d1d1;
