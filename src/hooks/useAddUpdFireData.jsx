@@ -2,11 +2,12 @@ import { appFireStore, timeStamp } from "../firebase/config"
 import { addDoc, collection, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 import { useSelector } from "react-redux"
 
-const useAddUpdFireStore = (collectionName) => {
+const useAddUpdFireData = (collectionName) => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const colRef = collection(db, collectionName)
-
+  
+  //10.
   const getInfo = async (id, type) => {
     let info = null
     switch (type) {
@@ -26,7 +27,7 @@ const useAddUpdFireStore = (collectionName) => {
     return info
   }
 
-  //클래스룸 추가 함수(24.2.18)
+  //9. 클래스룸 추가 함수(24.2.18)
   const addClassroom = async (classParams, studentPetList) => {
     try {
       const createdTime = timeStamp.fromDate(new Date());
@@ -42,7 +43,7 @@ const useAddUpdFireStore = (collectionName) => {
     }
   }
 
-  //워드set 추가 함수(24.6.22)
+  //8. 워드set 추가 함수(24.6.22)
   const addWordSet = async (wordInfo) => {
     try {
       const createdTime = timeStamp.fromDate(new Date());
@@ -56,8 +57,8 @@ const useAddUpdFireStore = (collectionName) => {
     }
   }
 
-  //활동 추가 함수
-  const addActivity = async (activity) => {
+  //7. 활동 추가 함수
+  const addActi = async (activity) => {
     try {
       const createdTime = timeStamp.fromDate(new Date());
       await addDoc(colRef, { ...activity, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
@@ -66,8 +67,8 @@ const useAddUpdFireStore = (collectionName) => {
     }
   }
 
-  //활동 수정 함수: 새로운 활동과 활동 id(제목) 주면 수정
-  const updateAct = async (activity, actId) => {
+  //6. 활동 수정 함수: 새로운 활동과 활동 id(제목) 주면 수정
+  const updateActi = async (activity, actId) => {
     try {
       let createdTime = timeStamp.fromDate(new Date());
       let actiRef = doc(db, collectionName, actId)
@@ -85,7 +86,7 @@ const useAddUpdFireStore = (collectionName) => {
     }
   }
 
-  //학생 추가 함수(2024.1.7)
+  //5. 학생 추가 함수(2024.1.7)
   const addStudent = async (newInfo, classId) => {
     let studentColRef = collection(db, "classRooms", classId, "students");
     let modifiedTime = timeStamp.fromDate(new Date());
@@ -96,7 +97,7 @@ const useAddUpdFireStore = (collectionName) => {
     }
   }
 
-  // 학생 update 함수(2024.1.6)
+  //4. 학생 update 함수(2024.1.6)
   const updateStudent = async (newInfo, classId, studentId) => {
     let studentRef = doc(db, "classRooms", classId, "students", studentId);
     let modifiedTime = timeStamp.fromDate(new Date());
@@ -107,7 +108,7 @@ const useAddUpdFireStore = (collectionName) => {
     }
   }
 
-  //학생 삭제 함수
+  //3. 학생 삭제 함수
   const deleteStudent = async (classId, studentId) => {
     try {
       let studentRef = doc(db, collectionName, classId, 'students', studentId)
@@ -117,7 +118,7 @@ const useAddUpdFireStore = (collectionName) => {
     }
   }
 
-  //데이터 삭제 함수: 문서 id(제목) 주면 삭제
+  //2. 데이터 삭제 함수: 문서 id(제목) 주면 삭제
   const deleteDocument = async (id) => {
     deleteDoc(doc(colRef, id)).then(() => {
       window.alert("삭제 되었습니다.")
@@ -126,7 +127,7 @@ const useAddUpdFireStore = (collectionName) => {
     })
   }
 
-  //학생 클래스 정보 업데이트
+  //1. 학생 클래스 정보 업데이트
   const updateClassListInfo = async (classList, type) => {
     let userRef = doc(db, "user", user.uid)
     if (type === "joinedClassList") {
@@ -137,8 +138,8 @@ const useAddUpdFireStore = (collectionName) => {
   }
 
   return (
-    { getInfo, addActivity, updateAct, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, addWordSet, updateClassListInfo }
+    { getInfo, addActi, updateActi, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, addWordSet, updateClassListInfo }
   )
 }
 
-export default useAddUpdFireStore
+export default useAddUpdFireData

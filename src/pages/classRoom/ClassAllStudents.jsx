@@ -1,6 +1,6 @@
 //Hooks
 import useGetByte from "../../hooks/useGetByte"
-import useAddUpdFireStore from "../../hooks/useAddUpdFirestore"
+import useAddUpdFireData from "../../hooks/useAddUpdFireData"
 import { useParams } from "react-router-dom"
 import { useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
@@ -22,7 +22,7 @@ const ClassAllStudents = () => {
   const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //ClassRoomDetail에서 저장한 학생List 불러오기(전역)
   const dispatcher = useDispatch()
   //hooks
-  const { updateStudent } = useAddUpdFireStore('classRooms')
+  const { updateStudent } = useAddUpdFireData("classRooms")
   const { getByteLengthOfString } = useGetByte()
   //특정 학생 정보 수정 판단 key 변수
   const [thisModifying, setThisModifying] = useState('')

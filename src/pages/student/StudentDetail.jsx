@@ -5,7 +5,7 @@ import Select from 'react-select';
 import { useSelector } from 'react-redux';
 //Hooks
 import useGetLevel from '../../hooks/useGetLevel';
-import useAddUpdFireStore from '../../hooks/useAddUpdFirestore';
+import useAddUpdFireData from '../../hooks/useAddUpdFireData';
 //컴포넌트
 import RadarChart from '../../components/RadarChart';
 import AnimatedProgressBar from '../../components/ProgressBar';
@@ -32,7 +32,7 @@ const StudentDetail = () => {
   const { fetchMyPetInfo } = useGetMyUserInfo()
   //편집 모드 
   const [isModifiying, setIsModifying] = useState(false)
-  const { deleteStudent, updateStudent } = useAddUpdFireStore("classRooms")
+  const { deleteStudent, updateStudent } = useAddUpdFireData("classRooms")
   //학생 관련 정보
   const [nthStudent, setNthStudent] = useState(null)
   const [_studentNumber, setStudentNumber] = useState(null)

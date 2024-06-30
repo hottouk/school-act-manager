@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { setSelectClass } from '../store/classSelectedSlice'
 import { setAppliedClassList, setJoinedClassList } from '../store/userSlice'
-import useAddUpdFireStore from '../hooks/useAddUpdFirestore'
+import useAddUpdFireData from '../hooks/useAddUpdFireData'
 import useFetchFireData from '../hooks/useFetchFireData'
 //컴포넌트
 import SmallBtn from './Btn/SmallBtn'
@@ -19,7 +19,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
   const navigate = useNavigate()
   const user = useSelector(({ user }) => user)
   const [studentUser, setStudentUser] = useState(null);
-  const { updateClassListInfo } = useAddUpdFireStore("user")
+  const { updateClassListInfo } = useAddUpdFireData("user")
   const { fetchDataList } = useFetchFireData()
   //전역변수
   const dispatcher = useDispatch()
@@ -51,8 +51,11 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
           dispatcher(setAppliedClassList(newList))
         } break;
       case "activity":
-        if (user.isTeacher) { navigate(`/activities/${item.id}`, { state: { acti: item } }) }
-        else { navigate(`/activities/${item.id}`, { state: { acti: item, student: studentUser } }) }
+        if (user.isTeacher) { navigate(`/activities/${item.id}`, { state: { acti: item } }) } //교사
+        else { navigate(`/activities/${item.id}`, { state: { acti: item, student: studentUser } }) } //학생
+        break;
+      case "copiedActi":
+        if (user.isTeacher) { navigate(`/activities/${item.id}`, { state: { acti: item } }) } //교사
         break;
       case "teacher":
         if (setTeacherClassList) {
@@ -90,16 +93,27 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
         </StyledClassroomLi>)
       })}
       {type === "activity" && dataList.map((item) => { //활동
-        return (<StyledSubjectLi key={item.id} onClick={() => { handleOnClick(item) }}>
+        return (<ActiList key={item.id} onClick={() => { handleOnClick(item) }}>
           <div className="acti_info">
-            <h4>{item.title}</h4>
+            <h4 >{item.title}</h4>
             <p>과목: {item.subject}</p>
+            <p className="madeBy">by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</p>
           </div>
           <div><MonImg monImg={item.monImg}></MonImg></div>
-        </StyledSubjectLi>)
+        </ActiList>)
+      })}
+      {type === "copiedActi" && dataList.map((item) => { //복사한 활동
+        return (<ActiList key={item.id} onClick={() => { handleOnClick(item) }}>
+          <div className="acti_info">
+            <h4 style={{ color: '#FF69B4' }}>{item.title}</h4>
+            <p>과목: {item.subject}</p>
+            <p style={{ backgroundColor: '#FF69B4' }} className="madeBy">by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</p>
+          </div>
+          <div><MonImg monImg={item.monImg}></MonImg></div>
+        </ActiList>)
       })}
       {type === "word" && dataList.map((item) => { //단어
-        return (<StyledSubjectLi key={item.id} >
+        return (<ActiList key={item.id} >
           <div>
             <h4>{item.setTitle}</h4>
             <StyledFlexDiv>
@@ -108,7 +122,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
             </StyledFlexDiv>
           </div>
           {/* <div><MonImg monImg={item.monImg}></MonImg></div> */}
-        </StyledSubjectLi>)
+        </ActiList>)
       })}
     </StyledListContainer>
   )
@@ -158,10 +172,21 @@ const StyledTeacherLi = styled.li`
   }
 `
 
-const StyledSubjectLi = styled.li`
+const ActiList = styled.li`
+  position: relative;
   display: flex;
   .acti_info {
     flex-grow: 1;
+  }
+  .madeBy {
+    position: absolute;
+    bottom: 1px;
+    right: 4px;
+    background-color: #3454d1b3;
+    color: white;
+    padding: 2px;
+    border-radius:5px;
+    margin-bottom: 4px
   }
   img {
     width: 60px;

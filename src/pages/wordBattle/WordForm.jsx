@@ -5,7 +5,7 @@ import useClientHeight from '../../hooks/useClientHeight'
 //컴포넌트
 import NewBtn from '../../components/Btn/NewBtn'
 import SmallBtn from '../../components/Btn/SmallBtn'
-import useAddUpdFireStore from '../../hooks/useAddUpdFirestore'
+import useAddUpdFireData from '../../hooks/useAddUpdFireData'
 
 const WordForm = () => {
   //CSS
@@ -13,7 +13,7 @@ const WordForm = () => {
   const [words, setWords] = useState([['', '']]);
   const [title, setTitle] = useState('')
   const inputRefs = useRef([[React.createRef(), React.createRef()]]);
-  const { addWordSet } = useAddUpdFireStore("words")
+  const { addWordSet } = useAddUpdFireData("words")
 
   //tab 키다운 인식
   const handleKeyDown = (e, index, subIndex) => {

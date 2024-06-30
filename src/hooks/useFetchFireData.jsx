@@ -1,5 +1,5 @@
 import { appFireStore } from '../firebase/config'
-import { collection, getDocs, orderBy, query, where } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocFromCache, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore'
 import useGetLevel from './useGetLevel'
 import PetImg from '../components/PetImg'
 import { useSelector } from 'react-redux'
@@ -8,11 +8,51 @@ const useFetchFireData = () => {
   const db = appFireStore
   const { getExpAndLevelByActList } = useGetLevel()
   const user = useSelector(({ user }) => { return user })
+  const actiColRef = collection(appFireStore, "activities")
+  const userColRef = collection(appFireStore, "user")
+  const wordColRef = collection(db, "words")
 
-  //6. 전체 Acti 리스트 출력
+  //20240630 수정
+  //7. 퍼온 Acti 리스트 - 활동관리
+  const fetchCopiedActiList = async () => {
+    let copiedList = []
+    let userDocRef = doc(db, "user", user.uid)
+    // onSnapshot(userDocRef, async (docSnapshot) => {
+    //   if (docSnapshot.exists()) {
+        
+
+    //   } else {
+
+    //   }
+
+    // })
+    try {
+      let userDoc = await getDocFromCache(userDocRef);
+      if (!userDoc.exists) { throw new Error("해당 유저를 찾지 못했습니다.") }
+      if (userDoc.data().copiedActiList) {
+        copiedList.push(...userDoc.data().copiedActiList);
+        copiedList.sort((a, b) => a.title.localeCompare(b.title));
+      }
+    } catch (cacheError) {
+      console.log("캐시 메모리에서 가져오지 못하여 서버에 연결합니다.", cacheError)
+      try {
+        let userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists) { throw new Error("해당 유저를 찾지 못했습니다.") }
+        if (userDoc.data().copiedActiList) {
+          copiedList.push(...userDoc.data().copiedActiList);
+          copiedList.sort((a, b) => a.title.localeCompare(b.title));
+        }
+      } catch (networkErr) {
+        window.alert(networkErr.message)
+        console.log(networkErr)
+      }
+    }
+    return copiedList
+  }
+
+  //6. 과목 전체 Acti 리스트 - 활동관리
   const fetchAlActiiBySubjList = async (sbuj) => {
     let allActiBySubj = []
-    let actiColRef = collection(appFireStore, "activities")
     let q = query(actiColRef, where("subject", "==", sbuj));
     try {
       let querySnapshot = await getDocs(q);
@@ -27,10 +67,9 @@ const useFetchFireData = () => {
     return allActiBySubj
   }
 
-  //5. 다른 교사 Acti 리스트 출력
+  //5. 다른 교사 Acti 리스트 - 활동관리
   const fetchOtrActiList = async (otherTrId) => {
     let otrActiList = []
-    let actiColRef = collection(appFireStore, "activities")
     let q = query(actiColRef, where("uid", "==", otherTrId), orderBy("subject", "desc"));
     try {
       let querySnapshot = await getDocs(q);
@@ -45,10 +84,9 @@ const useFetchFireData = () => {
     return otrActiList;
   }
 
-  //4. 본인 Acti 리스트 출력
+  //4. 내 Acti 리스트
   const fetchActiList = async (thisClass) => {
     let actiList = []
-    let actiColRef = collection(appFireStore, "activities")
     let q
     if (user.isTeacher) { //교사
       if (!thisClass) { //활동 관리
@@ -67,8 +105,13 @@ const useFetchFireData = () => {
       let querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         actiList.push({ id: doc.id, ...doc.data() })
-        actiList.sort((a, b) => a.title.localeCompare(b.title))
       })
+      if (thisClass) {
+        await fetchCopiedActiList().then((copiedList) => {
+          actiList = actiList.concat(copiedList)
+        })
+      }
+      actiList.sort((a, b) => a.title.localeCompare(b.title))
     } catch (err) {
       window.alert(err.message);
       console.log(err);
@@ -79,8 +122,7 @@ const useFetchFireData = () => {
   //3. 교사 리스트 출력
   const fetchTeacherList = async () => {
     let teacherList = []
-    let teacherColRef = collection(appFireStore, 'user')
-    let q = query(teacherColRef, where("isTeacher", "==", true))
+    let q = query(userColRef, where("isTeacher", "==", true))
     try {
       let querySnapshot = await getDocs(q);
       querySnapshot.forEach(doc => {
@@ -96,7 +138,6 @@ const useFetchFireData = () => {
   //2. 워드 리스트 출력
   const fetchWordList = async () => {
     let wordList = []
-    let wordColRef = collection(db, "words")
     let q = query(wordColRef, where("madeBy", "==", user.uid))
     try {
       let querySnapshot = await getDocs(q);
@@ -177,7 +218,6 @@ const useFetchFireData = () => {
   //1-1. DB에서 검색
   const userQSetter = (type, propKnd, prop) => {
     let q
-    let userColRef = collection(db, "user")
     if (propKnd === "schoolName") { //전체 학교 검색
       if (type === "teacher") { //전체 교사 검색
         q = query(userColRef, where("isTeacher", "==", true))
@@ -193,7 +233,7 @@ const useFetchFireData = () => {
     }
     return q
   }
-  return ({ fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList })
+  return ({ fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
 }
 
 export default useFetchFireData

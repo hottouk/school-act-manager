@@ -3,14 +3,14 @@ import { useState } from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/esm/Button';
 //hooks
-import useAddUpdFireStore from '../../hooks/useAddUpdFirestore';
+import useAddUpdFireData from '../../hooks/useAddUpdFireData';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 
 const AddNewStudentModal = ({ show, onHide, classId }) => {
   //1. 변수
   const selectedClassInfo = useSelector(({ classSelected }) => classSelected)
-  const { addStudent } = useAddUpdFireStore("classRooms")
+  const { addStudent } = useAddUpdFireData("classRooms")
   const [name, setName] = useState('')
   const [studentNumber, setStudentNumber] = useState('')
   //2. 함수

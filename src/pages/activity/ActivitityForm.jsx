@@ -6,7 +6,7 @@ import styled from "styled-components";
 //hooks
 import useChatGpt from "../../hooks/useChatGpt";
 import useClientHeight from "../../hooks/useClientHeight";
-import useAddUpdFireStore from "../../hooks/useAddUpdFirestore";
+import useAddUpdFireData from "../../hooks/useAddUpdFireData";
 import useFireActi from "../../hooks/useFireActi";
 import useDoActivity from "../../hooks/useDoActivity";
 //컴포넌트
@@ -25,9 +25,10 @@ import mon03 from "../../image/enemies/mon_03.png"
 import mon04 from "../../image/enemies/mon_04.png"
 import mon05 from "../../image/enemies/mon_05.png"
 import question from "../../image/icon/question.png"
+import useFireTransaction from "../../hooks/useFireTransaction";
 
-//24.02.13 수정
-const ActivityForm = () => {
+//24.06.30 수정
+const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
   //1. 변수
   const user = useSelector(({ user }) => { return user })
   //1.활동 기본 정보 변수
@@ -52,11 +53,12 @@ const ActivityForm = () => {
   const [isHomeworkSubmit, setIsHomeworkSubmit] = useState(false)
   const [isModified, setIsModified] = useState(false)
   //4.데이터 통신 변수
-  const { addActivity, updateAct } = useAddUpdFireStore('activities');
+  const { addActi, updateActi } = useAddUpdFireData("activities");
+  const { copyActiTransaction, delCopiedActiTransaction } = useFireTransaction()
   const { takePartInThisActivity, cancelThisActivity } = useDoActivity();
   const { deleteActi } = useFireActi();
   //5.경로 이동 관련 변수
-  const { state } = useLocation()
+  const { state } = useLocation() //state는 활동
   const navigate = useNavigate()
   //6.ChatGPt
   const { gptAnswer, askChatGpt, gptRes } = useChatGpt()
@@ -124,16 +126,16 @@ const ActivityForm = () => {
       let uid = state.acti.uid
       if (confirm) {
         let modifiedAct = { uid, title, subject: _subject, content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework };
-        updateAct(modifiedAct, actId)
-        navigate(`/activities`)
+        updateActi(modifiedAct, actId)
+        navigate("/activities")
         setIsModified(false)
       }
     } else {
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
         let newAct = { uid: user.uid, title, subject: _subject, content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework };
-        addActivity(newAct)
-        navigate(`/activities`)
+        addActi(newAct)
+        navigate("/activities")
       }
     }
   }
@@ -187,14 +189,29 @@ const ActivityForm = () => {
           window.alert('활동 제목과 과목을 채워주세요. 간단한 설명을 입력하면 더 정확한 문구를 얻을 수 있어요')
         }
         break;
-      case "delete_btn":
-        if (window.confirm("이 활동을 정말로 삭제하시겠습니까?")) { deleteActi(state.acti.id) }
-        break;
       case "modi_btn":
         setIsModified(true)
         break;
+      case "delete_btn":
+        if (window.confirm("이 활동을 정말로 삭제하시겠습니까?")) {
+          deleteActi(state.acti.id)
+          navigate("/activities") //todo 삭제 후 잔상 남아있는거 해결해야함.
+        }
+        break;
+      case "copied_delete_btn":
+        if (window.confirm("이 활동을 정말로 삭제하시겠습니까?")) {
+          delCopiedActiTransaction(state.acti.id)
+          navigate("/activities") //todo 삭제 후 잔상 남아있는거 해결해야함.
+        }
+        break;
       case "go_back_to_class_btn":
         navigate(-1)
+        break;
+      case "copy_btn":
+        if (window.confirm("이 활동을 업어가시겠습니까?")) {
+          copyActiTransaction(state.acti)
+          navigate("/activities_all", { state: "acti_all" })
+        }
         break;
       case "do_this_act_btn": //학생 전용
         if (window.confirm("이 활동을 신청하시겠습니까?")) {
@@ -209,7 +226,7 @@ const ActivityForm = () => {
         }
         break;
       case 'go_back_btn': //공용
-        navigate(`/activities`)
+        navigate(-1)
         break;
       default: return
     }
@@ -287,15 +304,24 @@ const ActivityForm = () => {
             {!_anyPartici &&
               < HomeworkRadio isHomework={_isHomework} onChange={handleRadioBtnClick} disabled={!isModified} />}
             {_anyPartici && <p>참여중인 학생이 있으므로 생기부 기록 전용으로는 바꿀 수 없습니다.</p>}
-            {state
-              ? isModified && <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>
-              : <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>}
-            {state
-              ? !isModified
-                ? <StyledBtn type="button" id="modi_btn" onClick={handleBtnClick}>수정</StyledBtn>
-                : <StyledBtn type="submit">저장</StyledBtn>
-              : <StyledBtn type="submit">저장</StyledBtn>}
-            {state && <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제</StyledBtn>}
+            {/*교사 버튼 영역 */}
+            {!state ? <> {/*활동 첫 생성 */}
+              <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>
+              <StyledBtn type="submit">저장</StyledBtn></>
+              : <>
+                {(state.acti.uid === user.uid) && <>
+                  {isModified && <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>}
+                  {!isModified ? <StyledBtn type="button" id="modi_btn" onClick={handleBtnClick}>수정</StyledBtn> : <StyledBtn type="submit">저장</StyledBtn>}
+                  {!state.acti.madeById ? <>
+                    {/*활동 삭제하기 */}
+                    <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제</StyledBtn></> : <>
+                    {/*업어온 활동 삭제하기 */}
+                    <StyledBtn type="button" id="copied_delete_btn" onClick={handleBtnClick}>삭제</StyledBtn></>}
+                </>}
+                {(state.acti.uid !== user.uid) && <> {/*활동 업어가기 */}
+                  <StyledBtn type="button" id="copy_btn" onClick={handleBtnClick}>업어가기</StyledBtn>
+                </>}
+              </>}
             <StyledBtn type="button" id="go_back_btn" onClick={handleBtnClick}>목록</StyledBtn>
           </fieldset>
         </StyledForm>

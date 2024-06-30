@@ -5,7 +5,7 @@ import useEnrollClass from '../../hooks/useEnrollClass'
 import { useSelector } from 'react-redux'
 import EmptyResult from '../../components/EmptyResult'
 import { useNavigate } from 'react-router-dom'
-import useAddUpdFireStore from '../../hooks/useAddUpdFirestore'
+import useAddUpdFireData from '../../hooks/useAddUpdFireData'
 import RewardModal from '../../components/Modal/RewardModal'
 import useDoActivity from '../../hooks/useDoActivity'
 
@@ -21,7 +21,7 @@ const News = () => {
 
   const { approveMembership, confirmApplyResult, denyMembership } = useEnrollClass()
   const { confirmHomeworkResult } = useDoActivity()
-  const { getInfo } = useAddUpdFireStore("activities")
+  const { getInfo } = useAddUpdFireData("activities")
   const navigate = useNavigate()
 
   useEffect(() => {

@@ -13,9 +13,9 @@ import EmptyResult from '../../components/EmptyResult.jsx';
 import ClassMemberModal from '../../components/Modal/ClassMemberModal.jsx';
 //hooks
 import useSubCollection from '../../hooks/useSubCollection';
-import useGetActivity from '../../hooks/useGetActivity.jsx';
+import useFetchFireData from '../../hooks/useFetchFireData';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
-import useAddUpdFireStore from '../../hooks/useAddUpdFirestore.jsx';
+import useAddUpdFireData from '../../hooks/useAddUpdFireData.jsx';
 import useEnrollClass from '../../hooks/useEnrollClass.jsx';
 
 //2024.01.26
@@ -31,8 +31,9 @@ const ClassRoomDetails = () => {
   //개별 클래스 구별해주는 변수
   //데이터 통신 변수
   const { subDocuments, subColErr } = useSubCollection("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
-  const { activityList, errByGetActi } = useGetActivity(thisClass)
-  const { deleteDocument } = useAddUpdFireStore("classRooms")
+  const [_actiList, setActiList] = useState([])
+  const { fetchActiList } = useFetchFireData()
+  const { deleteDocument } = useAddUpdFireData("classRooms")
   //모드
   const [isApplied, setIsApplied] = useState(false)
   const [isMember, setIsMember] = useState(false)
@@ -41,8 +42,11 @@ const ClassRoomDetails = () => {
 
   useEffect(() => {
     dispatcher(setAllStudents(subDocuments)) //전체 학생 전역변수화
-    dispatcher(setAllActivities(activityList)) //전체 활동 전역변수화
-  }, [subDocuments, activityList])
+    fetchActiList(thisClass).then((actiList) => { //전체 활동 전역변수화
+      dispatcher(setAllActivities(actiList))
+      setActiList(actiList)
+    }); 
+  }, [subDocuments])
 
   useEffect(() => {
     if (!user.isTeacher) { //학생
@@ -106,14 +110,13 @@ const ClassRoomDetails = () => {
         </StyeldHeader>
         {/* 셀렉터(교사)*/}
         {user.isTeacher && <StyledMain>
-          <MainSelector studentList={subDocuments} activitiyList={activityList} classId={thisClass.id} />
+          <MainSelector studentList={subDocuments} activitiyList={_actiList} classId={thisClass.id} />
         </StyledMain>}
         {/* 퀘스트 목록(학생) */}
         {(!user.isTeacher && isMember) && <StyledMain>
-          {(!activityList || activityList.length === 0)
+          {(!_actiList || _actiList.length === 0)
             ? <EmptyResult comment="등록된 활동이 없습니다." />
-            : <ActivityList activityList={activityList} classInfo={thisClass} />}
-          {errByGetActi && <EmptyResult comment={errByGetActi} />}
+            : <ActivityList activityList={_actiList} classInfo={thisClass} />}
         </StyledMain>}
         {/* 학생 상세 보기 */}
         {((!user.isTeacher && isMember) || user.isTeacher) && <StyledMain>

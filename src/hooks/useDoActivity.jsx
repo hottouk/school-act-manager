@@ -27,7 +27,6 @@ const useDoActivity = () => {
       particiSIdList = activityDoc.data().particiSIdList;
       particiList = activityDoc.data().particiList;
       //활동
-      console.log(particiSIdList)
       if (particiSIdList) {
         particiSIdList = makeUniqueArrOfEle(particiSIdList, user.uid)
         particiList = makeUniqueArrWithEle(particiList, studentInfo, "uid") 
