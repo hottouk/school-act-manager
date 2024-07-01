@@ -4,7 +4,6 @@ import Modal from 'react-bootstrap/Modal';
 import { useSelector } from 'react-redux';
 
 const SelectedDialogModal = (props) => {
-
   //redux 전역변수
   const studentSelected = useSelector(({ studentSelected }) => { return studentSelected })
   const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })

@@ -36,7 +36,7 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동관리-나
     } else {
       if (!location.state) { //활동관리 - 나의활동
         fetchActiList().then((actiList) => setActivityList(actiList))
-        fetchCopiedActiList().then((copiedList) => setCopiedList(copiedList))
+        setCopiedList(fetchCopiedActiList)
         setIsLoading(false)
       } else {
         fetchAlActiiBySubjList(activeSubj).then((subjActiList) => { //활동관리 - 전체 활동
@@ -45,7 +45,7 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동관리-나
         })
       }
     }
-  }, [location, activeSubj])
+  }, [location, activeSubj, otherTrId])
 
   return (
     <Container $clientheight={clientHeight}>

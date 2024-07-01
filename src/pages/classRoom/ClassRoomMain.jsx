@@ -34,12 +34,7 @@ const ClassRoomMain = () => {
   //3. 함수
   const handleBtnClick = (event) => {
     event.preventDefault()
-    switch (event.target.id) {
-      case "create_btn":
-        navigate('/classrooms_setting')
-        break;
-      default: return;
-    }
+    navigate('/classrooms_setting')
   }
 
   return (

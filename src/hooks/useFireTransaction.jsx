@@ -9,13 +9,13 @@ const useFireTransaction = () => {
 
   //2. 업어온 활동 삭제하기: 활동 관리 - 나의 활동 - 업어온 활동 - 삭제
   const delCopiedActiTransaction = async (actiId) => {
-    let userRef = doc(userColRef, user.uid)
+    let userDocRef = doc(userColRef, user.uid)
     await runTransaction(db, async (transaction) => {
-      const userDoc = await transaction.get(userRef)
+      const userDoc = await transaction.get(userDocRef)
       if (!userDoc.exists()) { throw new Error("유저 읽기 에러") }
       let copiedActiList = userDoc.data().copiedActiList || [];
       copiedActiList = copiedActiList.filter((item) => { return item.id !== actiId })
-      transaction.update(userRef, { copiedActiList })
+      transaction.update(userDocRef, { copiedActiList })
     }).then(() => {
       window.alert("활동이 삭제되었습니다.")
     }).catch(err => {

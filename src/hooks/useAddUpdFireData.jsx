@@ -6,7 +6,7 @@ const useAddUpdFireData = (collectionName) => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const colRef = collection(db, collectionName)
-  
+
   //10.
   const getInfo = async (id, type) => {
     let info = null
@@ -68,18 +68,11 @@ const useAddUpdFireData = (collectionName) => {
   }
 
   //6. 활동 수정 함수: 새로운 활동과 활동 id(제목) 주면 수정
-  const updateActi = async (activity, actId) => {
+  const updateActi = async (acti, colName, path) => {
     try {
       let createdTime = timeStamp.fromDate(new Date());
-      let actiRef = doc(db, collectionName, actId)
-      let actiDoc = await getDoc(actiRef)
-      let studentDoneList = []
-      let particiList = []
-      let particiSIdList = []
-      if (actiDoc.data().studentDoneList) { studentDoneList = actiDoc.data().studentDoneList }
-      if (actiDoc.data().particiList) { particiList = actiDoc.data().particiList }
-      if (actiDoc.data().particiSIdList) { particiSIdList = actiDoc.data().particiSIdList }
-      await setDoc(actiRef, { ...activity, studentDoneList, particiList, particiSIdList, createdTime }); //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
+      let docRef = doc(db, colName, path)
+      await updateDoc(docRef, { ...acti, createdTime }); //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
     } catch (error) {
       window.alert(error)
       console.log(error)

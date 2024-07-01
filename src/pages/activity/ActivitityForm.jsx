@@ -123,10 +123,9 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
     if (state) {
       const confirm = window.confirm("활동을 수정하시겠습니까?")
       let actId = state.acti.id
-      let uid = state.acti.uid
       if (confirm) {
-        let modifiedAct = { uid, title, subject: _subject, content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework };
-        updateActi(modifiedAct, actId)
+        let modifiedActi = { title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework };
+        updateActi(modifiedActi, "activities", actId)
         navigate("/activities")
         setIsModified(false)
       }
@@ -139,7 +138,6 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       }
     }
   }
-
   //변화 감지
   const handleChange = (event) => {
     if (event.target.id === 'act_title') {
@@ -310,10 +308,10 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
               <StyledBtn type="submit">저장</StyledBtn></>
               : <>
                 {(state.acti.uid === user.uid) && <>
-                  {isModified && <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>}
-                  {!isModified ? <StyledBtn type="button" id="modi_btn" onClick={handleBtnClick}>수정</StyledBtn> : <StyledBtn type="submit">저장</StyledBtn>}
                   {!state.acti.madeById ? <>
                     {/*활동 삭제하기 */}
+                    {isModified && <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>}
+                    {!isModified ? <StyledBtn type="button" id="modi_btn" onClick={handleBtnClick}>수정</StyledBtn> : <StyledBtn type="submit">저장</StyledBtn>}
                     <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제</StyledBtn></> : <>
                     {/*업어온 활동 삭제하기 */}
                     <StyledBtn type="button" id="copied_delete_btn" onClick={handleBtnClick}>삭제</StyledBtn></>}

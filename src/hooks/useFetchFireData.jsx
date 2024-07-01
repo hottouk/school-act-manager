@@ -1,5 +1,5 @@
 import { appFireStore } from '../firebase/config'
-import { collection, doc, getDoc, getDocFromCache, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore'
+import { collection, doc, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore'
 import useGetLevel from './useGetLevel'
 import PetImg from '../components/PetImg'
 import { useSelector } from 'react-redux'
@@ -14,39 +14,19 @@ const useFetchFireData = () => {
 
   //20240630 수정
   //7. 퍼온 Acti 리스트 - 활동관리
-  const fetchCopiedActiList = async () => {
+  const fetchCopiedActiList = () => {
     let copiedList = []
     let userDocRef = doc(db, "user", user.uid)
-    // onSnapshot(userDocRef, async (docSnapshot) => {
-    //   if (docSnapshot.exists()) {
-        
-
-    //   } else {
-
-    //   }
-
-    // })
-    try {
-      let userDoc = await getDocFromCache(userDocRef);
-      if (!userDoc.exists) { throw new Error("해당 유저를 찾지 못했습니다.") }
-      if (userDoc.data().copiedActiList) {
-        copiedList.push(...userDoc.data().copiedActiList);
+    onSnapshot(userDocRef, async (userSnapshot) => {
+      if (!userSnapshot.exists()) { throw new Error("해당 유저를 찾지 못했습니다.") }
+      if (userSnapshot.data().copiedActiList) {
+        copiedList.push(...userSnapshot.data().copiedActiList);
         copiedList.sort((a, b) => a.title.localeCompare(b.title));
       }
-    } catch (cacheError) {
-      console.log("캐시 메모리에서 가져오지 못하여 서버에 연결합니다.", cacheError)
-      try {
-        let userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists) { throw new Error("해당 유저를 찾지 못했습니다.") }
-        if (userDoc.data().copiedActiList) {
-          copiedList.push(...userDoc.data().copiedActiList);
-          copiedList.sort((a, b) => a.title.localeCompare(b.title));
-        }
-      } catch (networkErr) {
-        window.alert(networkErr.message)
-        console.log(networkErr)
-      }
-    }
+    }, (err) => {
+      window.alert(err.message)
+      console.error('데이터 수신 에러:', err);
+    })
     return copiedList
   }
 
@@ -106,7 +86,7 @@ const useFetchFireData = () => {
       querySnapshot.forEach((doc) => {
         actiList.push({ id: doc.id, ...doc.data() })
       })
-      if (thisClass) {
+      if (thisClass) { //교실 - 셀렉터 활동 
         await fetchCopiedActiList().then((copiedList) => {
           actiList = actiList.concat(copiedList)
         })
@@ -233,7 +213,7 @@ const useFetchFireData = () => {
     }
     return q
   }
-  return ({ fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
+  return ({ db, fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
 }
 
 export default useFetchFireData
