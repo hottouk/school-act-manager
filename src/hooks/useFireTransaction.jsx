@@ -1,11 +1,14 @@
 import { collection, doc, runTransaction } from 'firebase/firestore'
 import { useSelector } from 'react-redux'
 import { appFireStore } from '../firebase/config'
+import useGetRidOverlap from './useGetRidOverlap'
 
 const useFireTransaction = () => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const userColRef = collection(db, "user")
+  const { makeUniqueArrWithEle } = useGetRidOverlap()
+
 
   //2. 업어온 활동 삭제하기: 활동 관리 - 나의 활동 - 업어온 활동 - 삭제
   const delCopiedActiTransaction = async (actiId) => {
@@ -41,11 +44,14 @@ const useFireTransaction = () => {
       if (!otrDoc.exists()) { throw new Error("타교사 읽기 에러") }
       //기존 데이터 or undefined 반환 undefined인 경우엔 초기값 제공
       let copiedActiList = userDoc.data().copiedActiList || [];
-      copiedActiList.push({ id: actiDoc.id, ...actiDoc.data(), madeById: actiDoc.data().uid, uid: user.uid });
-      let likedCount = (otrDoc.data().likedCount || 0) + 1;
+      copiedActiList = makeUniqueArrWithEle(copiedActiList, { id: actiDoc.id, ...actiDoc.data(), madeById: actiDoc.data().uid, uid: user.uid }, "id")
+      console.log(actiDoc.data().likedCount)
+      let likedCount = (actiDoc.data().likedCount || 0) + 1;
+      console.log(actiDoc.data().likedCount)
       //업데이트
       transaction.update(userRef, { copiedActiList })
       transaction.update(actiRef, { likedCount })
+      transaction.update(otrRef, { likedCount })
     }).then(() => {
       window.alert("활동이 저장되었습니다.")
     }).catch(err => {

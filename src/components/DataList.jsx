@@ -81,6 +81,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
           <div className="t_info">
             <p className="t_name">{item.name} 선생님</p>
             <p>소속: {item.school.schoolName}</p>
+            <p>받은 좋아요:{item.likedCount} </p>
           </div>
           <div><img src={item.profileImg ? item.profileImg : unknown} alt="프사" /></div>
         </StyledTeacherLi>)
@@ -97,6 +98,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
           <div className="acti_info">
             <h4 >{item.title}</h4>
             <p>과목: {item.subject}</p>
+            <p>받은 좋아요:{item.likedCount} </p>
             <p className="madeBy">by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</p>
           </div>
           <div><MonImg monImg={item.monImg}></MonImg></div>

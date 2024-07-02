@@ -1,12 +1,15 @@
 import { appFireStore } from '../firebase/config'
-import { collection, doc, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore'
+import { collection, doc, getDocFromCache, getDocFromServer, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore'
 import useGetLevel from './useGetLevel'
+import useGetRidOverlap from './useGetRidOverlap'
 import PetImg from '../components/PetImg'
 import { useSelector } from 'react-redux'
 
 const useFetchFireData = () => {
   const db = appFireStore
   const { getExpAndLevelByActList } = useGetLevel()
+  const { makeUniqueArrWithEle } = useGetRidOverlap()
+
   const user = useSelector(({ user }) => { return user })
   const actiColRef = collection(appFireStore, "activities")
   const userColRef = collection(appFireStore, "user")
@@ -14,20 +17,35 @@ const useFetchFireData = () => {
 
   //20240630 수정
   //7. 퍼온 Acti 리스트 - 활동관리
-  const fetchCopiedActiList = () => {
+  const fetchCopiedActiList = async () => {
     let copiedList = []
     let userDocRef = doc(db, "user", user.uid)
-    onSnapshot(userDocRef, async (userSnapshot) => {
-      if (!userSnapshot.exists()) { throw new Error("해당 유저를 찾지 못했습니다.") }
-      if (userSnapshot.data().copiedActiList) {
-        copiedList.push(...userSnapshot.data().copiedActiList);
-        copiedList.sort((a, b) => a.title.localeCompare(b.title));
+    try {
+      let userDoc = await getDocFromCache(userDocRef);
+      copiedList.push(...userDoc.data().copiedActiList);
+    } catch (error) {
+      console.log("서버에서 불러옵니다.")
+      try {
+        let userDoc = await getDocFromServer(userDocRef);
+        if (!userDoc.exists()) { throw new Error("해당 유저를 찾지 못했습니다."); }
+        copiedList.push(...userDoc.data().copiedActiList);
+      } catch (err) {
+        window.alert(err.message)
+        console.log(err)
       }
-    }, (err) => {
-      window.alert(err.message)
-      console.error('데이터 수신 에러:', err);
-    })
-    return copiedList
+    }
+    return copiedList;
+    // onSnapshot(userDocRef, async (userSnapshot) => {
+    //   if (!userSnapshot.exists()) { throw new Error("해당 유저를 찾지 못했습니다.") }
+    //   if (userSnapshot.data().copiedActiList) {
+    //     copiedList.push(...userSnapshot.data().copiedActiList);
+    //     copiedList.sort((a, b) => a.title.localeCompare(b.title));
+    //   }
+    // }, (err) => {
+    //   window.alert(err.message)
+    //   console.error('데이터 수신 에러:', err);
+    // })
+    // return copiedList
   }
 
   //6. 과목 전체 Acti 리스트 - 활동관리
