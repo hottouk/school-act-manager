@@ -8,10 +8,10 @@ import useAddUpdFireData from '../hooks/useAddUpdFireData'
 import useFetchFireData from '../hooks/useFetchFireData'
 //컴포넌트
 import SmallBtn from './Btn/SmallBtn'
-
 //이미지
 import unknown from '../image/icon/unkown_icon.png'
 import MonImg from './MonImg'
+import likeIcon from '../image/icon/like_icon.png'
 
 //2024.01.09
 const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 리스트, 타입으로 정리하기
@@ -77,14 +77,15 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
   return (
     <StyledListContainer>
       {type === "teacher" && dataList.map((item) => { //교사
-        return (<StyledTeacherLi key={item.uid} onClick={() => { handleOnClick(item) }}>
-          <div className="t_info">
-            <p className="t_name">{item.name} 선생님</p>
-            <p>소속: {item.school.schoolName}</p>
-            <p>받은 좋아요:{item.likedCount} </p>
-          </div>
-          <div><img src={item.profileImg ? item.profileImg : unknown} alt="프사" /></div>
-        </StyledTeacherLi>)
+        return (
+          <StyledTeacherLi key={item.uid} onClick={() => { handleOnClick(item) }}>
+            <div className="t_info">
+              <p className="t_name">{item.name} 선생님</p>
+              <p>{item.school.schoolName}</p>
+              <p className="like_count"><img className={"like_icon"} src={likeIcon} alt={"받은좋아요"} />{item.likedCount ? item.likedCount : 0} </p>
+            </div>
+            <div><img src={item.profileImg ? item.profileImg : unknown} alt="프사" /></div>
+          </StyledTeacherLi>)
       })}
       {(type === "classroom" || type === "appliedClassList") && dataList.map((item) => { //교실
         return (<StyledClassroomLi key={item.id} onClick={() => { handleOnClick(item) }}>
@@ -98,7 +99,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
           <div className="acti_info">
             <h4 >{item.title}</h4>
             <p>과목: {item.subject}</p>
-            <p>받은 좋아요:{item.likedCount} </p>
+            <p className="like_count"><img className={"like_icon"} src={likeIcon} alt={"받은좋아요"} />{item.likedCount ? item.likedCount : 0} </p>
             <p className="madeBy">by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</p>
           </div>
           <div><MonImg monImg={item.monImg}></MonImg></div>
@@ -111,7 +112,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
             <p>과목: {item.subject}</p>
             <p style={{ backgroundColor: '#FF69B4' }} className="madeBy">by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</p>
           </div>
-          <div><MonImg monImg={item.monImg}></MonImg></div>
+          <div><MonImg className="monImg" monImg={item.monImg}></MonImg></div>
         </ActiList>)
       })}
       {type === "word" && dataList.map((item) => { //단어
@@ -131,6 +132,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
 }
 const StyledListContainer = styled.ul`
   display: flex;
+  width: 100%;
   flex-wrap: wrap;
   list-style: none;
   li {
@@ -143,9 +145,13 @@ const StyledListContainer = styled.ul`
     cursor: pointer;  
   }
   h4 { 
+    width: 80%;
     margin: 0 0 8px;
     color: royalBlue;
     font-weight: 600;
+    overflow: hidden;
+    white-space: nowrap;   /* 텍스트를 한 줄로 표시 */
+    text-overflow: ellipsis; 
   }
   @media screen and (max-width: 767px){
     flex-direction: column;
@@ -166,6 +172,17 @@ const StyledTeacherLi = styled.li`
     font-size: 20px;
     font-weight: bold;
   }
+  p.like_count {
+    font-size: 18px;
+    color: #3454d1;
+    font-weight: bold;
+  }
+  img.like_icon {
+    width: 30px;
+    height: 30px; 
+    margin-right: 5px;
+    margin-bottom: 7px;
+  }
   img {
     width: 50px;
     height: 50px;
@@ -178,6 +195,7 @@ const ActiList = styled.li`
   position: relative;
   display: flex;
   .acti_info {
+    width: 77%;
     flex-grow: 1;
   }
   .madeBy {
@@ -189,6 +207,18 @@ const ActiList = styled.li`
     padding: 2px;
     border-radius:5px;
     margin-bottom: 4px
+  }
+  p.like_count {
+    font-size: 18px;
+    color: #3454d1;
+    font-weight: bold;
+  }
+  img.like_icon {
+    width: 30px;
+    height: 30px; 
+    margin-right: 5px;
+    border: none;
+    margin-bottom: 7px;
   }
   img {
     width: 60px;

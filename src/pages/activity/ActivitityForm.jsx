@@ -9,6 +9,7 @@ import useClientHeight from "../../hooks/useClientHeight";
 import useAddUpdFireData from "../../hooks/useAddUpdFireData";
 import useFireActi from "../../hooks/useFireActi";
 import useDoActivity from "../../hooks/useDoActivity";
+import useGetByte from "../../hooks/useGetByte";
 //컴포넌트
 import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
 import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
@@ -27,7 +28,7 @@ import mon05 from "../../image/enemies/mon_05.png"
 import question from "../../image/icon/question.png"
 import useFireTransaction from "../../hooks/useFireTransaction";
 
-//24.06.30 수정
+//24.07.06 수정(실시간 바이트 갱신)
 const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
   //1. 변수
   const user = useSelector(({ user }) => { return user })
@@ -37,6 +38,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const [content, setContent] = useState('');
   const [record, setRecord] = useState('');
   const [monImg, setMonImg] = useState(null);
+  const [byte, setByte] = useState(0)
   const [_isHomework, setIsHomework] = useState(false)
   const [_anyPartici, setAnyPartici] = useState(false)
   //2.경험치 점수 변수
@@ -52,6 +54,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const [questModalShow, setQuestModalShow] = useState(false)
   const [isHomeworkSubmit, setIsHomeworkSubmit] = useState(false)
   const [isModified, setIsModified] = useState(false)
+  //hooks
   //4.데이터 통신 변수
   const { addActi, updateActi } = useAddUpdFireData("activities");
   const { copyActiTransaction, delCopiedActiTransaction } = useFireTransaction()
@@ -60,8 +63,10 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   //5.경로 이동 관련 변수
   const { state } = useLocation() //state는 활동
   const navigate = useNavigate()
-  //6.ChatGPt
-  const { gptAnswer, askChatGpt, gptRes } = useChatGpt()
+  //6. ChatGPt
+  const { gptAnswer, askChatGpt, gptRes, gptBytes } = useChatGpt();
+  //7. 바이트 계산
+  const { getByteLengthOfString } = useGetByte();
   //7.Style
   const clientHeight = useClientHeight(document.documentElement)
   //8. 학생 전용
@@ -77,6 +82,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       setSubject(acti.subject)
       setIsHomework(acti.isHomework)
       setCoin(acti.money)
+      setByte(acti.byte ? acti.byte : 0)
       if (acti.particiSIdList && acti.particiSIdList.length > 0) {
         setIsParticipating(acti.particiSIdList.find((item) => { return item === user.uid })) //학생 본인 활동 참여 중 여부
         setAnyPartici(true)
@@ -104,6 +110,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   useEffect(() => {
     if (gptAnswer !== '') {
       setRecord(gptAnswer)
+      setByte(gptBytes)
     }
     switch (gptRes) {
       case 'loading':
@@ -124,7 +131,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       const confirm = window.confirm("활동을 수정하시겠습니까?")
       let actId = state.acti.id
       if (confirm) {
-        let modifiedActi = { title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework };
+        let modifiedActi = { title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework, byte, madeBy: user.name, };
         updateActi(modifiedActi, "activities", actId)
         navigate("/activities")
         setIsModified(false)
@@ -132,7 +139,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
     } else {
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
-        let newAct = { uid: user.uid, title, subject: _subject, content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework };
+        let newAct = { uid: String(user.uid), title, subject: _subject, content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework, byte };
         addActi(newAct)
         navigate("/activities")
       }
@@ -140,24 +147,40 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   }
   //변화 감지
   const handleChange = (event) => {
-    if (event.target.id === 'act_title') {
-      setTitle(event.target.value)
-    } else if (event.target.id === 'act_content') {
-      setContent(event.target.value)
-    } else if (event.target.id === 'act_record') {
-      setRecord(event.target.value)
-    } else if (event.target.id === 'act_leadership') {
-      setLeadershipScore(Number(event.target.value))
-    } else if (event.target.id === 'act_career') {
-      setCareerScore(Number(event.target.value))
-    } else if (event.target.id === 'act_sincerity') {
-      setSincerityScore(Number(event.target.value))
-    } else if (event.target.id === 'act_coop') {
-      setCoopScore(Number(event.target.value))
-    } else if (event.target.id === 'act_attitude') {
-      setAttitudeScore(Number(event.target.value))
-    } else if (event.target.id === 'act_coin') {
-      setCoin(Number(event.target.value))
+    switch (event.target.id) {
+      case "act_title":
+        setTitle(event.target.value)
+        break;
+      case "act_content":
+        setContent(event.target.value)
+        break;
+      case "act_record":
+        setRecord(event.target.value)
+        setByte(getByteLengthOfString(event.target.value))
+        break;
+      case "act_leadership":
+        setLeadershipScore(Number(event.target.value))
+        break;
+      case "act_career":
+        setCareerScore(Number(event.target.value))
+        break;
+      case "act_sincerity":
+        setSincerityScore(Number(event.target.value))
+        break;
+      case "act_coop":
+        setCoopScore(Number(event.target.value))
+        break;
+      case "act_attitude":
+        setAttitudeScore(Number(event.target.value))
+        break;
+      case "act_coin":
+        setCoin(Number(event.target.value))
+        break;
+      case "act_byte":
+        setByte(Number(event.target.value))
+        break;
+      default:
+        return;
     }
   }
 
@@ -178,7 +201,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       case "gpt_btn": //교사 전용
         if (title !== '' && _subject !== 'default') {
           try {
-            askChatGpt(title, _subject, content)
+            askChatGpt(title, _subject, content, byte)
             setTimerModalShow(true)
           } catch (error) {
             window.alert.log(error.message)
@@ -276,21 +299,28 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       {user.isTeacher && <>
         <StyledForm onSubmit={handleSubmit}>
           <fieldset>
-            <StyledFirstDiv>
+            <StyledDiv>
               {state ? <legend>{_subject} 활동 수정</legend> : <legend>활동 생성</legend>}
               <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
-            </StyledFirstDiv>
-            <StyledFirstDiv>
+            </StyledDiv>
+            <StyledDiv>
               <div>
                 <label htmlFor="act_title" >활동 제목</label>
                 <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled={!isModified} />
               </div>
               {!state && <SubjectSelect subject={_subject} onChange={setSubject} />}
-            </StyledFirstDiv>
+            </StyledDiv>
             <label htmlFor="act_content" >활동 설명하기</label>
             <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled={!isModified} />
             <label htmlFor="act_record" >생기부 문구</label>
             <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled={!isModified} />
+            <StyledDiv>
+              <label className="act_byte" htmlFor="act_byte" ></label>
+              <div>
+                <input className="act_byte" type="number" max={500} onChange={handleChange} value={byte} disabled={!isModified} />
+                <p style={{ display: "inline-block" }}> /1500 Byte</p>
+              </div>
+            </StyledDiv>
             <ScoreWrapper handleChange={handleChange}
               leadershipScore={leadershipScore}
               careerScore={careerScore}
@@ -309,7 +339,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
               : <>
                 {(state.acti.uid === user.uid) && <>
                   {!state.acti.madeById ? <>
-                    {/*활동 삭제하기 */}
+                    {/*활동 수정하기 */}
                     {isModified && <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>}
                     {!isModified ? <StyledBtn type="button" id="modi_btn" onClick={handleBtnClick}>수정</StyledBtn> : <StyledBtn type="submit">저장</StyledBtn>}
                     <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제</StyledBtn></> : <>
@@ -328,16 +358,16 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       {!user.isTeacher && <>
         <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
           <fieldset>
-            <StyledFirstDiv>
+            <StyledDiv>
               <legend>활동 신청하기</legend>
               <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" />
-            </StyledFirstDiv>
-            <StyledFirstDiv>
+            </StyledDiv>
+            <StyledDiv>
               <div>
                 <label htmlFor="act_title" >활동 제목</label>
                 <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled />
               </div>
-            </StyledFirstDiv>
+            </StyledDiv>
             <label htmlFor="act_content" >GPT 또는 학생들에게 활동 설명하기</label>
             <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled />
             <label htmlFor="act_record" >생기부 문구</label>
@@ -409,7 +439,7 @@ const StyledForm = styled.form`
   label {
     display: block;
   }
-  textarea {
+  textarea { /* 활동 설명 및 생기부 문구*/
     display: block;
     width: 100%;
     min-width: 400px;
@@ -417,6 +447,9 @@ const StyledForm = styled.form`
     margin-top: 5px;
     margin-bottom: 15px;
     border-radius: 7px;
+    &:disabled {  /* 해당 개체 disabled 되었을 때 */
+      color: #efefef;
+    }
   }
   @media screen and (max-width: 767px){
     padding-bottom: 20px;
@@ -438,8 +471,7 @@ const StyledForm = styled.form`
     min-height: 75px;
   }
 `
-
-const StyledFirstDiv = styled.div`
+const StyledDiv = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -447,12 +479,23 @@ const StyledFirstDiv = styled.div`
     height: 60%;
     margin-bottom: 15px;
   }
-  input.act_title {
+  input {
     margin-top: 5px;
     margin-bottom: 15px;
     max-width: 280px;
     height: 35px;
     border-radius: 7px;
+    padding-left: 5px;
+    &:disabled {             /* 해당 input disabled 되었을 때 */
+        color: #efefef;      /* 글자 색을 white로 설정 */
+    }
+  }
+  label.act_byte {
+    margin-bottom: 15px;
+  }
+  input.act_byte {
+    width: 85px;
+    margin-right: 5px;
   }
   select {
     height: 35px;

@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 const SmallBtn = (props) => {
   return (
-    <StyledBtn $backgroundColor={props.btnColor} onClick={props.btnOnClick}>{props.btnName}</StyledBtn>
+    <StyledBtn id={props.id} $backgroundColor={props.btnColor} onClick={props.btnOnClick}>{props.btnName}</StyledBtn>
   )
 }
 const StyledBtn = styled.button`
@@ -20,10 +20,10 @@ const StyledBtn = styled.button`
   justify-content: center;
   align-items: center;
   font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
-  height: 25px;
-  width: 50px;
+  height: 28px;
+  width: 52px;
   letter-spacing: normal;
   line-height: 1.5;
   outline: none;

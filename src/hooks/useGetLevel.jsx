@@ -29,14 +29,14 @@ const useGetLevel = () => {
     if(actList){
       exp = getExpByActList(actList)
     }
-    if (0 < exp && exp <= 15) {
+    if (0 < exp && exp <= 7) {
       level = 1
-    } else if (15 < exp && exp <= 30) {
+    } else if (7 < exp && exp <= 18) {
       level = 2
-      exp -= 15
-    } else if (30 < exp && exp <= 55) {
+      exp -= 7
+    } else if (18 < exp && exp <= 33) {
       level = 3
-      exp -= 30
+      exp -= 18
     } else {
       level = 0
     }

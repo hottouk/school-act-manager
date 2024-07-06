@@ -22,7 +22,6 @@ const Nav = () => {
   const user = useSelector(({ user }) => { return user })
   const [_profileImg, setProfileImg] = useState(null)
   const { errByGetMyUserInfo } = useGetMyUserInfo()
-  console.log(user, errByGetMyUserInfo)
   //모달
   const [isMyInfoShow, setIsMyInfoShow] = useState(false)
   const [_isNew, setIsNew] = useState(false) //새소식 아이콘

@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 import useClientHeight from '../../hooks/useClientHeight'
 //컴포넌트
-import NewBtn from '../../components/Btn/NewBtn'
+import MainBtn from '../../components/Btn/MainBtn'
 import SmallBtn from '../../components/Btn/SmallBtn'
 import useAddUpdFireData from '../../hooks/useAddUpdFireData'
 
@@ -101,7 +101,7 @@ const WordForm = () => {
               btnOnClick={() => handleDelete(index)} />
           </StyledRow>
         ))}
-        <NewBtn btnName="세트 저장하기" btnOnClick={() => { handleBtnClick() }} />
+        <MainBtn btnName="세트 저장하기" btnOnClick={() => { handleBtnClick() }} />
       </StyledWordContainer>
     </StyledContainer>
   )

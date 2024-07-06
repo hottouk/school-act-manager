@@ -6,7 +6,9 @@ import { useRef, useState } from 'react';
 //CSS styles
 import styled from "styled-components"
 import { useNavigate } from 'react-router-dom';
+//hooks
 import useAcc from '../../hooks/useAcc.jsx';
+import MainBtn from '../../components/Btn/MainBtn.jsx'
 
 const MainSelector = ({ studentList, activitiyList, classId }) => {
   //1. 변수
@@ -73,12 +75,8 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
             <StyledSelector>활동이 없습니다. 활동을 추가해주세요.
               <button onClick={() => { navigate('/activities_setting') }}>활동 추가</button>
             </StyledSelector>}
+          <MainBtn btnOnClick={() => { handleSelectComplete() }} btnName="선택 완료" />
         </StyledSelectorDiv>
-        <StyledBtnDiv>
-          <StyledBtn onClick={() => {
-            handleSelectComplete()
-          }}>선택 완료</StyledBtn>
-        </StyledBtnDiv>
       </StyledContainer>
       {/* 리엑트 부트스트랩 */}
       <SelectedDialogModal
@@ -92,6 +90,8 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
 }
 const StyledContainer = styled.div`
   width: 100%;
+  display: flex;
+  flex-direction: column;
   min-height: 350px;
   padding: 5px;
 `
@@ -101,8 +101,9 @@ const StyledTitle = styled.h4`
   margin: 10px auto;
 `
 const StyledSelectorDiv = styled.div`
+  display: flex;
+  flex-direction: column;
   width: 80%;
-  height: 300px;
   margin: 0 auto;
   padding : 10px;
   @media screen and (max-width: 767px){
@@ -128,13 +129,6 @@ const StyledSelector = styled.div`
     width: 80%;
     margin-top: 35px;
   }
-`
-const StyledBtnDiv = styled.div`
-  position: relative;
-  bottom: 40px;
-  width: 80%;
-  height: 20%;
-  margin: 0 auto;
 `
 const StyledBtn = styled.button`
   display: block;

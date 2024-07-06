@@ -10,7 +10,7 @@ import useClientHeight from '../../hooks/useClientHeight';
 //CSS
 import styled from 'styled-components';
 import TSearchInputBtn from '../../components/TSearchInputBtn';
-import NewBtn from '../../components/Btn/NewBtn';
+import MainBtn from '../../components/Btn/MainBtn';
 
 //24.01.23
 const ClassRoomMain = () => {
@@ -44,7 +44,7 @@ const ClassRoomMain = () => {
         <CardList dataList={_classRoomList} type="classroom"
           title="나의 클래스"
           comment="아직 클래스가 없어요. 클래스를 만들어주세요" />
-        <NewBtn btnOnClick={handleBtnClick} btnName="클래스 만들기" />
+        <MainBtn btnOnClick={handleBtnClick} btnName="클래스 만들기" />
       </>}
       {/* 학생 */}
       {!user.isTeacher && <>

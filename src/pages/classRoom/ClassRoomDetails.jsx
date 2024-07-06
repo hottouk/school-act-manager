@@ -17,6 +17,7 @@ import useFetchFireData from '../../hooks/useFetchFireData';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useAddUpdFireData from '../../hooks/useAddUpdFireData.jsx';
 import useEnrollClass from '../../hooks/useEnrollClass.jsx';
+import MainBtn from '../../components/Btn/MainBtn.jsx';
 
 //2024.01.26
 const ClassRoomDetails = () => {
@@ -45,7 +46,7 @@ const ClassRoomDetails = () => {
     fetchActiList(thisClass).then((actiList) => { //전체 활동 전역변수화
       dispatcher(setAllActivities(actiList))
       setActiList(actiList)
-    }); 
+    });
   }, [subDocuments])
 
   useEffect(() => {
@@ -109,15 +110,16 @@ const ClassRoomDetails = () => {
           {(!user.isTeacher && !isMember && !isApplied) && <StyledMoveBtn id="join_btn" onClick={handleBtnClick}>가입하기</StyledMoveBtn>}
         </StyeldHeader>
         {/* 셀렉터(교사)*/}
-        {user.isTeacher && <StyledMain>
-          <MainSelector studentList={subDocuments} activitiyList={_actiList} classId={thisClass.id} />
-        </StyledMain>}
+        <MainSelectorContainer>
+          {user.isTeacher && <MainSelector studentList={subDocuments} activitiyList={_actiList} classId={thisClass.id} />}
+        </MainSelectorContainer>
         {/* 퀘스트 목록(학생) */}
         {(!user.isTeacher && isMember) && <StyledMain>
           {(!_actiList || _actiList.length === 0)
             ? <EmptyResult comment="등록된 활동이 없습니다." />
             : <ActivityList activityList={_actiList} classInfo={thisClass} />}
-        </StyledMain>}
+        </StyledMain>
+        }
         {/* 학생 상세 보기 */}
         {((!user.isTeacher && isMember) || user.isTeacher) && <StyledMain>
           {(!subDocuments || subDocuments.length === 0)
@@ -127,7 +129,7 @@ const ClassRoomDetails = () => {
         {/* 반 전체보기(교사)*/}
         {user.isTeacher && <StyledMain>
           <h4>개별화하기</h4>
-          <StyledMoveBtn onClick={() => { navigate('allStudents', { state: subDocuments }) }}>반 전체 세특보기</StyledMoveBtn>
+          <MainBtn btnName="반 전체 세특 보기" btnOnClick={() => { navigate('allStudents', { state: subDocuments }) }} />
         </StyledMain>
         }
         {user.isTeacher && <StyeldBtnDiv>
@@ -172,17 +174,26 @@ const StyeldHeader = styled.header`
     box-shadow: none;
   }
 `
+const MainSelectorContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  margin-top: 50px;
+  border-left: 12px #3454d1 double;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
+`
+
 const StyledMain = styled.main`
   padding: 5px;
   margin-top: 50px;
   border-left: 12px #3454d1 double;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
-  
   h4 {
     display: flex;
     justify-content: center;
     margin: 10px auto;
   }
+
   @media screen and (max-width: 767px){
     margin-top: 0;
     border-left: none;

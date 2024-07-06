@@ -1,8 +1,6 @@
 import styled from "styled-components"
 //이미지
-import eggBlue from "../image/myPet/egg_b.png";
-import eggGreen from "../image/myPet/egg_g.png";
-import eggYellow from "../image/myPet/egg_y.png";
+import eggBlue from "../image/myPet/water/waterEgg.png";
 import moneyImg from "../image/money.png";
 import sincerImg from "../image/icon/s_sin_icon.png"
 import carImg from "../image/icon/s_car_icon.png"
@@ -31,10 +29,10 @@ const Reward = ({ rewards }) => {
             setRewardExplanation("푸른 물의 기운을 머금은 알이다. 영어 활동에 밀접하게 반응한다. 어떤 아이가 깨어날지는 알 수 없다.")
             break;
           case "수학":
-            setRewardImg(eggGreen)
+            setRewardImg(eggBlue)
             break;
           case "국어":
-            setRewardImg(eggYellow)
+            setRewardImg(eggBlue)
             break;
           default: return;
         }

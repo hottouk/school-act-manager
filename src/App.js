@@ -21,7 +21,6 @@ import { useSelector } from 'react-redux';
 import { Helmet } from "react-helmet";
 //단어 배틀
 import WordSetMain from './pages/wordBattle/WordSetMain';
-import WordBattle from './pages/wordBattle/WordBattle';
 import WordForm from './pages/wordBattle/WordForm';
 
 function App() {

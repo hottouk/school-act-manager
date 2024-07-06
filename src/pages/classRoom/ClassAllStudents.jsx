@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { setModifiedStudent } from "../../store/allStudentsSlice"
 //컴포넌트
 import ExportAsExcel from "../../components/ExportAsExcel"
+import SmallBtn from "../../components/Btn/SmallBtn"
 //CSS
 import styled from "styled-components"
 import useClientHeight from "../../hooks/useClientHeight"
@@ -94,14 +95,14 @@ const ClassAllStudents = () => {
             <StyledSmallLastDiv>{bytes}</StyledSmallLastDiv>
             <StyledSmallLastDiv>
               {isModifying
-                ? <button id='save_btn' onClick={() => { handleSaveBtn(student.id) }}>저장</button>
-                : <button id='modi_btn' onClick={() => { handleModifyingBtn(student.id, index) }}>수정</button>}
+                ? <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(student.id) }} btnName="저장" btnColor="#3454d1" />
+                : <SmallBtn id="modi_btn" btnOnClick={() => { handleModifyingBtn(student.id, index) }} btnName="수정" btnColor="#3454d1" />}
             </StyledSmallLastDiv>
           </StyledContentRow>
         })}
       </StyledGirdContainer >
       {/* 매크로 모달 */}
-     
+
     </StyledContainer>
   )
 }

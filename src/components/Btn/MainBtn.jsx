@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const NewBtn = (props) => {
+const MainBtn = (props) => {
   return (
     <StyledBtn onClick={props.btnOnClick}>{props.btnName}</StyledBtn>
   )
@@ -59,4 +59,4 @@ const StyledBtn = styled.button`
     opacity: 1;
   }
 `
-export default NewBtn
+export default MainBtn

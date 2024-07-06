@@ -8,7 +8,7 @@ import CardList from '../../components/CardList'
 import useClientHeight from '../../hooks/useClientHeight'
 //CSS
 import styled from 'styled-components'
-import NewBtn from '../../components/Btn/NewBtn'
+import MainBtn from '../../components/Btn/MainBtn'
 import useFetchFireData from '../../hooks/useFetchFireData'
 import TabBtn from '../../components/Btn/TabBtn'
 import subjects from '../../subjects'
@@ -56,7 +56,7 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동관리-나
         <CardList dataList={_copiedList} type="copiedActi"
           title="업어온 활동 목록"
           comment="업어온 활동이 없습니다." />
-        <NewBtn btnOnClick={() => { navigate("/activities_setting") }} btnName="활동 만들기" />
+        <MainBtn btnOnClick={() => { navigate("/activities_setting") }} btnName="활동 만들기" />
       </>}
       {(user.isTeacher && otherTrId) && <><CardList dataList={_activityList} type="activity" //교사: 사람찾기 - 타교사
         title="다른 선생님 활동 목록"
@@ -80,7 +80,6 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동관리-나
 
 const Container = styled.div`
   box-sizing: border-box;
-  margin: 20px auto;
   margin-bottom: 50px;
   @media screen and (max-width: 767px) {
     position: fixed;

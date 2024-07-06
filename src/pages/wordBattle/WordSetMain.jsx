@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import CardList from '../../components/CardList'
 //CSS
 import styled from 'styled-components'
-import NewBtn from '../../components/Btn/NewBtn'
+import MainBtn from '../../components/Btn/MainBtn'
 import useFetchFireData from '../../hooks/useFetchFireData'
 
 
@@ -29,7 +29,7 @@ const WordSetMain = () => {
         <CardList dataList={_wordList} type="word" //교사
           title="생성 단어 세트 목록"
           comment="아직 단어 세트가 없습니다. 단어 세트를 생성해주세요" />
-        <NewBtn btnName="단어 세트 만들기" btnOnClick={() => { navigate("/words_setting") }} />
+        <MainBtn btnName="단어 세트 만들기" btnOnClick={() => { navigate("/words_setting") }} />
       </>}
     </StyledContainer>
   )
