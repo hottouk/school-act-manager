@@ -13,7 +13,7 @@ const useFetchFireData = () => {
   const userColRef = collection(appFireStore, "user")
   const wordColRef = collection(db, "words")
 
-  //20240630 수정
+  //2024.06.30 수정
   //7. 퍼온 Acti 리스트 - 활동관리
   const fetchCopiedActiList = async () => {
     let copiedList = []
@@ -93,7 +93,8 @@ const useFetchFireData = () => {
       })
       if (thisClass) { //교실 - 셀렉터 활동 
         await fetchCopiedActiList().then((copiedList) => {
-          actiList = actiList.concat(copiedList)
+          let filterdList = copiedList.filter((copied) => { return copied.subject === thisClass.subject })
+          actiList = actiList.concat(filterdList)
         })
       }
       actiList.sort((a, b) => a.title.localeCompare(b.title))

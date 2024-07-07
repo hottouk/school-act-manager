@@ -1,7 +1,9 @@
 import styled from "styled-components"
+import subjects from "../subjects"
 
-//24.2.23
+//24.07.07
 const CSInfoSelect = ({ grade, classNumber, number, subject, handleOnChange, classMode }) => {
+  const subjectList = subjects
   return (
     <StyledSelectDiv>
       {!classMode && <p>학번: </p>}
@@ -37,14 +39,9 @@ const CSInfoSelect = ({ grade, classNumber, number, subject, handleOnChange, cla
       {!classMode && <input type="number" id="number_input" value={number} onChange={handleOnChange} required min={1} max={99} />}
       {classMode && <select id="class_subject" required value={subject} onChange={handleOnChange}>
         <option value="default" disabled >과목 선택</option>
-        <option value="국어">국어과</option>
-        <option value="영어">영어과</option>
-        <option value="수학">수학과</option>
-        <option value="사회">사회과</option>
-        <option value="과학">과학과</option>
-        <option value="예체능">음,미,체</option>
-        <option value="제2외국어">제2외국어과</option>
-        <option value="정보">정보</option>
+        {subjectList.map((subject) => {
+          return <option value={subject}>{subject}</option>
+        })}
       </select>}
     </StyledSelectDiv>
   )
