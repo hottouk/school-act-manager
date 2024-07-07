@@ -317,7 +317,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
             <StyledDiv>
               <label className="act_byte" htmlFor="act_byte" ></label>
               <div>
-                <input className="act_byte" type="number" max={500} onChange={handleChange} value={byte} disabled={!isModified} />
+                <input id="act_byte" className="act_byte" type="number" max={500} onChange={handleChange} value={byte} disabled={!isModified} />
                 <p style={{ display: "inline-block" }}> /1500 Byte</p>
               </div>
             </StyledDiv>
