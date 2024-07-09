@@ -16,23 +16,26 @@ const useFetchFireData = () => {
   //2024.06.30 수정
   //7. 퍼온 Acti 리스트 - 활동관리
   const fetchCopiedActiList = async () => {
-    let copiedList = []
+
     let userDocRef = doc(db, "user", user.uid)
     try {
       let userDoc = await getDocFromCache(userDocRef);
-      copiedList.push(...userDoc.data().copiedActiList);
+      if (!userDoc.exists()) { throw new Error("유저 정보 캐시에서 찾지 못했습니다."); }
+      if (!userDoc.data().copiedList) { throw new Error("업어온 활동 캐시에서 찾지 못함."); }
+      return userDoc.data().copiedList;
     } catch (error) {
       console.log("서버에서 불러옵니다.")
       try {
         let userDoc = await getDocFromServer(userDocRef);
         if (!userDoc.exists()) { throw new Error("해당 유저를 찾지 못했습니다."); }
-        copiedList.push(...userDoc.data().copiedActiList);
+        if (!userDoc.data().copiedList) { console.log("업어온 활동이 없습니다."); }
+        return userDoc.data().copiedActiList || [] 
       } catch (err) {
         window.alert(err.message)
         console.log(err)
+        return null;
       }
     }
-    return copiedList;
   }
 
   //6. 과목 전체 Acti 리스트 - 활동관리
@@ -44,7 +47,7 @@ const useFetchFireData = () => {
         .map(doc => ({ id: doc.id, ...doc.data() }))
         .filter((acti) => acti.isPrivate === false)
         .sort((a, b) => a.title.localeCompare(b.title))
-        return allActiBySubj;
+      return allActiBySubj;
     } catch (err) {
       window.alert(err.message)
       console.log(err)
@@ -92,7 +95,7 @@ const useFetchFireData = () => {
       })
       if (thisClass) { //교실 - 셀렉터 활동 
         await fetchCopiedActiList().then((copiedList) => {
-          let filterdList = copiedList.filter((copied) => { return copied.subject === thisClass.subject })
+          let filterdList = !copiedList || copiedList.filter((copied) => { return copied.subject === thisClass.subject })
           actiList = actiList.concat(filterdList)
         })
       }
