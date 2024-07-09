@@ -37,19 +37,18 @@ const useFetchFireData = () => {
 
   //6. 과목 전체 Acti 리스트 - 활동관리
   const fetchAlActiiBySubjList = async (sbuj) => {
-    let allActiBySubj = []
-    let q = query(actiColRef, where("subject", "==", sbuj));
     try {
+      let q = query(actiColRef, where("subject", "==", sbuj));
       let querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        allActiBySubj.push({ id: doc.id, ...doc.data() })
-        allActiBySubj.sort((a, b) => a.title.localeCompare(b.title))
-      })
+      let allActiBySubj = querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter((acti) => acti.isPrivate === false)
+        .sort((a, b) => a.title.localeCompare(b.title))
+        return allActiBySubj;
     } catch (err) {
       window.alert(err.message)
       console.log(err)
     }
-    return allActiBySubj
   }
 
   //5. 다른 교사 Acti 리스트 - 활동관리
@@ -75,7 +74,7 @@ const useFetchFireData = () => {
     let q
     if (user.isTeacher) { //교사
       if (!thisClass) { //활동 관리
-        q = query(actiColRef, where("uid", "==", user.uid), orderBy("subject", "desc"));
+        // q = query(actiColRef, where("uid", "==", user.uid), orderBy("subject", "desc")); 사용하지 않음
       } else {  //반 활동
         q = query(actiColRef, where("uid", "==", user.uid), where("subject", "==", thisClass.subject));
       }

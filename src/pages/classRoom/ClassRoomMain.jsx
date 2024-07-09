@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 //컴포넌트
 import CardList from '../../components/CardList';
 //hooks
-import useGetClass from '../../hooks/useGetClass';
+import useFetchRtClassData from '../../hooks/useFetchRtClassData';
 import useClientHeight from '../../hooks/useClientHeight';
 //CSS
 import styled from 'styled-components';
@@ -19,7 +19,7 @@ const ClassRoomMain = () => {
   //전역변수 
   const user = useSelector(({ user }) => user)
   const teacherClasses = useSelector(({ teacherClasses }) => teacherClasses)
-  const { classList, searchResult, appliedClassList, errByGetClass } = useGetClass() //useEffect 실행 함수
+  const { classList, searchResult, appliedClassList, errByGetClass } = useFetchRtClassData() //useEffect 실행 함수
   const [_teacherList, setTeacherList] = useState(null)
   const [_teacherClassList, setTeacherClassList] = useState(null)
   const [_classRoomList, setClassRoomList] = useState(null)

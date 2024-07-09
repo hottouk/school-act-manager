@@ -13,7 +13,6 @@ import styled from 'styled-components'
 import brandLogo from "../image/icon/h-logo.png";
 import unknown from '../image/icon/unkown_icon.png'
 //hooks
-import useGetMyUserInfo from '../hooks/useGetMyUserInfo';
 import DropDownBtn from './Btn/DropDownBtn';
 
 //24.02.22
@@ -21,7 +20,6 @@ const Nav = () => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
   const [_profileImg, setProfileImg] = useState(null)
-  const { errByGetMyUserInfo } = useGetMyUserInfo()
   //모달
   const [isMyInfoShow, setIsMyInfoShow] = useState(false)
   const [_isNew, setIsNew] = useState(false) //새소식 아이콘
@@ -74,12 +72,12 @@ const Nav = () => {
           <DropDownBtn btnName={"활동 관리"}
             dropDownItems={[
               { href: "activities", label: "나의 활동" },
-              { href: "activities_all", label: '다른 선생님 활동', itemState: "acti_all" }]} />
+              { href: "activities_all", label: "전체 활동", itemState: "acti_all" }]} />
         </li>
         <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>
           <span className="pcOnly">클래스 관리</span></Link></li>
-        <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>
-          <span className="pcOnly">사람 찾기</span></Link></li>
+        {/*todo <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>
+          <span className="pcOnly">사람 찾기</span></Link></li> */} 
         {/* <li id="word_btn" ><Link to="/wordbattle"><i className="fa-solid fa-khanda"></i>
           <span className="pcOnly">단어 배틀</span></Link></li> */}
         {user.isMaster && <li id="master_btn" ><Link to="/master"><i className="fa-solid fa-key"></i>

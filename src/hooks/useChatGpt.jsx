@@ -25,7 +25,7 @@ const useChatGpt = () => {
       { role: "user", content: "영어 멘토 활동을 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요." },
       { role: "assistant", content: "한 학기 동안 멘토로 활동하며 동료 학생들에게 영어 학습에 관한 조언과 도움을 주며, 개별 학습 계획을 돕는 역할을 수행함. 영어 멘토로서의 리더십과 소통 능력을 발휘하여 다른 학생들의 영어 실력 향상에 도움을 줌." },
       { role: "user", content: `${title}활동을 수행한 학생의 생기부에 적을 예시 문구를 작성해 주세요.` },
-      content ? { role: "user", content: `${title}활동을 수행한 학생의 생기부에 적을 예시 문구를 대략 ${byte}byte 정도로 작성해 주세요.` } : { role: "user", content: `${title}활동에 대한 설명입니다: ${content}. 이 활동을 수행한 학생의 과세특에 적을 예시 문구를 대략 ${byte}byte 정도로 작성해 주세요.` }
+      content ? { role: "user", content: `${title}활동을 수행한 학생의 생기부에 적을 예시 문구를 대략 ${byte}byte 정도로 작성해 주세요.` } : { role: "user", content: `${title}활동은 ${content}에 관한 활동입니다. 이 활동을 수행한 학생의 과세특에 적을 예시 문구를 대략 ${byte}byte 정도로 작성해 주세요.` }
     ]
 
     const completion = await openai.chat.completions.create({

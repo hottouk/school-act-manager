@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { appFireStore } from "../firebase/config"
 import { useSelector } from 'react-redux'
-import { collection, doc, getDoc, onSnapshot, orderBy, query, where } from 'firebase/firestore'
+import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore'
 
 //24.01.25
-const useGetClass = () => {
+const useFetchRtClassData = () => {
   const db = appFireStore
   const user = useSelector(({ user }) => { return user }) //전역변수 user정보
   const isTeacher = user.isTeacher;
@@ -16,12 +16,13 @@ const useGetClass = () => {
   useEffect(() => {
     let q;
     if (isTeacher) { //교사
-      q = query(collection(db, "classRooms"), where("uid", "==", user.uid), orderBy("subject", "desc"))
+      q = query(collection(db, "classRooms"), where("uid", "==", user.uid))
       onSnapshot(q, (snapshot) => {
         let result = []
         snapshot.docs.forEach((doc) => {
           result.push({ ...doc.data(), id: doc.id })
         })
+        result.sort((a, b) => a.grade.localeCompare(b.grade)).sort((a, b) => a.classNumber.localeCompare(b.classNumber))
         setClassList(result)
       }, (error) => {
         setError(error.message)
@@ -62,4 +63,4 @@ const useGetClass = () => {
   return { classList, appliedClassList, searchResult, errByGetClass: error }
 }
 
-export default useGetClass
+export default useFetchRtClassData

@@ -33,7 +33,9 @@ const SelectedDialogModal = (props) => {
 
   const handleConfirm = () => {
     props.onHide()
-    props.writeAccDataOnDB()
+    props.writeAccDataOnDB().then(
+      window.alert("입력 되었습니다.")
+    )
     props.onClearSelect()
   }
 

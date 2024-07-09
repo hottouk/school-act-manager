@@ -12,9 +12,10 @@ import MainBtn from '../../components/Btn/MainBtn'
 import useFetchFireData from '../../hooks/useFetchFireData'
 import TabBtn from '../../components/Btn/TabBtn'
 import subjects from '../../subjects'
+import useFetchRtActiData from '../../hooks/useFetchRtActiData'
 
 //24.06.30 update 
-const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동관리-나의활동, 활동관리-전체활동, 사람찾기-타교사) 학생 1
+const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동 관리 - 나의 활동, 활동 관리 - 전체 활동, 사람 찾기 - 타교사) 학생 1
   const user = useSelector(({ user }) => { return user }) //전역변수 user정보
   const navigate = useNavigate()
   const location = useLocation();
@@ -22,10 +23,10 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동관리-나
   const [activeSubj, setActiveSubj] = useState(null); //활동관리 - 전체 활동 탭버튼
   const [isLoading, setIsLoading] = useState(true);
   //활동 정보
-  const { fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList } = useFetchFireData() //데이터 통신
+  const { fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList } = useFetchFireData() //데이터 통신
   const [_activityList, setActivityList] = useState(null)
+  const realTimetActiList = useFetchRtActiData() //실시간 데이터 통신
   const [_copiedList, setCopiedList] = useState(null)
-
   //CSS
   const clientHeight = useClientHeight(document.documentElement)
 
@@ -34,12 +35,11 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동관리-나
     if (otherTrId) {
       fetchOtrActiList(otherTrId).then((otrActiList) => { setActivityList(otrActiList) }) //사람찾기 - 타교사 
     } else {
-      if (!location.state) { //활동관리 - 나의활동
-        fetchActiList().then((actiList) => setActivityList(actiList))
+      if (!location.state) { //교사: 활동관리 - 나의활동
         fetchCopiedActiList().then((copiedList) => { setCopiedList(copiedList) })
         setIsLoading(false)
       } else {
-        fetchAlActiiBySubjList(activeSubj).then((subjActiList) => { //활동관리 - 전체 활동
+        fetchAlActiiBySubjList(activeSubj).then((subjActiList) => { //교사: 활동관리 - 전체 활동
           setActivityList(subjActiList)
           setIsLoading(false)
         })
@@ -50,7 +50,7 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동관리-나
   return (
     <Container $clientheight={clientHeight}>
       {(user.isTeacher && !location.state) && <>
-        <CardList dataList={_activityList} type="activity" //교사: 활동관리 - 나의활동
+        <CardList dataList={realTimetActiList} type="activity" //교사: 활동관리 - 나의활동
           title="나의 생성 활동 목록"
           comment="아직 활동이 없습니다. 활동을 생성해주세요" />
         <CardList dataList={_copiedList} type="copiedActi"
@@ -67,7 +67,7 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동관리-나
           <TabBtn tabItems={subjects} activeTab={activeSubj} setActiveTab={setActiveSubj} />
         </TabBtnContainer>
         <CardList dataList={_activityList} type="activity" //교사: 활동관리 - 전체 활동
-          title={isLoading ? "데이터를 서버에서 불러오는 중 입니다." : `서버에 총 ${_activityList.length}개의 활동이 등록되어 있습니다.`}
+          title={isLoading ? "데이터를 서버에서 불러오는 중 입니다." : `서버에 총 ${_activityList ? _activityList.length : 0}개의 활동이 등록되어 있습니다.`}
           comment="아직 활동이 없습니다. 활동을 생성해주세요" />
       </>}
       {!user.isTeacher && <><CardList dataList={_activityList} type="activity" //학생

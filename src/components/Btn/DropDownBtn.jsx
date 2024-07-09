@@ -34,7 +34,7 @@ const DropDownBtn = (props) => {
     setIsOpen(false);
   };
 
-  const sampleItems = [
+  const sampleItems = [ //샘플
     { href: '#/action-1', label: 'Action' },
     { href: '#/action-2', label: 'Another action' },
     { href: '#/action-3', label: 'Something else' }

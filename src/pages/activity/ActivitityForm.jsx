@@ -17,7 +17,7 @@ import ScoreWrapper from "../../components/ScoreWrapper"
 import CircleList from "../../components/CircleList";
 import QuestModal from "../../components/Modal/QuestModal";
 import SubjectSelect from "../../components/SubjectSelect";
-import HomeworkRadio from "../../components/Radio/HomeworkRadio";
+import TwoRadios from "../../components/Radio/TwoRadios";
 import Homework from "../../components/Homework";
 //이미지
 import mon01 from "../../image/enemies/mon_01.png";
@@ -40,6 +40,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const [monImg, setMonImg] = useState(null);
   const [byte, setByte] = useState(0)
   const [_isHomework, setIsHomework] = useState(false)
+  const [_isPrivate, setIsPrivate] = useState(true)
   const [_anyPartici, setAnyPartici] = useState(false)
   //2.경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
@@ -81,6 +82,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       setMonImg(acti.monImg)
       setSubject(acti.subject)
       setIsHomework(acti.isHomework)
+      if (acti.isPrivate !== undefined) setIsPrivate(acti.isPrivate)
       setCoin(acti.money)
       setByte(acti.byte ? acti.byte : 0)
       if (acti.particiSIdList && acti.particiSIdList.length > 0) {
@@ -131,7 +133,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       const confirm = window.confirm("활동을 수정하시겠습니까?")
       let actId = state.acti.id
       if (confirm) {
-        let modifiedActi = { title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework, byte, madeBy: user.name, };
+        let modifiedActi = { title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework, isPrivate: _isPrivate, byte, madeBy: user.name, };
         updateActi(modifiedActi, "activities", actId)
         navigate("/activities")
         setIsModified(false)
@@ -139,7 +141,20 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
     } else {
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
-        let newAct = { uid: String(user.uid), title, subject: _subject, content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework, byte };
+        let newAct = {
+          uid: String(user.uid),
+          title,
+          subject: _subject,
+          content,
+          record,
+          scores,
+          madeBy: user.name,
+          money,
+          monImg,
+          isHomework: _isHomework,
+          isPrivate: _isPrivate,
+          byte
+        };
         addActi(newAct)
         navigate("/activities")
       }
@@ -283,12 +298,12 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   }
 
   const handleRadioBtnClick = (event) => {
-    switch (event.target.id) {
-      case 'homework_radio_btn':
-        setIsHomework(true)
+    switch (event.target.name) {
+      case "isHomework_radio":
+        setIsHomework(!_isHomework)
         break;
-      case 'activity_radio_btn':
-        setIsHomework(false)
+      case "isPrivate_radio":
+        setIsPrivate(!_isPrivate)
         break;
       default: return
     }
@@ -329,8 +344,17 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
               attitudeScore={attitudeScore}
               coin={coin}
               disabled={!isModified} />
+            < TwoRadios name="isPrivate_radio"
+              id={["private_radio", "public_radio"]}
+              value={_isPrivate} label={["비공개 활동", "공개 활동"]}
+              onChange={handleRadioBtnClick}
+              disabled={!isModified} />
             {!_anyPartici &&
-              < HomeworkRadio isHomework={_isHomework} onChange={handleRadioBtnClick} disabled={!isModified} />}
+              < TwoRadios name="isHomework_radio"
+                id={["activity_radio", "homework_radio"]}
+                value={!_isHomework} label={["생기부 기록 전용", "과제 제출용"]}
+                onChange={handleRadioBtnClick}
+                disabled={!isModified} />}
             {_anyPartici && <p>참여중인 학생이 있으므로 생기부 기록 전용으로는 바꿀 수 없습니다.</p>}
             {/*교사 버튼 영역 */}
             {!state ? <> {/*활동 첫 생성 */}

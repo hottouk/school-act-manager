@@ -13,8 +13,18 @@ const ClassMain = () => {
   const { teacherList, studentList, errorByDevideTS } = useDevideTS(null, 'name')
   const [_teacherList, setTeacherList] = useState([])
   const [_studentList, setStudentList] = useState([])
-  const [isNoticeModalShown, setIsNoticeModalShown] = useState(true)
-  const RENEW_POPUP_TIME = localStorage.getItem("recentVisited") //공지사항 팝업, 최근 방문시간 다음날
+  const [isShownNotice, setIsShownNotice] = useState(false)
+  useEffect(() => {
+    let noticeDismissed = localStorage.getItem("noticeDismissed")
+    if (!noticeDismissed) { setIsShownNotice(true) } else {
+      const now = new Date();
+      const dismissedUntil = new Date(parseInt(noticeDismissed, 10));
+      if (now > dismissedUntil) {
+        localStorage.removeItem("noticeDismissed");
+        setIsShownNotice(true);
+      }
+    }
+  }, [])
   const clientHeight = useClientHeight(document.documentElement)
 
   useEffect(() => {
@@ -27,19 +37,15 @@ const ClassMain = () => {
     if (errorByDevideTS) {
       console.log(errorByDevideTS)
     }
-    window.setTimeout(handleMainPop, 500)
   }, [teacherList])
 
-  const handleMainPop = () => { //공지사항 띄우기
-    const today = new Date();
-    console.log(Number(RENEW_POPUP_TIME))
-    console.log(today.getTime())
-    if (RENEW_POPUP_TIME && RENEW_POPUP_TIME > today) {
-      return;
-    }
-    if (!RENEW_POPUP_TIME || RENEW_POPUP_TIME < today) {
-      setIsNoticeModalShown(true);
-    }
+
+
+  const handleDismiss = () => { //공지사항 없애기
+    setIsShownNotice(false)
+    let now = new Date();
+    let tmr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    localStorage.setItem("noticeDismissed", tmr.getTime());
   };
 
   return (
@@ -64,8 +70,9 @@ const ClassMain = () => {
       </StyledBlueBackground>
       {/* 공지사항팝업 */}
       <NoticeModal
-        show={isNoticeModalShown}
-        onHide={() => setIsNoticeModalShown(false)}
+        show={isShownNotice}
+        onHide={() => setIsShownNotice(false)}
+        onDismissed={handleDismiss}
       />
     </StyledContainer>
   )
