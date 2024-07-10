@@ -38,7 +38,6 @@ const useAddUpdFireData = (collectionName) => {
         return null;
       })
     } catch (err) {
-      window.alert(err)
       console.error(err)
     }
   }

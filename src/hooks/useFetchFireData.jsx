@@ -16,7 +16,6 @@ const useFetchFireData = () => {
   //2024.06.30 수정
   //7. 퍼온 Acti 리스트 - 활동관리
   const fetchCopiedActiList = async () => {
-
     let userDocRef = doc(db, "user", user.uid)
     try {
       let userDoc = await getDocFromCache(userDocRef);
@@ -33,7 +32,6 @@ const useFetchFireData = () => {
       } catch (err) {
         window.alert(err.message)
         console.log(err)
-        return null;
       }
     }
   }
@@ -96,6 +94,7 @@ const useFetchFireData = () => {
       if (thisClass) { //교실 - 셀렉터 활동 
         await fetchCopiedActiList().then((copiedList) => {
           let filterdList = !copiedList || copiedList.filter((copied) => { return copied.subject === thisClass.subject })
+          console.log(filterdList);
           actiList = actiList.concat(filterdList)
         })
       }
