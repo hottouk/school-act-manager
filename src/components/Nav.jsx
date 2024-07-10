@@ -1,6 +1,6 @@
 //라이브러리
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet'
 import { Badge } from 'react-bootstrap';
@@ -77,7 +77,7 @@ const Nav = () => {
         <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>
           <span className="pcOnly">클래스 관리</span></Link></li>
         {/*todo <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>
-          <span className="pcOnly">사람 찾기</span></Link></li> */} 
+          <span className="pcOnly">사람 찾기</span></Link></li> */}
         {/* <li id="word_btn" ><Link to="/wordbattle"><i className="fa-solid fa-khanda"></i>
           <span className="pcOnly">단어 배틀</span></Link></li> */}
         {user.isMaster && <li id="master_btn" ><Link to="/master"><i className="fa-solid fa-key"></i>

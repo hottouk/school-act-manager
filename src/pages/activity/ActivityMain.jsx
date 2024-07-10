@@ -46,6 +46,7 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동 관리 - 
       }
     }
   }, [location, activeSubj, otherTrId])
+  console.log(realTimetActiList)
 
   return (
     <Container $clientheight={clientHeight}>

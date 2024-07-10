@@ -39,8 +39,6 @@ const ClassMain = () => {
     }
   }, [teacherList])
 
-
-
   const handleDismiss = () => { //공지사항 없애기
     setIsShownNotice(false)
     let now = new Date();

@@ -16,7 +16,7 @@ const useFetchFireData = () => {
   //2024.06.30 수정
   //7. 퍼온 Acti 리스트 - 활동관리
   const fetchCopiedActiList = async () => {
-    let userDocRef = doc(db, "user", user.uid)
+    let userDocRef = doc(db, "user", String(user.uid))
     try {
       let userDoc = await getDocFromCache(userDocRef);
       if (!userDoc.exists()) { throw new Error("유저 정보 캐시에서 찾지 못했습니다."); }
@@ -100,7 +100,7 @@ const useFetchFireData = () => {
       }
       actiList.sort((a, b) => a.title.localeCompare(b.title))
     } catch (err) {
-      window.alert(err.message);
+      // window.alert(err.message);
       console.log(err);
     }
     return actiList;

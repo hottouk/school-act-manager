@@ -1,5 +1,5 @@
 import { appFireStore, timeStamp } from "../firebase/config"
-import { addDoc, collection, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore"
 import { useSelector } from "react-redux"
 
 const useAddUpdFireData = (collectionName) => {
