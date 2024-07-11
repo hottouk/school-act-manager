@@ -8,7 +8,9 @@ const subjects = [
   '미술',
   '체육',
   '정보',
-  '제2외국어'
+  '기술가정',
+  '제2외국어',
+  '보건' 
 ];
 
 export default subjects;
