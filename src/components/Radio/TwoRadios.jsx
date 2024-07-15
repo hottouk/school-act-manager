@@ -10,8 +10,8 @@ const TwoRadios = ({ name, id, value, label, onChange, disabled }) => {
           name={name}
           inline
           type="radio"
-          id={id[0]}
-          label={label[0]}
+          id={id ? id[0] : "id1"}
+          label={label ? label[0] : "label1"}
           checked={value}
           disabled={disabled}
         ></Form.Check>
@@ -21,8 +21,8 @@ const TwoRadios = ({ name, id, value, label, onChange, disabled }) => {
           name={name}
           inline
           type="radio"
-          id={id[1]}
-          label={label[1]}
+          id={id ? id[1] : "id2"}
+          label={label ? label[1] : "label2"}
           checked={!value}
           disabled={disabled}
         ></Form.Check>
@@ -34,7 +34,6 @@ const TwoRadios = ({ name, id, value, label, onChange, disabled }) => {
 const StyledRadioContainer = styled.div`
   display: flex;
   height: 40px;
-
   div.radio_div {
     width: 200px;
   }

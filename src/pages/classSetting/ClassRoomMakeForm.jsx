@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 //컴포넌트
 import ImportExcelFile from '../../components/ImportExcelFile';
+import LongW100Btn from '../../components/Btn/LongW100Btn';
 //hooks
 import useAddUpdFireData from '../../hooks/useAddUpdFireData';
 import useStudent from '../../hooks/useStudent';
@@ -26,7 +27,6 @@ const ClassRoomMakeForm = () => {
   const [_numberOfStudent, setNumberOfStudent] = useState(0);
   const [_intro, setIntro] = useState('');
   const [xlsxData, setXlsxData] = useState(null) //가공된 학생 정보 from Excel
-
   //hooks
   const navigate = useNavigate()
   const { makeStudent } = useStudent()
@@ -43,10 +43,6 @@ const ClassRoomMakeForm = () => {
 
   //3. 함수
   //내부 변수 꺼내는 함수
-  const getData = (data) => {
-    setXlsxData(data)
-  }
-
   const handleOnChange = (event) => {
     if (event.target.id === 'class_title') {
       setClassTitle(event.target.value)
@@ -66,11 +62,11 @@ const ClassRoomMakeForm = () => {
   //제출 버튼
   const handleSubmit = (event) => {
     event.preventDefault();
+    console.log("제출?")
     if (_subject !== 'default' && _grade !== 'default' && _classNumber !== 'default') {
       makeClass();
     } else { window.alert("학년 반 과목은 필수 값입니다.") }
   }
-
 
   //반 생성 함수
   const makeClass = () => {
@@ -119,18 +115,17 @@ const ClassRoomMakeForm = () => {
         <label htmlFor="class_title">클래스 이름</label>
         <input id="class_title" type="text" required onChange={handleOnChange} value={_classTitle} />
         <CSInfoSelect grade={_grade} classNumber={_classNumber} subject={_subject} handleOnChange={handleOnChange} classMode={true} />
-        <label>간단한 설명을 작성하세요(ex: 24 경기고 1-1 영어)</label>
-        <input type="text" id='class_explanation' required value={_intro} onChange={handleOnChange} />
+        <label htmlFor="class_explanation">간단한 설명을 작성하세요(ex: 24 경기고 1-1 영어)</label>
+        <input id="class_explanation" type="text" required value={_intro} onChange={handleOnChange} />
         {(classKind === "with_neis") && <>
-          <label htmlFor='class_number_of_studnets'>나이스 출석부 엑셀 파일을 등록하세요.</label>
-          <ImportExcelFile getData={getData} />
-          <button type="submit">나이스 출석부 파일로 반 생성</button></>}
-        {(classKind === "with_number") && <> <label htmlFor='class_number_of_studnets'>학생 수를 입력하세요. (최대 99명)</label>
-          <input type="number" id='class_number_of_studnets' required min='1' max='99' value={_numberOfStudent} onChange={handleOnChange} />
-          <button type="submit">생성</button> </>}
-        {(classKind === "by_hand") && <><label htmlFor='class_number_of_studnets'>학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>
-          <button type="submit">생성</button></>}
-        <button type='button' id='cancel' onClick={handleBtnClick}>취소</button>
+          <p>나이스 출석부 엑셀 파일을 등록하세요.</p>
+          <ImportExcelFile getData={setXlsxData} />
+        </>}
+        {(classKind === "with_number") && <><label htmlFor="class_number_of_studnets">학생 수를 입력하세요. (최대 99명)</label>
+          <input id="class_number_of_studnets" type="number" required min='1' max='99' value={_numberOfStudent} onChange={handleOnChange} /></>}
+        {(classKind === "by_hand") && <label htmlFor="class_number_of_studnets">학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>}
+        <LongW100Btn type="submit" btnName="생성"/>
+        <LongW100Btn id="cancel" btnName="취소" btnOnClick={handleBtnClick} />
       </fieldset>
     </StyledForm >
   )
@@ -155,7 +150,7 @@ const StyledForm = styled.form`
     display: block;
     color: #efefef;
   }
-  input {
+  input#class_title, input#class_explanation, input#class_number_of_studnets {
     width: 100%;
     height: 2.2em;
     margin: 5px 0 15px;
@@ -171,20 +166,7 @@ const StyledForm = styled.form`
     width: 100%;
     border-radius: 7px;
   }
-  button {
-    display: inline;
-    width: 100%;
-    margin-top: 15px;
-    padding: 10px 15px;
-    border-radius: 15px;
-    border: 2px solid whitesmoke;
-    background-color: transparent;
-    color: whitesmoke;
-    cursor: pointer;
-  }
-  button + button {
-    margin-top: 20px;
-  }
+
   @media screen and (max-width: 767px) {
     position: fixed;
     width: 100%;

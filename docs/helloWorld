@@ -1,8 +1,9 @@
 colors
 primaryWhite #efefef,
 primaryRoyalBlue #3454d1,
-Green #00a86b
-Pink  #FF69B4
+grey #949192;
+Green #00a86b;
+Pink  #FF69B4;
 phone max-width 767px
     
  

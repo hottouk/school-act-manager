@@ -88,12 +88,12 @@ const useLogin = () => { //데이터 통신
   const KakaoLoginOnSuccess = (data, openModal) => {
     setErr(null)
     setIsPending(true)
-    console.log(data.profile.id,typeof(data.profile.id))
+    console.log(data.profile.id, typeof (data.profile.id))
     let user = {
       uid: String(data.profile.id),
       name: data.profile.kakao_account.profile.nickname,
-      email: data.profile.kakao_account.email,
-      profileImg: data.profile.kakao_account.profile.profile_image_url,
+      email: data.profile.kakao_account.email || "no-email",
+      profileImg: data.profile.kakao_account.profile.profile_image_url || "no-image",
       phoneNumber: null
     }
     dispatcher(setTempUser(user))

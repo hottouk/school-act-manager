@@ -94,13 +94,12 @@ const useFetchFireData = () => {
       if (thisClass) { //교실 - 셀렉터 활동 
         await fetchCopiedActiList().then((copiedList) => {
           let filterdList = !copiedList || copiedList.filter((copied) => { return copied.subject === thisClass.subject })
-          console.log(filterdList);
           actiList = actiList.concat(filterdList)
         })
       }
       actiList.sort((a, b) => a.title.localeCompare(b.title))
     } catch (err) {
-      // window.alert(err.message);
+      window.alert(err.message);
       console.log(err);
     }
     return actiList;

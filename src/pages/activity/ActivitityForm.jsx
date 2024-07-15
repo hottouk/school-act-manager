@@ -214,7 +214,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
     event.preventDefault();
     switch (event.target.id) {
       case "gpt_btn": //교사 전용
-        if (title !== '' && _subject !== 'default') {
+        if (title !== '' && _subject !== 'default' && content !== '') {
           try {
             askChatGpt(title, _subject, content, byte)
             setTimerModalShow(true)
@@ -222,7 +222,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
             window.alert.log(error.message)
           }
         } else {
-          window.alert('활동 제목과 과목을 채워주세요. 간단한 설명을 입력하면 더 정확한 문구를 얻을 수 있어요')
+          window.alert('활동 제목, 과목, 간단한 설명을 입력해주세요.')
         }
         break;
       case "modi_btn":
@@ -321,12 +321,14 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
             <StyledDiv>
               <div>
                 <label htmlFor="act_title" >활동 제목</label>
-                <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled={!isModified} />
+                <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled={!isModified}
+                  placeholder="ex)포도당 산화 환원 실험" />
               </div>
               {!state && <SubjectSelect subject={_subject} onChange={setSubject} />}
             </StyledDiv>
             <label htmlFor="act_content" >활동 설명하기</label>
-            <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled={!isModified} />
+            <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled={!isModified}
+              placeholder="~활동으로 끝맺기. ex)포도당 산화 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동" />
             <label htmlFor="act_record" >생기부 문구</label>
             <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled={!isModified} />
             <StyledDiv>
@@ -392,7 +394,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                 <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled />
               </div>
             </StyledDiv>
-            <label htmlFor="act_content" >GPT 또는 학생들에게 활동 설명하기</label>
+            <label htmlFor="act_content" >GPT에게 활동 설명하기</label>
             <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled />
             <label htmlFor="act_record" >생기부 문구</label>
             <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled />

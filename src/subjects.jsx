@@ -10,7 +10,8 @@ const subjects = [
   '정보',
   '기술가정',
   '제2외국어',
-  '보건' 
+  '진로',
+  '보건',
 ];
 
 export default subjects;

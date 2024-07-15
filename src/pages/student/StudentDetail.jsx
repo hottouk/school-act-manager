@@ -9,13 +9,16 @@ import useAddUpdFireData from '../../hooks/useAddUpdFireData';
 //컴포넌트
 import RadarChart from '../../components/RadarChart';
 import AnimatedProgressBar from '../../components/ProgressBar';
+import SmallBtn from '../../components/Btn/SmallBtn';
 //스타일
 import styled from 'styled-components';
 //이미지
 import x_btn from "../../image/icon/x_btn.png"
 import PetImg from '../../components/PetImg';
 import useGetMyUserInfo from '../../hooks/useGetMyUserInfo';
+import GptModal from '../../components/Modal/GptModal';
 
+//2024.07.12 업데이트(개별화 가능)
 const StudentDetail = () => {
   //1.변수
   //url 관련
@@ -52,6 +55,16 @@ const StudentDetail = () => {
   const textAreaRef = useRef({})
   const selectRef = useRef({})
   const divRef = useRef({})
+  //GPT 모달
+  const [isGptShown, setIsGptShown] = useState(false)
+  const [selectedActi, setSelectedActi] = useState(null)
+  const [personalRecord, setPersonalRecord] = useState('')
+  useEffect(() => { //GPT 개별화 문구 textArea에 띄우고 새 활동 문구로 저장.
+    if (selectedActi) {
+      textAreaRef.current[selectedActi.index].value = personalRecord;
+      updateAccRecord(selectedActi.index, personalRecord);
+    }
+  }, [personalRecord])
 
   //2. UseEffect
   useEffect(() => {
@@ -74,29 +87,49 @@ const StudentDetail = () => {
   }, [])
 
   //3.함수
-  const moveStudent = (student) => { //화살표 이동
+  const moveStudent = (student) => { //학생 화살표 이동
     navigate(`/classrooms/${params.id}/${student.id}`, { state: student })
   }
 
-  const handleInputOnChange = (event) => { //이름 수정
-    switch (event.target.id) {
-      case "input_name":
-        setWrittenName(event.target.value)
-        break;
-      default: return
-    }
+  //셀렉터 변경시2
+  const updateActiList = (event, index) => {
+    let newId = event.value //클릭한 새로운 이벤트 id
+    let foundActi = allActivityList.find((acti) => { return acti.id === newId }) //전체 활동에서 새로운 클릭한 활동과 id가 일치하는 활동을 찾는다. find는 요소 자체 반환, 불변성 유지 불가
+    let newActi = { ...foundActi }
+    let newActiList = []
+    setActList(prevActiList => {
+      newActiList = [...prevActiList.slice(undefined, index), newActi, ...prevActiList.slice(index + 1)]
+      return newActiList
+    })
+    return newActiList
   }
 
+  //셀렉터 변경 시1 불변성 유지에 대해 배움,
   const handleSelectOnchange = (event, index) => { //event는 선택 act Obj
-    let newId = event.value //클릭한 새로운 이벤트 id
-    if ((_actList.findIndex(({ id }) => { return id === newId })) === -1) {   //기존 활동과 중복된 활동이 아닐 경우에만
-      let newAct = allActivityList.find(({ id }) => { return id === newId }) //전체 활동에서 새로운 클릭한 활동과 id가 일치하는 활동을 찾는다.
-      let newUserActList = [..._actList.slice(undefined, index), newAct, ..._actList.slice(index + 1)]
-      setNewActList(newUserActList)
-      textAreaRef.current[index].value = newUserActList[index].record  //새로운 활동의 record를 창에 띄운다.
+    if ((_actList.findIndex(({ id }) => { return id === event.value })) === -1) {   //기존 활동과 중복된 활동이 아닐 경우에만
+      let newActiList = updateActiList(event, index)
+      setNewActList(newActiList)
+      textAreaRef.current[index].value = newActiList[index].record  //새로운 활동의 record를 창에 띄운다.
     } else {
       window.alert("중복된 활동으로는 변경할 수 없습니다.")
     }
+  }
+
+  //textArea 변경 시2
+  const updateAccRecord = (index, newRec) => {
+    let newActiList = []
+    setActList(prevActiList => {
+      newActiList = [...prevActiList];
+      newActiList[index].record = newRec;
+      return newActiList;
+    })
+    return _actList
+  }
+
+  //textArea 변경 시1
+  const handleTextareaOnChange = (event, index) => {
+    let newActiList = updateAccRecord(index, event.target.value)
+    setNewActList(newActiList)
   }
 
   const handleBtnClick = (event, act, index) => {
@@ -117,21 +150,15 @@ const StudentDetail = () => {
         if (window.confirm('학생정보를 이대로 저장하시겠습니까?')) { //저장 클릭
           let accRecord = ""
           if (_newActList) {
-            setActList(_newActList)
-            accRecord = _newActList.reduce((acc, cur) => { return acc.concat(" ", String(cur.record)) }, "")       //누가기록 업데이트
-            updateStudent({ writtenName: _writtenName, actList: _newActList, accRecord }, params.id, params.studentId); //데이터 통신
+            setActList(_newActList);
+            accRecord = _newActList.map(item => item.record).join(" "); // 누가기록 업데이트
           }
+          const updatedStudentData = { writtenName: _writtenName, ...(accRecord && { actList: _newActList, accRecord }) };
+          updateStudent(updatedStudentData, params.id, params.studentId);
         } else { //취소 클릭
-          if (deletedIndex && deletedIndex.length !== 0) {
-            deletedIndex.map((index) => {
-              divRef.current[index].style = 'display: block;'
-              return null;
-            })
-          }
-          setNewActList(null)
-          setDeletedIndex([])
+          window.location.reload()
         }
-        setIsModifying(!isModifiying)
+        setIsModifying(false)
         break;
       case "delete_act_btn":
         let thisActId = act.id;
@@ -140,7 +167,7 @@ const StudentDetail = () => {
         let leftList = _actList.filter((_, index) => { return !deletedIndex.includes(index) })
         setNewActList(leftList)
         textAreaRef.current[index].value = ''
-        divRef.current[index].style = 'display: none;'
+        divRef.current[index].style = 'display: none;' //삭제 눌린 div 안보이게
         break;
       case "rightArwBtn":
         if (nthStudent === allStudentList.length - 1) {
@@ -174,7 +201,9 @@ const StudentDetail = () => {
             <p>학번: {_studentNumber}</p>
             <p>이름: {!isModifiying
               ? _writtenName ? _writtenName : '미등록'
-              : <input id='input_name' type="text" defaultValue={_writtenName} onChange={handleInputOnChange} />
+              : <input id="input_name" type="text" defaultValue={_writtenName} onChange={(event) => {
+                setWrittenName(event.target.value)
+              }} />
             }</p>
             <p>레벨: {expAndLevel.level}</p>
             <StyledProgressDiv>경험치: {expAndLevel.exp}<AnimatedProgressBar exp={expAndLevel.exp} level={expAndLevel.level} /></StyledProgressDiv>
@@ -191,11 +220,11 @@ const StudentDetail = () => {
             </StyledTitleRow>
             {(user.isTeacher || _isMaster) && <>
               {!_actList || _actList.length === 0 ? <div className='no_act_record'>활동이 없어유ㅠㅠ</div>
-                : _actList.map((act, index) => {
-                  return <StyledContentRow key={act.id}>
+                : _actList.map((acti, index) => {
+                  return <StyledContentRow key={acti.id}>
                     <StyledMidlDiv>
                       <div ref={(element) => { return divRef.current[index] = element }} className='title_change_div'>
-                        <p>{act.title}</p>
+                        <p>{acti.title}</p>
                         {isModifiying && <Select
                           ref={(element) => { return selectRef.current[index] = element }}
                           options={allActivityList.map((activity) => {
@@ -205,14 +234,18 @@ const StudentDetail = () => {
                       </div>
                     </StyledMidlDiv>
                     <StyledAcclDiv>
-                      {!isModifiying && <span>{act.record}</span>}
-                      {isModifiying && <>
+                      {!isModifiying && <span>{acti.record}</span>}
+                      {isModifiying && <> {/*수정할때*/}
                         <textarea
-                          defaultValue={act.record}
-                          ref={(element) => { return textAreaRef.current[index] = element }}
-                          disabled>
+                          defaultValue={acti.record}
+                          onChange={(event) => handleTextareaOnChange(event, index)}
+                          ref={(element) => { return textAreaRef.current[index] = element }}>
                         </textarea>
-                        <img src={x_btn} id='delete_act_btn' alt="삭제x" onClick={(event) => { return handleBtnClick(event, act, index) }} />
+                        <SmallBtn btnColor="#3454d1" btnName="GPT" btnOnClick={() => { //gpt 버튼
+                          setSelectedActi({ acti, index });
+                          setIsGptShown(true);
+                        }}></SmallBtn>
+                        <img src={x_btn} id='delete_act_btn' alt="삭제x" onClick={(event) => { return handleBtnClick(event, acti, index) }} />
                       </>}
                     </StyledAcclDiv>
                   </StyledContentRow>
@@ -240,6 +273,8 @@ const StudentDetail = () => {
           <StyledBtn id='back_btn' onClick={handleBtnClick} $width="100%">목록</StyledBtn>
         </StyeldBtnDiv>
       }
+      {isGptShown &&
+        <GptModal show={isGptShown} acti={selectedActi && selectedActi.acti} setPersonalRecord={setPersonalRecord} onHide={() => { setIsGptShown(false) }}></GptModal>}
     </StyledContainer>
   )
 }
@@ -301,6 +336,10 @@ const StyledTopRightInfo = styled.div`
   padding: 15px;
   border: 1px solid black;
   border-radius: 10px;
+  #input_name {
+    height: 35px;
+    border-radius: 10px;
+  }
    @media screen and (max-width: 767px){
     width: 100%;
     height: 64%;
@@ -410,7 +449,7 @@ const StyledAcclDiv = styled.div`
   justify-content: center;
   padding: 0 5px;
   word-wrap: break-word;
-display: flex;
+  display: flex;
   justify-content: flex-start;
   align-items: center;
   border-bottom: 1px solid black;
@@ -420,8 +459,10 @@ display: flex;
     height: 100%;
     padding: 5px;
   }
+  button {
+    margin: 0 7px;
+  }
   overflow-y: auto;
-  
   @media screen and (max-width: 767px){
     width: 0;
   }
