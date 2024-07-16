@@ -76,8 +76,6 @@ const ClassMain = () => {
   )
 }
 
-
-
 const StyledContainer = styled.div`
   box-sizing: border-box;
   @media screen and (max-width: 767px) {

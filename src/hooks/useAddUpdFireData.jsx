@@ -1,13 +1,12 @@
 import { appFireStore, timeStamp } from "../firebase/config"
-import { addDoc, collection, deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 import { useSelector } from "react-redux"
 
 const useAddUpdFireData = (collectionName) => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const colRef = collection(db, collectionName)
-
-  //10.
+  //10. 이거 어디에 쓰는지 보고 없으면 제거
   const getInfo = async (id, type) => {
     let info = null
     switch (type) {
@@ -27,12 +26,25 @@ const useAddUpdFireData = (collectionName) => {
     return info
   }
 
+  //10. 공지사항(24.07.16)
+  const addNotice = async (noticeList) => {
+    try {
+      let createdTime = timeStamp.fromDate(new Date()).toDate().toISOString();
+      await setDoc(doc(db, collectionName, "notice"), { noticeList, createdTime })
+      console.log("공지 수정")
+    } catch (err) {
+      console.error(err)
+      window.alert(err.message)
+    }
+  }
+
+
   //9. 클래스룸 추가 함수(24.2.18)
   const addClassroom = async (classParams, studentPetList) => {
     try {
-      const createdTime = timeStamp.fromDate(new Date());
-      const docRef = await addDoc(colRef, { ...classParams, createdTime });
-      const subColRef = collection(docRef, "students")
+      let createdTime = timeStamp.fromDate(new Date());
+      let docRef = await addDoc(colRef, { ...classParams, createdTime });
+      let subColRef = collection(docRef, "students")
       await studentPetList.map(item => {
         addDoc(subColRef, { ...item, subject: classParams.subject });
         return null;
@@ -59,7 +71,7 @@ const useAddUpdFireData = (collectionName) => {
   //7. 활동 추가 함수
   const addActi = async (activity) => {
     try {
-      const createdTime = timeStamp.fromDate(new Date());
+      let createdTime = timeStamp.fromDate(new Date());
       await addDoc(colRef, { ...activity, createdTime }); //핵심 로직; 만든 날짜와 doc을 받아 파이어 스토어에 col추가
     } catch (err) {
       window.alert(err.message)
@@ -130,7 +142,7 @@ const useAddUpdFireData = (collectionName) => {
   }
 
   return (
-    { getInfo, addActi, updateActi, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, addWordSet, updateClassListInfo }
+    { getInfo, addNotice, addActi, updateActi, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, addWordSet, updateClassListInfo }
   )
 }
 
