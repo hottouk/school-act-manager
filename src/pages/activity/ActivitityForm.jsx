@@ -19,7 +19,7 @@ import QuestModal from "../../components/Modal/QuestModal";
 import SubjectSelect from "../../components/SubjectSelect";
 import TwoRadios from "../../components/Radio/TwoRadios";
 import SmallBtn from "../../components/Btn/SmallBtn"
-import CircleList from "../../components/CircleList";
+import CircleList from "../../components/List/CircleList";
 import Homework from "../../components/Homework";
 //이미지
 import mon01 from "../../image/enemies/mon_01.png";

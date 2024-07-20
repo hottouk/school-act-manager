@@ -1,16 +1,16 @@
 //라이브러리
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 //컴포넌트
-import AddNewStudentModal from './Modal/AddNewStudentModal'
+import AddNewStudentModal from '../Modal/AddNewStudentModal'
+import PetImg from '../PetImg'
 //hooks
-import useGetLevel from '../hooks/useGetLevel'
+import useGetLevel from '../../hooks/useGetLevel'
 //이미지
-import plus from "../image/icon/plus.png"
+import plus from "../../image/icon/plus.png"
 //CSS
 import styled from "styled-components"
-import { useSelector } from 'react-redux'
-import PetImg from './PetImg'
 
 const StudentList = ({ petList }) => {
   //1. 변수

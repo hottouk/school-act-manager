@@ -1,8 +1,11 @@
 import React, { useState } from 'react'
-import useFetchFireData from '../hooks/useFetchFireData'
+//hooks
+import useFetchFireData from '../../hooks/useFetchFireData'
+//컴포넌트
+import SmallBtn from '../Btn/SmallBtn'
+//css
 import styled from 'styled-components'
-import SmallBtn from './Btn/SmallBtn'
-import CardList from './CardList'
+
 
 const SSearchInputBtn = (props) => {
   const [_studentProp, setStudentProp] = useState("")

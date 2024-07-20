@@ -1,17 +1,21 @@
+//라이브러리
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
-import { setSelectClass } from '../store/classSelectedSlice'
-import { setAppliedClassList, setJoinedClassList } from '../store/userSlice'
-import useAddUpdFireData from '../hooks/useAddUpdFireData'
-import useFetchFireData from '../hooks/useFetchFireData'
+import { setSelectClass } from '../../store/classSelectedSlice'
+import { setAppliedClassList, setJoinedClassList } from '../../store/userSlice'
+//hooks
+import useAddUpdFireData from '../../hooks/useAddUpdFireData'
+import useFetchFireData from '../../hooks/useFetchFireData'
 //컴포넌트
-import SmallBtn from './Btn/SmallBtn'
+import SmallBtn from '../Btn/SmallBtn'
 //이미지
-import unknown from '../image/icon/unkown_icon.png'
-import MonImg from './MonImg'
-import likeIcon from '../image/icon/like_icon.png'
+import unknown from '../../image/icon/unkown_icon.png'
+import MonImg from '../MonImg'
+import likeIcon from '../../image/icon/like_icon.png'
+//css
+import styled from 'styled-components'
+
 
 //2024.01.09
 const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 리스트, 타입으로 정리하기

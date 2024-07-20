@@ -7,8 +7,8 @@ import { setAllActivities } from '../../store/allActivitiesSlice.jsx';
 import styled from 'styled-components';
 //컴포넌트
 import MainSelector from './MainSelector.jsx';
-import StudentList from '../../components/StudentList';
-import ActivityList from '../../components/ActivityList.jsx';
+import StudentList from '../../components/List/StudentList.jsx';
+import ActivityList from '../../components/List/ActivityList.jsx';
 import EmptyResult from '../../components/EmptyResult.jsx';
 import ClassMemberModal from '../../components/Modal/ClassMemberModal.jsx';
 //hooks

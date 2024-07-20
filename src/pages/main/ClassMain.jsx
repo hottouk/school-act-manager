@@ -1,19 +1,26 @@
 //라이브러리
 import React, { useEffect, useState } from 'react'
+//컴포넌트
+import NoticeModal from '../../components/Modal/NoticeModal'
+import InfluencerList from '../../components/List/InfluencerList'
 //hooks
-import useDevideTS from '../../hooks/useDevideTS'
+import useFetchRtUserData from '../../hooks/RealTimeData/useFetchRtUserData'
 //이미지
 import main from '../../image/main.png'
 //css
 import styled from 'styled-components'
 import useClientHeight from '../../hooks/useClientHeight'
-import NoticeModal from '../../components/Modal/NoticeModal'
 
+//24.07.20
 const ClassMain = () => {
-  const { teacherList, studentList, errorByDevideTS } = useDevideTS(null, 'name')
-  const [_teacherList, setTeacherList] = useState([])
-  const [_studentList, setStudentList] = useState([])
-  const [isShownNotice, setIsShownNotice] = useState(false)
+  //1. 변수
+  const { teacherList, studentList, useFetchRtUserErr, sortByLikedCount } = useFetchRtUserData() //실시간 구독
+  const [influList, setInfluList] = useState([]);
+  useEffect(() => {
+    setInfluList(sortByLikedCount())
+    if (useFetchRtUserErr) console.log(useFetchRtUserErr)
+  }, [teacherList])
+  const [isShownNotice, setIsShownNotice] = useState(false) //공지사항
   useEffect(() => {
     let noticeDismissed = localStorage.getItem("noticeDismissed")
     if (!noticeDismissed) { setIsShownNotice(true) } else {
@@ -26,19 +33,7 @@ const ClassMain = () => {
     }
   }, [])
   const clientHeight = useClientHeight(document.documentElement)
-
-  useEffect(() => {
-    if (teacherList) {
-      setTeacherList(teacherList)
-    }
-    if (studentList) {
-      setStudentList(studentList)
-    }
-    if (errorByDevideTS) {
-      console.log(errorByDevideTS)
-    }
-  }, [teacherList])
-
+  //2. 함수
   const handleDismiss = () => { //공지사항 없애기
     setIsShownNotice(false)
     let now = new Date();
@@ -56,8 +51,9 @@ const ClassMain = () => {
         </StyledWrapper>
       </StyledLandingBackground>
       <StyledWhiteBackground>
+        <InfluencerList dataList={influList || []} />
         <StyledWrapper>
-          <h3>현재 {_teacherList.length}명의 선생님, {_studentList.length}명의 학생이 이용중입니다.</h3>
+          <h3>현재 {teacherList.length}명의 선생님, {studentList.length}명의 학생이 이용중입니다.</h3>
           <span>GPT로 세특쓰기, 이제는 나도 할 수 있다!!! 절찬리 판매중!!</span>
         </StyledWrapper>
       </StyledWhiteBackground>

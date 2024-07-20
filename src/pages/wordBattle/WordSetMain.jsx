@@ -3,7 +3,7 @@ import useClientHeight from '../../hooks/useClientHeight'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 //컴포넌트
-import CardList from '../../components/CardList'
+import CardList from '../../components/List/CardList'
 //CSS
 import styled from 'styled-components'
 import MainBtn from '../../components/Btn/MainBtn'

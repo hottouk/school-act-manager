@@ -1,9 +1,11 @@
-import styled from "styled-components"
-import SSearchInputBtn from "../../components/SSearchInputBtn"
 import useClientHeight from "../../hooks/useClientHeight"
 import { useEffect, useState } from "react"
-import CardList from "../../components/CardList"
+//컴포넌트
+import CardList from "../../components/List/CardList"
+import SSearchInputBtn from "../../components/Form/SSearchInputBtn"
 import useFetchFireData from "../../hooks/useFetchFireData"
+//css
+import styled from "styled-components"
 
 const UserMain = () => {
   const clientHeight = useClientHeight(document.documentElement)

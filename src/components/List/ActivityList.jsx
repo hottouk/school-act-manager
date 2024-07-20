@@ -1,10 +1,10 @@
 import styled from 'styled-components'
-import question from '../image/icon/question.png'
-import mon01 from '../image/enemies/mon_01.png'
-import mon02 from '../image/enemies/mon_02.png'
-import mon03 from '../image/enemies/mon_03.png'
-import mon04 from '../image/enemies/mon_04.png'
-import doneIcon from "../image/icon/done_icon.png"
+import question from '../../image/icon/question.png'
+import mon01 from '../../image/enemies/mon_01.png'
+import mon02 from '../../image/enemies/mon_02.png'
+import mon03 from '../../image/enemies/mon_03.png'
+import mon04 from '../../image/enemies/mon_04.png'
+import doneIcon from "../../image/icon/done_icon.png"
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useEffect, useState } from 'react'

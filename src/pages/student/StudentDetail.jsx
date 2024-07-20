@@ -10,13 +10,13 @@ import useAddUpdFireData from '../../hooks/useAddUpdFireData';
 import RadarChart from '../../components/RadarChart';
 import AnimatedProgressBar from '../../components/ProgressBar';
 import SmallBtn from '../../components/Btn/SmallBtn';
-//스타일
-import styled from 'styled-components';
 //이미지
 import x_btn from "../../image/icon/x_btn.png"
 import PetImg from '../../components/PetImg';
 import useGetMyUserInfo from '../../hooks/useGetMyUserInfo';
 import GptModal from '../../components/Modal/GptModal';
+//스타일
+import styled from 'styled-components';
 
 //2024.07.20 업데이트(코드 간소화 + 기능추가)
 const StudentDetail = () => {

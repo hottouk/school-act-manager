@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import EmptyResult from './EmptyResult'
+import EmptyResult from '../EmptyResult'
 import DataList from './DataList'
+import SmallBtn from '../Btn/SmallBtn'
+//css
 import styled from 'styled-components'
-import SmallBtn from './Btn/SmallBtn'
 
 //24.07.07(정렬 버튼 추가)
 const CardList = ({ dataList, type, title, comment, setTeacherClassList, }) => {

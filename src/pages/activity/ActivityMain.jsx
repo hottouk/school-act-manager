@@ -3,16 +3,18 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 //컴포넌트
-import CardList from '../../components/CardList'
+import CardList from '../../components/List/CardList'
+import MainBtn from '../../components/Btn/MainBtn'
+import TabBtn from '../../components/Btn/TabBtn'
 //hooks
 import useClientHeight from '../../hooks/useClientHeight'
-//CSS
-import styled from 'styled-components'
-import MainBtn from '../../components/Btn/MainBtn'
 import useFetchFireData from '../../hooks/useFetchFireData'
-import TabBtn from '../../components/Btn/TabBtn'
-import subjects from '../../subjects'
 import useFetchRtActiData from '../../hooks/useFetchRtActiData'
+//데이터
+import subjects from '../../subjects'
+
+//css
+import styled from 'styled-components'
 
 //24.06.30 update 
 const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동 관리 - 나의 활동, 활동 관리 - 전체 활동, 사람 찾기 - 타교사) 학생 1

@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
-import unknwon from "../image/icon/unkown_icon.png"
+import unknwon from "../../image/icon/unkown_icon.png"
 
 const CircleList = ({ dataList, acti }) => {
   const user = useSelector(({ user }) => user)

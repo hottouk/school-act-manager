@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
+import useFetchFireData from '../../hooks/useFetchFireData'
+//css
 import styled from 'styled-components'
-import useFetchFireData from '../hooks/useFetchFireData'
 
 const TSearchInputBtn = ({ setTeacherList }) => {
   const [_teacherKindProp, setTeacherKindProp] = useState("name")

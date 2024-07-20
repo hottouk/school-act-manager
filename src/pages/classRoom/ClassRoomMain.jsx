@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 //컴포넌트
-import CardList from '../../components/CardList';
+import CardList from '../../components/List/CardList';
 //hooks
 import useFetchRtClassData from '../../hooks/useFetchRtClassData';
 import useClientHeight from '../../hooks/useClientHeight';
 //CSS
 import styled from 'styled-components';
-import TSearchInputBtn from '../../components/TSearchInputBtn';
+import TSearchInputBtn from '../../components/Form/TSearchInputBtn';
 import MainBtn from '../../components/Btn/MainBtn';
 
 //24.01.23
