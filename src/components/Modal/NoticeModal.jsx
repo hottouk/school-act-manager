@@ -18,9 +18,9 @@ const NoticeModal = ({ show, onHide, onDismissed }) => {
   const [notice, setNotice] = useState('')
   //데이터 통신
   const { addNotice } = useAddUpdFireData("notice") //서버 기록
-  const { fetchNotice } = useFetchFireData()        //기록 불러오기
+  const { fetchDoc } = useFetchFireData()        //기록 불러오기
   const [noticeList, setNoticeList] = useState(null)  //불러온 기록 배열
-  useEffect(() => { fetchNotice().then((noticeList) => { setNoticeList(noticeList) }) }, [])
+  useEffect(() => { fetchDoc("notice","notice").then((data) => { setNoticeList(data.noticeList) }) }, [])
 
   //2. 함수
   const splitTxtToArr = (txt) => { //"/"구분자로 txt to 배열

@@ -9,15 +9,16 @@ const useChatGpt = () => {
   const [gptBytes, setGptBytes] = useState(0);
   const [gptRes, setGptRes] = useState(null);
   const { getByteLengthOfString } = useGetByte();
+
   const askChatGpt = async (title, subject, content, byte) => {
-    setGptRes('loading')
     if (byte <= 180) { byte = 180 }
     let messages = [
       {
         role: "system",
-        content: `당신은 학생의 ${subject} 과목의 세부 능력 특기사항을 객관적 관찰자 시점으로 작성해야하는 교사임. ${title} 활동은 ${content}임. 
+        content: `당신은 ${subject} 과목 세부 능력 특기사항을 객관적 관찰자 시점으로 작성해야하는 교사임. 이 때 반드시 '명사형 종결어미 문체'를 사용해야함.
+        '명사형 종결어미 문체'의 예시는 다음과 같음. '밝고 긍정적인 태도를 바탕으로 수업에 최선을 다하는 모습을 자주 보임.
         ${content}에서 학생이 했을 것이라 예상되는 활동을 구체적 예시를 들어 한글로 적어야 함.
-        모든 문장을 '~음', '~했음', '~임', '~함' 과 같이 개조식으로 작성해야 함.
+        ' 처럼 '~음', '~펼침', '~임', '~함', '~됨'등으로 종결해야함.
       ` },
       { role: "user", content: "여행지 소개하기 활동을 수행한 학생이 받을 생기부 세특 예시를 작성해 주세요." },
       { role: "assistant", content: "여행지 소개하기 활동에서 가보고 싶은 해외 도시로 LA를 선정하여, 그 지역 명소인 테마파크의 실제 리뷰를 해외 사이트에서 찾아, 이를 바탕으로 여행지를 소개하는 글을 작성하였고 구체적인 여행 계획을 세움. 이 활동을 통해 실제 인터넷에서 쓰이는 표현에 대해 알 수 있었다고 보고서를 작성하였고 여행 중 마주칠 수 있는 상황에 대한 문제 해결력을 증명함. " },
@@ -31,24 +32,48 @@ const useChatGpt = () => {
       { role: "assistant", content: "한 학기 동안 멘토로 활동하며 동료 학생들에게 영어 학습에 관한 조언과 도움을 주며, 개별 학습 계획을 돕는 역할을 수행함. 영어 멘토로서의 리더십과 소통 능력을 발휘하여 다른 학생들의 영어 실력 향상에 도움을 줌." },
       { role: "user", content: `${title}활동은 ${content}에 관한 활동입니다. 이 활동을 수행한 학생의 과세특에 적을 예시 문구를 대략 ${byte}byte 정도로 작성해 주세요.` }
     ]
+    await playGpt(messages)
+  }
 
-    const completion = await openai.chat.completions.create({
-      messages: messages,
-      model: "gpt-3.5-turbo",
-    });
+  const askExtraRecord = async (curRecord) => {
+    let messages = [
+      {
+        role: "system", content: `당신은 과목 세부 능력 특기사항을 객관적 관찰자 시점으로 작성해야하는 교사임. 이 때 반드시 '명사형 종결어미 문체'를 사용해야함.
+        '명사형 종결어미 문체'의 예시는 다음과 같음. '밝고 긍정적인 태도를 바탕으로 수업에 최선을 다하는 모습을 자주 보임.' 처럼 '~음', '~펼침', '~임', '~함', '~됨'등으로 종결해야함.
+        요청받은 문구 4개의 문구 사이에 각각 "^" 구분자를 사용하여 제시해야함.`
+      },
+      {
+        role: "user", content: "주어진 문장: 'used to 동사, get used to 명사, be used to 동사의 의미를 정확히 알고 친구들에게 설명함.'"
+          + "위 주어진 문장의 의미와 길이가 비슷한 문구를 4개 생성해주세요. 4개의 문구 사이에 각각 '^' 구분자를 사용하여 제시해야함."
+      },
+      {
+        role: "assistant", content: "used to 동사, get used to 명사, be used to 동사의 의미를 정확히 파악하고 친구들에게 설명해주는 모습을 보임.^"
+          + "used to 동사, get used to 명사, be used to 동사의 용법과 쓰임을 설명할 수 있으며 또래 교사로 활동함.^"
+          + "헷갈리기 쉬운 used to 동사, get used to 명사, be used to 동사의 용법과 각 쓰임을 정확히 파악하고 있음.^"
+          + "used to, get used to, be used to의 의미와 용법을 각각 정확히 이해하고 친구들에게 설명 가능함."
 
-    if (completion.choices[0].message.content) {
-      setGptAnswer(completion.choices[0].message.content)
-      setGptBytes(getByteLengthOfString(completion.choices[0].message.content))
-      setGptRes('complete')
-    } else {
-      window.alert('챗GPT 서버 문제로 문구를 입력할 수 없습니다.')
-      setGptRes('complete')
-    }
+      },
+      {
+        role: "user", content: "주어진 문장: '삶과 죽음에 관한 여러 연사들의 연설문을 읽고 그 중 두 개를 발췌하여 친구들 앞에서 영어로 발표함."
+          + "두 연설문 모두 발음과 억양과 자연스럽고 정확하였으며 머뭇거림이나 끊김 없이 유창하게 청중에게 전달함.'"
+          + "위 주어진 문장의 의미와 길이가 비슷한 문구를 4개 생성해주세요. 4개의 문구 사이에 각각 '^' 구분자를 사용하여 제시해야함."
+      },
+      {
+        role: "assistant", content: "여러 연사들이 삶과 죽음에 대해 발표한 연설문을 읽고 그 중 두 개를 암기하여 영어로 발표함. 억양이 자연스럽고 발음이 정확하며 딕션이 좋아 청중에게 큰 호응을 받음.^"
+          + "삶과 죽음에 관련된 연설문들을 읽고 그 중 두 개를 발췌하여 친구들 앞에서 영어로 시연함. 정확한 발음, 자연스러운 억양을 뽐내며 발표를 성황리에 마침.^"
+          + "인생과 죽음이라는 주제의 글을 읽고 두 개를 선택하여 학급 앞에서 자연스러운 영어로 연설함. 화려한 제스쳐, 웅장한 목소리, 자연스러운 표정으로 원어민에 가까운 실력으로 연설을 소화해냄^"
+          + "친구들 앞에서 영어로 삶과 죽음이라는 주제의 글 두 개를 선택하여 연설함. 적절한 발화 속도, 자연스러운 억양 등, 나무랄데 없는 발표로 친구들에게 박수갈채를 받음.",
+
+      },
+      {
+        role: "user", content: `주어진 문장: '${curRecord}'
+        "위 주어진 문장의 의미와 길이가 비슷한 문구를 4개 생성해주세요. 4개의 문구 사이에 각각 '^' 구분자를 사용하여 제시해야함.`
+      },
+    ]
+    playGpt(messages)
   }
 
   const askGptPersonalize = async (acti, personalPropList) => {
-    setGptRes('loading')
     let subject = acti.subject || "국어"
     let record = acti.record || ''
     let messages = [
@@ -72,7 +97,7 @@ const useChatGpt = () => {
         위 행동적 특성과 활동 내용에 따라서 글을 작성하되, 활동 내용을 더 구체적으로 묘사하고 근거 사례를 인용하여 글을 작성 바람
         또한, "학생은~" 과 같은 문장을 사용하면 안됨. 예를 들면 "학생은 성실한 수업 태도를 일관되게 보여줌." 이렇게 쓰지 말고, "학생은~"을 생략하고 "성실한 수업 태도를 일관되게 보여줌." 로 써주어야 함.
         학생의 행동적 특성과 현재 활동 내용을 바탕으로 구체적 예시를 들어 영어 과목 세특을 작성 바람.`
-      },{
+      }, {
         role: "assistant", content: "영어 수업에서 'The Gene: An Intimate History','The Sixth Extinction', 'The Botany of Desire' 등 10권의 책을 읽고 깊이 있는 이해를 보임."
           + " 읽은 책을 바탕으로 영어 독해 능력이 크게 향상되었으며, 각 책의 주요 내용을 정리하여 발표하고 토론을 주도하는 모습을 보임. "
           + " 생물학자의 꿈을 이루기 위해 관련 지식을 영어로 습득하고, 이를 영어로 표현하는 능력을 기름. 특히 'The Immortal Life of Henrietta Lacks'를 읽고,"
@@ -93,7 +118,7 @@ const useChatGpt = () => {
         위 행동적 특성과 활동 내용에 따라서 글을 작성하되, 활동 내용을 더 구체적으로 묘사하고 근거 사례를 인용하여 글을 작성 바람
         또한, "학생은~" 과 같은 문장을 사용하면 안됨. 예를 들면 "학생은 성실한 수업 태도를 일관되게 보여줌." 이렇게 쓰지 말고, "학생은~"을 생략하고 "성실한 수업 태도를 일관되게 보여줌." 로 써주어야 함.
         학생의 행동적 특성과 현재 활동 내용을 바탕으로 구체적 예시를 들어 영어 과목 세특을 작성 바람.`
-      },{
+      }, {
         role: "assistant", content: "쓰기 영역에서 '고등학생은 항상 교복을 입어야 하는가?'에 관한 에세이를 작성하고 첨삭을 받아 교정하는 과정을 통해 표현력을 향상시킴."
           + " 비교적 우수한 성적을 보이며, 특히 문법과 어휘 활용에서 뛰어난 역량을 나타냄. 집중력이 다소 낮아 이를 극복하기 위해 다양한 자기주도 학습 방법을 모색함."
           + " 컴퓨터 프로그래밍에 대한 강한 관심을 바탕으로 관련 자료를 찾아 학습하며, 영어 문법과 프로그래밍 용어를 연결해 이해하고 적용하는 등의 노력을 보임."
@@ -114,6 +139,12 @@ const useChatGpt = () => {
         `
       }
     ]
+    await playGpt(messages)
+  }
+
+  // 공통 부분
+  const playGpt = async (messages) => {
+    setGptRes('loading')
     const completion = await openai.chat.completions.create({
       messages: messages,
       model: "gpt-3.5-turbo",
@@ -131,7 +162,7 @@ const useChatGpt = () => {
     }
   }
 
-  return { gptAnswer, askChatGpt, askGptPersonalize, gptBytes, gptRes }
+  return { gptAnswer, askChatGpt, askGptPersonalize, askExtraRecord, gptBytes, gptRes }
 }
 
 export default useChatGpt

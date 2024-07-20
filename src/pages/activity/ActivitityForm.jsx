@@ -13,11 +13,13 @@ import useGetByte from "../../hooks/useGetByte";
 //컴포넌트
 import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
 import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
+import AddExtraRecModal from "../../components/Modal/AddExtraRecModal";
 import ScoreWrapper from "../../components/ScoreWrapper"
-import CircleList from "../../components/CircleList";
 import QuestModal from "../../components/Modal/QuestModal";
 import SubjectSelect from "../../components/SubjectSelect";
 import TwoRadios from "../../components/Radio/TwoRadios";
+import SmallBtn from "../../components/Btn/SmallBtn"
+import CircleList from "../../components/CircleList";
 import Homework from "../../components/Homework";
 //이미지
 import mon01 from "../../image/enemies/mon_01.png";
@@ -42,6 +44,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const [_isHomework, setIsHomework] = useState(false)
   const [_isPrivate, setIsPrivate] = useState(true)
   const [_anyPartici, setAnyPartici] = useState(false)
+ 
   //2.경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
   const [careerScore, setCareerScore] = useState(0);
@@ -53,6 +56,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const [graphicModalShow, setgraphicModalShow] = useState(false)
   const [timerModalShow, setTimerModalShow] = useState(false)
   const [questModalShow, setQuestModalShow] = useState(false)
+  const [extraRecModalShow, setExtraRecModalShow] = useState(false)
   const [isHomeworkSubmit, setIsHomeworkSubmit] = useState(false)
   const [isModified, setIsModified] = useState(false)
   //hooks
@@ -231,13 +235,13 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       case "delete_btn":
         if (window.confirm("이 활동을 정말로 삭제하시겠습니까?")) {
           deleteActi(state.acti.id)
-          navigate("/activities") //todo 삭제 후 잔상 남아있는거 해결해야함.
+          navigate("/activities")
         }
         break;
       case "copied_delete_btn":
         if (window.confirm("이 활동을 정말로 삭제하시겠습니까?")) {
           delCopiedActiTransaction(state.acti.id)
-          navigate("/activities") //todo 삭제 후 잔상 남아있는거 해결해야함.
+          navigate("/activities") //todo 삭제 후 잔상 남아있는거 해결해야함. 구독 눌러야 함.
         }
         break;
       case "go_back_to_class_btn":
@@ -329,7 +333,11 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
             <label htmlFor="act_content" >활동 설명하기</label>
             <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled={!isModified}
               placeholder="~활동으로 끝맺기. ex)포도당 산화 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동" />
-            <label htmlFor="act_record" >생기부 문구</label>
+            <div style={{ display: "flex", justifyContent: "flex-start" }}>
+              <label htmlFor="act_record" >생기부 문구</label>
+              {/* 문구 추가 버튼 */}
+              {state && <SmallBtn id="extra_Rbtn" btnName="추가" btnColor="#9b0c24" hoverBtnColor="red" margin="0 10px" btnOnClick={() => { setExtraRecModalShow(true) }} />}
+            </div>
             <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled={!isModified} />
             <StyledDiv>
               <label className="act_byte" htmlFor="act_byte" ></label>
@@ -418,21 +426,24 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
           </fieldset>
         </StyledForm>
       </>}
-      {isParticipating && <Homework activity={state.acti} homeworkSubmit={(isSubmit) => { setIsHomeworkSubmit(isSubmit) }} />}
-      {state && <CircleList dataList={state.acti.particiList} acti={state.acti} />}
+      {/* 추후 삭제하기 */}
+      {/* {isParticipating && <Homework activity={state.acti} homeworkSubmit={(isSubmit) => { setIsHomeworkSubmit(isSubmit) }} />}
+      {state && <CircleList dataList={state.acti.particiList} acti={state.acti} />} */}
       {/* 모달 */}
       <GraphicDialogModal
         show={graphicModalShow}
         onHide={() => setgraphicModalShow(false)}
-        setMonImg={setMonImg}
-      />
+        setMonImg={setMonImg} />
       <Wait3SecondsModal
-        show={timerModalShow}
-      />
+        show={timerModalShow} />
       <QuestModal
         show={questModalShow}
-        onHide={() => setQuestModalShow(false)}
-      />
+        onHide={() => setQuestModalShow(false)} />
+      {(state && extraRecModalShow) && < AddExtraRecModal
+        show={extraRecModalShow}
+        onHide={() => setExtraRecModalShow(false)}
+        acti={state.acti}
+      />}
     </StyledContainer>
   )
 }

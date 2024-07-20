@@ -1,8 +1,9 @@
 //Hooks
 import useGetByte from "../../hooks/useGetByte"
 import useAddUpdFireData from "../../hooks/useAddUpdFireData"
+import useClientHeight from "../../hooks/useClientHeight"
 import { useParams } from "react-router-dom"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 //Firestore
 import { setModifiedStudent } from "../../store/allStudentsSlice"
@@ -11,8 +12,6 @@ import ExportAsExcel from "../../components/ExportAsExcel"
 import SmallBtn from "../../components/Btn/SmallBtn"
 //CSS
 import styled from "styled-components"
-import useClientHeight from "../../hooks/useClientHeight"
-//이미지
 
 const ClassAllStudents = () => {
   //1. 변수
@@ -21,6 +20,9 @@ const ClassAllStudents = () => {
   const classId = params.id
   //전역 변수
   const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //ClassRoomDetail에서 저장한 학생List 불러오기(전역)
+  const [_allStudentList, setAllStudentList] = useState([])
+  useEffect(() => { setAllStudentList(allStudentList) }, [allStudentList])
+
   const dispatcher = useDispatch()
   //hooks
   const { updateStudent } = useAddUpdFireData("classRooms")
@@ -30,8 +32,10 @@ const ClassAllStudents = () => {
   const [prevIndex, setPrevIndex] = useState(null)
   let writtenName = ''
   let accRecord = ''
-  //객체접근
+  //ref
   const contentRowRef = useRef({})
+  const textAreaRef = useRef({})
+  //css
   const clientHeight = useClientHeight(document.documentElement)
   //모달
 
@@ -47,11 +51,32 @@ const ClassAllStudents = () => {
   }
   //저장 버튼
   const handleSaveBtn = (key) => {
-    updateStudent({ accRecord, writtenName }, classId, key); //데이터 통신
+    updateStudent({ accRecord, writtenName }, classId, key);         //데이터 통신
     dispatcher(setModifiedStudent({ key, accRecord, writtenName })); //전역 변수 변경
     setThisModifying('');
     writtenName = '';
-    accRecord = '';
+    // accRecord = '';
+    console.log(accRecord)
+  }
+
+  const handleShuffleBtnOnClick = (id) => {
+    let frozenStudent = _allStudentList.find(student => student.id === id)
+    let _student = { ...frozenStudent }
+    let frozenActiList = _student.actList     //원본 변경 불가 복사
+    let actiList = [...frozenActiList]        //원본 변경 불가 복사
+    let newAccRec = shuffleOrder(actiList).map(acti => { return acti.record }).join(" ")
+    textAreaRef.current.value = newAccRec;
+    accRecord = newAccRec;
+  }
+
+  const shuffleOrder = (list) => { //활동 순서 랜덤 섞기
+    if (list && list.length > 1) {
+      for (let i = list.length - 1; i > 0; i--) {     //랜덤 섞기
+        const j = Math.floor(Math.random() * (i + 1));
+        [list[i], list[j]] = [list[j], list[i]];
+      }
+      return list
+    }
   }
 
   return (
@@ -69,7 +94,7 @@ const ClassAllStudents = () => {
           <StyledSmallLastDiv>Byte</StyledSmallLastDiv>
           <StyledSmallLastDiv>수정</StyledSmallLastDiv>
         </StyledTitleRow>
-        {allStudentList.map((student, index) => {
+        {_allStudentList.map((student, index) => {
           let isModifying = (thisModifying === student.id)
           let studentNumber = student.studentNumber
           let name = (student.writtenName ? student.writtenName : '미등록')
@@ -79,7 +104,7 @@ const ClassAllStudents = () => {
             writtenName = name
             accRecord = record
           }
-          return <StyledContentRow ref={(element) => { return contentRowRef.current[index] = element }} key={student.id}>
+          return <StyledContentRow key={student.id} ref={(element) => { return contentRowRef.current[index] = element }} >
             <StyledSmallDiv>{index + 1}</StyledSmallDiv> {/* 연번 */}
             <StyledMidlDiv>{studentNumber}</StyledMidlDiv> {/* 학번 */}
             <StyledMidlDiv>
@@ -89,14 +114,19 @@ const ClassAllStudents = () => {
             </StyledMidlDiv>
             <StyledLargeDiv>
               {isModifying
-                ? <StyledTextArea defaultValue={record} onChange={(event) => { accRecord = event.target.value }} />
+                ? <StyledTextArea defaultValue={record}
+                  ref={(ele) => { return textAreaRef.current = ele }}
+                  onChange={(event) => { accRecord = event.target.value }} />
                 : record}
             </StyledLargeDiv>
             <StyledSmallLastDiv>{bytes}</StyledSmallLastDiv>
             <StyledSmallLastDiv>
               {isModifying
-                ? <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(student.id) }} btnName="저장" btnColor="#3454d1" />
-                : <SmallBtn id="modi_btn" btnOnClick={() => { handleModifyingBtn(student.id, index) }} btnName="수정" btnColor="#3454d1" />}
+                ? <> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(student.id) }} btnName="저장" btnColor="#3454d1" />
+                  <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(student.id) }} btnName="섞기" btnColor="#9b0c24" hoverBtnColor="red" />
+                </>
+                : <SmallBtn id="modi_btn" btnOnClick={() => { handleModifyingBtn(student.id, index) }} btnName="수정" btnColor="#3454d1" hoverBtnColor="blue" />
+              }
             </StyledSmallLastDiv>
           </StyledContentRow>
         })}
@@ -159,9 +189,10 @@ const StyledSmallDiv = styled.div`
   }
 `
 const StyledSmallLastDiv = styled.div`
-  flex-basis: 60px;
-  justify-content: center;
   display: flex;
+  flex-basis: 60px;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
   border-bottom: 1px solid black;
   border-right: 1px solid black;
@@ -198,18 +229,12 @@ const StyledNameInput = styled.input`
   display: block;
   width: 85px;
   height: 50%;
+  border-radius: 10px;
 `
 const StyledTextArea = styled.textarea`
   display: block;
   width: 95%;
   height: 85%;
-`
-const StyledMacroIcon = styled.img`
-  width: 45px;
-  height: 45px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  margin-right: 25px;
-  cursor: pointer;
+  border-radius: 10px;
 `
 export default ClassAllStudents

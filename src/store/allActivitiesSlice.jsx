@@ -5,8 +5,8 @@ let allActivities = createSlice({
   initialState: [],
   reducers: {
     setAllActivities(state, action) {
-      let AllActivities = action.payload
-      return AllActivities
+      let allActiList = action.payload
+      return allActiList
     }
   }
 })

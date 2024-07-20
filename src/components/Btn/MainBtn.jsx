@@ -14,7 +14,7 @@ const StyledBtn = styled.button`
   border-style: none;
   box-shadow: none;
   box-sizing: border-box;
-  margin: 50px auto;
+  margin: 20px auto;
   color: #fff;
   cursor: pointer;
   display: block;

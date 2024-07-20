@@ -21,7 +21,6 @@ const useGetMyUserInfo = () => {
         userRef,
         (snapshot) => {
           dispatcher(setUser(snapshot.data()))
-          console.log("데이터 수신")
         },
         (err) => {
           setError(err)

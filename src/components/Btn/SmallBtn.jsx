@@ -4,11 +4,14 @@ import styled from 'styled-components'
 const SmallBtn = (props) => {
   return (
     <StyledBtn
+      type="button"
       id={props.id}
       $backgroundColor={props.btnColor || "#3454d1"}
       $fontColor={props.fontColor || "#fff"}
       $hoverBackgroundColor={props.hoverBtnColor || "#1366d6"}
-      onClick={props.btnOnClick}>
+      $margin={props.margin || "auto"}
+      onClick={props.btnOnClick}
+    >
       {props.btnName}
     </StyledBtn>
   )
@@ -21,7 +24,7 @@ const StyledBtn = styled.button`
   border-style: none;
   box-shadow: none;
   box-sizing: border-box;
-  margin: auto;
+  margin: ${(props) => props.$margin};
   color:  ${(props) => props.$fontColor};
   display: flex;
   justify-content: center;

@@ -12,15 +12,14 @@ const useFetchFireData = () => {
   const actiColRef = collection(appFireStore, "activities")
   const userColRef = collection(appFireStore, "user")
   const wordColRef = collection(db, "words")
-  const noticeColRef = collection(db, "notice")
 
   //2024.06.30 수정
-  //8. 공지사항
-  const fetchNotice = async () => {
-    let noticeDocRef = doc(noticeColRef, "notice")
+  //8. 문서 한개(2024.07.19)
+  const fetchDoc = async (colName, docId) => {
+    let noticeDocRef = doc(collection(db, colName), docId)
     try {
-      let noticeDoc = await getDocFromServer(noticeDocRef);
-      return noticeDoc.data().noticeList
+      let doc = await getDocFromServer(noticeDocRef);
+      return doc.data()
     } catch (err) {
       console.log(err)
       window.alert(err.message)
@@ -40,7 +39,6 @@ const useFetchFireData = () => {
       try {
         let userDoc = await getDocFromServer(userDocRef);
         if (!userDoc.exists()) { throw new Error("해당 유저를 찾지 못했습니다."); }
-        if (!userDoc.data().copiedList) { console.log("업어온 활동이 없습니다."); }
         return userDoc.data().copiedActiList || []
       } catch (err) {
         window.alert(err.message)
@@ -232,7 +230,7 @@ const useFetchFireData = () => {
     }
     return q
   }
-  return ({ db, fetchNotice, fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
+  return ({ db, fetchDoc, fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
 }
 
 export default useFetchFireData
