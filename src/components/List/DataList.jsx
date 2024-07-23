@@ -95,14 +95,14 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
         return (<StyledClassroomLi key={item.id} onClick={() => { handleOnClick(item) }}>
           <h4>{item.classTitle}</h4>
           <p>{item.intro}</p>
-          <p>{item.subject ? `과목: ${item.subject}` : "교사가 삭제한 클래스입니다."} </p>
+          <p>{item.subject ? `${item.subject}과` : "교사가 삭제한 클래스입니다."}{item.subjDetail ? '-' + item.subjDetail : ''} </p>
         </StyledClassroomLi>)
       })}
       {type === "activity" && dataList.map((item) => { //활동
         return (<ActiList key={item.id} onClick={() => { handleOnClick(item) }}>
           <div className="acti_info">
             <h4 >{item.title}</h4>
-            <p>과목: {item.subject}</p>
+            <p>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
             <p className="like_count"><img className={"like_icon"} src={likeIcon} alt={"받은좋아요"} />{item.likedCount ? item.likedCount : 0} </p>
             <p className="madeBy">by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</p>
           </div>
@@ -113,7 +113,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
         return (<ActiList key={item.id} onClick={() => { handleOnClick(item) }}>
           <div className="acti_info">
             <h4 style={{ color: '#FF69B4' }}>{item.title}</h4>
-            <p>과목: {item.subject}</p>
+            <p>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
             <p style={{ backgroundColor: '#FF69B4' }} className="madeBy">by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</p>
           </div>
           <div><MonImg className="monImg" monImg={item.monImg}></MonImg></div>
