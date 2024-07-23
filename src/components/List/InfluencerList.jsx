@@ -5,7 +5,7 @@ import likeIcon from '../../image/icon/like_icon.png'
 //css
 import styled from 'styled-components';
 import useClientWidth from '../../hooks/useClientWidth';
-//2024.07.21
+//2024.07.21 좋아요 탑10
 const InfluencerList = (props) => {
   const listRef = useRef(null);
   const clientWidth = useClientWidth(document.documentElement)

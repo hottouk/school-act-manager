@@ -16,7 +16,8 @@ import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
 import AddExtraRecModal from "../../components/Modal/AddExtraRecModal";
 import ScoreWrapper from "../../components/ScoreWrapper"
 import QuestModal from "../../components/Modal/QuestModal";
-import SubjectSelect from "../../components/SubjectSelect";
+import SubjectSelects from "../../components/Select/SubjectSelects";
+
 import TwoRadios from "../../components/Radio/TwoRadios";
 import SmallBtn from "../../components/Btn/SmallBtn"
 import CircleList from "../../components/List/CircleList";
@@ -36,7 +37,8 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const user = useSelector(({ user }) => { return user })
   //1.활동 기본 정보 변수
   const [title, setTitle] = useState('');
-  const [_subject, setSubject] = useState('default');
+  const [_subjGroup, setSubjGroup] = useState('default');
+  const [_subjDetail, setSubjDetail] = useState('default');
   const [content, setContent] = useState('');
   const [record, setRecord] = useState('');
   const [monImg, setMonImg] = useState(null);
@@ -44,7 +46,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const [_isHomework, setIsHomework] = useState(false)
   const [_isPrivate, setIsPrivate] = useState(true)
   const [_anyPartici, setAnyPartici] = useState(false)
- 
+
   //2.경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
   const [careerScore, setCareerScore] = useState(0);
@@ -84,7 +86,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       setContent(acti.content)
       setRecord(acti.record)
       setMonImg(acti.monImg)
-      setSubject(acti.subject)
+      setSubjDetail(acti.subject)
       setIsHomework(acti.isHomework)
       if (acti.isPrivate !== undefined) setIsPrivate(acti.isPrivate)
       setCoin(acti.money)
@@ -137,7 +139,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       const confirm = window.confirm("활동을 수정하시겠습니까?")
       let actId = state.acti.id
       if (confirm) {
-        let modifiedActi = { title, subject: _subject, content, record, scores, money, monImg, isHomework: _isHomework, isPrivate: _isPrivate, byte, madeBy: user.name, };
+        let modifiedActi = { title, content, record, scores, money, monImg, isHomework: _isHomework, isPrivate: _isPrivate, byte };
         updateActi(modifiedActi, "activities", actId)
         navigate("/activities")
         setIsModified(false)
@@ -148,7 +150,8 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
         let newAct = {
           uid: String(user.uid),
           title,
-          subject: _subject,
+          subject: _subjGroup,
+          subjDetail: _subjDetail,
           content,
           record,
           scores,
@@ -206,7 +209,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   // 저장버튼 클릭 제출
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (_subject !== 'default') {
+    if (_subjDetail !== 'default') {
       showConfirmModal();
     } else {
       window.alert('과목을 입력해주세요')
@@ -218,9 +221,9 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
     event.preventDefault();
     switch (event.target.id) {
       case "gpt_btn": //교사 전용
-        if (title !== '' && _subject !== 'default' && content !== '') {
+        if (title !== '' && _subjDetail !== 'default' && content !== '') {
           try {
-            askChatGpt(title, _subject, content, byte)
+            askChatGpt(title, _subjDetail, content, byte)
             setTimerModalShow(true)
           } catch (error) {
             window.alert.log(error.message)
@@ -319,24 +322,25 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
         <StyledForm onSubmit={handleSubmit}>
           <fieldset>
             <StyledDiv>
-              {state ? <legend>{_subject} 활동 수정</legend> : <legend>활동 생성</legend>}
+              {state ? <legend>{_subjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}
               <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
             </StyledDiv>
-            <StyledDiv>
-              <div>
-                <label htmlFor="act_title" >활동 제목</label>
-                <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled={!isModified}
-                  placeholder="ex)포도당 산화 환원 실험" />
-              </div>
-              {!state && <SubjectSelect subject={_subject} onChange={setSubject} />}
-            </StyledDiv>
+            <StyledInputContainer>
+              <p>활동 제목</p>
+              <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled={!isModified} placeholder="ex)포도당 산화 환원 실험" />
+            </StyledInputContainer>
+            {!state &&
+              <StyledInputContainer>
+                <p>교과/과목</p>
+                <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
+              </StyledInputContainer>}
             <label htmlFor="act_content" >활동 설명하기</label>
             <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled={!isModified}
               placeholder="~활동으로 끝맺기. ex)포도당 산화 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동" />
             <div style={{ display: "flex", justifyContent: "flex-start" }}>
               <label htmlFor="act_record" >생기부 문구</label>
               {/* 문구 추가 버튼 */}
-              {state && <SmallBtn id="extra_Rbtn" btnName="추가" btnColor="#9b0c24" hoverBtnColor="red" margin="0 10px" btnOnClick={() => { setExtraRecModalShow(true) }} />}
+              {state?.acti?.uid === user.uid && !state?.acti?.madeById && <SmallBtn id="extra_Rbtn" btnName="추가" btnColor="#9b0c24" hoverBtnColor="red" margin="0 10px" btnOnClick={() => { setExtraRecModalShow(true) }} />}
             </div>
             <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled={!isModified} />
             <StyledDiv>
@@ -524,7 +528,7 @@ const StyledDiv = styled.div`
     border-radius: 7px;
     padding-left: 5px;
     &:disabled {             /* 해당 input disabled 되었을 때 */
-        color: #efefef;      /* 글자 색을 white로 설정 */
+      color: #efefef;      /* 글자 색을 white로 설정 */
     }
   }
   label.act_byte {
@@ -537,6 +541,40 @@ const StyledDiv = styled.div`
   select {
     height: 35px;
     border-radius: 7px;
+  }
+`
+
+const StyledInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20px 0;
+  input {
+    max-width: 280px;
+    height: 35px;
+    border-radius: 7px;
+    padding-left: 5px;
+    &:disabled {             /* 해당 input disabled 되었을 때 */
+      color: #efefef;       /* 글자 색을 white로 설정 */
+    }
+  }
+  p {
+    position: relative;
+    width: 30%;
+    font-weight: bold;
+    padding: 0 20px;  /* 텍스트가 동그라미와 겹치지 않도록 왼쪽 여백 추가 */
+    margin: 0;
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 10px;
+      height: 20px;
+      background-color: white;  /* 동그라미 색상 */
+      border-radius: 2px;
+    }
   }
 `
 const StyledImgPicker = styled.img`

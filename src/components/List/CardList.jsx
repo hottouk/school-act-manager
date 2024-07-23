@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+//컴포넌트
 import EmptyResult from '../EmptyResult'
 import DataList from './DataList'
 import SmallBtn from '../Btn/SmallBtn'
@@ -7,14 +8,13 @@ import styled from 'styled-components'
 
 //24.07.07(정렬 버튼 추가)
 const CardList = ({ dataList, type, title, comment, setTeacherClassList, }) => {
+  //1. 변수
   useEffect(() => {
     setDataList(dataList)
   }, [dataList])
-
   const [_dataList, setDataList] = useState(dataList)            //정렬 위해 useState 사용
   const [sortCriterion, setSortCriterion] = useState('subject'); //정렬 기준 바뀔 때마다 리랜더링
-
-  //데이터 정렬
+  //2. 함수: 데이터 정렬
   const sortDataList = (criterion) => {
     const sortedList = [...dataList].sort((a, b) => a[criterion].localeCompare(b[criterion]));
     setDataList(sortedList);
@@ -24,7 +24,7 @@ const CardList = ({ dataList, type, title, comment, setTeacherClassList, }) => {
 
   return (<StyledContainer>
     <TitleBarContainer>
-      <h6 className="title" >{title}</h6>
+      <p className="title" >{title}</p>
       <BtnContainer>
         {type === "activity" && <>
           <SmallBtn btnColor="#3454d1" btnName="과목" btnOnClick={() => { sortDataList("subject") }} />
@@ -54,9 +54,9 @@ const CardList = ({ dataList, type, title, comment, setTeacherClassList, }) => {
 }
 
 const StyledContainer = styled.div`
-  h6.title {
-  display: inline-block;
-  margin: 10px 0; 
+  p.title {
+    display: inline-block;
+    margin: 10px 10px; 
   }
 `
 const TitleBarContainer = styled.div`

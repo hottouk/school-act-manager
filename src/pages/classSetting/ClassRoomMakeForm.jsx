@@ -6,22 +6,24 @@ import { useSelector } from 'react-redux';
 //컴포넌트
 import ImportExcelFile from '../../components/ImportExcelFile';
 import LongW100Btn from '../../components/Btn/LongW100Btn';
+import CSInfoSelect from '../../components/CSInfoSelect';
+import SubjectSelects from '../../components/Select/SubjectSelects';
 //hooks
 import useAddUpdFireData from '../../hooks/useAddUpdFireData';
 import useStudent from '../../hooks/useStudent';
 import useClientHeight from '../../hooks/useClientHeight';
 //css
 import styled from 'styled-components';
-import CSInfoSelect from '../../components/CSInfoSelect';
 
-//2024.2.23 수정
+//2024.07.22 수정(세부 과목 선택 가능)
 const ClassRoomMakeForm = () => {
   //1. 변수
   //인증
   const user = useSelector(({ user }) => { return user })
   //교실에 필요한 속성 값
   const [_classTitle, setClassTitle] = useState('');
-  const [_subject, setSubject] = useState('default');
+  const [_subjGroup, setSubjGroup] = useState('default');
+  const [_subjDetail, setSubjDetail] = useState('default');
   const [_grade, setGrade] = useState('default');
   const [_classNumber, setClassNumber] = useState('default');
   const [_numberOfStudent, setNumberOfStudent] = useState(0);
@@ -44,10 +46,8 @@ const ClassRoomMakeForm = () => {
   //3. 함수
   //내부 변수 꺼내는 함수
   const handleOnChange = (event) => {
-    if (event.target.id === 'class_title') {
+    if (event.target.id === "class_title") {
       setClassTitle(event.target.value)
-    } else if (event.target.id === 'class_subject') {
-      setSubject(event.target.value)
     } else if (event.target.id === 'class_number_of_studnets') {
       setNumberOfStudent(event.target.value)
     } else if (event.target.id === 'class_explanation') {
@@ -63,7 +63,7 @@ const ClassRoomMakeForm = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log("제출?")
-    if (_subject !== 'default' && _grade !== 'default' && _classNumber !== 'default') {
+    if (_subjDetail !== 'default' && _grade !== 'default' && _classNumber !== 'default') {
       makeClass();
     } else { window.alert("학년 반 과목은 필수 값입니다.") }
   }
@@ -73,7 +73,7 @@ const ClassRoomMakeForm = () => {
     const confirm = window.confirm('클래스를 생성하시겠습니까?')
     if (confirm) {
       const uid = user.uid;
-      const classInfo = { uid, classTitle: _classTitle, subject: _subject, grade: _grade, classNumber: _classNumber, intro: _intro }
+      const classInfo = { uid, classTitle: _classTitle, subject: _subjGroup, subjDetail: _subjDetail, grade: _grade, classNumber: _classNumber, intro: _intro }
       let studentList
       switch (classKind) {
         case "with_neis":
@@ -114,9 +114,16 @@ const ClassRoomMakeForm = () => {
         <legend>클래스 만들기</legend>
         <label htmlFor="class_title">클래스 이름</label>
         <input id="class_title" type="text" required onChange={handleOnChange} value={_classTitle} />
-        <CSInfoSelect grade={_grade} classNumber={_classNumber} subject={_subject} handleOnChange={handleOnChange} classMode={true} />
-        <label htmlFor="class_explanation">간단한 설명을 작성하세요(ex: 24 경기고 1-1 영어)</label>
-        <input id="class_explanation" type="text" required value={_intro} onChange={handleOnChange} />
+        <StyledInputContainer>
+          <p>학년/반</p>
+          <CSInfoSelect grade={_grade} classNumber={_classNumber} subject={_subjDetail} handleOnChange={handleOnChange} classMode={true} />
+        </StyledInputContainer>
+        <StyledInputContainer>
+          <p>교과/과목</p>
+          <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
+        </StyledInputContainer>
+        <label htmlFor="class_explanation">간단한 설명을 작성하세요</label>
+        <input id="class_explanation" type="text" required value={_intro} onChange={handleOnChange} placeholder="ex)24 경기고 1-1 영어"/>
         {(classKind === "with_neis") && <>
           <p>나이스 출석부 엑셀 파일을 등록하세요.</p>
           <ImportExcelFile getData={setXlsxData} />
@@ -124,7 +131,7 @@ const ClassRoomMakeForm = () => {
         {(classKind === "with_number") && <><label htmlFor="class_number_of_studnets">학생 수를 입력하세요. (최대 99명)</label>
           <input id="class_number_of_studnets" type="number" required min='1' max='99' value={_numberOfStudent} onChange={handleOnChange} /></>}
         {(classKind === "by_hand") && <label htmlFor="class_number_of_studnets">학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>}
-        <LongW100Btn type="submit" btnName="생성"/>
+        <LongW100Btn type="submit" btnName="생성" />
         <LongW100Btn id="cancel" btnName="취소" btnOnClick={handleBtnClick} />
       </fieldset>
     </StyledForm >
@@ -156,17 +163,11 @@ const StyledForm = styled.form`
     margin: 5px 0 15px;
     border-radius: 7px;
   }
-  select {
-    margin: 15px 0px;
-    padding: 5px;
-    border-radius: 7px;
-  }
   textarea {
     margin: 5px 0 15px;
     width: 100%;
     border-radius: 7px;
   }
-
   @media screen and (max-width: 767px) {
     position: fixed;
     width: 100%;
@@ -174,6 +175,40 @@ const StyledForm = styled.form`
     margin: 0;
     padding-bottom: 20px;
     overflow-y: scroll;
+  }
+`
+
+const StyledInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20px 0;
+  input {
+    max-width: 280px;
+    height: 35px;
+    border-radius: 7px;
+    padding-left: 5px;
+    &:disabled {             /* 해당 input disabled 되었을 때 */
+      color: #efefef;       /* 글자 색을 white로 설정 */
+    }
+  }
+  p {
+    position: relative;
+    width: 30%;
+    font-weight: bold;
+    padding: 0 20px;  /* 텍스트가 동그라미와 겹치지 않도록 왼쪽 여백 추가 */
+    margin: 0;
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 10px;
+      height: 20px;
+      background-color: white;  /* 동그라미 색상 */
+      border-radius: 2px;
+    }
   }
 `
 export default ClassRoomMakeForm

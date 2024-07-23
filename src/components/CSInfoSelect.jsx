@@ -1,9 +1,9 @@
 import styled from "styled-components"
-import subjects from "../subjects"
+//데이터
+import classNumberList from '../data/classNumberList'
 
-//24.07.07
-const CSInfoSelect = ({ grade, classNumber, number, subject, handleOnChange, classMode }) => {
-  const subjectList = subjects
+//24.07.22 (반 데이터로 제공)
+const CSInfoSelect = ({ grade, classNumber, handleOnChange, classMode }) => {
   return (
     <StyledSelectDiv>
       {!classMode && <p>학번: </p>}
@@ -14,35 +14,13 @@ const CSInfoSelect = ({ grade, classNumber, number, subject, handleOnChange, cla
         <option value="3">3학년</option>
       </select>
       <select id="class_number" required value={classNumber} onChange={handleOnChange}>
-        <option value="default" disabled >반</option>
-        <option value="01">1반</option>
-        <option value="02">2반</option>
-        <option value="03">3반</option>
-        <option value="04">4반</option>
-        <option value="05">5반</option>
-        <option value="06">6반</option>
-        <option value="07">7반</option>
-        <option value="08">8반</option>
-        <option value="09">9반</option>
-        <option value="10">10반</option>
-        <option value="11">11반</option>
-        <option value="12">12반</option>
-        <option value="13">13반</option>
-        <option value="14">14반</option>
-        <option value="15">15반</option>
-        <option value="16">16반</option>
-        <option value="17">17반</option>
-        <option value="18">18반</option>
-        <option value="19">19반</option>
-        <option value="20">기타</option>
-      </select>
-      {!classMode && <input type="number" id="number_input" value={number} onChange={handleOnChange} required min={1} max={99} />}
-      {classMode && <select id="class_subject" required value={subject} onChange={handleOnChange}>
-        <option value="default" disabled >과목 선택</option>
-        {subjectList.map((subject) => {
-          return <option value={subject}>{subject}</option>
+        <option value='default' disabled >반</option>
+        {classNumberList.map((classNumber) => {
+          let key = Object.keys(classNumber)
+          let value = Object.values(classNumber)
+          return <option value={value}>{key}</option>
         })}
-      </select>}
+      </select>
     </StyledSelectDiv>
   )
 }
@@ -51,18 +29,14 @@ const StyledSelectDiv = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
+  justify-content: flex-end;
   p {
     margin: 0;
   }
   select {
     padding: 5px;
     border-radius: 7px;
-  }
-  input {
-    padding: 5px;
-    border-radius: 7px;
+    margin-left: 30px;
   }
 `
 export default CSInfoSelect
