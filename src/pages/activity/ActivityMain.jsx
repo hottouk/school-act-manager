@@ -9,12 +9,12 @@ import TabBtn from '../../components/Btn/TabBtn'
 //hooks
 import useClientHeight from '../../hooks/useClientHeight'
 import useFetchFireData from '../../hooks/useFetchFireData'
-import useFetchRtActiData from '../../hooks/useFetchRtActiData'
+import useFetchRtMyActiData from '../../hooks/RealTimeData/useFetchRtMyActiData'
 //데이터
 import subjects from '../../subjects'
-
 //css
 import styled from 'styled-components'
+import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
 
 //24.06.30 update 
 const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동 관리 - 나의 활동, 활동 관리 - 전체 활동, 사람 찾기 - 타교사) 학생 1
@@ -27,7 +27,7 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동 관리 - 
   //활동 정보
   const { fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList } = useFetchFireData() //데이터 통신
   const [_activityList, setActivityList] = useState(null)
-  const realTimetActiList = useFetchRtActiData() //실시간 데이터 통신
+  const realTimetActiList = useFetchRtMyActiData() //실시간 데이터 통신
   const [_copiedList, setCopiedList] = useState(null)
   //CSS
   const clientHeight = useClientHeight(document.documentElement)
@@ -55,6 +55,7 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동 관리 - 
         <CardList dataList={realTimetActiList} type="activity" //교사: 활동관리 - 나의활동
           title="나의 생성 활동 목록"
           comment="아직 활동이 없습니다. 활동을 생성해주세요" />
+        <HorizontalBannerAd />
         <CardList dataList={_copiedList} type="copiedActi"
           title="업어온 활동 목록"
           comment="업어온 활동이 없습니다." />
@@ -71,6 +72,7 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동 관리 - 
         <CardList dataList={_activityList} type="activity" //교사: 활동관리 - 전체 활동
           title={isLoading ? "데이터를 서버에서 불러오는 중 입니다." : `서버에 총 ${_activityList ? _activityList.length : 0}개의 활동이 등록되어 있습니다.`}
           comment="아직 활동이 없습니다. 활동을 생성해주세요" />
+        <HorizontalBannerAd />
       </>}
       {!user.isTeacher && <><CardList dataList={_activityList} type="activity" //학생
         title="참여 활동 목록"

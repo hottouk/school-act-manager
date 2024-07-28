@@ -4,16 +4,15 @@ import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet'
 import { Badge } from 'react-bootstrap';
-
-//모달
+//컴포넌트
 import MyInfoModal from './Modal/MyInfoModal'
-//CSS
-import styled from 'styled-components'
+//hooks
+import DropDownBtn from './Btn/DropDownBtn';
 //이미지
 import brandLogo from "../image/icon/h-logo.png";
 import unknown from '../image/icon/unkown_icon.png'
-//hooks
-import DropDownBtn from './Btn/DropDownBtn';
+//css
+import styled from 'styled-components'
 
 //24.02.22
 const Nav = () => {
@@ -159,7 +158,6 @@ const StyledNav = styled.nav`
   li.news_btn {
     position: relative;
   }
-
   i {
     margin-right: 5px;
   }

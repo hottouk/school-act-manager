@@ -153,6 +153,7 @@ const StyledUl = styled.ul`
   }
   img {
     width: 25px;
+    cursor: pointer;
   }
 `
 

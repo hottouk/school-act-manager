@@ -1,10 +1,10 @@
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { appFireStore } from '../firebase/config'
+import { appFireStore } from '../../firebase/config'
 
 //2024.07.09 
-const useFetchRtActiData = () => {
+const useFetchRtMyActiData = () => {
   const db = appFireStore
   const user = useSelector(({ user }) => { return user })
   const actiColRef = collection(db, "activities")
@@ -26,4 +26,4 @@ const useFetchRtActiData = () => {
   return actiList;
 }
 
-export default useFetchRtActiData
+export default useFetchRtMyActiData

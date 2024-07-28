@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
+//2024.07.26 샘플
 const SmallBtn = (props) => {
   return (
     <StyledBtn
@@ -11,8 +12,7 @@ const SmallBtn = (props) => {
       $hoverBackgroundColor={props.hoverBtnColor || "#1366d6"}
       $margin={props.margin || "auto"}
       onClick={props.btnOnClick}
-    >
-      {props.btnName}
+    >{props.btnName || "샘플"}
     </StyledBtn>
   )
 }

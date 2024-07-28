@@ -43,15 +43,14 @@ const useFireTransaction = () => {
       if (!userDoc.exists()) { throw new Error("유저 읽기 에러") }
       if (!otrDoc.exists()) { throw new Error("타교사 읽기 에러") }
       //기존 데이터 or undefined 반환 undefined인 경우엔 초기값 제공
-      let copiedActiList = userDoc.data().copiedActiList || [];
+      let copiedActiList = userDoc.data().copiedActiList || [];  //기존 업어간 활동 //기존 업어간 활동 + 새로 업어온 활동
       copiedActiList = makeUniqueArrWithEle(copiedActiList, { id: actiDoc.id, ...actiDoc.data(), madeById: actiDoc.data().uid, uid: user.uid }, "id")
-      console.log(actiDoc.data().likedCount)
       let likedCount = (actiDoc.data().likedCount || 0) + 1;
-      console.log(actiDoc.data().likedCount)
+      let targetLikedCount = (otrDoc.data().likedCount || 0) + 1;  //기존 좋아요 + 1 
       //업데이트
       transaction.update(userRef, { copiedActiList })
       transaction.update(actiRef, { likedCount })
-      transaction.update(otrRef, { likedCount })
+      transaction.update(otrRef, { targetLikedCount })
     }).then(() => {
       window.alert("활동이 저장되었습니다.")
     }).catch(err => {

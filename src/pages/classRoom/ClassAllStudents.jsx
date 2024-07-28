@@ -1,18 +1,19 @@
-//Hooks
+//컴포넌트
+import ExportAsExcel from "../../components/ExportAsExcel"
+import SmallBtn from "../../components/Btn/SmallBtn"
+//hooks
 import useGetByte from "../../hooks/useGetByte"
 import useAddUpdFireData from "../../hooks/useAddUpdFireData"
 import useClientHeight from "../../hooks/useClientHeight"
 import { useParams } from "react-router-dom"
-import { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-//Firestore
+//전역변수
 import { setModifiedStudent } from "../../store/allStudentsSlice"
-//컴포넌트
-import ExportAsExcel from "../../components/ExportAsExcel"
-import SmallBtn from "../../components/Btn/SmallBtn"
-//CSS
+//css
 import styled from "styled-components"
 
+//2024.07.28(css 수정)
 const ClassAllStudents = () => {
   //1. 변수
   //경로 이동 props
@@ -29,11 +30,9 @@ const ClassAllStudents = () => {
   const { getByteLengthOfString } = useGetByte()
   //특정 학생 정보 수정 판단 key 변수
   const [thisModifying, setThisModifying] = useState('')
-  const [prevIndex, setPrevIndex] = useState(null)
   let writtenName = ''
   let accRecord = ''
   //ref
-  const contentRowRef = useRef({})
   const textAreaRef = useRef({})
   //css
   const clientHeight = useClientHeight(document.documentElement)
@@ -42,12 +41,7 @@ const ClassAllStudents = () => {
   //2. 함수
   //수정버튼
   const handleModifyingBtn = (key, index) => {
-    if (prevIndex) {
-      contentRowRef.current[prevIndex].style = 'background-color: #efefef;'
-    }
-    contentRowRef.current[index].style = 'background-color: #bad1f7;'
     setThisModifying(key)
-    setPrevIndex(index)
   }
   //저장 버튼
   const handleSaveBtn = (key) => {
@@ -55,16 +49,17 @@ const ClassAllStudents = () => {
     dispatcher(setModifiedStudent({ key, accRecord, writtenName })); //전역 변수 변경
     setThisModifying('');
     writtenName = '';
-    // accRecord = '';
     console.log(accRecord)
   }
 
   const handleShuffleBtnOnClick = (id) => {
     let frozenStudent = _allStudentList.find(student => student.id === id)
     let _student = { ...frozenStudent }
-    let frozenActiList = _student.actList     //원본 변경 불가 복사
-    let actiList = [...frozenActiList]        //원본 변경 불가 복사
-    let newAccRec = shuffleOrder(actiList).map(acti => { return acti.record }).join(" ")
+    let frozenActiList = _student.actList || []   //원본 변경 불가 복사
+    let actiList = [...(frozenActiList || [])]    //원본 변경 불가 복사
+    let newAccRec = actiList.length > 0
+      ? shuffleOrder(actiList).map(acti => { return acti.record }).join(" ")
+      : ''
     textAreaRef.current.value = newAccRec;
     accRecord = newAccRec;
   }
@@ -86,14 +81,14 @@ const ClassAllStudents = () => {
         <ExportAsExcel />
       </StyledXlDiv>
       <StyledGirdContainer>
-        <StyledTitleRow>
-          <StyledSmallDiv>연번</StyledSmallDiv>
-          <StyledMidlDiv>학번</StyledMidlDiv>
-          <StyledMidlDiv>이름</StyledMidlDiv>
-          <StyledLargeDiv>생기부</StyledLargeDiv>
-          <StyledSmallLastDiv>Byte</StyledSmallLastDiv>
-          <StyledSmallLastDiv>수정</StyledSmallLastDiv>
-        </StyledTitleRow>
+        <TableHeaderWrapper>
+          <StyledHeader>연번</StyledHeader>
+          <StyledHeader>학번</StyledHeader>
+          <StyledHeader>이름</StyledHeader>
+          <StyledHeader>생기부</StyledHeader>
+          <StyledHeader>Byte</StyledHeader>
+          <StyledHeader>수정</StyledHeader>
+        </TableHeaderWrapper>
         {_allStudentList.map((student, index) => {
           let isModifying = (thisModifying === student.id)
           let studentNumber = student.studentNumber
@@ -104,31 +99,31 @@ const ClassAllStudents = () => {
             writtenName = name
             accRecord = record
           }
-          return <StyledContentRow key={student.id} ref={(element) => { return contentRowRef.current[index] = element }} >
-            <StyledSmallDiv>{index + 1}</StyledSmallDiv> {/* 연번 */}
-            <StyledMidlDiv>{studentNumber}</StyledMidlDiv> {/* 학번 */}
-            <StyledMidlDiv>
+          return <React.Fragment key={student.id}>
+            <StyledGridItem>{index + 1}</StyledGridItem>     {/* 연번 */}
+            <StyledGridItem>{studentNumber}</StyledGridItem> {/* 학번 */}
+            <StyledGridItem>
               {isModifying
                 ? <StyledNameInput type="text" defaultValue={name} onChange={(event) => { writtenName = event.target.value }} />
                 : name}
-            </StyledMidlDiv>
-            <StyledLargeDiv>
+            </StyledGridItem>
+            <StyledGridItem className="left-align">
               {isModifying
                 ? <StyledTextArea defaultValue={record}
                   ref={(ele) => { return textAreaRef.current = ele }}
                   onChange={(event) => { accRecord = event.target.value }} />
                 : record}
-            </StyledLargeDiv>
-            <StyledSmallLastDiv>{bytes}</StyledSmallLastDiv>
-            <StyledSmallLastDiv>
+            </StyledGridItem>
+            <StyledGridItem>{bytes}</StyledGridItem>
+            <StyledGridItem>
               {isModifying
-                ? <> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(student.id) }} btnName="저장" btnColor="#3454d1" />
+                ? <BtnWrapper> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(student.id) }} btnName="저장" btnColor="#3454d1" />
                   <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(student.id) }} btnName="섞기" btnColor="#9b0c24" hoverBtnColor="red" />
-                </>
+                </BtnWrapper>
                 : <SmallBtn id="modi_btn" btnOnClick={() => { handleModifyingBtn(student.id, index) }} btnName="수정" btnColor="#3454d1" hoverBtnColor="blue" />
               }
-            </StyledSmallLastDiv>
-          </StyledContentRow>
+            </StyledGridItem>
+          </React.Fragment>
         })}
       </StyledGirdContainer >
       {/* 매크로 모달 */}
@@ -164,67 +159,45 @@ const StyledXlDiv = styled.div`
 `
 const StyledGirdContainer = styled.div`
   display: grid;
+  justify-content: center;
+  grid-template-columns: 70px 100px 100px 1000px 60px 100px; 
   grid-template-rows: 40px;
-  grid-auto-rows: minmax(100px, auto);
 `
-const StyledTitleRow = styled.div`
+const TableHeaderWrapper = styled.div`
+  display: contents;
+`;
+const StyledHeader = styled.div`
   display: flex;
-  background-color: #3454d1; 
+  background-color: #3454d1;
   color: white;
+  padding: 10px;
+  font-weight: bold;
+  justify-content: center;
+  &: first-child {
+    border-top-left-radius: 5px;
+  }
+  &: last-child {
+    border-top-right-radius: 5px;
+  }
 `
-const StyledContentRow = styled.div`
-  display: flex;
+const StyledGridItem = styled.div`
   background-color: #efefef;
-`
-const StyledSmallDiv = styled.div`
-  flex-basis: 60px;
-  justify-content: center;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-  border-left: 1px solid black;
-  @media screen and (max-width: 767px){
-    display: none;
+  padding: 10px;
+  color: black;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  text-align: center;
+  
+  &.left-align { 
+    text-align: left;
   }
 `
-const StyledSmallLastDiv = styled.div`
+const BtnWrapper = styled.div`
   display: flex;
-  flex-basis: 60px;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-  @media screen and (max-width: 767px){
-    display: none;
-  }
+  gap: 7px;
 `
-const StyledMidlDiv = styled.div`
-  flex-basis: 100px;
-  justify-content: center;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-  @media screen and (max-width: 767px){
-    flex-basis: 65px;
-  }
-`
-const StyledLargeDiv = styled.div`
-  flex-grow: 1;
-  justify-content: center;
-  padding: 0 5px;
-  width: 823px;
-  word-wrap: break-word;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid black;
-  border-right: 1px solid black;
-  @media screen and (max-width: 767px){
-    width: 0;
-  }
-`
+
 const StyledNameInput = styled.input`
   display: block;
   width: 85px;
@@ -233,8 +206,8 @@ const StyledNameInput = styled.input`
 `
 const StyledTextArea = styled.textarea`
   display: block;
-  width: 95%;
-  height: 85%;
+  width: 100%;
+  height: 100%;
   border-radius: 10px;
 `
 export default ClassAllStudents

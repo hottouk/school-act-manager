@@ -24,8 +24,8 @@ const useLogin = () => { //데이터 통신
         uid = userInfo.uid
         break;
       case "kakao":
-        let profile = userInfo.profile
-        uid = String(profile.id)
+        let id = userInfo.id
+        uid = String(id)
         break;
       default: return
     }
@@ -84,33 +84,62 @@ const useLogin = () => { //데이터 통신
       })
   }
 
-  //카카오 로그인(24.01.21)
-  const KakaoLoginOnSuccess = (data, openModal) => {
+  //카카오 로그인(24.07.24)
+  const kakaoLogin = (userInfo, openModal) => {
     setErr(null)
     setIsPending(true)
-    console.log(data.profile.id, typeof (data.profile.id))
-    let user = {
-      uid: String(data.profile.id),
-      name: data.profile.kakao_account.profile.nickname,
-      email: data.profile.kakao_account.email || "no-email",
-      profileImg: data.profile.kakao_account.profile.profile_image_url || "no-image",
-      phoneNumber: null
+    let user
+    if (userInfo) {
+      user = {
+        uid: String(userInfo.id),
+        name: userInfo.kakao_account.profile.nickname,
+        email: userInfo.kakao_account.email || "no-email",
+        profileImg: userInfo.kakao_account.profile.profile_image_url || "no-image",
+        phoneNumber: null
+      }
     }
+    console.log(user)
     dispatcher(setTempUser(user))
-    findUser(data, "kakao").then(({ isUserExist, userInfofromServer }) => { //기존 유저?
+    findUser(userInfo, "kakao").then(({ isUserExist, userInfofromServer }) => { //기존 유저?
       if (isUserExist !== true) { openModal(true) } //신규
-      else { dispatcher(setUser(userInfofromServer)) } //기존
+      else {
+        dispatcher(setUser(userInfofromServer))
+        window.alert(`${userInfofromServer.name}으로 로그인 되었습니다.`)
+      } //기존
       setErr(null)
       setIsPending(false)
-    }).catch((error) => {
-      window.alert(error.code, error.message)
-      setErr(error.message)
+    }).catch((err) => {
+      window.alert(err.code, err.message)
+      setErr(err.message)
       setIsPending(false)
     })
   }
-
+  // //카카오 로그인(24.01.21)
+  // const KakaoLoginOnSuccess = (data, openModal) => {
+  //   setErr(null)
+  //   setIsPending(true)
+  //   console.log(data.profile.id, typeof (data.profile.id))
+  //   let user = {
+  //     uid: String(data.profile.id),
+  //     name: data.profile.kakao_account.profile.nickname,
+  //     email: data.profile.kakao_account.email || "no-email",
+  //     profileImg: data.profile.kakao_account.profile.profile_image_url || "no-image",
+  //     phoneNumber: null
+  //   }
+  //   dispatcher(setTempUser(user))
+  //   findUser(data, "kakao").then(({ isUserExist, userInfofromServer }) => { //기존 유저?
+  //     if (isUserExist !== true) { openModal(true) } //신규
+  //     else { dispatcher(setUser(userInfofromServer)) } //기존
+  //     setErr(null)
+  //     setIsPending(false)
+  //   }).catch((error) => {
+  //     window.alert(error.code, error.message)
+  //     setErr(error.message)
+  //     setIsPending(false)
+  //   })
+  // }
   return (
-    { googleLogin, KakaoLoginOnSuccess, addUser, isPending, err, }
+    { googleLogin, kakaoLogin, addUser, isPending, err, }
   )
 }
 

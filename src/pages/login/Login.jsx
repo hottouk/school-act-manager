@@ -11,11 +11,12 @@ import googleIcon from '../../image/icon/g-logo.png'
 import mainLogo from '../../image/logo.png'
 //css
 import styled from 'styled-components';
+import KakaoSocialLogin from './KakaoLogin';
 
 //24.2.21
 const Login = () => {
   //1. 변수
-  const { err, isPending, googleLogin, KakaoLoginOnSuccess } = useLogin();
+  const { err, isPending, googleLogin } = useLogin();
   //모달창
   const [isSnsModalShow, setIsSnsModalShow] = useState(false)
   return (
@@ -26,13 +27,19 @@ const Login = () => {
       </StyledSnsLoginDiv>
       <StyledSnsLoginDiv>
         <div className="sns_centered">
+          {/* 구글 로그인 */}
           <StyledGoogleLoginBtn onClick={() => { googleLogin((open) => { setIsSnsModalShow(open) }) }}>
             <img src={googleIcon} alt="구글 로고" />구글 로그인
           </StyledGoogleLoginBtn>
-          <KakaoLogin
+          {/* 카카오 */}
+          <KakaoSocialLogin openModal={setIsSnsModalShow} />
+          {/* <KakaoLogin
             token={process.env.REACT_APP_KAKAO_JAVASCRIPT_KEY}
-            onSuccess={(data) => { KakaoLoginOnSuccess(data, (open) => { setIsSnsModalShow(open) }) }}
-            onFail={(error) => { window.alert(error) }} />
+            onSuccess={(data) => {
+              console.log(data)
+              KakaoLoginOnSuccess(data, (open) => { setIsSnsModalShow(open) })
+            }}
+            onFail={(error) => { window.alert(error) }} /> */}
         </div>
         {isPending && <strong>로그인이 진행중입니다.</strong>}
         {err && <strong>{err}</strong>}
@@ -72,7 +79,7 @@ const StyledSnsLoginDiv = styled.div`
   box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
   .sns_centered {
     button {
-      width: 222px;
+      width: 183px;
     }
     display: flex;
     flex-direction: column;
@@ -111,7 +118,6 @@ const StyledSnsLoginDiv = styled.div`
 const StyledGoogleLoginBtn = styled.button`
   background: white;
   color: #444;
-  width: 190px;
   padding:5px;
   border: thin solid #888;
   border-radius: 5px;
