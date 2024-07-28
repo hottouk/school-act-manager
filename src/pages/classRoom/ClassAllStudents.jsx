@@ -148,7 +148,6 @@ const StyledContainer = styled.main`
   }
 `
 const StyledXlDiv = styled.div`
-  display: flex;
   justify-content: flex-end;
   align-items: flex-end;
   p {
