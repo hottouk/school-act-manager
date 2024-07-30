@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 //컴포넌트
 import ImportExcelFile from '../../components/ImportExcelFile';
 import LongW100Btn from '../../components/Btn/LongW100Btn';
-import CSInfoSelect from '../../components/CSInfoSelect';
+import CSInfoSelect from '../../components/Select/CSInfoSelect';
 import SubjectSelects from '../../components/Select/SubjectSelects';
 //hooks
 import useAddUpdFireData from '../../hooks/useAddUpdFireData';
@@ -114,16 +114,18 @@ const ClassRoomMakeForm = () => {
         <legend>클래스 만들기</legend>
         <label htmlFor="class_title">클래스 이름</label>
         <input id="class_title" type="text" required onChange={handleOnChange} value={_classTitle} />
-        <StyledInputContainer>
+        <InputWrapper>
           <p>학년/반</p>
-          <CSInfoSelect grade={_grade} classNumber={_classNumber} subject={_subjDetail} handleOnChange={handleOnChange} classMode={true} />
-        </StyledInputContainer>
-        <StyledInputContainer>
+          <div className="selectWrapper">
+            <CSInfoSelect grade={_grade} classNumber={_classNumber} subject={_subjDetail} handleOnChange={handleOnChange} classMode={true} />
+          </div>
+        </InputWrapper>
+        <InputWrapper>
           <p>교과/과목</p>
           <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
-        </StyledInputContainer>
+        </InputWrapper>
         <label htmlFor="class_explanation">간단한 설명을 작성하세요</label>
-        <input id="class_explanation" type="text" required value={_intro} onChange={handleOnChange} placeholder="ex)24 경기고 1-1 영어"/>
+        <input id="class_explanation" type="text" required value={_intro} onChange={handleOnChange} placeholder="ex)24 경기고 1-1 영어" />
         {(classKind === "with_neis") && <>
           <p>나이스 출석부 엑셀 파일을 등록하세요.</p>
           <ImportExcelFile getData={setXlsxData} />
@@ -131,8 +133,10 @@ const ClassRoomMakeForm = () => {
         {(classKind === "with_number") && <><label htmlFor="class_number_of_studnets">학생 수를 입력하세요. (최대 99명)</label>
           <input id="class_number_of_studnets" type="number" required min='1' max='99' value={_numberOfStudent} onChange={handleOnChange} /></>}
         {(classKind === "by_hand") && <label htmlFor="class_number_of_studnets">학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>}
-        <LongW100Btn type="submit" btnName="생성" />
-        <LongW100Btn id="cancel" btnName="취소" btnOnClick={handleBtnClick} />
+        <BtnWrapper>
+          <LongW100Btn type="submit" btnName="생성" />
+          <LongW100Btn id="cancel" btnName="취소" btnOnClick={handleBtnClick} />
+        </BtnWrapper>
       </fieldset>
     </StyledForm >
   )
@@ -178,11 +182,15 @@ const StyledForm = styled.form`
   }
 `
 
-const StyledInputContainer = styled.div`
+const InputWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin: 20px 0;
+  .selectWrapper {
+    display: flex;
+    justify-content: flex-end;
+  }
   input {
     max-width: 280px;
     height: 35px;
@@ -210,5 +218,9 @@ const StyledInputContainer = styled.div`
       border-radius: 2px;
     }
   }
+`
+const BtnWrapper = styled.div`
+  display: flex;
+  gap: 20px;
 `
 export default ClassRoomMakeForm

@@ -1,12 +1,14 @@
-import axios from 'axios';
+//라이브러리
 import React, { useState } from 'react'
+import axios from 'axios';
+//css
 import styled from 'styled-components';
 
 const FindSchoolSelect = ({ setSchool }) => {
   const [_schoolList, setSchoolList] = useState('')
   const [_schoolOffice, setSchoolOffice] = useState('default')
   const [_schoolKind, setSchoolKind] = useState('default')
-  const [_schoolName, setSchoolName] = useState("학교명")
+  const [_schoolName, setSchoolName] = useState('')
   const [_message, setMessage] = useState('')
   const [_isSearch, setSearch] = useState(false)
 
@@ -72,7 +74,7 @@ const FindSchoolSelect = ({ setSchool }) => {
 
   return (<StyledContainer>
     <div className="upper_section">
-      <select id="school_office_select" required value={_schoolOffice} onChange={handleOnChange}>
+      <select id="school_office_select" value={_schoolOffice} onChange={handleOnChange} required>
         <option value="default" disabled >시도교육청</option>
         <option value="B10">서울특별시교육청</option>
         <option value="C10">부산광역시교육청</option>
@@ -92,16 +94,16 @@ const FindSchoolSelect = ({ setSchool }) => {
         <option value="S10">경상남도교육청</option>
         <option value="T10">제주특별자치도교육청</option>
       </select>
-      <select id="school_knd_select" required value={_schoolKind} onChange={handleOnChange}>
+      <select id="school_knd_select" value={_schoolKind} onChange={handleOnChange} required>
         <option value="default" disabled>학교급</option>
         <option value="고등학교">고등학교</option>
         <option value="중학교">중학교</option>
         <option value="초등학교">초등학교</option>
       </select>
-      <input id="school_name_input" type="text" value={_schoolName} onChange={handleOnChange} />
+      <input id="school_name_input" type="text" value={_schoolName} onChange={handleOnChange} placeholder="학교명" />
     </div>
     <div className="bot_section">
-      <button id="search_school_btn" type="button" onClick={handleOnClick}>검색</button>
+      <StyledSearchBtn id="search_school_btn" type="button" onClick={handleOnClick}>검색</StyledSearchBtn>
     </div>
     <StyledSchoolListWrapper $isSeacrh={_isSearch}>
       {_message && _message}
@@ -127,6 +129,7 @@ const FindSchoolSelect = ({ setSchool }) => {
 }
 
 const StyledContainer = styled.div`
+margin-bottom: 0;
   select, input {
     width: 100%;
     padding: 5px;
@@ -138,11 +141,17 @@ const StyledContainer = styled.div`
     justify-content: space-between;
     gap: 10px;
   }
-  button {
-    height: 35px;
-    margin: 0;
-    font-size: 12px;
-  }
+`
+const StyledSearchBtn = styled.button`
+  width: 100%;
+  height: 35px;
+  margin: 10px 0;
+  padding: 10px 15px;
+  border-radius: 15px;
+  border: 2px solid whitesmoke;
+  background-color: transparent;
+  font-size: 12px;
+  color: whitesmoke;
 `
 
 const StyledSchoolListWrapper = styled.div`
