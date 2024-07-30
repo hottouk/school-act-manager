@@ -8,11 +8,11 @@ import styled from 'styled-components';
 const KakaoSocialLogin = (props) => {
   //1. 변수
   const kakaoClientId = process.env.REACT_APP_KAKAO_JAVASCRIPT_KEY; //id
-  useEffect(() => { //1) 초기화
+  useEffect(() => {                 //1) 초기화
     if (!window.Kakao.isInitialized()) { window.Kakao.init(kakaoClientId); }
   }, [])
   const location = useLocation();
-  useEffect(() => {  //2) 인가 코드
+  useEffect(() => {                 //2) 인가 코드
     let searchParams = new URLSearchParams(location.search);
     let code = searchParams.get('code');
     if (code) fetchTokenAndUserInfo(code).then((userInfo) => {

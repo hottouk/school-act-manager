@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 const ModalBtn = (props) => {
   return (
-    <StyledBtn $btnColor={props.btnColor} $hoverColor={props.hoverColor} onClick={props.onClick}>{props.btnName}</StyledBtn>
+    <StyledBtn $btnColor={props.btnColor} $hoverColor={props.hoverColor} onClick={props.onClick}>{props.btnName || "샘플"}</StyledBtn>
   )
 }
 export default ModalBtn

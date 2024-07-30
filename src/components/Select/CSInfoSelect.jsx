@@ -1,12 +1,11 @@
 import styled from "styled-components"
 //데이터
-import classNumberList from '../data/classNumberList'
+import classNumberList from '../../data/classNumberList'
 
-//24.07.22 (반 데이터로 제공)
-const CSInfoSelect = ({ grade, classNumber, handleOnChange, classMode }) => {
+//24.07.22 (반 데이터로 제공, 사용처: 클래스 만들기, 학생 회원 가입 2곳, 학생 myInfo 수정)
+const CSInfoSelect = ({ grade, classNumber, number, handleOnChange }) => { //classMode true 교실 생성 진입
   return (
-    <StyledSelectDiv>
-      {!classMode && <p>학번: </p>}
+    <StyledSelectContainer>
       <select id="class_grade" required value={grade} onChange={handleOnChange}>
         <option value="default" disabled >학년</option>
         <option value="1">1학년</option>
@@ -18,25 +17,29 @@ const CSInfoSelect = ({ grade, classNumber, handleOnChange, classMode }) => {
         {classNumberList.map((classNumber) => {
           let key = Object.keys(classNumber)
           let value = Object.values(classNumber)
-          return <option value={value}>{key}</option>
+          return <option key={value} value={value}>{key}</option>
         })}
       </select>
-    </StyledSelectDiv>
+      {number && <StyledInput id="number_input" type="number" value={number} onChange={handleOnChange} min={1} max={99} required />}
+    </StyledSelectContainer>
   )
 }
 
-const StyledSelectDiv = styled.div`
-  width: 100%;
+const StyledSelectContainer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  gap: 30px;
   p {
     margin: 0;
   }
   select {
     padding: 5px;
     border-radius: 7px;
-    margin-left: 30px;
   }
+`
+const StyledInput = styled.input`
+  height: 35px;
+  border: 1px solid black;
+  border-radius: 5px;
 `
 export default CSInfoSelect

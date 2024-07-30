@@ -2,8 +2,10 @@ import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 //bootstrap css
 import 'bootstrap/dist/css/bootstrap.min.css';
-//components
-import Login from './pages/login/Login';
+//로그인
+import LoginPage from './pages/login/LoginPage';
+import EmailSignupPage from './pages/login/EmailSignupPage';
+//대문
 import ClassMain from './pages/main/ClassMain';
 import Nav from './components/Nav';
 import ActivityMain from './pages/activity/ActivityMain';
@@ -62,7 +64,8 @@ function App() {
           {/* 새소식 관리 */}
           <Route path="/news" element={uid ? <News /> : <Navigate replace={true} to='/' />} />
           {/* 로그인/회원가입 */}
-          <Route path="/login" element={!uid ? <Login /> : <Navigate replace={true} to='/' />} />
+          <Route path="/login" element={!uid ? <LoginPage /> : <Navigate replace={true} to='/' />} />
+          <Route path="/login/email" element={!uid ? <EmailSignupPage /> : <Navigate replace={true} to='/' />} />
           {/* 관리자 */}
           <Route path="/master" element={user.isMaster ? <MasterPage /> : <Navigate replace={true} to='/' />} />
         </Routes>

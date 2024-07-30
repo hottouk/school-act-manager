@@ -22,10 +22,10 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const appAuth = getAuth();
+const appAuth = getAuth(app);
 const analytics = getAnalytics(app);
 const appFireStore = getFirestore(app);
 const storage = getStorage(app, "gs://school-act-manager.appspot.com");
 const timeStamp = Timestamp
 
-export { appFireStore, appAuth, storage, timeStamp }
+export { app, appFireStore, appAuth, storage, timeStamp }

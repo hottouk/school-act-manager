@@ -7,7 +7,7 @@ import { Badge } from 'react-bootstrap';
 import styled from 'styled-components';
 //컴포넌트
 import TeacherRadio from '../Radio/TeacherRadio';
-import CSInfoSelect from '../CSInfoSelect';
+import CSInfoSelect from '../Select/CSInfoSelect';
 //hooks
 import useStudent from '../../hooks/useStudent';
 import useFileCheck from '../../hooks/useFileCheck';

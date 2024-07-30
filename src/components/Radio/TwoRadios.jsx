@@ -5,7 +5,7 @@ import styled from 'styled-components';
 const TwoRadios = ({ name, id, value, label, onChange, disabled }) => {
   return (
     <StyledRadioContainer>
-      <div className="radio_div">
+      <RadioWrapper>
         <Form.Check onChange={onChange}
           name={name}
           inline
@@ -15,8 +15,6 @@ const TwoRadios = ({ name, id, value, label, onChange, disabled }) => {
           checked={value}
           disabled={disabled}
         ></Form.Check>
-      </div>
-      <div className="radio_div">
         <Form.Check onChange={onChange}
           name={name}
           inline
@@ -26,16 +24,17 @@ const TwoRadios = ({ name, id, value, label, onChange, disabled }) => {
           checked={!value}
           disabled={disabled}
         ></Form.Check>
-      </div>
+      </RadioWrapper>
     </StyledRadioContainer>
   )
 }
-
 const StyledRadioContainer = styled.div`
   display: flex;
   height: 40px;
-  div.radio_div {
-    width: 200px;
-  }
+`
+const RadioWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 25px;
 `
 export default TwoRadios
