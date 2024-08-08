@@ -9,7 +9,6 @@ const useProcessXlsxData = () => { //출석부 rawData받아서 json으로 가�
   }
 
   const getStudentInfo = (data, isHi) => {
-    console.log(isHi)
     let studentInfoList
     if (data) {
       if (isHi) { //고등 출석부
@@ -25,10 +24,10 @@ const useProcessXlsxData = () => { //출석부 rawData받아서 json으로 가�
       } else { //중등 출석부
         let studentRawDataList = data.slice(8, data.length - 3) //index로 검색 9번쨰 부터 있음. index -2까지가 학생 끝
         studentInfoList = studentRawDataList.map((studentRawDataItem) => {
-          let grade = studentRawDataItem[1]
-          let _class = classNumberToTwoDigitString(studentRawDataItem[2])
-          let number = studentRawDataItem[3] - 1
-          let writtenName = studentRawDataItem[4]
+          let grade = studentRawDataItem[2]
+          let _class = classNumberToTwoDigitString(studentRawDataItem[3])
+          let number = studentRawDataItem[4] - 1
+          let writtenName = studentRawDataItem[5]
           let studentNumber = createStudentNumber(number, grade, _class)
           return { studentNumber, writtenName }
         })

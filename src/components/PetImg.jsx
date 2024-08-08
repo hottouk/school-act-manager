@@ -21,6 +21,7 @@ import normal001 from "../image/myPet/normal/pet_normal_001.png"
 import normal002 from "../image/myPet/normal/pet_normal_002.png"
 import normal003 from "../image/myPet/normal/pet_normal_003.png"
 import normalEgg from "../image/myPet/normal/normalEgg.png"
+import styled from 'styled-components'
 
 
 const PetImg = (props) => {
@@ -60,10 +61,14 @@ const PetImg = (props) => {
 
   return (<>
     {imageSrc && (
-      <img src={imageSrc} alt="펫이미지" onClick={() => { props.onClick(); }}
+      <StyledImg $wid={props.wid} src={imageSrc} alt="펫이미지" onClick={() => { props.onClick(); }}
       />
     )}
   </>)
 }
+
+const StyledImg = styled.img`
+  width: ${(props) => props.$wid || 134}px
+`
 
 export default PetImg

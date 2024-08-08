@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import useFetchFireData from '../../hooks/useFetchFireData'
+import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 //css
 import styled from 'styled-components'
 

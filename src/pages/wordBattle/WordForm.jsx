@@ -5,7 +5,7 @@ import useClientHeight from '../../hooks/useClientHeight'
 //컴포넌트
 import MainBtn from '../../components/Btn/MainBtn'
 import SmallBtn from '../../components/Btn/SmallBtn'
-import useAddUpdFireData from '../../hooks/useAddUpdFireData'
+import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData'
 
 const WordForm = () => {
   //CSS

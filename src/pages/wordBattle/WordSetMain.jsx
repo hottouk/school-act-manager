@@ -7,7 +7,7 @@ import CardList from '../../components/List/CardList'
 //CSS
 import styled from 'styled-components'
 import MainBtn from '../../components/Btn/MainBtn'
-import useFetchFireData from '../../hooks/useFetchFireData'
+import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 
 
 const WordSetMain = () => {

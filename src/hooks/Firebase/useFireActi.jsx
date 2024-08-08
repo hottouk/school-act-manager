@@ -1,7 +1,7 @@
 import { doc, runTransaction } from 'firebase/firestore'
-import { appFireStore } from '../firebase/config'
+import { appFireStore } from '../../firebase/config'
 import { useDispatch, useSelector } from 'react-redux'
-import { setHomeworkList } from '../store/userSlice'
+import { setHomeworkList } from '../../store/userSlice'
 
 const useFireActi = () => {
   const user = useSelector(({ user }) => user)

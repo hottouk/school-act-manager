@@ -19,12 +19,11 @@ const useAcc = () => {
         let actiSnap = getDoc(actiRef);              //데이터 통신
         await actiSnap.then((snapshot) => {
           let acti = snapshot.data();
-          if (acti.extraRecordList && acti.extraRecordList.length > 1) {                              //extra가 있으면 랜덤문구
+          if (acti.extraRecordList && acti.extraRecordList.length > 1) {                       //extra가 있으면 랜덤문구
             let randomI = Math.floor(Math.random() * acti.extraRecordList.length);
             selectedAccRecord = selectedAccRecord.concat(" ", acti.extraRecordList[randomI])
-            console.log(acti)
           }
-          else { selectedAccRecord = selectedAccRecord.concat(" ", acti.record) }              //없으면 대표문구
+          else { selectedAccRecord = selectedAccRecord.concat(" ", acti.record) }              //없으면 대표 문구
           newActList.push({ id: snapshot.id, ...acti });
         })
         return null
@@ -39,10 +38,9 @@ const useAcc = () => {
       const petRef = doc(appFireStore, "classRooms", classId, "students", studentId); //id로 학생 data 위치 참조
       getDoc(petRef).then((student) => {                                              //참조한 학생 data 반환 Promise
         try {
-          let actList = student.data().actList  //선택 학생 한명의 기존 누가 '활동' 반환
+          let actList = student.data().actList        //선택 학생 한명의 기존 누가 '활동' 반환
           let accRecord = student.data().accRecord    //선택 학생 한명의 기존 누가 '기록' 반환
           makeAccWithSelectedActi().then(({ newActList, selectedAccRecord }) => { //선택한 활동의 누가 배열, 누가 기록 반환
-            console.log(newActList, selectedAccRecord)
             if ((!actList && !accRecord) || actList.length === 0) { //기록 활동 x 누가 기록 x -> 완전한 첫 작성
               setDoc(petRef, {
                 actList: newActList,         //누가'활동'에 선택 활동 반영

@@ -5,8 +5,8 @@ import { useSelector } from 'react-redux';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/esm/Button';
 //hooks
-import useAddUpdFireData from '../../hooks/useAddUpdFireData';
-import useFetchFireData from '../../hooks/useFetchFireData';
+import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
+import useFetchFireData from '../../hooks/Firebase/useFetchFireData';
 //css
 import styled from 'styled-components';
 

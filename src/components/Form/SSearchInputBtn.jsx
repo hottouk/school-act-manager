@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 //hooks
-import useFetchFireData from '../../hooks/useFetchFireData'
+import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 //컴포넌트
 import SmallBtn from '../Btn/SmallBtn'
 //css

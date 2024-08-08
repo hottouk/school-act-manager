@@ -1,16 +1,15 @@
+//라이브러리
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import classSort1 from '../../image/class/class_sort1.png'
-import classSort2 from '../../image/class/class_sort2.png'
-import classSort3 from '../../image/class/class_sort3.png'
-import classSort4 from '../../image/class/class_sort4.png'
-import classSort5 from '../../image/class/class_sort5.png'
-import classSort6 from '../../image/class/class_sort6.png'
-
-
-import styled from 'styled-components'
+//컴포넌트
+import CardSortForm from '../../components/Form/CardSortForm'
+import MainBtn from '../../components/Btn/MainBtn'
+//hooks
 import useClientHeight from '../../hooks/useClientHeight'
+//css
+import styled from 'styled-components'
 
+//2024.08.08(컴포넌트화 정리)
 const ClassSortSelection = () => {
   //1. 변수
   const navigate = useNavigate()
@@ -18,7 +17,6 @@ const ClassSortSelection = () => {
   const [step, setStep] = useState('')
   //2. 세로 길이
   const clientHeight = useClientHeight(document.documentElement)
-
   useEffect(() => {
     setStep(state)
   }, [state])
@@ -46,69 +44,41 @@ const ClassSortSelection = () => {
     }
   }
 
+  //클래스 종류 데이터
+  const classSortList = [
+    { id: "subject", legend: "교과반", subTitle: "과세특 기록용", imgNumber: 1 },
+    { id: "homeroom", legend: "담임반", subTitle: "행발, 진로, 자율활동기록용", imgNumber: 2, ing: true },
+    { id: "club", legend: "동아리", subTitle: "동아리 활동 기록용", imgNumber: 3, ban: true }
+  ]
+  //만드는 방법 데이터
+  const howtoMakeList = [
+    { id: "with_neis", legend: "나이스 출석부", subTitle: "학번, 이름 자동 생성", imgNumber: 4 },
+    { id: "with_number", legend: "학번 생성", subTitle: "학번 자동 생성, 이름 수기 입력", imgNumber: 5 },
+    { id: "by_hand", legend: "수기 입력", subTitle: "학생을 수작업으로 등록", imgNumber: 6 }
+  ]
+
   return (
-    <>
-      {(step === "second") ? <StyledCardContainer $clientheight={clientHeight}>
-        <h3>학생 생성 방법</h3>
-        <StyledCardDiv $color={"#3454d1"} id="with_neis" onClick={handleCardBtnClick}>
-          <legend>나이스 출석부</legend>
-          <p>나이스 출석부가 있을 때</p>
-          <p>학번, 이름 자동 생성</p>
-          <img src={classSort5} alt="클래스5" id="with_neis" onClick={handleCardBtnClick}></img>
-          <StyledSelectBtn id="with_neis" onClick={handleCardBtnClick}>선택</StyledSelectBtn>
-        </StyledCardDiv>
-        <StyledCardDiv $color={"#3454d1"} id="with_number" onClick={handleCardBtnClick}>
-          <legend>학번 생성</legend>
-          <p>학번 자동 생성, 이름 수기 입력</p>
-          <img src={classSort4} alt="클래스4" id="with_number" onClick={handleCardBtnClick}></img>
-          <StyledSelectBtn id="with_number" onClick={handleCardBtnClick}>선택</StyledSelectBtn>
-        </StyledCardDiv>
-        <StyledCardDiv $color={"#3454d1"} id="by_hand" onClick={handleCardBtnClick}>
-          <legend>수기 입력</legend>
-          <p>학생을 수작업으로 등록</p>
-          <img src={classSort6} alt="클래스6" id="by_hand" onClick={handleCardBtnClick}></img>
-          <StyledSelectBtn id="by_hand" onClick={handleCardBtnClick}>선택</StyledSelectBtn>
-        </StyledCardDiv>
-      </StyledCardContainer> : <StyledCardContainer $clientheight={clientHeight}>
-        <h3>클래스 종류 선택</h3>
-        <StyledCardDiv id="subject" $color={"#3454d1"} onClick={handleCardBtnClick}>
-          <legend id="subject" onClick={handleCardBtnClick}>교과반</legend>
-          <p id="subject" onClick={handleCardBtnClick}>과세특 기록용</p>
-          <img src={classSort1} alt="클래스1" id="subject" onClick={handleCardBtnClick}></img>
-        </StyledCardDiv>
-        <StyledCardDiv id="homeroom" onClick={handleCardBtnClick}>
-          <legend>담임반</legend>
-          <p>행발, 진로, 자율활동기록용, </p>
-          <p className='ban'>추후 서비스</p>
-          <img src={classSort2} alt="클래스2"></img>
-        </StyledCardDiv>
-        <StyledCardDiv id="club" onClick={handleCardBtnClick}>
-          <legend>동아리</legend>
-          <p>동아리 활동 기록용, 추후 서비스</p>
-          <p className='ban'>추후 서비스</p>
-          <img src={classSort3} alt="클래스3"></img>
-        </StyledCardDiv>
-      </StyledCardContainer>}
-    </>
+    <Container $clientheight={clientHeight}>
+      {(step === "first") && <>
+        <StyledTitle>클래스 종류 선택</StyledTitle>
+        <CardSortForm itemList={classSortList} handleCardBtnClick={handleCardBtnClick} />
+        <BtnWrapper>
+          <MainBtn btnName="뒤로가기" btnOnClick={() => { navigate('/classrooms') }} />
+        </BtnWrapper>
+      </>}
+      {(step === "second") && <>
+        <StyledTitle>클래스 종류 선택</StyledTitle>
+        <CardSortForm itemList={howtoMakeList} handleCardBtnClick={handleCardBtnClick} />
+        <BtnWrapper>
+          <MainBtn btnName="뒤로가기" btnOnClick={() => { navigate('/classrooms_setting', { state: "first" }) }} />
+        </BtnWrapper>
+      </>}
+    </Container>
   )
 }
-
-const StyledCardContainer = styled.div`
-  box-sizing: border-box; 
-  position: relative; 
-  width: 80%;
-  margin: 20px auto;
-  top: 160px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  h3 {
-    width: 100%;
-    margin: 0 auto 35px;
-    display: flex;
-    justify-content: center;
-  }
- 
+const Container = styled.div`
+  box-sizing: border-box;
+  margin-top: 110px;
   @media screen and (max-width: 767px){
     position: fixed;
     width: 100%;
@@ -117,96 +87,13 @@ const StyledCardContainer = styled.div`
     gap: 20px;
     padding-bottom: 20px;
     overflow-y: scroll;
-    h3 {
-      margin: 0 auto 15px;
-    }
   }
 `
-const StyledCardDiv = styled.div`
-  width: 250px;
-  height: 360px;
-  padding: 20px;
-  border-radius: 15px;
-  cursor: pointer;
-  box-shadow: ${(props) => { return props.$color }} 1px 1px 7px 1px;
-  position: relative;
-  legend {
-    color: #3454d1;
-    font-weight: bold;
-    text-align: center;
-  }
-  p.ban {
-    font-size: 22px;
-    color: red;
-    text-align: center;
-    font-weight: 900;
-  }
-  p {
-    diplay: inline-block;
-    font-size: 14px;
-    margin-bottom: 2px;
-  }
-  img {
-    width: 70%;
-    margin: 50px auto;
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    left: 4px;
-  }
-  @media screen and (max-width: 767px){
-    position: relative;
-    height: 250px;
-  }
+const StyledTitle = styled.h3`
+  text-align: center;
+  margin-bottom: 5%;
 `
-const StyledSelectBtn = styled.button`
-  display: none;
-  @media screen and (max-width: 767px){
-    display: block;
-    position: absolute;
-    left: 50%;
-    margin-left: -100px; /* width의 50% */;
-    bottom: 20px;
-    width: 200px;
-    align-items: center;
-    background-color: #0A66C2;
-    border: 0;
-    border-radius: 100px;
-    box-sizing: border-box;
-    color: #ffffff;
-    cursor: pointer;
-    font-family: -apple-system, system-ui, system-ui, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    justify-content: center;
-    line-height: 20px;
-    max-width: 480px;
-    min-height: 40px;
-    min-width: 0px;
-    overflow: hidden;
-    padding: 0px;
-    padding-left: 20px;
-    padding-right: 20px;
-    text-align: center;
-    touch-action: manipulation;
-    transition: background-color 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s, box-shadow 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s, color 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s;
-    user-select: none;
-    -webkit-user-select: none;
-    vertical-align: middle;
-    &:hover {
-        background: cornflowerblue;
-        color: white;
-        transition: 0.5s;
-      }
-    &:active {
-      background: #09223b;
-      color: rgb(255, 255, 255, .7);
-    }
-    &:disabled { 
-      cursor: not-allowed;
-      background: rgba(0, 0, 0, .08);
-      color: rgba(0, 0, 0, .3);
-    }  }
-  
+const BtnWrapper = styled.div`
+  margin-top: 5%;
 `
 export default ClassSortSelection
