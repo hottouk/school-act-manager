@@ -3,7 +3,7 @@ import ExportAsExcel from "../../components/ExportAsExcel"
 import SmallBtn from "../../components/Btn/SmallBtn"
 //hooks
 import useGetByte from "../../hooks/useGetByte"
-import useAddUpdFireData from "../../hooks/useAddUpdFireData"
+import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData"
 import useClientHeight from "../../hooks/useClientHeight"
 import { useParams } from "react-router-dom"
 import React, { useEffect, useRef, useState } from "react"
@@ -70,8 +70,8 @@ const ClassAllStudents = () => {
         const j = Math.floor(Math.random() * (i + 1));
         [list[i], list[j]] = [list[j], list[i]];
       }
-      return list
     }
+    return list
   }
 
   return (

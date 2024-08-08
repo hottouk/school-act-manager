@@ -1,17 +1,17 @@
+//라이브러리
+import { useSelector } from 'react-redux';
+import { useEffect, useRef, useState } from 'react';
 //컴포넌트
+import MidBtn from '../../components/Btn/MidBtn.jsx';
+import MainBtn from '../../components/Btn/MainBtn.jsx'
 import MultiSelector from '../../components/MultiSelector';
 import SelectedDialogModal from '../../components/Modal/SelectedDialogModal.jsx';
-//변수관리
-import { useEffect, useRef, useState } from 'react';
-//CSS styles
-import styled from "styled-components"
-import { useNavigate } from 'react-router-dom';
 //hooks
 import useAcc from '../../hooks/useAcc.jsx';
-import MainBtn from '../../components/Btn/MainBtn.jsx'
-import { useSelector } from 'react-redux';
 import useGetByte from '../../hooks/useGetByte.jsx';
-
+import { useNavigate } from 'react-router-dom';
+//css
+import styled from "styled-components"
 
 const MainSelector = ({ studentList, activitiyList, classId }) => {
   //1. 변수
@@ -39,7 +39,6 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
   const { getByteLengthOfString } = useGetByte()
   //3. 라이브러리
   const navigate = useNavigate();
-
   //4. 함수
   //셀렉터에서 선택된 값 해제하기
   const onClearSelect = () => {
@@ -54,7 +53,6 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
       setIsAllActivityChecked(false)
     }
   }
-
   //선택 완료 버튼 클릭
   const handleSelectComplete = async () => {
     setModalShow(true) //대화창 pop
@@ -89,7 +87,7 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
         </StyledSelector>}
         {(!activitiyList || activitiyList.length === 0) &&
           <StyledSelector>활동이 없습니다. 활동을 추가해주세요.
-            <button onClick={() => { navigate('/activities_setting') }}>활동 추가</button>
+            <MidBtn btnName="활동 추가" btnOnClick={() => { navigate('/activities_setting') }} />
           </StyledSelector>}
         <StyledAccContainer>
           <textarea type="text" value={_accRecord} disabled={true} />
@@ -131,16 +129,6 @@ const StyledSelector = styled.div`
   width: 50%;
   margin: 0 auto;
   margin-top: 35px;
-  button {
-    display: block;
-    margin: 10px auto;
-    width: 90px;
-    height: 30px;
-    background-color: #3454d1;
-    border: none;
-    border-radius: 5px;
-    color: white;
-  }
   @media screen and (max-width: 767px){
     width: 80%;
     margin-top: 35px;

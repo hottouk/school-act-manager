@@ -1,4 +1,4 @@
-import { appFireStore, timeStamp } from "../firebase/config"
+import { appFireStore, timeStamp } from "../../firebase/config"
 import { addDoc, collection, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 import { useSelector } from "react-redux"
 
@@ -123,15 +123,6 @@ const useAddUpdFireData = (collectionName) => {
     }
   }
 
-  //2. 데이터 삭제 함수: 문서 id(제목) 주면 삭제
-  const deleteDocument = async (id) => {
-    deleteDoc(doc(colRef, id)).then(() => {
-      window.alert("삭제 되었습니다.")
-    }).catch((err) => {
-      console.log(err)
-    })
-  }
-
   //1. 학생 클래스 정보 업데이트
   const updateClassListInfo = async (classList, type) => {
     let userRef = doc(db, "user", user.uid)
@@ -143,7 +134,7 @@ const useAddUpdFireData = (collectionName) => {
   }
 
   return (
-    { getInfo, addNotice, addActi, updateActi, updateStudent, deleteStudent, deleteDocument, addClassroom, addStudent, addWordSet, updateClassListInfo }
+    { getInfo, addNotice, addActi, updateActi, updateStudent, deleteStudent, addClassroom, addStudent, addWordSet, updateClassListInfo }
   )
 }
 

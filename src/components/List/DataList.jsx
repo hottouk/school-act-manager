@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router-dom'
 import { setSelectClass } from '../../store/classSelectedSlice'
 import { setAppliedClassList, setJoinedClassList } from '../../store/userSlice'
 //hooks
-import useAddUpdFireData from '../../hooks/useAddUpdFireData'
-import useFetchFireData from '../../hooks/useFetchFireData'
+import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData'
+import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 //컴포넌트
 import SmallBtn from '../Btn/SmallBtn'
 //이미지

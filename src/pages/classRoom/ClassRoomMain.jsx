@@ -34,7 +34,7 @@ const ClassRoomMain = () => {
   //3. 함수
   const handleBtnClick = (event) => {
     event.preventDefault()
-    navigate('/classrooms_setting')
+    navigate('/classrooms_setting', { state: "first" })
   }
 
   return (

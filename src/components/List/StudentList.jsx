@@ -1,25 +1,23 @@
 //라이브러리
-import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 //컴포넌트
-import AddNewStudentModal from '../Modal/AddNewStudentModal'
 import PetImg from '../PetImg'
 //hooks
 import useGetLevel from '../../hooks/useGetLevel'
 //이미지
 import plus from "../../image/icon/plus.png"
-//CSS
+//css
 import styled from "styled-components"
 
-const StudentList = ({ petList }) => {
+//2024.08.01(모달 창 page로 이동)
+const StudentList = ({ petList, plusBtnOnClick }) => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })
   const navigate = useNavigate()
   const classId = useParams() //반 id
   const { getExpAndLevelByActList } = useGetLevel()
   //대화창 내부변수
-  const [modalShow, setModalShow] = useState(false)
 
   //함수
   const handleImgClick = (pet) => {
@@ -50,13 +48,9 @@ const StudentList = ({ petList }) => {
             </StyledLi>
           )
         })}
-        {user.isTeacher && <StyledLi><StyledPlusImg src={plus} onClick={() => { setModalShow(true) }} /></StyledLi>}
+        {/* 학생 추가 버튼 */}
+        {user.isTeacher && <StyledLi><StyledPlusImg src={plus} onClick={() => { plusBtnOnClick() }} /></StyledLi>}
       </StyledListContainer>
-      {/* 대화창 */}
-      <AddNewStudentModal
-        show={modalShow}
-        onHide={() => { setModalShow(false) }}
-        classId={classId.id} />
     </StyledContainer>
   )
 }

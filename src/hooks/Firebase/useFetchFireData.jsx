@@ -1,7 +1,7 @@
-import { appFireStore } from '../firebase/config'
+import { appFireStore } from '../../firebase/config'
 import { collection, doc, getDocFromCache, getDocFromServer, getDocs, orderBy, query, where } from 'firebase/firestore'
-import useGetLevel from './useGetLevel'
-import PetImg from '../components/PetImg'
+import useGetLevel from '../useGetLevel'
+import PetImg from '../../components/PetImg'
 import { useSelector } from 'react-redux'
 
 const useFetchFireData = () => {

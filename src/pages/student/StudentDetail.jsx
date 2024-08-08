@@ -5,7 +5,7 @@ import Select from 'react-select';
 import { useSelector } from 'react-redux';
 //Hooks
 import useGetLevel from '../../hooks/useGetLevel';
-import useAddUpdFireData from '../../hooks/useAddUpdFireData';
+import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 //컴포넌트
 import RadarChart from '../../components/RadarChart';
 import AnimatedProgressBar from '../../components/ProgressBar';

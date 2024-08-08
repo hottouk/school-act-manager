@@ -8,7 +8,7 @@ import MainBtn from '../../components/Btn/MainBtn'
 import TabBtn from '../../components/Btn/TabBtn'
 //hooks
 import useClientHeight from '../../hooks/useClientHeight'
-import useFetchFireData from '../../hooks/useFetchFireData'
+import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 import useFetchRtMyActiData from '../../hooks/RealTimeData/useFetchRtMyActiData'
 //데이터
 import subjects from '../../subjects'

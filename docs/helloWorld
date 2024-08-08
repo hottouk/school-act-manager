@@ -9,3 +9,7 @@ phone max-width 767px
     
  icon size
  w25 h25
+
+ petImg
+ default w134;
+ 

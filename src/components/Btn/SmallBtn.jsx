@@ -32,8 +32,8 @@ const StyledBtn = styled.button`
   font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
   font-size: 12px;
   font-weight: 500;
-  height: 28px;
   width: 52px;
+  height: 28px;
   letter-spacing: normal;
   line-height: 1.5;
   outline: none;
@@ -47,7 +47,6 @@ const StyledBtn = styled.button`
   touch-action: manipulation;
   vertical-align: top;
   white-space: nowrap;
-
   &:hover {
   background-color: ${(props) => props.$hoverBackgroundColor};
   box-shadow: rgba(0, 0, 0, .05) 0 5px 30px, rgba(0, 0, 0, .05) 0 1px 4px;
@@ -55,11 +54,9 @@ const StyledBtn = styled.button`
   transform: translateY(0);
   transition-duration: .35s;
   }
-  
   &:hover:after {
     opacity: .5;
   }
-
   &:active {
     box-shadow: rgba(0, 0, 0, .1) 0 3px 6px 0, rgba(0, 0, 0, .1) 0 0 10px 0, rgba(0, 0, 0, .1) 0 1px 4px -1px;
     transform: translateY(2px);

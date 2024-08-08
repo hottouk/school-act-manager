@@ -9,6 +9,7 @@ import useEnrollClass from '../../hooks/useEnrollClass';
 //컴포넌트
 import Reward from '../Reward';
 
+//학생 가입용 모달
 const ClassMemberModal = (props) => {
   //1. 변수
   const user = useSelector(({ user }) => { return user })

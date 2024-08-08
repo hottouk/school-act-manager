@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const MainBtn = (props) => {
+const MainBtn = ({ btnName, btnOnClick }) => {
   return (
-    <StyledBtn onClick={props.btnOnClick}>{props.btnName||"샘플"} </StyledBtn>
+    <StyledBtn onClick={btnOnClick}>{btnName || "샘플"} </StyledBtn>
   )
 }
 const StyledBtn = styled.button`

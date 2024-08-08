@@ -9,7 +9,7 @@ import LongW100Btn from '../../components/Btn/LongW100Btn';
 import CSInfoSelect from '../../components/Select/CSInfoSelect';
 import SubjectSelects from '../../components/Select/SubjectSelects';
 //hooks
-import useAddUpdFireData from '../../hooks/useAddUpdFireData';
+import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import useStudent from '../../hooks/useStudent';
 import useClientHeight from '../../hooks/useClientHeight';
 //css
@@ -220,6 +220,7 @@ const InputWrapper = styled.div`
   }
 `
 const BtnWrapper = styled.div`
+  margin-top: 10px;
   display: flex;
   gap: 20px;
 `

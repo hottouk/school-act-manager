@@ -6,8 +6,8 @@ import styled from "styled-components";
 //hooks
 import useChatGpt from "../../hooks/useChatGpt";
 import useClientHeight from "../../hooks/useClientHeight";
-import useAddUpdFireData from "../../hooks/useAddUpdFireData";
-import useFireActi from "../../hooks/useFireActi";
+import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData";
+import useFireActi from "../../hooks/Firebase/useFireActi";
 import useDoActivity from "../../hooks/useDoActivity";
 import useGetByte from "../../hooks/useGetByte";
 //컴포넌트
@@ -15,13 +15,14 @@ import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
 import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
 import AddExtraRecModal from "../../components/Modal/AddExtraRecModal";
 import ScoreWrapper from "../../components/ScoreWrapper"
-import QuestModal from "../../components/Modal/QuestModal";
 import SubjectSelects from "../../components/Select/SubjectSelects";
-
+import DotTitle from "../../components/Title/DotTitle";
 import TwoRadios from "../../components/Radio/TwoRadios";
 import SmallBtn from "../../components/Btn/SmallBtn"
 import CircleList from "../../components/List/CircleList";
 import Homework from "../../components/Homework";
+import QuestModal from "../../components/Modal/QuestModal";
+
 //이미지
 import mon01 from "../../image/enemies/mon_01.png";
 import mon02 from "../../image/enemies/mon_02.png"
@@ -30,6 +31,7 @@ import mon04 from "../../image/enemies/mon_04.png"
 import mon05 from "../../image/enemies/mon_05.png"
 import question from "../../image/icon/question.png"
 import useFireTransaction from "../../hooks/useFireTransaction";
+import CommonTextArea from "../../components/CommonTextArea";
 
 //24.07.06 수정(실시간 바이트 갱신)
 const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
@@ -46,7 +48,6 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const [_isHomework, setIsHomework] = useState(false)
   const [_isPrivate, setIsPrivate] = useState(true)
   const [_anyPartici, setAnyPartici] = useState(false)
-
   //2.경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
   const [careerScore, setCareerScore] = useState(0);
@@ -74,7 +75,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const { gptAnswer, askChatGpt, gptRes, gptBytes } = useChatGpt();
   //7. 바이트 계산
   const { getByteLengthOfString } = useGetByte();
-  //7.Style
+  //7.css
   const clientHeight = useClientHeight(document.documentElement)
   //8. 학생 전용
   const [isParticipating, setIsParticipating] = useState(false)
@@ -167,7 +168,6 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       }
     }
   }
-  //변화 감지
   const handleChange = (event) => {
     switch (event.target.id) {
       case "act_title":
@@ -269,8 +269,8 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
         }
         break;
       case 'go_back_btn': //공용
-        navigate(-1)
-        break;
+      navigate("/activities")
+      break;
       default: return
     }
   }
@@ -325,18 +325,17 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
               {state ? <legend>{_subjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}
               <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
             </StyledDiv>
-            <StyledInputContainer>
-              <p>활동 제목</p>
+            <InputWrapper>
+              <DotTitle title={"활동 제목"} />
               <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled={!isModified} placeholder="ex)포도당 산화 환원 실험" />
-            </StyledInputContainer>
+            </InputWrapper>
             {!state &&
-              <StyledInputContainer>
-                <p>교과/과목</p>
+              <InputWrapper>
+                <DotTitle title={"교과/과목"} />
                 <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
-              </StyledInputContainer>}
-            <label htmlFor="act_content" >활동 설명하기</label>
-            <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled={!isModified}
-              placeholder="~활동으로 끝맺기. ex)포도당 산화 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동" />
+              </InputWrapper>}
+            <CommonTextArea id="act_content" title="활동 설명" onChange={handleChange} value={content} disabled={!isModified}
+              placeholder={"~활동으로 끝맺기. ex)포도당 산화 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동"} />
             <div style={{ display: "flex", justifyContent: "flex-start" }}>
               <label htmlFor="act_record" >생기부 문구</label>
               {/* 문구 추가 버튼 */}
@@ -358,18 +357,24 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
               attitudeScore={attitudeScore}
               coin={coin}
               disabled={!isModified} />
-            < TwoRadios name="isPrivate_radio"
-              id={["private_radio", "public_radio"]}
-              value={_isPrivate} label={["비공개 활동", "공개 활동"]}
-              onChange={handleRadioBtnClick}
-              disabled={!isModified} />
-            {!_anyPartici &&
-              < TwoRadios name="isHomework_radio"
-                id={["activity_radio", "homework_radio"]}
-                value={!_isHomework} label={["생기부 기록 전용", "과제 제출용"]}
+            <Wrapper>
+              <DotTitle title={"공개 여부"} />
+              < TwoRadios name="isPrivate_radio"
+                id={["private_radio", "public_radio"]}
+                value={_isPrivate} label={["비공개 활동", "공개 활동"]}
                 onChange={handleRadioBtnClick}
-                disabled={!isModified} />}
-            {_anyPartici && <p>참여중인 학생이 있으므로 생기부 기록 전용으로는 바꿀 수 없습니다.</p>}
+                disabled={!isModified} />
+            </Wrapper>
+            <Wrapper>
+              <DotTitle title={"과제 구분"} />
+              {!_anyPartici &&
+                < TwoRadios name="isHomework_radio"
+                  id={["activity_radio", "homework_radio"]}
+                  value={!_isHomework} label={["생기부 기록 전용", "과제 제출용"]}
+                  onChange={handleRadioBtnClick}
+                  disabled={!isModified} />}
+              {_anyPartici && <p>참여중인 학생이 있으므로 생기부 기록 전용으로는 바꿀 수 없습니다.</p>}
+            </Wrapper>
             {/*교사 버튼 영역 */}
             {!state ? <> {/*활동 첫 생성 */}
               <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>
@@ -512,6 +517,10 @@ const StyledForm = styled.form`
     min-height: 75px;
   }
 `
+
+const Wrapper = styled.div`
+  display: flex;
+`
 const StyledDiv = styled.div`
   display: flex;
   justify-content: space-between;
@@ -544,7 +553,7 @@ const StyledDiv = styled.div`
   }
 `
 
-const StyledInputContainer = styled.div`
+const InputWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -556,24 +565,6 @@ const StyledInputContainer = styled.div`
     padding-left: 5px;
     &:disabled {             /* 해당 input disabled 되었을 때 */
       color: #efefef;       /* 글자 색을 white로 설정 */
-    }
-  }
-  p {
-    position: relative;
-    width: 30%;
-    font-weight: bold;
-    padding: 0 20px;  /* 텍스트가 동그라미와 겹치지 않도록 왼쪽 여백 추가 */
-    margin: 0;
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 10px;
-      height: 20px;
-      background-color: white;  /* 동그라미 색상 */
-      border-radius: 2px;
     }
   }
 `

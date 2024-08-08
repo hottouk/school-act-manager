@@ -9,14 +9,15 @@ import EmailSignupPage from './pages/login/EmailSignupPage';
 import ClassMain from './pages/main/ClassMain';
 import Nav from './components/Nav';
 import ActivityMain from './pages/activity/ActivityMain';
+import ActivityForm from './pages/activity/ActivitityForm';
+import ActivitySortPage from './pages/activity/ActivitySortPage';
 import ClassRoomMain from './pages/classRoom/ClassRoomMain';
-import ClassRoomDetails from './pages/classRoom/ClassRoomDetails';
+import ClassRoomDetailsPage from './pages/classRoom/ClassRoomDetailsPage';
 import StudentDetail from './pages/student/StudentDetail';
 import ClassAllStudents from './pages/classRoom/ClassAllStudents';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassRoomMakeForm from './pages/classSetting/ClassRoomMakeForm';
 import News from './pages/main/News';
-import ActivityForm from './pages/activity/ActivitityForm';
 import Homework from './components/Homework';
 import UserMain from './pages/student/UserMain';
 import { useSelector } from 'react-redux';
@@ -46,14 +47,16 @@ function App() {
           <Route path="/activities_all" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/:activityId" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/:activityId/:studentId" element={uid ? <Homework /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/activities_setting" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/others" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
+          {/* 활동 만들기, 교사 회원만 가능 */}
+          <Route path="/activities_setting" element={uid ? <ActivitySortPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/activities_setting_details" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 관리 */}
           <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/classrooms/:id" element={uid ? <ClassRoomDetails /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/classrooms/:id" element={uid ? <ClassRoomDetailsPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms/:id/allStudents" element={uid ? <ClassAllStudents /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms/:id/:studentId" element={uid ? <StudentDetail /> : <Navigate replace={true} to='/login' />} />
-          {/* //클래스 만들기, 교사 회원만 가능 */}
+          {/* 클래스 만들기, 교사 회원만 가능 */}
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
           <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassRoomMakeForm /> : <Navigate replace={true} to='/' />} />
           {/* 학생 관리 */}

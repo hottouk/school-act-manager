@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 //컴포넌트
 import CardList from "../../components/List/CardList"
 import SSearchInputBtn from "../../components/Form/SSearchInputBtn"
-import useFetchFireData from "../../hooks/useFetchFireData"
+import useFetchFireData from "../../hooks/Firebase/useFetchFireData"
 //css
 import styled from "styled-components"
 

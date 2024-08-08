@@ -1,12 +1,13 @@
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore"
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
 import { useEffect, useState } from "react"
-import { appFireStore } from "../firebase/config"
+import { appFireStore } from "../../firebase/config"
 
-//하위 Col에서 문서 여러 개를 한번에 읽어올 때 사용한다.
-const useSubCollection = (colName, docName, subColName, order) => {
-  const [subDocuments, setSubDocuments] = useState(null)
+//하위 Col에서 문서 여러 개를 한번에 읽어올 때 사용
+const useFetchRtMyStudentData = (colName, docName, subColName, order) => {
+  const db = appFireStore  
+  const [studentList, setStudentList] = useState(null)
   const [subColErr, setSubColErr] = useState(null)
-  const colRef = collection(appFireStore, colName, docName, subColName)
+  const colRef = collection(db, colName, docName, subColName)
 
   useEffect(() => {
     let q;
@@ -21,7 +22,7 @@ const useSubCollection = (colName, docName, subColName, order) => {
         snapshot.docs.forEach((doc) => {
           result.push({ ...doc.data(), id: doc.id })
         })
-        setSubDocuments(result)
+        setStudentList(result)
       }
       , (error) => {
         setSubColErr(error.message)
@@ -31,7 +32,7 @@ const useSubCollection = (colName, docName, subColName, order) => {
     return unsubscribe
   }, [])
 
-  return { subDocuments, subColErr }
+  return { studentList, subColErr }
 }
 
-export default useSubCollection
+export default useFetchRtMyStudentData

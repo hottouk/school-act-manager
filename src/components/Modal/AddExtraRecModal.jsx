@@ -5,8 +5,8 @@ import ModalBtn from '../Btn/ModalBtn';
 import MainBtn from '../Btn/MainBtn';
 import { Spinner } from 'react-bootstrap';
 //hooks
-import useAddUpdFireData from '../../hooks/useAddUpdFireData';
-import useFetchFireData from '../../hooks/useFetchFireData'
+import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
+import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 //gpt
 import useChatGpt from '../../hooks/useChatGpt';
 //이미지
