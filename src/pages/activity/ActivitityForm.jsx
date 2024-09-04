@@ -2,13 +2,11 @@
 import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import styled from "styled-components";
 //hooks
 import useChatGpt from "../../hooks/useChatGpt";
 import useClientHeight from "../../hooks/useClientHeight";
 import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData";
 import useFireActi from "../../hooks/Firebase/useFireActi";
-import useDoActivity from "../../hooks/useDoActivity";
 import useGetByte from "../../hooks/useGetByte";
 //컴포넌트
 import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
@@ -18,11 +16,10 @@ import ScoreWrapper from "../../components/ScoreWrapper"
 import SubjectSelects from "../../components/Select/SubjectSelects";
 import DotTitle from "../../components/Title/DotTitle";
 import TwoRadios from "../../components/Radio/TwoRadios";
-import SmallBtn from "../../components/Btn/SmallBtn"
-import CircleList from "../../components/List/CircleList";
-import Homework from "../../components/Homework";
 import QuestModal from "../../components/Modal/QuestModal";
-
+import CommonTextArea from "../../components/CommonTextArea";
+import MoreRecordListForm from "../../components/Form/MoreRecordListForm";
+import LongW100Btn from "../../components/Btn/LongW100Btn";
 //이미지
 import mon01 from "../../image/enemies/mon_01.png";
 import mon02 from "../../image/enemies/mon_02.png"
@@ -31,7 +28,10 @@ import mon04 from "../../image/enemies/mon_04.png"
 import mon05 from "../../image/enemies/mon_05.png"
 import question from "../../image/icon/question.png"
 import useFireTransaction from "../../hooks/useFireTransaction";
-import CommonTextArea from "../../components/CommonTextArea";
+import AddPerfRecModal from "../../components/Modal/AddPerfRecModal";
+import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
+//css
+import styled from "styled-components";
 
 //24.07.06 수정(실시간 바이트 갱신)
 const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
@@ -43,11 +43,12 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const [_subjDetail, setSubjDetail] = useState('default');
   const [content, setContent] = useState('');
   const [record, setRecord] = useState('');
+  const [_extraRecList, setExtraRecList] = useState(null);
+  const [_perfRecList, setPerfRecList] = useState(null);
   const [monImg, setMonImg] = useState(null);
   const [byte, setByte] = useState(0)
   const [_isHomework, setIsHomework] = useState(false)
   const [_isPrivate, setIsPrivate] = useState(true)
-  const [_anyPartici, setAnyPartici] = useState(false)
   //2.경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
   const [careerScore, setCareerScore] = useState(0);
@@ -59,46 +60,57 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const [graphicModalShow, setgraphicModalShow] = useState(false)
   const [timerModalShow, setTimerModalShow] = useState(false)
   const [questModalShow, setQuestModalShow] = useState(false)
-  const [extraRecModalShow, setExtraRecModalShow] = useState(false)
-  const [isHomeworkSubmit, setIsHomeworkSubmit] = useState(false)
+  const [isExtraRecModalShown, setIsExtraRecModalShown] = useState(false)
+  const [isPerfRecModalShown, setIsPerfRecModalShown] = useState(false)
   const [isModified, setIsModified] = useState(false)
+  const [isExtraRecShown, setIsExtraRecShown] = useState(false)
+  const [isPerfRecShown, setIsPerfRecShown] = useState(false)
   //hooks
   //4.데이터 통신 변수
   const { addActi, updateActi } = useAddUpdFireData("activities");
   const { copyActiTransaction, delCopiedActiTransaction } = useFireTransaction()
-  const { takePartInThisActivity, cancelThisActivity } = useDoActivity();
   const { deleteActi } = useFireActi();
   //5.경로 이동 관련 변수
-  const { state } = useLocation() //state는 활동
+  const { state } = useLocation() //state.acti는 활동
   const navigate = useNavigate()
   //6. ChatGPt
   const { gptAnswer, askChatGpt, gptRes, gptBytes } = useChatGpt();
+  useEffect(() => {
+    if (gptAnswer !== '') {
+      setRecord(gptAnswer)
+      setByte(gptBytes)
+    }
+    switch (gptRes) {
+      case 'loading':
+        setTimerModalShow(true)
+        break;
+      case 'complete':
+        setTimerModalShow(false)
+        break;
+      default: return;
+    }
+  }, [gptRes, gptAnswer])
+
   //7. 바이트 계산
   const { getByteLengthOfString } = useGetByte();
-  //7.css
+  //8.css
   const clientHeight = useClientHeight(document.documentElement)
-  //8. 학생 전용
-  const [isParticipating, setIsParticipating] = useState(false)
   useEffect(() => {
     if (state) {
-      let scoresObj = state.acti.scores
       let acti = state.acti
+      let scoresObj = acti.scores
       setTitle(acti.title)
       setContent(acti.content)
       setRecord(acti.record)
+      setExtraRecList(acti.extraRecordList)
+      setPerfRecList(acti.perfRecordList)
       setMonImg(acti.monImg)
       setSubjDetail(acti.subject)
       setIsHomework(acti.isHomework)
       if (acti.isPrivate !== undefined) setIsPrivate(acti.isPrivate)
       setCoin(acti.money)
       setByte(acti.byte ? acti.byte : 0)
-      if (acti.particiSIdList && acti.particiSIdList.length > 0) {
-        setIsParticipating(acti.particiSIdList.find((item) => { return item === user.uid })) //학생 본인 활동 참여 중 여부
-        setAnyPartici(true)
-      } else {
-        setAnyPartici(false)
-      }
-      if (scoresObj) {
+      if (scoresObj) { //todo: obj 하나로 관리한는건 어떨까?
         setLeadershipScore(scoresObj.leadership)
         setCareerScore(scoresObj.careerScore)
         setSincerityScore(scoresObj.sincerityScore)
@@ -115,22 +127,6 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       setIsModified(true)
     }
   }, [state]);
-
-  useEffect(() => {
-    if (gptAnswer !== '') {
-      setRecord(gptAnswer)
-      setByte(gptBytes)
-    }
-    switch (gptRes) {
-      case 'loading':
-        setTimerModalShow(true)
-        break;
-      case 'complete':
-        setTimerModalShow(false)
-        break;
-      default: return;
-    }
-  }, [gptRes, gptAnswer])
 
   //활동 저장 대화창 ==> 추후 디자인 수정 필요 (교사전용)
   const showConfirmModal = () => {
@@ -233,7 +229,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
         }
         break;
       case "modi_btn":
-        setIsModified(true)
+        setIsModified((prev) => !prev)
         break;
       case "delete_btn":
         if (window.confirm("이 활동을 정말로 삭제하시겠습니까?")) {
@@ -256,21 +252,9 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
           navigate("/activities_all", { state: "acti_all" })
         }
         break;
-      case "do_this_act_btn": //학생 전용
-        if (window.confirm("이 활동을 신청하시겠습니까?")) {
-          takePartInThisActivity(state.acti, state.classInfo)
-          setIsParticipating(true)
-        }
-        break;
-      case "cancel_this_act_btn":
-        if (window.confirm("이 활동을 신청 취소하시겠습니까?")) {
-          cancelThisActivity(state.acti)
-          setIsParticipating(false)
-        }
-        break;
       case 'go_back_btn': //공용
-      navigate("/activities")
-      break;
+        navigate("/activities")
+        break;
       default: return
     }
   }
@@ -334,14 +318,10 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                 <DotTitle title={"교과/과목"} />
                 <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
               </InputWrapper>}
+            {/* 활동 설명 */}
             <CommonTextArea id="act_content" title="활동 설명" onChange={handleChange} value={content} disabled={!isModified}
               placeholder={"~활동으로 끝맺기. ex)포도당 산화 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동"} />
-            <div style={{ display: "flex", justifyContent: "flex-start" }}>
-              <label htmlFor="act_record" >생기부 문구</label>
-              {/* 문구 추가 버튼 */}
-              {state?.acti?.uid === user.uid && !state?.acti?.madeById && <SmallBtn id="extra_Rbtn" btnName="추가" btnColor="#9b0c24" hoverBtnColor="red" margin="0 10px" btnOnClick={() => { setExtraRecModalShow(true) }} />}
-            </div>
-            <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled={!isModified} />
+            <CommonTextArea id="act_record" title="생기부 문구" onChange={handleChange} value={record} disabled={!isModified} required />
             <StyledDiv>
               <label className="act_byte" htmlFor="act_byte" ></label>
               <div>
@@ -349,6 +329,38 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                 <p style={{ display: "inline-block" }}> /1500 Byte</p>
               </div>
             </StyledDiv>
+            <RadioWrapper>
+              <DotTitle title={"공개 여부"} />
+              <TwoRadios name="isPrivate_radio"
+                id={["private_radio", "public_radio"]}
+                value={_isPrivate} label={["비공개 활동", "공개 활동"]}
+                onChange={handleRadioBtnClick}
+                disabled={!isModified} />
+            </RadioWrapper>
+            {state && <>
+              <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" />
+              <AnimMaxHightOpacity isVisible={isPerfRecShown}
+                content={<PerfWrapper>
+                  {_perfRecList && <LevelWrapper>
+                    <p>상</p><p>중</p><p>하</p><p>최하</p>
+                  </LevelWrapper>}
+                  <MoreRecordListForm
+                    moreRecList={_perfRecList}
+                    noListText="등록된 수행평가 문구가 없습니다."
+                    isBtnShown={state?.acti?.uid === user.uid && !state?.acti?.madeById}
+                    btnOnClick={() => { setIsPerfRecModalShown(true) }} />
+                </PerfWrapper>
+                }
+              />
+              <DotTitle title={"돌려 쓰기 ▼"} onClick={() => { setIsExtraRecShown((prev) => !prev) }} pointer="pointer" />
+              <AnimMaxHightOpacity isVisible={isExtraRecShown}
+                content={<MoreRecordListForm
+                  moreRecList={_extraRecList}
+                  noListText="돌려 쓰기 문구가 없습니다."
+                  isBtnShown={state?.acti?.uid === user.uid && !state?.acti?.madeById}
+                  btnOnClick={() => { setIsExtraRecModalShown(true) }} />}
+              />
+            </>}
             <ScoreWrapper handleChange={handleChange}
               leadershipScore={leadershipScore}
               careerScore={careerScore}
@@ -357,87 +369,35 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
               attitudeScore={attitudeScore}
               coin={coin}
               disabled={!isModified} />
-            <Wrapper>
-              <DotTitle title={"공개 여부"} />
-              < TwoRadios name="isPrivate_radio"
-                id={["private_radio", "public_radio"]}
-                value={_isPrivate} label={["비공개 활동", "공개 활동"]}
-                onChange={handleRadioBtnClick}
-                disabled={!isModified} />
-            </Wrapper>
-            <Wrapper>
-              <DotTitle title={"과제 구분"} />
-              {!_anyPartici &&
-                < TwoRadios name="isHomework_radio"
-                  id={["activity_radio", "homework_radio"]}
-                  value={!_isHomework} label={["생기부 기록 전용", "과제 제출용"]}
-                  onChange={handleRadioBtnClick}
-                  disabled={!isModified} />}
-              {_anyPartici && <p>참여중인 학생이 있으므로 생기부 기록 전용으로는 바꿀 수 없습니다.</p>}
-            </Wrapper>
             {/*교사 버튼 영역 */}
-            {!state ? <> {/*활동 첫 생성 */}
-              <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>
-              <StyledBtn type="submit">저장</StyledBtn></>
-              : <>
-                {(state.acti.uid === user.uid) && <>
-                  {!state.acti.madeById ? <>
-                    {/*활동 수정하기 */}
-                    {isModified && <StyledBtn type="button" id="gpt_btn" onClick={handleBtnClick}>GPT로 세특 문구 작성</StyledBtn>}
-                    {!isModified ? <StyledBtn type="button" id="modi_btn" onClick={handleBtnClick}>수정</StyledBtn> : <StyledBtn type="submit">저장</StyledBtn>}
-                    <StyledBtn type="button" id="delete_btn" onClick={handleBtnClick}>삭제</StyledBtn></> : <>
-                    {/*업어온 활동 삭제하기 */}
-                    <StyledBtn type="button" id="copied_delete_btn" onClick={handleBtnClick}>삭제</StyledBtn></>}
+            <ButtonWrapper>
+              {!state ? <> {/*활동 첫 생성 */}
+                <LongW100Btn id="gpt_btn" btnName="GPT로 세특 문구 작성" btnOnClick={handleBtnClick} />
+                <LongW100Btn type="submit" btnName="생성" /></>
+                : <>
+                  {(state.acti.uid === user.uid) && <>
+                    {!state.acti.madeById
+                      ? <>{/*업어오지 않고 내가 생성한 활동 수정하기 */}
+                        {!isModified && <>
+                          <LongW100Btn id="modi_btn" btnName="수정" btnOnClick={handleBtnClick} />
+                          <LongW100Btn id="delete_btn" btnName="삭제" btnOnClick={handleBtnClick} /></>
+                        }
+                        {isModified && <>
+                          <LongW100Btn id="gpt_btn" btnName="GPT로 세특 문구 작성" btnOnClick={handleBtnClick} />
+                          <LongW100Btn type="submit" btnName="저장" />
+                          <LongW100Btn id="modi_btn" btnName="취소" btnOnClick={handleBtnClick} /></>}</>
+                      : <>{/*업어온 활동 삭제하기 */}
+                        <LongW100Btn id="copied_delete_btn" btnName="삭제" btnOnClick={handleBtnClick} /></>}
+                  </>}
+                  {(state.acti.uid !== user.uid) && <> {/*활동 업어가기 */}
+                    <LongW100Btn id="copy_btn" btnName="업어가기" btnOnClick={handleBtnClick} />
+                  </>}
                 </>}
-                {(state.acti.uid !== user.uid) && <> {/*활동 업어가기 */}
-                  <StyledBtn type="button" id="copy_btn" onClick={handleBtnClick}>업어가기</StyledBtn>
-                </>}
-              </>}
-            <StyledBtn type="button" id="go_back_btn" onClick={handleBtnClick}>목록</StyledBtn>
+              <LongW100Btn id="go_back_btn" btnName="목록" btnOnClick={handleBtnClick} />
+            </ButtonWrapper>
           </fieldset>
         </StyledForm>
       </>}
-      {/* 학생 */}
-      {!user.isTeacher && <>
-        <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
-          <fieldset>
-            <StyledDiv>
-              <legend>활동 신청하기</legend>
-              <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" />
-            </StyledDiv>
-            <StyledDiv>
-              <div>
-                <label htmlFor="act_title" >활동 제목</label>
-                <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled />
-              </div>
-            </StyledDiv>
-            <label htmlFor="act_content" >GPT에게 활동 설명하기</label>
-            <textarea id="act_content" type="text" onChange={handleChange} value={content} disabled />
-            <label htmlFor="act_record" >생기부 문구</label>
-            <textarea id="act_record" type="text" required onChange={handleChange} value={record} disabled />
-            <ScoreWrapper handleChange={handleChange}
-              leadershipScore={leadershipScore}
-              careerScore={careerScore}
-              coopScore={coopScore}
-              sincerityScore={sincerityScore}
-              attitudeScore={attitudeScore}
-              coin={coin}
-              disabled={true}
-            />
-            {_isHomework &&
-              (!isParticipating
-                ? <StyledBtn type="button" id="do_this_act_btn" onClick={handleBtnClick}>신청</StyledBtn>
-                : <><StyledBtn type="button" $color={"#3454d1"} $background={"#efefef"}>참여중</StyledBtn>
-                  {!isHomeworkSubmit && <StyledBtn type="button" id="cancel_this_act_btn" onClick={handleBtnClick}>신청 취소</StyledBtn>}</>
-              )
-            }
-            <StyledBtn type="button" id="go_back_to_class_btn" onClick={handleBtnClick}>목록</StyledBtn>
-          </fieldset>
-        </StyledForm>
-      </>}
-      {/* 추후 삭제하기 */}
-      {/* {isParticipating && <Homework activity={state.acti} homeworkSubmit={(isSubmit) => { setIsHomeworkSubmit(isSubmit) }} />}
-      {state && <CircleList dataList={state.acti.particiList} acti={state.acti} />} */}
       {/* 모달 */}
       <GraphicDialogModal
         show={graphicModalShow}
@@ -448,11 +408,20 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       <QuestModal
         show={questModalShow}
         onHide={() => setQuestModalShow(false)} />
-      {(state && extraRecModalShow) && < AddExtraRecModal
-        show={extraRecModalShow}
-        onHide={() => setExtraRecModalShow(false)}
-        acti={state.acti}
-      />}
+      {(state && isExtraRecModalShown) &&
+        < AddExtraRecModal
+          show={isExtraRecModalShown}
+          onHide={() => setIsExtraRecModalShown(false)}
+          acti={state.acti}
+          setExtraRecList={setExtraRecList} //부모 컴포넌트에 변경 data 반영
+        />}
+      {(state && isPerfRecModalShown) &&
+        < AddPerfRecModal
+          show={isPerfRecModalShown}
+          onHide={() => setIsPerfRecModalShown(false)}
+          acti={state.acti}
+          setPerfRecList={setPerfRecList}
+        />}
     </StyledContainer>
   )
 }
@@ -485,18 +454,6 @@ const StyledForm = styled.form`
   label {
     display: block;
   }
-  textarea { /* 활동 설명 및 생기부 문구*/
-    display: block;
-    width: 100%;
-    min-width: 400px;
-    min-height: 150px;
-    margin-top: 5px;
-    margin-bottom: 15px;
-    border-radius: 7px;
-    &:disabled {  /* 해당 개체 disabled 되었을 때 */
-      color: #efefef;
-    }
-  }
   @media screen and (max-width: 767px){
     padding-bottom: 20px;
     max-width: 100%;
@@ -517,9 +474,25 @@ const StyledForm = styled.form`
     min-height: 75px;
   }
 `
-
-const Wrapper = styled.div`
+const RadioWrapper = styled.div`
   display: flex;
+`
+const LevelWrapper = styled.div`
+  margin-top: 15px;
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  p { 
+    height: 35px;
+    margin: 0;
+    padding: 4px;
+    text-align:center;
+  }
+`
+const PerfWrapper = styled.div`
+  display: flex;
+  gap: 5px;
 `
 const StyledDiv = styled.div`
   display: flex;
@@ -552,7 +525,6 @@ const StyledDiv = styled.div`
     border-radius: 7px;
   }
 `
-
 const InputWrapper = styled.div`
   display: flex;
   align-items: center;
@@ -579,21 +551,12 @@ const StyledImgPicker = styled.img`
   background-color: #efefef;
   cursor: pointer;
 `
-const StyledBtn = styled.button`
-  margin: 8px auto;
-  margin-top: 25px;
-  width: 80%;
-  height: 50px;
+const ButtonWrapper = styled.div`
+  width: 90%;
+  margin: 0 auto;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  color: ${(props) => { return props.$color ? props.$color : "#efefef" }};
-  background-color: ${(props) => { return props.$background ? props.$background : "#3454d1" }};
-  border-radius: 15px;
-  border: 2px solid #efefef;
-  padding: 25px;
-  @media screen and (max-width: 767px){
-    margin-top: 20px;
-  }
+  gap: 20px;
 `
 export default ActivityForm

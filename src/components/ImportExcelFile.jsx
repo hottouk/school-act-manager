@@ -3,7 +3,6 @@ import xlsx from 'xlsx';
 import { useDropzone } from 'react-dropzone'
 //컴포넌트
 import TwoRadios from '../components/Radio/TwoRadios'
-import SmallBtn from '../components/Btn/SmallBtn'
 //hooks
 import useProcessXlsxData from '../hooks/useProcessXlsxData';
 //css
@@ -64,11 +63,6 @@ const ImportExcelFile = (props) => {
     multiple: false,
     accept: '.xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel' // MIME 타입 및 파일 확장자 함께 지정
   });
-
-  const clearSelectedFile = (event) => {
-    event.preventDefault();
-    setSelectedFile(null);
-  }
 
   return (<>
     <TwoRadios name={"roll_book_check"} id={["high", "middle"]} label={["고등학교", "중학교"]} value={isHiSkul} onChange={() => { setIsHiSkul(!isHiSkul) }} />

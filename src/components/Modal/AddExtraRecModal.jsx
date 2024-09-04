@@ -80,7 +80,8 @@ const AddExtraRecModal = (props) => {
     const confirm = window.confirm("추가 문구를 저장하시겠습니까?")
     if (confirm) {
       let extraRecordList = [...inputFieldList, props.acti.record]
-      let modifiedActi = { extraRecordList };
+      props.setExtraRecList(extraRecordList)  // 외부 문구 list 셋 
+      let modifiedActi = { extraRecordList }; // firedata 업데이트 위한 객체화
       updateActi(modifiedActi, "activities", props.acti.id)
     }
     props.onHide()
@@ -90,7 +91,6 @@ const AddExtraRecModal = (props) => {
     const newArr = inputFieldList.filter((_, i) => { return i !== index });
     setInputFieldList(newArr)
   }
-
 
   return (
     <Modal
@@ -106,7 +106,6 @@ const AddExtraRecModal = (props) => {
         <p>현재 문구</p>
         <StyledCurRec>{props.acti.record}</StyledCurRec>
         <p>돌려 쓸 문구를 추가해주세요. 최대 4개까지 추가 가능합니다.</p>
-
         <StyledUl>
           {inputFieldList.map((field, index) => {
             return <div key={index} className="cover">
@@ -156,7 +155,6 @@ const StyledUl = styled.ul`
     cursor: pointer;
   }
 `
-
 const StyledCurRec = styled.div`
   border: 1px solid black;
   border-radius: 10px;

@@ -61,8 +61,7 @@ const PetImg = (props) => {
 
   return (<>
     {imageSrc && (
-      <StyledImg $wid={props.wid} src={imageSrc} alt="펫이미지" onClick={() => { props.onClick(); }}
-      />
+      <StyledImg $wid={props.wid} src={imageSrc} alt="펫이미지" onClick={() => { props.onClick(); }} />
     )}
   </>)
 }
