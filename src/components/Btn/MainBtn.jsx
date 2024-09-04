@@ -50,6 +50,11 @@ const StyledBtn = styled.button`
     opacity: .5;
   }
 
+  &:focus {
+    outline: none; /* 기본 포커스 스타일 제거 */
+    box-shadow: 0 0 0 3px black; /* 검은색 테두리 추가 */
+  }
+
   &:active {
     box-shadow: rgba(0, 0, 0, .1) 0 3px 6px 0, rgba(0, 0, 0, .1) 0 0 10px 0, rgba(0, 0, 0, .1) 0 1px 4px -1px;
     transform: translateY(2px);

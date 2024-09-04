@@ -149,7 +149,7 @@ const ClassRoomDetailsPage = () => {
         {/* 반 전체보기(교사)*/}
         {user.isTeacher && <StyledMain>
           <h4>개별화하기</h4>
-          <MainBtn btnName="반 전체 세특 보기" btnOnClick={() => { navigate('allStudents', { state: studentList }) }} />
+          <MainBtn btnName="반 전체 세특 보기" btnOnClick={() => { navigate('allStudents') }} />
         </StyledMain>
         }
         {user.isTeacher && <StyeldBtnDiv>

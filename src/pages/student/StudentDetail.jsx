@@ -72,7 +72,6 @@ const StudentDetail = () => {
     }
   }, [gptRecord])
 
-  //2. UseEffect
   useEffect(() => {
     if (!user.isTeacher) { //학생만 실행
       if (user.uid === master) { fetchMyPetInfo(state) }//학생 펫정보 업데이트
@@ -84,7 +83,7 @@ const StudentDetail = () => {
     navigate(`/classrooms/${params.id}/${student.id}`, { state: student })
   }
 
-  //셀렉터 변경시2
+  //셀렉터 변경시_2
   const updateActiList = (event, index) => {
     let newId = event.value //클릭한 새로운 이벤트 id
     let newActi = allActivityList.find((acti) => { return acti.id === newId }) //전체 활동에서 클릭한 활동과 id가 일치하는 활동을 찾기 -> 원본 반환.
@@ -95,7 +94,7 @@ const StudentDetail = () => {
     })
   }
 
-  //셀렉터 변경 시1
+  //셀렉터 변경 시_1
   const handleSelectOnchange = (event, index) => { //event는 선택 acti Obj
     if ((_actiList.findIndex(({ id }) => { return id === event.value })) === -1) {  //기존 활동과 중복된 활동이 아닌 경우만
       updateActiList(event, index)
@@ -192,13 +191,13 @@ const StudentDetail = () => {
           </StyeldChartDiv>
         </StyledTopPannel>
         <StyledBotPannel>
-          <StyledBotGridInfo>
+          <StyledBotGridContainer>
             <StyledTitleRow>
               <StyledMidlDiv>활동</StyledMidlDiv>
-              <StyledAcclDiv style={{ justifyContent: "center" }}>생기부</StyledAcclDiv>
+              <AccWrapper style={{ justifyContent: "center" }}>생기부</AccWrapper>
             </StyledTitleRow>
             {(user.isTeacher || _isMaster) && <>
-              {!_actiList || _actiList.length === 0 ? <div className="no_act_record">활동이 없어유ㅠㅠ</div>
+              {!_actiList || _actiList.length === 0 ? <div className="no_act_record">활동이 없어요ㅠㅠ</div>
                 : _actiList.map((acti, index) => {
                   return <StyledContentRow key={acti.id} ref={(element) => { return divRef.current[index] = element }} >
                     <StyledMidlDiv>
@@ -212,9 +211,27 @@ const StudentDetail = () => {
                           onChange={(event) => { handleSelectOnchange(event, index) }} />}
                       </div>
                     </StyledMidlDiv>
-                    <StyledAcclDiv>
+                    <AccWrapper>
                       {!isModifiying && <span>{acti.record}</span>}
                       {isModifiying && <> {/*수정할때*/}
+                        {acti.perfRecordList && <SmallBtnWrapper>
+                          <SmallBtn btnName="상" btnOnClick={() => {
+                            updateAccRecord(index, acti.perfRecordList[0])
+                            textAreaRef.current[index].value = acti.perfRecordList[0];
+                          }} />
+                          <SmallBtn btnName="중" btnOnClick={() => {
+                            updateAccRecord(index, acti.perfRecordList[1])
+                            textAreaRef.current[index].value = acti.perfRecordList[1];
+                          }} />
+                          <SmallBtn btnName="하" btnOnClick={() => {
+                            updateAccRecord(index, acti.perfRecordList[2])
+                            textAreaRef.current[index].value = acti.perfRecordList[2];
+                          }} />
+                          <SmallBtn btnName="최하" btnOnClick={() => {
+                            updateAccRecord(index, acti.perfRecordList[3])
+                            textAreaRef.current[index].value = acti.perfRecordList[3];
+                          }} />
+                        </SmallBtnWrapper>}
                         <textarea
                           defaultValue={acti.record}
                           onChange={(event) => handleTextareaOnChange(event, index)}
@@ -226,12 +243,12 @@ const StudentDetail = () => {
                         }}></SmallBtn>
                         <img src={x_btn} id="delete_acti_btn" alt="삭제x" onClick={(event) => { return handleBtnClick(event, acti, index) }} />
                       </>}
-                    </StyledAcclDiv>
+                    </AccWrapper>
                   </StyledContentRow>
                 })}
             </>}
             {(!user.isTeacher && !_isMaster) && <div className='no_act_record'>볼 권한이 없습니다. 본인만 열람 가능합니다.</div>}
-          </StyledBotGridInfo>
+          </StyledBotGridContainer>
         </StyledBotPannel>
       </StyledStudentInfoPannel>
       {/* 교사전용 */}
@@ -378,7 +395,7 @@ const StyledBotPannel = styled.div`
     flex-direction: column;
   }
 `
-const StyledBotGridInfo = styled.div`
+const StyledBotGridContainer = styled.div`
 position: absolute;
   width: 98%;
   top: 0px;
@@ -389,7 +406,7 @@ position: absolute;
   border-radius: 10px;
 display: grid;
   grid-template-rows: 40px;
-  grid-auto-rows: minmax(5px, 100px);  
+  grid-auto-rows: minmax(5px, 120px);  
   overflow-y: scroll
 `
 const StyledTitleRow = styled.div`
@@ -423,7 +440,7 @@ display: flex;
     flex-basis: 65px;
   }
 `
-const StyledAcclDiv = styled.div`
+const AccWrapper = styled.div`
   flex-grow: 1;
   justify-content: center;
   padding: 0 5px;
@@ -445,6 +462,12 @@ const StyledAcclDiv = styled.div`
   @media screen and (max-width: 767px){
     width: 0;
   }
+`
+const SmallBtnWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px;
 `
 const StyeldBtnDiv = styled.div`
   display: flex;

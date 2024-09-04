@@ -13,7 +13,7 @@ const ExportAsExcel = () => {
   const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //ClassRoomDetail에서 저장한 학생List 불러오기(전역)
   //hooks
   const { getByteLengthOfString } = useGetByte()
-  
+
   //데이터 담은 배열
   let data = allStudentList.map((student, index) => {
     let studentNumber = student.studentNumber;
@@ -40,7 +40,7 @@ const ExportAsExcel = () => {
     xlsx.writeFile(wb, "생기부데이터.xlsx");
   }
   return (
-    <StyledExcelImgBtn src={excelIcon} alt='엑셀아이콘' onClick={handleBtnClick}/>
+    <StyledExcelImgBtn src={excelIcon} alt='엑셀아이콘' onClick={handleBtnClick} />
   )
 }
 
@@ -50,5 +50,10 @@ const StyledExcelImgBtn = styled.img`
   margin-top: 5px;
   margin-bottom: 5px;
   cursor: pointer;
+  &:hover {
+    background-color: #3454d1;
+    border: none;
+    border-radius: 10px;
+  }
 `
 export default ExportAsExcel

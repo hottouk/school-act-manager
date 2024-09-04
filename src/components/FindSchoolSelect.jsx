@@ -153,7 +153,6 @@ const StyledSearchBtn = styled.button`
   font-size: 12px;
   color: whitesmoke;
 `
-
 const StyledSchoolListWrapper = styled.div`
   width: 100%;
   background-color: #efefef;
@@ -174,5 +173,4 @@ const StyledSchoolListWrapper = styled.div`
     font-size: 13px;
   }
 `
-
 export default FindSchoolSelect

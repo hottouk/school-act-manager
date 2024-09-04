@@ -1,10 +1,16 @@
 import React from 'react'
 import Form from 'react-bootstrap/Form';
 import styled from 'styled-components';
-
+//2024.08.16(정리)
 const TwoRadios = ({ name, id, value, label, onChange, disabled }) => {
+  // 작성 예시
+  // <TwoRadios name="isPrivate_radio"
+  //   id={["private_radio", "public_radio"]}
+  //   value={_isPrivate} label={["비공개 활동", "공개 활동"]}
+  //   onChange={() => { setIsFourStep(!_isFourStep) }} />
+  //   disabled={!isModified} />
   return (
-    <StyledRadioContainer>
+    <Container>
       <RadioWrapper>
         <Form.Check onChange={onChange}
           name={name}
@@ -25,12 +31,11 @@ const TwoRadios = ({ name, id, value, label, onChange, disabled }) => {
           disabled={disabled}
         ></Form.Check>
       </RadioWrapper>
-    </StyledRadioContainer>
+    </Container>
   )
 }
-const StyledRadioContainer = styled.div`
+const Container = styled.div`
   display: flex;
-  height: 40px;
 `
 const RadioWrapper = styled.div`
   display: flex;

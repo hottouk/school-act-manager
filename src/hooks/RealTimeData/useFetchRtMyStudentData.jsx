@@ -8,7 +8,6 @@ const useFetchRtMyStudentData = (colName, docName, subColName, order) => {
   const [studentList, setStudentList] = useState(null)
   const [subColErr, setSubColErr] = useState(null)
   const colRef = collection(db, colName, docName, subColName)
-
   useEffect(() => {
     let q;
     if (order) {

@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const LongW100Btn = (props) => {
+const LongW100Btn = ({ id, btnColor, btnOnClick, btnName, type }) => {
   return (
-    <StyledLongW100Btn id={props.id} $backgroundColor={props.btnColor || "transparent"} onClick={props.btnOnClick}>{props.btnName||"샘플"}</StyledLongW100Btn>
+    <StyledLongW100Btn id={id} $backgroundColor={btnColor || "transparent"} type={type || "button"} onClick={btnOnClick}>{btnName || "샘플"}</StyledLongW100Btn>
   )
 }
 
