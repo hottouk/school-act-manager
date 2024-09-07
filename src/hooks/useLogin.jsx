@@ -34,8 +34,8 @@ const useLogin = () => {
         uid = userInfo.uid
         break;
       case "kakao":
-        let profile = userInfo.profile
-        uid = String(profile.id)
+        let id = userInfo.id
+        uid = String(id)
         break;
       default: return
     }
@@ -144,6 +144,37 @@ const useLogin = () => {
       })
   }
 
+  //카카오 로그인(24.07.24)
+  const kakaoLogin = (userInfo, openModal) => {
+    setErr(null)
+    setIsPending(true)
+    let user
+    if (userInfo) {
+      user = {
+        uid: String(userInfo.id),
+        name: userInfo.kakao_account.profile.nickname,
+        email: userInfo.kakao_account.email || "no-email",
+        profileImg: userInfo.kakao_account.profile.profile_image_url || "no-image",
+        phoneNumber: null
+      }
+    }
+    console.log(user)
+    dispatcher(setTempUser(user))
+    findUser(userInfo, "kakao").then(({ isUserExist, userInfofromServer }) => { //기존 유저 체크
+      if (isUserExist !== true) { openModal(true) }                             //신규
+      else {                                                                    //기존
+        dispatcher(setUser(userInfofromServer))
+        window.alert(`${userInfofromServer.name}으로 로그인 되었습니다.`)
+      }
+      setErr(null)
+      setIsPending(false)
+    }).catch((err) => {
+      window.alert(err.code, err.message)
+      setErr(err.message)
+      setIsPending(false)
+    })
+  }
+
   //비밀번호 유효성 검사(24.07.30)
   const validatePassword = (password, samePassword) => {
     if (password.length < 6) { return "비밀 번호는 최소 6자를 넘어야 합니다."; }
@@ -186,7 +217,7 @@ const useLogin = () => {
   }
 
   return (
-    { addUser, googleLogin, emailLogin, sendEmailSignInLink, getEmailUserCredential, classifyUserInfo, emailMsg, isPending, err, }
+    { addUser, googleLogin, kakaoLogin, emailLogin, sendEmailSignInLink, getEmailUserCredential, classifyUserInfo, emailMsg, isPending, err, }
   )
 }
 

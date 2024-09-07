@@ -4,17 +4,19 @@ import React, { useEffect, useState } from 'react'
 import NoticeModal from '../../components/Modal/NoticeModal'
 import InfluencerList from '../../components/List/InfluencerList'
 //hooks
-import useFetchRtUserData from '../../hooks/RealTimeData/useFetchRtUserData'
+import useFetchRtAllUserData from '../../hooks/RealTimeData/useFetchRtAllUserData'
 //이미지
 import main from '../../image/main.png'
 //css
 import styled from 'styled-components'
 import useClientHeight from '../../hooks/useClientHeight'
+//ads
+import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
 
 //24.07.20
 const ClassMain = () => {
   //1. 변수
-  const { teacherList, studentList, useFetchRtUserErr, sortByLikedCount } = useFetchRtUserData() //실시간 구독
+  const { teacherList, studentList, useFetchRtUserErr, sortByLikedCount } = useFetchRtAllUserData() //실시간 구독
   const [influList, setInfluList] = useState([]);
   useEffect(() => {
     setInfluList(sortByLikedCount())
@@ -59,9 +61,10 @@ const ClassMain = () => {
       </StyledWhiteBackground>
       <StyledBlueBackground>
         <StyledWrapper>
-          <p className='bible'>너희는 먼저 그의 나라와 그의 의를 구하라. 그리하면 이 모든 것을 너희에게 더하시리라. 마태복음 6:33</p>
+          <p className='bible'>너희는 먼저 그의 나라와 그의 의를 구하라. 그리하면 이 모든 것을 너희에게 더하시리라. 마태복음 6:33</p>          
         </StyledWrapper>
       </StyledBlueBackground>
+      <HorizontalBannerAd/>
       {/* 공지사항팝업 */}
       <NoticeModal
         show={isShownNotice}

@@ -9,7 +9,7 @@ import TabBtn from '../../components/Btn/TabBtn'
 //hooks
 import useClientHeight from '../../hooks/useClientHeight'
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
-import useFetchRtMyActiData from '../../hooks/RealTimeData/useFetchRtMyActiData'
+import useFetchRtMyActiData from '../../hooks/RealTimeData/useFetchRtMyStudentData'
 //데이터
 import subjects from '../../subjects'
 //css

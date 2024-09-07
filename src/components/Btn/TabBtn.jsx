@@ -1,33 +1,33 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
+//2024.07.25 샘플탭 정비
 function TabBtn(props) {
+  //샘플: 1부터 9까지의 숫자 배열 생성
   const [sampleTab, setSampleTab] = useState("1")
-  // 1부터 9까지의 숫자 배열 생성
   const tabSamples = Array.from({ length: 9 }, (_, index) => index + 1);
-
   const handleTabClick = (item) => {
-    // setSampleTab(item);
-    props.setActiveTab(item);
+    if (!props.tabItems) { setSampleTab(item); }
+    else { props.setActiveTab(item); }
   };
 
   return (
-      <Container>
-        {!props.tabItems && tabSamples.map((item, index) => {
-          return <StyledTabBtn
-            key={`${item}${index}`}
-            className={`tab-button ${sampleTab === item ? 'active' : ''}`}
-            onClick={() => handleTabClick(item)}
-          >{item}</StyledTabBtn>
-        })}
-        {props.tabItems && props.tabItems.map((tabItem, index) => {
-          return <StyledTabBtn
-            key={`${tabItem}${index}`}
-            className={`${props.activeTab === tabItem ? 'active' : ''}`}
-            onClick={() => handleTabClick(tabItem)}
-          >{tabItem}</StyledTabBtn>
-        })}
-      </Container>
+    <Container>
+      {!props.tabItems && tabSamples.map((tabItem, index) => { //샘플
+        return <StyledTabBtn
+          key={`${tabItem}${index}`}
+          className={`tab-button ${sampleTab === tabItem ? 'active' : ''}`}
+          onClick={() => handleTabClick(tabItem)}
+        >{tabItem}</StyledTabBtn>
+      })}
+      {props.tabItems && props.tabItems.map((tabItem, index) => { //실제 데이터 list, 배열
+        return <StyledTabBtn
+          key={`${tabItem}${index}`}
+          className={`${props.activeTab === tabItem ? 'active' : ''}`}
+          onClick={() => handleTabClick(tabItem)}
+        >{tabItem}</StyledTabBtn>
+      })}
+    </Container>
   );
 }
 
@@ -36,12 +36,6 @@ const Container = styled.div`
   margin: 10px auto;
   justify-content: center;
   align-items: center;
-`
-
-const Title = styled.h4`
-  display: inline-block;
-  margin-right: 25px;
-  margin-bottom: 0;
 `
 
 const StyledTabBtn = styled.button`

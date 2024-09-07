@@ -26,7 +26,7 @@ import { Helmet } from "react-helmet";
 import WordSetMain from './pages/wordBattle/WordSetMain';
 import WordForm from './pages/wordBattle/WordForm';
 //관리자
-import Master from './pages/main/Master';
+import MasterPage from './pages/main/MasterPage';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -70,7 +70,7 @@ function App() {
           <Route path="/login" element={!uid ? <LoginPage /> : <Navigate replace={true} to='/' />} />
           <Route path="/login/email" element={!uid ? <EmailSignupPage /> : <Navigate replace={true} to='/' />} />
           {/* 관리자 */}
-          <Route path="/master" element={user.isMaster ? <Master /> : <Navigate replace={true} to='/' />} />
+          <Route path="/master" element={user.isMaster ? <MasterPage /> : <Navigate replace={true} to='/' />} />
         </Routes>
       </BrowserRouter>
     </>

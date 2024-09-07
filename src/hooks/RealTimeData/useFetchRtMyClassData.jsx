@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { appFireStore } from "../firebase/config"
+import { appFireStore } from "../../firebase/config"
 import { useSelector } from 'react-redux'
 import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore'
 
 //24.01.25
-const useFetchRtClassData = () => {
+const useFetchRtMyClassData = () => {
   const db = appFireStore
   const user = useSelector(({ user }) => { return user }) //전역변수 user정보
   const isTeacher = user.isTeacher;
@@ -63,4 +63,4 @@ const useFetchRtClassData = () => {
   return { classList, appliedClassList, searchResult, errByGetClass: error }
 }
 
-export default useFetchRtClassData
+export default useFetchRtMyClassData
