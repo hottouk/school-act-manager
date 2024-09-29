@@ -59,7 +59,6 @@ let MultiSelector = (
       return (options.push({ value: student.id, label: `${number} ${name}` }))
     })
   }
-
   if (activitiyList) {
     activitiyList.map((act) => {
       return (options.push({ value: act.id, label: act.title, uid: act.uid, record: act.record, content: act.content }))

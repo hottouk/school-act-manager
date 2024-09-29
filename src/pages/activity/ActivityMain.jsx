@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 //컴포넌트
+import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
 import CardList from '../../components/List/CardList'
 import MainBtn from '../../components/Btn/MainBtn'
 import TabBtn from '../../components/Btn/TabBtn'
@@ -11,12 +12,11 @@ import useClientHeight from '../../hooks/useClientHeight'
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 import useFetchRtMyActiData from '../../hooks/RealTimeData/useFetchRtMyStudentData'
 //데이터
-import subjects from '../../subjects'
+import subjectGroupList from '../../data/subjectGroupList'
 //css
 import styled from 'styled-components'
-import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
 
-//24.06.30 update 
+//24.09.37 subjList update 
 const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동 관리 - 나의 활동, 활동 관리 - 전체 활동, 사람 찾기 - 타교사) 학생 1
   const user = useSelector(({ user }) => { return user }) //전역변수 user정보
   const navigate = useNavigate()
@@ -24,6 +24,14 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동 관리 - 
   const { otherTrId } = location.state || {}; //state로부터 파라미터를 가져옴
   const [activeSubj, setActiveSubj] = useState(null); //활동관리 - 전체 활동 탭버튼
   const [isLoading, setIsLoading] = useState(true);
+  const [subjectList, setSubjectList] = useState(null);
+  useEffect(() => {
+    let _subjectList = subjectGroupList.reduce((acc, curSubjObj) => {
+      acc.push(...Object.keys(curSubjObj));
+      return acc
+    }, []);
+    setSubjectList(_subjectList)
+  }, [subjectGroupList])
   //활동 정보
   const { fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList } = useFetchFireData() //데이터 통신
   const [_activityList, setActivityList] = useState(null)
@@ -67,7 +75,7 @@ const ActivityMain = () => { //진입 경로 총 4곳: 교사 3(활동 관리 - 
       </>}
       {(user.isTeacher && location.state === "acti_all") && <>
         <TabBtnContainer>
-          <TabBtn tabItems={subjects} activeTab={activeSubj} setActiveTab={setActiveSubj} />
+          {subjectList && <TabBtn tabItems={subjectList} activeTab={activeSubj} setActiveTab={setActiveSubj} />}
         </TabBtnContainer>
         <CardList dataList={_activityList} type="activity" //교사: 활동관리 - 전체 활동
           title={isLoading ? "데이터를 서버에서 불러오는 중 입니다." : `서버에 총 ${_activityList ? _activityList.length : 0}개의 활동이 등록되어 있습니다.`}
@@ -93,7 +101,6 @@ const Container = styled.div`
     overflow-y: scroll;
   }
 `
-
 const TabBtnContainer = styled.div`
   display: flex;
   align-items: center;
