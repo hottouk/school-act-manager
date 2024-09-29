@@ -139,12 +139,13 @@ const ClassRoomDetailsPage = () => {
         }
         {/* 학생 상세 보기 (가입 학생, 교사)*/}
         {((!user.isTeacher && isMember) || user.isTeacher) && <StyledMain>
+          <h4>학생 개인별 보기</h4>
           {/* 학생 목록 없을 때 */}
           {(!studentList || studentList.length === 0) ?
             <>
               <EmptyResult comment="등록된 학생이 없습니다." />
               <MidBtn btnName="학생 추가" btnOnClick={() => { setIsAddStuModalShown(true) }} />
-            </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} />}
+            </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} classType={"subject"} />}
         </StyledMain>}
         {/* 반 전체보기(교사)*/}
         {user.isTeacher && <StyledMain>

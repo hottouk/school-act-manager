@@ -1,5 +1,3 @@
-import React from 'react'
-
 //이미지
 //물
 import water001 from "../image/myPet/water/pet_water_001.png"
@@ -24,7 +22,7 @@ import normalEgg from "../image/myPet/normal/normalEgg.png"
 import styled from 'styled-components'
 
 
-const PetImg = (props) => {
+const PetImg = ({ subject, level, wid, onClick }) => {
   const imageMap = {
     영어: {
       0: waterEgg,
@@ -53,17 +51,17 @@ const PetImg = (props) => {
   };
 
   const getImage = () => {
-    const subjectImages = imageMap[props.subject] || imageMap["기본"];
-    return subjectImages[props.level];
+    let subjectImages = imageMap[subject] || imageMap["기본"];
+    return subjectImages[level];
   };
 
   const imageSrc = getImage();
 
-  return (<>
-    {imageSrc && (
-      <StyledImg $wid={props.wid} src={imageSrc} alt="펫이미지" onClick={() => { props.onClick(); }} />
-    )}
-  </>)
+  return (
+    imageSrc && (
+      <StyledImg $wid={wid} src={imageSrc} alt="펫이미지" onClick={() => { onClick() }} />
+    )
+  )
 }
 
 const StyledImg = styled.img`

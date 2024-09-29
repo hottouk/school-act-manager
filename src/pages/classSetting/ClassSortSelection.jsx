@@ -9,36 +9,39 @@ import useClientHeight from '../../hooks/useClientHeight'
 //css
 import styled from 'styled-components'
 
-//2024.08.08(컴포넌트화 정리)
+//2024.09.15(state에 반type 생성, css제목 변경)
 const ClassSortSelection = () => {
   //1. 변수
   const navigate = useNavigate()
-  const { state } = useLocation();
+  const { state } = useLocation(); //=>에 따라 보여줄 화면 결정
   const [step, setStep] = useState('')
+  const [type, setType] = useState('')
   //2. 세로 길이
   const clientHeight = useClientHeight(document.documentElement)
   useEffect(() => {
-    setStep(state)
+    setStep(state.step)
+    setType(state.type)
   }, [state])
 
   //2. 함수
   const handleCardBtnClick = (event) => {
     switch (event.target.id) {
       case "subject":
-        navigate("/classrooms_setting", { state: "second" })
+        navigate("/classrooms_setting", { state: { step: "second", type: "subject" } })
         break;
       case "homeroom":
+        navigate("/classrooms_setting", { state: { step: "second", type: "homeroom" } })
         break;
       case "club":
         break;
       case "with_neis":
-        navigate("/classrooms_setting_details", { state: "with_neis" })
+        navigate("/classrooms_setting_details", { state: { how: "with_neis", type } })
         break;
       case "with_number":
-        navigate("/classrooms_setting_details", { state: "with_number" })
+        navigate("/classrooms_setting_details", { state: { how: "with_number", type } })
         break;
       case "by_hand":
-        navigate("/classrooms_setting_details", { state: "by_hand" })
+        navigate("/classrooms_setting_details", { state: { how: "by_hand", type } })
         break;
       default: return;
     }
@@ -47,7 +50,7 @@ const ClassSortSelection = () => {
   //클래스 종류 데이터
   const classSortList = [
     { id: "subject", legend: "교과반", subTitle: "과세특 기록용", imgNumber: 1 },
-    { id: "homeroom", legend: "담임반", subTitle: "행발, 진로, 자율활동기록용", imgNumber: 2, ing: true },
+    { id: "homeroom", legend: "담임반", subTitle: "행발, 진로, 자율활동기록용", imgNumber: 2 },
     { id: "club", legend: "동아리", subTitle: "동아리 활동 기록용", imgNumber: 3, ban: true }
   ]
   //만드는 방법 데이터
@@ -59,20 +62,11 @@ const ClassSortSelection = () => {
 
   return (
     <Container $clientheight={clientHeight}>
-      {(step === "first") && <>
-        <StyledTitle>클래스 종류 선택</StyledTitle>
-        <CardSortForm itemList={classSortList} handleCardBtnClick={handleCardBtnClick} />
-        <BtnWrapper>
-          <MainBtn btnName="뒤로가기" btnOnClick={() => { navigate('/classrooms') }} />
-        </BtnWrapper>
-      </>}
-      {(step === "second") && <>
-        <StyledTitle>클래스 종류 선택</StyledTitle>
-        <CardSortForm itemList={howtoMakeList} handleCardBtnClick={handleCardBtnClick} />
-        <BtnWrapper>
-          <MainBtn btnName="뒤로가기" btnOnClick={() => { navigate('/classrooms_setting', { state: "first" }) }} />
-        </BtnWrapper>
-      </>}
+      {(step === "first") && <CardSortForm itemList={classSortList} handleCardBtnClick={handleCardBtnClick} />}
+      {(step === "second") && <CardSortForm itemList={howtoMakeList} handleCardBtnClick={handleCardBtnClick} />}
+      <BtnWrapper>
+        <MainBtn btnName="뒤로가기" btnOnClick={() => { navigate('/classrooms') }} />
+      </BtnWrapper>
     </Container>
   )
 }
@@ -88,10 +82,6 @@ const Container = styled.div`
     padding-bottom: 20px;
     overflow-y: scroll;
   }
-`
-const StyledTitle = styled.h3`
-  text-align: center;
-  margin-bottom: 5%;
 `
 const BtnWrapper = styled.div`
   margin-top: 5%;

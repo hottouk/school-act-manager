@@ -8,10 +8,13 @@ import EmailSignupPage from './pages/login/EmailSignupPage';
 //대문
 import ClassMain from './pages/main/ClassMain';
 import Nav from './components/Nav';
+//활동 관리
 import ActivityMain from './pages/activity/ActivityMain';
 import ActivityForm from './pages/activity/ActivitityForm';
 import ActivitySortPage from './pages/activity/ActivitySortPage';
+//반 관리
 import ClassRoomMain from './pages/classRoom/ClassRoomMain';
+import HomeroomDetailsPage from './pages/classRoom/HomeroomDetailsPage';
 import ClassRoomDetailsPage from './pages/classRoom/ClassRoomDetailsPage';
 import StudentDetail from './pages/student/StudentDetail';
 import ClassAllStudents from './pages/classRoom/ClassAllStudents';
@@ -27,6 +30,7 @@ import WordSetMain from './pages/wordBattle/WordSetMain';
 import WordForm from './pages/wordBattle/WordForm';
 //관리자
 import MasterPage from './pages/main/MasterPage';
+import HomeStudentDetail from './pages/student/HomeStudentDetail';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -36,7 +40,11 @@ function App() {
       <Helmet>
         <title>생기부 입력 도우미</title>
         {/* loDash 라이브러리 */}
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
+          integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+        </script>
       </Helmet>
       <BrowserRouter>
         <Nav />
@@ -51,6 +59,9 @@ function App() {
           {/* 활동 만들기, 교사 회원만 가능 */}
           <Route path="/activities_setting" element={uid ? <ActivitySortPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities_setting_details" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
+          {/* 담임반 관리 */}
+          <Route path="/homeroom/:id" element={uid ? <HomeroomDetailsPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/homeroom/:id/:studentId" element={uid ? <HomeStudentDetail /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 관리 */}
           <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms/:id" element={uid ? <ClassRoomDetailsPage /> : <Navigate replace={true} to='/login' />} />

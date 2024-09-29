@@ -25,7 +25,7 @@ const StudentDetail = () => {
   const user = useSelector(({ user }) => user)
   const navigate = useNavigate();
   const { state } = useLocation() //개별 학생 정보
-  let { studentNumber, actList, writtenName, master, subject } = state
+  const { studentNumber, actList, writtenName, master, subject } = state
   useEffect(() => {
     setStudentNumber(studentNumber)
     if (writtenName) { setWrittenName(writtenName) } //이름 or 미등록
@@ -82,7 +82,6 @@ const StudentDetail = () => {
   const moveStudent = (student) => { //학생 화살표 이동
     navigate(`/classrooms/${params.id}/${student.id}`, { state: student })
   }
-
   //셀렉터 변경시_2
   const updateActiList = (event, index) => {
     let newId = event.value //클릭한 새로운 이벤트 id
@@ -93,7 +92,6 @@ const StudentDetail = () => {
       return newActiList
     })
   }
-
   //셀렉터 변경 시_1
   const handleSelectOnchange = (event, index) => { //event는 선택 acti Obj
     if ((_actiList.findIndex(({ id }) => { return id === event.value })) === -1) {  //기존 활동과 중복된 활동이 아닌 경우만
@@ -102,7 +100,6 @@ const StudentDetail = () => {
       window.alert("중복된 활동으로는 변경할 수 없습니다.")
     }
   }
-
   //textarea 변경 (gpt, 수기 변경)
   const updateAccRecord = (index, newRec) => {
     setActiList(prevActiList => {
@@ -111,12 +108,10 @@ const StudentDetail = () => {
       return newActiList;
     })
   }
-
   //textarea 수기 변경
   const handleTextareaOnChange = (event, index) => {
     updateAccRecord(index, event.target.value)
   }
-
   const handleBtnClick = (event, acti, index) => {
     switch (event.target.id) {
       case "back_btn":
@@ -170,7 +165,7 @@ const StudentDetail = () => {
   }
 
   return (
-    <StyledContainer>
+    <Container>
       {user.isTeacher && <StyledArrowLeftBtn id="leftArwBtn" onClick={handleBtnClick} />}
       <StyledStudentInfoPannel>
         <StyledTopPannel>
@@ -271,10 +266,10 @@ const StudentDetail = () => {
       }
       {isGptShown &&
         <GptModal show={isGptShown} acti={selectedActi && selectedActi.acti} setPersonalRecord={setGptRecord} onHide={() => { setIsGptShown(false) }}></GptModal>}
-    </StyledContainer>
+    </Container>
   )
 }
-const StyledContainer = styled.div`
+const Container = styled.div`
   box-sizing: border-box;
   width: 80%;
   margin: 0 auto;
@@ -291,8 +286,7 @@ const StyledStudentInfoPannel = styled.div`
   margin: 15px auto;
   margin-top: 35px;
   color: black;
-  background-color: royalblue;
-  border: 1px solid black;
+  background-color: #3454d1;
   border-radius: 20px;
   @media screen and (max-width: 767px){
     margin-top: 0;

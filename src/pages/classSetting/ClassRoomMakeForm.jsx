@@ -8,14 +8,15 @@ import ImportExcelFile from '../../components/ImportExcelFile';
 import LongW100Btn from '../../components/Btn/LongW100Btn';
 import CSInfoSelect from '../../components/Select/CSInfoSelect';
 import SubjectSelects from '../../components/Select/SubjectSelects';
+import DotTitle from '../../components/Title/DotTitle';
 //hooks
-import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import useStudent from '../../hooks/useStudent';
+import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import useClientHeight from '../../hooks/useClientHeight';
 //css
 import styled from 'styled-components';
 
-//2024.07.22 수정(세부 과목 선택 가능)
+//2024.09.15 2차 수정(클래스 타입 추가, css정리)
 const ClassRoomMakeForm = () => {
   //1. 변수
   //인증
@@ -32,18 +33,19 @@ const ClassRoomMakeForm = () => {
   //hooks
   const navigate = useNavigate()
   const { makeStudent } = useStudent()
-  //데이터 통신 변수s
-  const { addClassroom, response } = useAddUpdFireData('classRooms');
+  //데이터 통신 변수
+  const { addClassroom } = useAddUpdFireData("classRooms");
   //반 생성 종류에 따라 
   const { state } = useLocation()
-  const [classKind, setClassKind] = useState('')
-  const clientHeight = useClientHeight(document.documentElement)
-  //2. UseEffect
+  const [how, setHow] = useState('')             //만드는 방법
+  const [classType, setClassType] = useState('') //만드는 반 종류
   useEffect(() => {
-    setClassKind(state)
+    setHow(state.how)
+    setClassType(state.type)
   }, [state])
+  const clientHeight = useClientHeight(document.documentElement)
 
-  //3. 함수
+  //2. 함수
   //내부 변수 꺼내는 함수
   const handleOnChange = (event) => {
     if (event.target.id === "class_title") {
@@ -59,53 +61,54 @@ const ClassRoomMakeForm = () => {
     }
   }
 
-  //제출 버튼
+  //제출 버튼: 유효성 검사
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("제출?")
-    if (_subjDetail !== 'default' && _grade !== 'default' && _classNumber !== 'default') {
-      makeClass();
-    } else { window.alert("학년 반 과목은 필수 값입니다.") }
+    let confirm = window.confirm('클래스를 생성하시겠습니까?')
+    if (confirm) {
+      switch (classType) {
+        case "subject":
+          if (_subjDetail !== 'default' && _grade !== 'default' && _classNumber !== 'default') { makeClass(classType); }
+          else { window.alert("학년, 반, 과목은 필수 값입니다.") }
+          break;
+        case "homeroom":
+          if (_grade !== 'default' && _classNumber !== 'default') { makeClass(classType); }
+          else { window.alert("학년, 반은 필수 값입니다.") }
+          break;
+        default: return;
+      }
+    }
   }
 
   //반 생성 함수
-  const makeClass = () => {
-    const confirm = window.confirm('클래스를 생성하시겠습니까?')
-    if (confirm) {
-      const uid = user.uid;
-      const classInfo = { uid, classTitle: _classTitle, subject: _subjGroup, subjDetail: _subjDetail, grade: _grade, classNumber: _classNumber, intro: _intro }
-      let studentList
-      switch (classKind) {
-        case "with_neis":
-          if (xlsxData) {
-            studentList = xlsxData //내부 컴포넌트에서 꺼내온 데이터
-          } else {
-            window.alert('출석부 데이터가 없거나 엑셀 파일이 아닙니다.')
-            return
-          }
-          break;
-        case "with_number":
-          studentList = makeStudent(_numberOfStudent, _grade, _classNumber)
-          break;
-        case "by_hand":
-          studentList = []
-          break;
-        default: return
-      }
-      addClassroom(classInfo, studentList)
-      navigate("/classRooms")
-      console.log(response)
-    }
-  }
-
-  //일반 버튼
-  const handleBtnClick = (event) => {
-    switch (event.target.id) {
-      case "cancel":
-        navigate('/classRooms')
+  const makeClass = (type) => {
+    let uid = user.uid;
+    let studentList //학생 데이터 생성
+    switch (how) {
+      case "with_neis":
+        if (xlsxData) {
+          studentList = xlsxData //내부 컴포넌트에서 꺼내온 데이터
+        } else {
+          window.alert('출석부 데이터가 없거나 엑셀 파일이 아닙니다.')
+          return
+        }
+        break;
+      case "with_number":
+        studentList = makeStudent(_numberOfStudent, _grade, _classNumber)
+        break;
+      case "by_hand":
+        studentList = []
         break;
       default: return
     }
+    let classInfo //교실 정보 생성
+    if (type === "subject") {
+      classInfo = { uid, classTitle: _classTitle, type, subject: _subjGroup, subjDetail: _subjDetail, grade: _grade, classNumber: _classNumber, intro: _intro }
+    } else if (type === "homeroom") {
+      classInfo = { uid, classTitle: _classTitle, type, grade: _grade, classNumber: _classNumber, intro: _intro }
+    }
+    addClassroom(classInfo, studentList)
+    navigate("/classRooms")
   }
 
   return (
@@ -113,29 +116,33 @@ const ClassRoomMakeForm = () => {
       <fieldset>
         <legend>클래스 만들기</legend>
         <label htmlFor="class_title">클래스 이름</label>
-        <input id="class_title" type="text" required onChange={handleOnChange} value={_classTitle} />
+        <input id="class_title" type="text" onChange={handleOnChange} value={_classTitle} required />
         <InputWrapper>
-          <p>학년/반</p>
-          <div className="selectWrapper">
+          <DotTitle title={"학년/반"} />
+          <SelectWrapper>
             <CSInfoSelect grade={_grade} classNumber={_classNumber} subject={_subjDetail} handleOnChange={handleOnChange} classMode={true} />
-          </div>
+          </SelectWrapper>
         </InputWrapper>
-        <InputWrapper>
-          <p>교과/과목</p>
+        {/* 클래스 타입 */}
+        {classType === "subject" && <InputWrapper>
+          <DotTitle title={"교과/과목"} />
           <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
-        </InputWrapper>
+        </InputWrapper>}
+        {classType === "homeroom" && <InputWrapper>
+          <DotTitle title={"담임반 입니다."} styles={{ dotColor: "white", width: "50%" }} />
+        </InputWrapper>}
         <label htmlFor="class_explanation">간단한 설명을 작성하세요</label>
-        <input id="class_explanation" type="text" required value={_intro} onChange={handleOnChange} placeholder="ex)24 경기고 1-1 영어" />
-        {(classKind === "with_neis") && <>
+        <input id="class_explanation" type="text" value={_intro} onChange={handleOnChange} placeholder="ex)25 건강고 1-1 영어" required />
+        {(how === "with_neis") && <>
           <p>나이스 출석부 엑셀 파일을 등록하세요.</p>
           <ImportExcelFile getData={setXlsxData} />
         </>}
-        {(classKind === "with_number") && <><label htmlFor="class_number_of_studnets">학생 수를 입력하세요. (최대 99명)</label>
-          <input id="class_number_of_studnets" type="number" required min='1' max='99' value={_numberOfStudent} onChange={handleOnChange} /></>}
-        {(classKind === "by_hand") && <label htmlFor="class_number_of_studnets">학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>}
+        {(how === "with_number") && <><label htmlFor="class_number_of_studnets">학생 수를 입력하세요. (최대 99명)</label>
+          <input id="class_number_of_studnets" type="number" min='1' max='99' value={_numberOfStudent} onChange={handleOnChange} required /></>}
+        {(how === "by_hand") && <label htmlFor="class_number_of_studnets">학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>}
         <BtnWrapper>
           <LongW100Btn type="submit" btnName="생성" />
-          <LongW100Btn id="cancel" btnName="취소" btnOnClick={handleBtnClick} />
+          <LongW100Btn id="cancel" btnName="취소" btnOnClick={() => { navigate('/classRooms') }} />
         </BtnWrapper>
       </fieldset>
     </StyledForm >
@@ -181,16 +188,11 @@ const StyledForm = styled.form`
     overflow-y: scroll;
   }
 `
-
 const InputWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin: 20px 0;
-  .selectWrapper {
-    display: flex;
-    justify-content: flex-end;
-  }
   input {
     max-width: 280px;
     height: 35px;
@@ -200,24 +202,10 @@ const InputWrapper = styled.div`
       color: #efefef;       /* 글자 색을 white로 설정 */
     }
   }
-  p {
-    position: relative;
-    width: 30%;
-    font-weight: bold;
-    padding: 0 20px;  /* 텍스트가 동그라미와 겹치지 않도록 왼쪽 여백 추가 */
-    margin: 0;
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 10px;
-      height: 20px;
-      background-color: white;  /* 동그라미 색상 */
-      border-radius: 2px;
-    }
-  }
+`
+const SelectWrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
 `
 const BtnWrapper = styled.div`
   margin-top: 10px;

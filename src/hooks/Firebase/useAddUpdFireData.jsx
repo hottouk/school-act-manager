@@ -37,27 +37,28 @@ const useAddUpdFireData = (collectionName) => {
       window.alert(err.message)
     }
   }
-
-
-  //9. 클래스룸 추가 함수(24.2.18)
-  const addClassroom = async (classParams, studentPetList) => {
+  //9. 클래스룸 추가 함수(24.09.18 1차 수정: 담임반 추가)
+  const addClassroom = async (classInfo, studentPetList) => {
     try {
+      let type = classInfo.type
       let createdTime = timeStamp.fromDate(new Date());
-      let docRef = await addDoc(colRef, { ...classParams, createdTime });
+      let docRef = await addDoc(colRef, { ...classInfo, createdTime });
       let subColRef = collection(docRef, "students")
-      await studentPetList.map(item => {
-        addDoc(subColRef, { ...item, subject: classParams.subject });
+      await studentPetList.map(studentPet => {
+        let studentPetInfo
+        if (type === "subject") { studentPetInfo = { ...studentPet, subject: classInfo.subject } }
+        else if (type === "homeroom") { studentPetInfo = { ...studentPet, type } }
+        addDoc(subColRef, studentPetInfo);
         return null;
       })
     } catch (err) {
       console.error(err)
     }
   }
-
   //8. 워드set 추가 함수(24.6.22)
   const addWordSet = async (wordInfo) => {
     try {
-      const createdTime = timeStamp.fromDate(new Date());
+      let createdTime = timeStamp.fromDate(new Date());
       let setTitle = wordInfo.title
       let wordSet = wordInfo.wordSet
       let result = await addDoc(colRef, { setTitle, wordSet, createdTime, madeBy: user.uid });

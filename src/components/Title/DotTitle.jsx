@@ -19,7 +19,7 @@ const DotTitle = ({ title, pointer, onClick, styles }) => {
     <StyledTitle onClick={onClick || null}
       $width={width}
       $pointer={pointer}
-      $dotColor={dotColor}
+      $dotColor={dotColor || "white"}
       $marginBot={marginBot}
     > {title || "샘플"}</StyledTitle >
   )
