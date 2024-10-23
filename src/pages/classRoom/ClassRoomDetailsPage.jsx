@@ -17,11 +17,12 @@ import PetImg from '../../components/PetImg.jsx';
 import useEnrollClass from '../../hooks/useEnrollClass.jsx';
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
-import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentData.jsx';
+import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData.jsx';
 //이미지
 import MidBtn from '../../components/Btn/MidBtn.jsx';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
+import ArrowBtn from '../../components/Btn/ArrowBtn.jsx';
 
 //2024.08.01(클래스 헤더 수정)
 const ClassRoomDetailsPage = () => {
@@ -112,11 +113,11 @@ const ClassRoomDetailsPage = () => {
           <p className="petInfo">이 클래스에서 학생들이 얻을 수 있는 펫</p>
           <PetImgWrapper>
             <PetImg subject={thisClass.subject} level={0} onClick={() => { }} />
-            <StyledArrowRightBtn />
+            <ArrowWrapper><ArrowBtn direction="right" /></ArrowWrapper>
             <PetImg subject={thisClass.subject} level={1} onClick={() => { }} />
-            <StyledArrowRightBtn />
+            <ArrowWrapper><ArrowBtn direction="right" /></ArrowWrapper>
             <PetImg subject={thisClass.subject} level={2} onClick={() => { }} />
-            <StyledArrowRightBtn />
+            <ArrowWrapper><ArrowBtn direction="right" /></ArrowWrapper>
             <PetImg subject={thisClass.subject} level={3} onClick={() => { }} />
           </PetImgWrapper>
           {/* 학생*/}
@@ -139,12 +140,13 @@ const ClassRoomDetailsPage = () => {
         }
         {/* 학생 상세 보기 (가입 학생, 교사)*/}
         {((!user.isTeacher && isMember) || user.isTeacher) && <StyledMain>
+          <h4>학생 개인별 보기</h4>
           {/* 학생 목록 없을 때 */}
           {(!studentList || studentList.length === 0) ?
             <>
               <EmptyResult comment="등록된 학생이 없습니다." />
               <MidBtn btnName="학생 추가" btnOnClick={() => { setIsAddStuModalShown(true) }} />
-            </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} />}
+            </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} classType={"subject"} />}
         </StyledMain>}
         {/* 반 전체보기(교사)*/}
         {user.isTeacher && <StyledMain>
@@ -226,19 +228,10 @@ const PetImgWrapper = styled.div`
     border-radius: 15px;
   }
 `
-const StyledArrowRightBtn = styled.button` //화살표
-  float: right;
-  margin-top: 50px;
-  width: 25px;
-  height: 25px;
-  border: 10px solid black;
-  border-left: 0;
-  border-top: 0;
-  transform: rotate(315deg);
-  opacity: 0.8;
-  @media screen and (max-width: 767px){
-    display: none;
-  }
+const ArrowWrapper = styled.div` 
+  display: flex;
+  align-items: center;
+}
 `
 const MainSelectorContainer = styled.div`
   display: flex;

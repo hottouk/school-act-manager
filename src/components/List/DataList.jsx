@@ -7,15 +7,12 @@ import { setAppliedClassList, setJoinedClassList } from '../../store/userSlice'
 //hooks
 import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData'
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
-//컴포넌트
-import SmallBtn from '../Btn/SmallBtn'
 //이미지
 import unknown from '../../image/icon/unkown_icon.png'
 import MonImg from '../MonImg'
 import likeIcon from '../../image/icon/like_icon.png'
 //css
 import styled from 'styled-components'
-
 
 //2024.01.09
 const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 리스트, 타입으로 정리하기
@@ -54,6 +51,10 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
           updateClassListInfo(newList, "appliedClassList")
           dispatcher(setAppliedClassList(newList))
         } break;
+      case "homeroom":
+        dispatcher(setSelectClass(item))   //선택한 교실 비휘발성 전역변수화
+        navigate(`/homeroom/${item.id}`) //url 이동
+        break;
       case "activity":
         if (user.isTeacher) { navigate(`/activities/${item.id}`, { state: { acti: item } }) } //교사
         else { navigate(`/activities/${item.id}`, { state: { acti: item, student: studentUser } }) } //학생
@@ -98,6 +99,13 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
           <p>{item.subject ? `${item.subject}과` : "교사가 삭제한 클래스입니다."}{item.subjDetail ? '-' + item.subjDetail : ''} </p>
         </StyledClassroomLi>)
       })}
+      {(type === "homeroom") && dataList.map((item) => { //담임반
+        return (<StyledHomeroomLi key={item.id} onClick={() => { handleOnClick(item) }}>
+          <h4>{item.classTitle}</h4>
+          <h4 className="klass_info">{item.grade}</h4><span>학년</span><h4 className="klass_info">{item.classNumber}</h4><span>반</span>
+          <p>{item.intro}</p>
+        </StyledHomeroomLi>)
+      })}
       {type === "activity" && dataList.map((item) => { //활동
         return (<ActiList key={item.id} onClick={() => { handleOnClick(item) }}>
           <div className="acti_info">
@@ -119,18 +127,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
           <div><MonImg className="monImg" monImg={item.monImg}></MonImg></div>
         </ActiList>)
       })}
-      {type === "word" && dataList.map((item) => { //단어
-        return (<ActiList key={item.id} >
-          <div>
-            <h4>{item.setTitle}</h4>
-            <StyledFlexDiv>
-              <SmallBtn btnColor={"#3454d1"} btnName={"전투입장"} />
-              <SmallBtn btnColor={"#B22222"} btnName={"편집하기"} btnOnClick={() => { navigate("/words_setting") }} />
-            </StyledFlexDiv>
-          </div>
-          {/* <div><MonImg monImg={item.monImg}></MonImg></div> */}
-        </ActiList>)
-      })}
+
     </StyledListContainer>
   )
 }
@@ -165,6 +162,13 @@ const StyledListContainer = styled.ul`
 `
 
 const StyledClassroomLi = styled.li`
+  h4 { color: #3454d1;  }
+  h4.klass_info { display: inline;}  
+`
+const StyledHomeroomLi = styled.li`
+  h4 { color: #3454d1;  }
+  h4.klass_info { display: inline;}  
+  p { margin-top: 15px; }
 `
 
 const StyledTeacherLi = styled.li`
@@ -231,8 +235,5 @@ const ActiList = styled.li`
     border: 1px solid rgba(25, 31, 52, 0.3);
     border-radius: 30px;
   }
-`
-const StyledFlexDiv = styled.div`
-  display: flex;
 `
 export default DataList
