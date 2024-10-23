@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
-import styled from 'styled-components'
+//컴포넌트
 import SmallTitle from '../../components/Title/SmallTitle'
-import { academicAbility, coopAbility, careerAbility } from '../../data/abilityList'
+//data
+import { academicAbility, coopAbility, careerAbility } from '../../data/AbilityList'
+//css
+import styled from 'styled-components'
+
 
 //2024.10.10 1차 완성
 const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
