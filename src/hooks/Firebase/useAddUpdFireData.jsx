@@ -102,12 +102,11 @@ const useAddUpdFireData = (collectionName) => {
     }
   }
 
-  //4. 학생 update 함수(2024.1.6)
+  //4. 학생 update 함수(2024.1.6) 사용처(2): 행발 저장, 행발 특성 데이터 저장
   const updateStudent = async (newInfo, classId, studentId) => {
     let studentRef = doc(db, "classRooms", classId, "students", studentId);
-    let modifiedTime = timeStamp.fromDate(new Date());
     try {
-      updateDoc(studentRef, { ...newInfo, modifiedTime }) //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
+      updateDoc(studentRef, { ...newInfo }) //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
     } catch (err) {
       window.alert(err.message)
       console.log(err)

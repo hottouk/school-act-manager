@@ -1,6 +1,7 @@
 import OpenAI from 'openai'
 import { useState } from 'react'
 import useGetByte from './useGetByte'
+import { gptBehaviorMsg } from '../data/gptMsgDataList'
 
 //24.08.08 수정(바이트 변수 제거 및 프롬프트 수정)
 const useChatGpt = () => {
@@ -236,9 +237,32 @@ const useChatGpt = () => {
     await playGpt(messages)
   }
 
+  const askBehavioralOp = async (specList) => {
+    let specArrList = (Object.entries(specList))
+    let selected = []
+    specArrList.map((specArr) => {
+      if (specArr[1].length > 0) {
+        selected.push(`-${specArr[0]}: ${specArr[1].join(', ')}`)
+      }
+      return null;
+    })
+    let messages = [...gptBehaviorMsg,
+    {
+      role: "user",
+      content: `학생의 행동적 특성은 다음과 같음: 
+      ${selected.join("\n")}
+        위의 특성에 따라서 글을 작성하되, 내용을 더 구체적으로 근거 사례를 창작하여 의견 작성 바람.
+        또한, "학생은~"이라는 주어는 문장에서 절대 사용하면 안됨. 주어를 생략하고 "성실한 수업 태도를 일관되게 보여줌." 로 써주어야 함.
+        주어진 학생의 특성을 바탕으로 구체적 예시를 들어 행동특성 및 종합의견을 작성 바람.
+        `
+    }
+    ]
+    await playGpt(messages)
+  }
+
   // 공통 부분
   const playGpt = async (messages) => {
-    setGptRes('loading')
+    setGptRes("loading")
     const completion = await openai.chat.completions.create({
       messages: messages,
       model: "gpt-3.5-turbo",
@@ -249,14 +273,14 @@ const useChatGpt = () => {
     if (completion.choices[0].message.content) {
       setGptAnswer(completion.choices[0].message.content)
       setGptBytes(getByteLengthOfString(completion.choices[0].message.content))
-      setGptRes('complete')
+      setGptRes("complete")
     } else {
       window.alert('챗GPT 서버 문제로 문구를 입력할 수 없습니다.')
-      setGptRes('complete')
+      setGptRes("complete")
     }
   }
 
-  return { gptAnswer, askChatGpt, askGptPersonalize, askExtraRecord, askPerfRecord, gptBytes, gptRes }
+  return { gptAnswer, askChatGpt, askGptPersonalize, askExtraRecord, askPerfRecord, askBehavioralOp, gptBytes, gptRes }
 }
 
 export default useChatGpt

@@ -8,14 +8,15 @@ import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 //css
 import styled from 'styled-components';
 
-const AddNewStudentModal = ({ show, onHide, classId }) => {
-  //1. 변수
+//2024.10.22 정리
+const AddNewStudentModal = ({ show, onHide, classId, type }) => {
+  //----1.변수부--------------------------------
   const selectedClassInfo = useSelector(({ classSelected }) => classSelected)
   const [_name, setName] = useState('')
   const [_studentNumber, setStudentNumber] = useState('')
   const { addStudent } = useAddUpdFireData("classRooms")
 
-  //2. 함수
+  //----2.함수부--------------------------------
   const handleOnChange = (event) => {
     switch (event.target.id) {
       case "student_number":
@@ -27,16 +28,20 @@ const AddNewStudentModal = ({ show, onHide, classId }) => {
       default: return;
     }
   }
+  //취소
   const handleBtnClick = () => {
     onHide()
     setName('')
     setStudentNumber('')
   }
-
+  //제출
   const handleSubmit = (event) => {
     event.preventDefault()
+    let student = { studentNumber: _studentNumber, writtenName: _name }
+    if (type === "homeroom") { student = { ...student, type: "homeroom" } }
+    else { student = { ...student, subject: selectedClassInfo.subject } }
     if (_name !== '' && _studentNumber !== '') {
-      addStudent({ studentNumber: _studentNumber, writtenName: _name, subject: selectedClassInfo.subject }, classId,)
+      addStudent(student, classId,)
       onHide()
       setName('')
       setStudentNumber('')

@@ -14,7 +14,11 @@ import ActivityForm from './pages/activity/ActivitityForm';
 import ActivitySortPage from './pages/activity/ActivitySortPage';
 //반 관리
 import ClassRoomMain from './pages/classRoom/ClassRoomMain';
-import HomeroomDetailsPage from './pages/classRoom/HomeroomDetailsPage';
+//담임반
+import HomeroomDetailsPage from './pages/homeroom/HomeroomDetailsPage';
+import HomeStudentDetailsPage from './pages/homeroom/HomeStudentDetailsPage';
+import HomeClassAllStudentsPage from './pages/homeroom/HomeClassAllStudentsPage';
+
 import ClassRoomDetailsPage from './pages/classRoom/ClassRoomDetailsPage';
 import StudentDetail from './pages/student/StudentDetail';
 import ClassAllStudents from './pages/classRoom/ClassAllStudents';
@@ -30,7 +34,6 @@ import WordSetMain from './pages/wordBattle/WordSetMain';
 import WordForm from './pages/wordBattle/WordForm';
 //관리자
 import MasterPage from './pages/main/MasterPage';
-import HomeStudentDetail from './pages/student/HomeStudentDetail';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -61,7 +64,8 @@ function App() {
           <Route path="/activities_setting_details" element={uid ? <ActivityForm /> : <Navigate replace={true} to='/login' />} />
           {/* 담임반 관리 */}
           <Route path="/homeroom/:id" element={uid ? <HomeroomDetailsPage /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/homeroom/:id/:studentId" element={uid ? <HomeStudentDetail /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/homeroom/:id/:studentId" element={uid ? <HomeStudentDetailsPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/homeroom/:id/allStudents" element={uid ? <HomeClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 관리 */}
           <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms/:id" element={uid ? <ClassRoomDetailsPage /> : <Navigate replace={true} to='/login' />} />

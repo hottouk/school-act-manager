@@ -2,9 +2,9 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
 import { useEffect, useState } from "react"
 import { appFireStore } from "../../firebase/config"
 
-//하위 Col에서 문서 여러 개를 한번에 읽어올 때 사용
+//하위 Col에서 문서 여러 개를 한번에 읽어올 때 사용, 사용처(1): 담임반 학생)
 const useFetchRtMyStudentData = (colName, docName, subColName, order) => {
-  const db = appFireStore  
+  const db = appFireStore
   const [studentList, setStudentList] = useState(null)
   const [subColErr, setSubColErr] = useState(null)
   const colRef = collection(db, colName, docName, subColName)

@@ -15,7 +15,6 @@ const StyledEmptyClassRoomDiv = styled.div`
   max-width: 540px;
   margin: 12px auto;
   padding: 30px 20px 0;
-  border : 1px solid white;
   border-radius: 15px;
   img {
     display: block;

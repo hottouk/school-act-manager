@@ -7,7 +7,7 @@ import SmallBtn from "../../components/Btn/SmallBtn"
 import useGetByte from "../../hooks/useGetByte"
 import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData"
 import useClientHeight from "../../hooks/useClientHeight"
-import useFetchRtMyStudentData from "../../hooks/RealTimeData/useFetchRtMyStudentData"
+import useFetchRtMyStudentData from "../../hooks/RealTimeData/useFetchRtMyStudentListData"
 //css
 import styled from "styled-components"
 //이미지
@@ -22,7 +22,7 @@ const ClassAllStudents = () => {
   const { studentList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber") //모든 학생 List
   //hooks
   const { updateStudent } = useAddUpdFireData("classRooms")
-  const { getByteLengthOfString } = useGetByte()
+  const { getByteLengthOfString } = useGetByte();
   //특정 학생 정보 수정 판단 key 변수
   const [thisModifying, setThisModifying] = useState('')
   let writtenName = ''
@@ -79,7 +79,7 @@ const ClassAllStudents = () => {
   }
 
   return (
-    <StyledContainer $clientheight={clientHeight}>
+    <Container $clientheight={clientHeight}>
       <TopBtnWrapper>
         <p>※수정은 PC에서 가능함</p>
         <StyledShfBtn $wid="45" src={recycleBtn} alt="섞기 버튼" onClick={() => { handleShuffleAllBtnOnClick() }} />
@@ -132,12 +132,10 @@ const ClassAllStudents = () => {
           </React.Fragment>
         })}
       </StyledGirdContainer >
-      {/* 매크로 모달 */}
-
-    </StyledContainer>
+    </Container>
   )
 }
-const StyledContainer = styled.main`
+const Container = styled.main`
   @media screen and (max-width: 767px){
     margin: 0;
     position: fixed;
@@ -176,6 +174,7 @@ const StyledShfBtn = styled.img`
     background-color: #3454d1;
     border: none;
     border-radius: 10px;
+    transition: background-color 0.5s ease-in-out;
   }
 `
 const StyledGirdContainer = styled.div`
@@ -184,7 +183,8 @@ const StyledGirdContainer = styled.div`
   grid-template-columns: 70px 100px 100px 1000px 60px 100px; 
   grid-template-rows: 40px;
 `
-const TableHeaderWrapper = styled.div`
+// lastChild의 범위를 명확하게 하기 위함.
+const TableHeaderWrapper = styled.div` 
   display: contents;
 `;
 const StyledHeader = styled.div`
@@ -218,7 +218,6 @@ const BtnWrapper = styled.div`
   flex-direction: column;
   gap: 7px;
 `
-
 const StyledNameInput = styled.input`
   display: block;
   width: 85px;

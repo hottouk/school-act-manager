@@ -8,7 +8,7 @@ import useGetByte from '../hooks/useGetByte';
 import styled from 'styled-components';
 import excelIcon from '../image/icon/excel.png';
 
-const ExportAsExcel = () => {
+const ExportAsExcel = ({ type }) => {
   //전역 변수(새로고침하면 초기화)
   const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //ClassRoomDetail에서 저장한 학생List 불러오기(전역)
   //hooks
@@ -17,9 +17,11 @@ const ExportAsExcel = () => {
   //데이터 담은 배열
   let data = allStudentList.map((student, index) => {
     let studentNumber = student.studentNumber;
-    let name = (student.writtenName ? student.writtenName : '미등록');
-    let record = (student.accRecord ? student.accRecord : '기록 없음');
-    let bytes = ((record !== '기록 없음') ? getByteLengthOfString(record) : 0);
+    let name = (student.writtenName || "미등록");
+    let record
+    if (type === "home") { record = student.behaviorOpinion || "기록 없음" }
+    else { record = student.accRecord || "기록 없음" }
+    let bytes = ((record !== "기록 없음") ? getByteLengthOfString(record) : 0);
     let studentInfo = {
       number: index + 1,
       studentNumber: studentNumber,
@@ -54,6 +56,7 @@ const StyledExcelImgBtn = styled.img`
     background-color: #3454d1;
     border: none;
     border-radius: 10px;
+    transition: background-color 0.5s ease-in-out;
   }
 `
 export default ExportAsExcel

@@ -14,6 +14,20 @@ const useFetchFireData = () => {
   const wordColRef = collection(db, "words")
 
   //2024.06.30 수정
+
+  //9. 하위 문서(학생) 1개
+  const fetchSubDoc = async (colName, docId, subColName, subDocId) => {
+    let docRef = doc(collection(db, colName, docId, subColName), subDocId)
+    try {
+      let doc = await getDocFromServer(docRef);
+      return doc.data()
+    } catch (err) {
+      console.log(err)
+      window.alert(err.message)
+    }
+  }
+
+
   //8. 문서 한개(2024.07.19)
   const fetchDoc = async (colName, docId) => {
     let noticeDocRef = doc(collection(db, colName), docId)
@@ -230,7 +244,7 @@ const useFetchFireData = () => {
     }
     return q
   }
-  return ({ db, fetchDoc, fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
+  return ({ db, fetchDoc, fetchSubDoc, fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
 }
 
 export default useFetchFireData

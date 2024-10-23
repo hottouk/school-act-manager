@@ -149,7 +149,6 @@ const StudentDetail = () => {
         }
         let nextStudent = allStudentList[nthStudent + 1];
         moveStudent(nextStudent)
-
         break;
       case "leftArwBtn":
         if (nthStudent === 0) {
