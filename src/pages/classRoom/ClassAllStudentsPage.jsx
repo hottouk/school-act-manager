@@ -1,9 +1,10 @@
-import React, { useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
 //컴포넌트
 import ExportAsExcel from "../../components/ExportAsExcel"
 import SmallBtn from "../../components/Btn/SmallBtn"
 //hooks
+import useClassAuth from "../../hooks/useClassAuth"
 import useGetByte from "../../hooks/useGetByte"
 import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData"
 import useClientHeight from "../../hooks/useClientHeight"
@@ -11,40 +12,49 @@ import useFetchRtMyStudentData from "../../hooks/RealTimeData/useFetchRtMyStuden
 //css
 import styled from "styled-components"
 //이미지
-import recycleBtn from "../../image/icon/recycle_icon.png"
+import recycleIcon from "../../image/icon/recycle_icon.png"
 
-//2024.09.03(전역변수에서 실시간 학생 데이터로 변경)
+//2024.10.27(실시간 학생 데이터로 변경, writtenName, accRecord useState로 관리, transition 추가)
 const ClassAllStudents = () => {
-  //1. 변수
+  //----1.변수부--------------------------------
+  //교사 인증
+  const { log } = useClassAuth();
+  if (log) { window.alert(log) }
+  useEffect(() => { setIsVisible(true) }, [])
   //경로 이동 props
   const params = useParams(); //id와 param의 key-value(id:'id') 오브젝트로 반환
   const classId = params.id
-  const { studentList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber") //모든 학생 List
-  //hooks
+  //학생 정보 데이터 통신
+  const { studentList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber")
+  //학생 속성
   const { updateStudent } = useAddUpdFireData("classRooms")
   const { getByteLengthOfString } = useGetByte();
-  //특정 학생 정보 수정 판단 key 변수
+  const [newName, setNewName] = useState('')
+  const [newAccRecord, setNewAccRecord] = useState('')
+  //현재 행 수정
   const [thisModifying, setThisModifying] = useState('')
-  let writtenName = ''
-  let accRecord = ''
   //ref
   const textAreaRef = useRef({})
+  //에니메이션
+  const [isVisible, setIsVisible] = useState(false)
   //css
   const clientHeight = useClientHeight(document.documentElement)
 
-  //2. 함수
+  //----2.함수부--------------------------------
   //수정버튼
-  const handleModifyingBtn = (key) => {
+  const handleModifyingBtn = (key, name, record) => {
     setThisModifying(key)
+    setNewName(name)
+    setNewAccRecord(record)
   }
-
   //저장 버튼
   const handleSaveBtn = (key) => {
-    updateStudent({ accRecord, writtenName }, classId, key); //데이터 통신       
+    updateStudent({ accRecord: newAccRecord, writtenName: newName }, classId, key); //데이터 통신       
     setThisModifying('');
-    writtenName = '';
+    setNewName('');
+    setNewAccRecord('');
   }
-
+  //활동 순서 랜덤 섞기
   const handleShuffleBtnOnClick = (id) => {
     let _student = studentList.find(student => student.id === id)
     let _actiList = _student.actList
@@ -52,10 +62,9 @@ const ClassAllStudents = () => {
       ? shuffleOrder(_actiList).map(acti => { return acti.record }).join(" ")
       : ''
     textAreaRef.current.value = newAccRec;
-    accRecord = newAccRec;
+    setNewAccRecord(newAccRec)
   }
-
-  const shuffleOrder = (list) => {//활동 순서 랜덤 섞기
+  const shuffleOrder = (list) => {
     if (list && list.length > 1) {
       for (let i = list.length - 1; i > 0; i--) {//랜덤 섞기
         const j = Math.floor(Math.random() * (i + 1));
@@ -64,7 +73,7 @@ const ClassAllStudents = () => {
     }
     return list
   }
-
+  //활동 순서 전원 섞기
   const handleShuffleAllBtnOnClick = () => {
     if (window.confirm("이 단계에서 추가로 작성한 기록은 모두 사라집니다. 진행하시겠습니까?")) {
       studentList.map((student) => {
@@ -79,10 +88,10 @@ const ClassAllStudents = () => {
   }
 
   return (
-    <Container $clientheight={clientHeight}>
+    <Container $isVisible={isVisible} $clientheight={clientHeight}>
       <TopBtnWrapper>
         <p>※수정은 PC에서 가능함</p>
-        <StyledShfBtn $wid="45" src={recycleBtn} alt="섞기 버튼" onClick={() => { handleShuffleAllBtnOnClick() }} />
+        <StyledShfBtn $wid="45" src={recycleIcon} alt="섞기 버튼" onClick={() => { handleShuffleAllBtnOnClick() }} />
         <ExportAsExcel />
       </TopBtnWrapper>
       <StyledGirdContainer>
@@ -95,38 +104,35 @@ const ClassAllStudents = () => {
           <StyledHeader>수정</StyledHeader>
         </TableHeaderWrapper>
         {(studentList && studentList.length > 0) && studentList.map((student, index) => {
-          let isModifying = (thisModifying === student.id)
+          let key = student.id
+          let isModifying = (thisModifying === key)
           let studentNumber = student.studentNumber
-          let actiList = student.actList
-          let name = (student.writtenName ? student.writtenName : '미등록')
-          let record = (student.accRecord ? student.accRecord : '기록 없음')
+          let name = (student.writtenName || "미등록")
+          let record = (student.accRecord || "기록 없음")
           let bytes = ((record !== '기록 없음') ? getByteLengthOfString(record) : 0)
-          if (isModifying) {
-            writtenName = name
-            accRecord = record
-          }
+
           return <React.Fragment key={student.id}>
             <StyledGridItem>{index + 1}</StyledGridItem>     {/* 연번 */}
             <StyledGridItem>{studentNumber}</StyledGridItem> {/* 학번 */}
             <StyledGridItem>
-              {isModifying
-                ? <StyledNameInput type="text" defaultValue={name} onChange={(event) => { writtenName = event.target.value }} />
-                : name}
+              {!isModifying
+                ? name
+                : <StyledNameInput type="text" value={newName} onChange={(event) => { setNewName(event.target.value) }} />}
             </StyledGridItem>
             <StyledGridItem className="left-align">
-              {isModifying
-                ? <StyledTextArea defaultValue={record}
+              {!isModifying
+                ? record
+                : <StyledTextArea defaultValue={record}
                   ref={(ele) => { return textAreaRef.current = ele }}
-                  onChange={(event) => { accRecord = event.target.value }} />
-                : record}
+                  onChange={(event) => { setNewAccRecord(event.target.value) }} />}
             </StyledGridItem>
             <StyledGridItem>{bytes}</StyledGridItem>
             <StyledGridItem>
-              {isModifying
-                ? <BtnWrapper> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(student.id) }} btnName="저장" btnColor="#3454d1" />
+              {!isModifying
+                ? <SmallBtn id="modi_btn" btnOnClick={() => { handleModifyingBtn(key, name, record) }} btnName="수정" btnColor="#3454d1" hoverBtnColor="blue" />
+                : <BtnWrapper> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(student.id) }} btnName="저장" btnColor="#3454d1" />
                   <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(student.id) }} btnName="섞기" btnColor="#9b0c24" hoverBtnColor="red" />
                 </BtnWrapper>
-                : (actiList && actiList.length > 0) && < SmallBtn id="modi_btn" btnOnClick={() => { handleModifyingBtn(student.id) }} btnName="수정" btnColor="#3454d1" hoverBtnColor="blue" />
               }
             </StyledGridItem>
           </React.Fragment>
@@ -136,6 +142,8 @@ const ClassAllStudents = () => {
   )
 }
 const Container = styled.main`
+  opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
+  transition: opacity 0.7s ease;
   @media screen and (max-width: 767px){
     margin: 0;
     position: fixed;
@@ -178,6 +186,7 @@ const StyledShfBtn = styled.img`
   }
 `
 const StyledGirdContainer = styled.div`
+  margin: 50px auto;
   display: grid;
   justify-content: center;
   grid-template-columns: 70px 100px 100px 1000px 60px 100px; 
@@ -186,7 +195,7 @@ const StyledGirdContainer = styled.div`
 // lastChild의 범위를 명확하게 하기 위함.
 const TableHeaderWrapper = styled.div` 
   display: contents;
-`;
+`
 const StyledHeader = styled.div`
   display: flex;
   background-color: #3454d1;

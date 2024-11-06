@@ -79,9 +79,9 @@ const HomeClassAllStudentsPage = () => {
         {!studentList && <EmptyWrapper><EmptyResult comment="학생 목록이 텅텅 비었어요." /></EmptyWrapper>}
         {(studentList && studentList.length > 0) && studentList.map((student, index) => {
           let key = student.id
-          let isModifying = (thisModifying === student.id)                   //현재 수정 중
+          let isModifying = (thisModifying === key)                          //현재 수정 중
           let studentNumber = student.studentNumber
-          let name = (student.writtenName || '미등록')
+          let name = (student.writtenName || "미등록")
           let record = (student.behaviorOpinion || "기록 없음")
           let bytes = ((record !== "기록 없음") ? getByteLengthOfString(record) : 0)
 
