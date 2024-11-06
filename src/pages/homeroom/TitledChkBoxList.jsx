@@ -6,7 +6,6 @@ import { academicAbility, coopAbility, careerAbility } from '../../data/AbilityL
 //css
 import styled from 'styled-components'
 
-
 //2024.10.10 1차 완성
 const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
   //----1.변수부--------------------------------
@@ -15,14 +14,28 @@ const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
     else if (step === "second") { sortData(coopAbility, titleList, specList) }
     else if (step === "third") { sortData(careerAbility, titleList, specList) }
   }, [step])
+
   const [titleList, setTitleList] = useState([]);
   const [specList, setSpecList] = useState([]);
   useEffect(() => {
     setEtc(createMatrix(titleList, ''))
     setFreeze(createMatrix(titleList, false))
+    titleList.forEach((title, index) => {
+      selectedSpec[title] && selectedSpec[title].forEach((selected) => {
+        let isEtc = !specList[index].includes(selected)
+        if (isEtc) {
+          setEtc((prev) => ({ ...prev, [title]: selected })) //유레카
+          checkRefs.current[index].checked = true;
+          inputRefs.current[index].value = selected;
+          handleVisiblityChange(btnRefs, index);
+          handleVisiblityChange(inputRefs, index);
+        }
+      })
+    })
   }, [titleList])
   const inputRefs = useRef({})
   const btnRefs = useRef({})
+  const checkRefs = useRef({})
   const [etc, setEtc] = useState()
   const [freeze, setFreeze] = useState()
 
@@ -37,7 +50,9 @@ const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
     })
     setTitleList(tList)
     setSpecList(sList)
+
   }
+
   //이중 객체 생성
   const createMatrix = (list, initVal) => {
     let matrix = {}
@@ -61,6 +76,7 @@ const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
   //해당 ref 가시성 토글
   const handleVisiblityChange = (refs, index) => {
     let refElement = refs.current[index];
+    console.log(refElement)
     if (refElement) {
       refElement.style.visibility = refElement.style.visibility === 'hidden' ? 'visible' : 'hidden';
     }
@@ -78,7 +94,7 @@ const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
     } else { window.alert("값을 입력하세요") }
   }
   //기타 체크 해제
-  const handleUnselect = (title) => {
+  const handleEtcUnselect = (title) => {
     let check = etc[title] !== '' && selectedSpec[title]?.includes(etc[title]) //etc가 빈값이 아니거나 저장을 눌러 slect된 경우
     if (check) {
       setFreeze((prev) => { return { ...prev, [title]: false } }) // 버튼, input 동결 해제
@@ -88,13 +104,14 @@ const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
         return { ...prev, [title]: updated }
       })
     } else {
-      console.log('넘어가기')
+      console.log("체크 값 없음")
     }
   }
 
   return (
     <Container>
       {titleList.map((title, index) => { //index는 title index임.
+
         return <StyledBox key={title}>
           <StyledTopRow >
             <SmallTitle title={title} />
@@ -104,9 +121,10 @@ const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
               disabled
             />
           </StyledTopRow>
-          {/* 리스트 */}
+          {/* 체크 박스 리스트 구현부 */}
           {specList[index].map((spec) => {
             let checked = selectedSpec[title] && selectedSpec[title].includes(spec) ? true : false
+
             return <ChkBoxWrapper key={spec}>
               <input type="checkbox"
                 name={spec}
@@ -119,11 +137,12 @@ const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
           <ChkBoxWrapper>
             <input type="checkbox"
               name={"기타"}
+              ref={(ele) => { return checkRefs.current[index] = ele }}
               onChange={(event) => {
                 handleVisiblityChange(btnRefs, index)
                 handleVisiblityChange(inputRefs, index)
                 if (event.target.checked === false) {
-                  handleUnselect(title)
+                  handleEtcUnselect(title)
                 }
               }} />
             <p>기타</p>

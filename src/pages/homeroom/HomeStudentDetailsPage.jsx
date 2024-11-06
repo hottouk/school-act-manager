@@ -41,14 +41,12 @@ const HomeStudentDetail = () => {
     fetchSubDoc("classRooms", id, "students", studentId).then((data) => {
       let behavior = data.behaviorOpinion || ''
       let selected = data.selectedSpec || ''
-      let career = ''
-      if (selected) { career = data.selectedSpec["희망진로"]?.[0] ?? '' }
+      if (selected) { setDesiredMajor(data.selectedSpec["희망진로"]?.[0] ?? '') }
       setSelectedSpec(selected)
       setBehaviorOpinion(behavior)
-      setInputValue(career)
       setIsVisible(true)
     })
-  }, [])
+  }, [studentId])
   const { state } = useLocation()
   const { studentNumber, type, writtenName } = state //개별 학생 정보
   useEffect(() => {
@@ -58,7 +56,7 @@ const HomeStudentDetail = () => {
     setStep('')
   }, [state])
   const [step, setStep] = useState('') //행발 작성 단계 
-  const [inputValue, setInputValue] = useState('')
+  const [desiredMajor, setDesiredMajor] = useState('')
   //gpt
   const { askBehavioralOp, gptAnswer, gptBytes, gptRes } = useChatGpt() //gpt
   useEffect(() => {
@@ -71,8 +69,8 @@ const HomeStudentDetail = () => {
   const [gptTempRes, setGptTempRes] = useState(null)
   //바이트
   const { getByteLengthOfString } = useGetByte();
-  //행발
-  const [selectedSpec, setSelectedSpec] = useState('')//★★선택된 spec { spec1: [], spec2: [], spec3:[]..}
+  //★★ 행발 ★★
+  const [selectedSpec, setSelectedSpec] = useState('')//선택된 spec { spec1: [], spec2: [], spec3:[]..}
   const [behaviorOpinion, setBehaviorOpinion] = useState('');
   const [isFreeze, setIsFreeze] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
@@ -91,7 +89,6 @@ const HomeStudentDetail = () => {
   let abilityScores = {}
   //에니메이션
   const [isVisible, setIsVisible] = useState(false)
-
 
   //----2.함수부--------------------------------
   //학생 이동
@@ -134,6 +131,7 @@ const HomeStudentDetail = () => {
   }
   //gpt결과 행발에 반영
   const handleJoinBtnOnClick = () => {
+    selectedSpec('')
     setGptTempAnswer('')
     setGptTempByte(0)
     setGptTempRes(null)
@@ -188,18 +186,20 @@ const HomeStudentDetail = () => {
               <><p>1/3단계: 학생의 학업역량에 해당되는 것에 체크해주세요.</p>
                 <TitledChkBoxList step={step} selectedSpec={selectedSpec} setSelectedSpec={setSelectedSpec} />
                 <FlexWrapper>
-                  <MainBtn btnName="이전 단계로" btnOnClick={() => { setStep('') }}></MainBtn>
-                  <MainBtn btnName="현재 단계 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
-                  <MainBtn btnName="다음 단계로" btnOnClick={() => { setStep("second") }}></MainBtn>
+                  <MainBtn btnName="이전" btnOnClick={() => { setStep('') }}></MainBtn>
+                  <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
+                  <MainBtn btnName="선택 초기화" btnOnClick={() => { }}></MainBtn>
+                  <MainBtn btnName="다음" btnOnClick={() => { setStep("second") }}></MainBtn>
                 </FlexWrapper></>} />
             {/* 2단계 */}
             <AnimOpacity isVisible={step === "second"} content={
               <><p>2/3단계: 학생의 공동체 역량에 해당되는 것에 체크해주세요.</p>
                 <TitledChkBoxList step={step} selectedSpec={selectedSpec} setSelectedSpec={setSelectedSpec} />
                 <FlexWrapper>
-                  <MainBtn btnName="이전 단계로" btnOnClick={() => { setStep("first") }}></MainBtn>
-                  <MainBtn btnName="현재 단계 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
-                  <MainBtn btnName="다음 단계로" btnOnClick={() => { setStep("third") }}></MainBtn>
+                  <MainBtn btnName="이전" btnOnClick={() => { setStep("first") }}></MainBtn>
+                  <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
+                  <MainBtn btnName="선택 초기화" btnOnClick={() => { }}></MainBtn>
+                  <MainBtn btnName="다음" btnOnClick={() => { setStep("third") }}></MainBtn>
                 </FlexWrapper></>} />
             {/* 3단계 */}
             <AnimOpacity isVisible={step === "third"} content={<>
@@ -207,13 +207,13 @@ const HomeStudentDetail = () => {
               <TitledChkBoxList step={step} selectedSpec={selectedSpec} setSelectedSpec={setSelectedSpec} />
               <FlexWrapper>
                 <SmallTitle title={"희망 진로"} />
-                <input type="text" value={inputValue} onChange={(event) => { setInputValue(event.target.value) }} style={{ borderRadius: "5px", height: "28px", flexGrow: "1" }} disabled={isFreeze} />
+                <input type="text" value={desiredMajor} onChange={(event) => { setDesiredMajor(event.target.value) }} style={{ borderRadius: "5px", height: "28px", flexGrow: "1" }} disabled={isFreeze} />
                 {!isFreeze && <button
                   disabled={isFreeze}
                   onClick={() => {
-                    if (inputValue) {
+                    if (desiredMajor) {
                       setIsFreeze(true);
-                      setSelectedSpec((prev) => { return { ...prev, "희망진로": [inputValue] } })
+                      setSelectedSpec((prev) => { return { ...prev, "희망진로": [desiredMajor] } })
                     } else {
                       window.alert("희망 진로를 작성해 주세요.")
                     }
@@ -222,10 +222,11 @@ const HomeStudentDetail = () => {
                   onClick={() => { setIsFreeze(false); }}>수정</button>}
               </FlexWrapper>
               <FlexWrapper>
-                <MainBtn btnName="이전 단계로" btnOnClick={() => { setStep("second") }}></MainBtn>
-                <MainBtn btnName="현재 단계 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
+                <MainBtn btnName="이전" btnOnClick={() => { setStep("second") }}></MainBtn>
+                <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
+                <MainBtn btnName="선택 초기화" btnOnClick={() => { }}></MainBtn>
                 <MainBtn
-                  btnName="다음 단계로"
+                  btnName="다음"
                   btnOnClick={() => {
                     let check = Object.values(selectedSpec)?.filter((arrItem) => { return arrItem.length > 0 }).length > 0
                     if (check) { setStep("last") } else {
@@ -240,12 +241,15 @@ const HomeStudentDetail = () => {
               {/* 중요 */}
               <Wrapper>
                 {Object.entries(selectedSpec).map((selected) => {
-                  let title = selected[0]
-                  let spec = selected[1]
-                  return <StyledBox key={title}>
-                    <SmallTitle title={title} />
-                    <span>{spec.join(', ')}</span>
-                  </StyledBox>
+                  if (selected[1].length > 0) {
+                    let title = selected[0]
+                    let spec = selected[1]
+                    return <StyledBox key={title}>
+                      <SmallTitle title={title} />
+                      <span>{spec.join(', ')}</span>
+                    </StyledBox>
+                  }
+                  return null
                 })}
               </Wrapper>
               <FlexWrapper $marginTop="20px" $marginBottom="20px"><img src={arrows_icon} alt="아래 화살표" /></FlexWrapper>

@@ -21,7 +21,7 @@ import HomeClassAllStudentsPage from './pages/homeroom/HomeClassAllStudentsPage'
 
 import ClassRoomDetailsPage from './pages/classRoom/ClassRoomDetailsPage';
 import StudentDetail from './pages/student/StudentDetail';
-import ClassAllStudents from './pages/classRoom/ClassAllStudents';
+import ClassAllStudentsPage from './pages/classRoom/ClassAllStudentsPage';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassRoomMakeForm from './pages/classSetting/ClassRoomMakeForm';
 import News from './pages/main/News';
@@ -69,7 +69,7 @@ function App() {
           {/* 클래스 관리 */}
           <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms/:id" element={uid ? <ClassRoomDetailsPage /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/classrooms/:id/allStudents" element={uid ? <ClassAllStudents /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/classrooms/:id/allStudents" element={uid ? <ClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms/:id/:studentId" element={uid ? <StudentDetail /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 만들기, 교사 회원만 가능 */}
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
