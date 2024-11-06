@@ -131,11 +131,18 @@ const HomeStudentDetail = () => {
   }
   //gpt결과 행발에 반영
   const handleJoinBtnOnClick = () => {
-    selectedSpec('')
-    setGptTempAnswer('')
-    setGptTempByte(0)
-    setGptTempRes(null)
-    setBehaviorOpinion((prev) => { return prev + ' ' + gptTempAnswer })
+    let check = gptTempAnswer !== ''
+    if (check) {
+      setSelectedSpec('')
+      setGptTempAnswer('')
+      setGptTempByte(0)
+      setGptTempRes(null)
+      setBehaviorOpinion((prev) => { return prev + ' ' + gptTempAnswer })
+    } else { window.alert("gpt 생성 결과가 없습니다.") }
+  }
+  //선택 초기화
+  const handleInitBtnOnClick = () => {
+    setSelectedSpec('')
   }
 
   return (
@@ -188,7 +195,7 @@ const HomeStudentDetail = () => {
                 <FlexWrapper>
                   <MainBtn btnName="이전" btnOnClick={() => { setStep('') }}></MainBtn>
                   <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
-                  <MainBtn btnName="선택 초기화" btnOnClick={() => { }}></MainBtn>
+                  <MainBtn btnName="선택 초기화" btnOnClick={handleInitBtnOnClick}></MainBtn>
                   <MainBtn btnName="다음" btnOnClick={() => { setStep("second") }}></MainBtn>
                 </FlexWrapper></>} />
             {/* 2단계 */}
@@ -198,7 +205,7 @@ const HomeStudentDetail = () => {
                 <FlexWrapper>
                   <MainBtn btnName="이전" btnOnClick={() => { setStep("first") }}></MainBtn>
                   <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
-                  <MainBtn btnName="선택 초기화" btnOnClick={() => { }}></MainBtn>
+                  <MainBtn btnName="선택 초기화" btnOnClick={handleInitBtnOnClick}></MainBtn>
                   <MainBtn btnName="다음" btnOnClick={() => { setStep("third") }}></MainBtn>
                 </FlexWrapper></>} />
             {/* 3단계 */}
@@ -224,7 +231,7 @@ const HomeStudentDetail = () => {
               <FlexWrapper>
                 <MainBtn btnName="이전" btnOnClick={() => { setStep("second") }}></MainBtn>
                 <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
-                <MainBtn btnName="선택 초기화" btnOnClick={() => { }}></MainBtn>
+                <MainBtn btnName="선택 초기화" btnOnClick={handleInitBtnOnClick}></MainBtn>
                 <MainBtn
                   btnName="다음"
                   btnOnClick={() => {
