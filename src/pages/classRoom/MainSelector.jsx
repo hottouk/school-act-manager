@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 //css
 import styled from "styled-components"
 
-const MainSelector = ({ studentList, activitiyList, classId }) => {
+const MainSelector = ({ studentList, actiList, classId, setIsPerfModalShow }) => {
   //1. 변수
   //MultiSelector 내부 변수
   const selectStudentRef = useRef(null); //학생 선택 셀렉터 객체, 재랜더링 X 
@@ -31,15 +31,18 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
   //UseState
   const [isAllStudentChecked, setIsAllStudentChecked] = useState(false) //모든학생 선택 유무
   const [isAllActivityChecked, setIsAllActivityChecked] = useState(false) //모든활동 선택 유무
-  const [modalShow, setModalShow] = useState(false) //대화창 보여주기 변수
+  //모달창
+  const [isCompleteModalShow, setIsCompleteModalShow] = useState(false)
+  //주요 정보
   const [_accRecord, setAccRecords] = useState();
   const [_byte, setByte] = useState(0)
-  //2. 핵심로직
+  //1-2 핵심로직
   const { writeAccDataOnDB } = useAcc()
   const { getByteLengthOfString } = useGetByte()
-  //3. 라이브러리
+  //1-3. 라이브러리
   const navigate = useNavigate();
-  //4. 함수
+
+  //----2.함수부--------------------------------
   //셀렉터에서 선택된 값 해제하기
   const onClearSelect = () => {
     if (selectStudentRef.current) {
@@ -53,16 +56,11 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
       setIsAllActivityChecked(false)
     }
   }
-  //선택 완료 버튼 클릭
-  const handleSelectComplete = async () => {
-    setModalShow(true) //대화창 pop
-  }
 
   return (
     <>
       {/* 학생 셀렉터, 활동 셀렉터 */}
-      <StyledContainer>
-        <StyledTitle>빠른 세특 쫑알이</StyledTitle>
+      <Container>
         <StyledSelector>
           <MultiSelector
             studentList={studentList}
@@ -74,9 +72,9 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
             setIsAllActivitySelected={setIsAllActivityChecked}
           />
         </StyledSelector>
-        {(activitiyList && activitiyList.length !== 0) && <StyledSelector>
+        {(actiList && actiList.length !== 0) && <StyledSelector>
           <MultiSelector
-            activitiyList={activitiyList}
+            activitiyList={actiList}
             selectActRef={selectActRef}
             actCheckBoxRef={actCheckBoxRef}
             isAllStudentChecked={isAllStudentChecked}
@@ -85,7 +83,7 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
             setIsAllActivitySelected={setIsAllActivityChecked}
           />
         </StyledSelector>}
-        {(!activitiyList || activitiyList.length === 0) &&
+        {(!actiList || actiList.length === 0) &&
           <StyledSelector>활동이 없습니다. 활동을 추가해주세요.
             <MidBtn btnName="활동 추가" btnOnClick={() => { navigate('/activities_setting') }} />
           </StyledSelector>}
@@ -96,19 +94,22 @@ const MainSelector = ({ studentList, activitiyList, classId }) => {
             <p style={{ display: "inline" }}> /1500 Byte</p>
           </div>
         </StyledAccContainer>
-        <MainBtn btnOnClick={() => { handleSelectComplete() }} btnName="선택 완료" />
-      </StyledContainer>
-      {/* 리엑트 부트스트랩 */}
+        <BtnWrapper>
+          <MainBtn btnOnClick={() => { setIsCompleteModalShow(true) }} btnName="선택 완료" />
+          <MainBtn btnOnClick={() => { setIsPerfModalShow(true) }} btnName="수행 평가 관리" />
+        </BtnWrapper>
+      </Container>
+      {/* 선택 완료 모달 */}
       <SelectedDialogModal
-        show={modalShow}
-        onHide={() => setModalShow(false)}
+        show={isCompleteModalShow}
+        onHide={() => setIsCompleteModalShow(false)}
         onClearSelect={onClearSelect}
         writeAccDataOnDB={() => writeAccDataOnDB(classId)}
       />
     </>
   )
 }
-const StyledContainer = styled.div`
+const Container = styled.div`
   width: 80%;
   display: flex;
   flex-direction: column;
@@ -120,10 +121,10 @@ const StyledContainer = styled.div`
     margin: 0;
   }
 `
-const StyledTitle = styled.h4`
+const BtnWrapper = styled.div`
   display: flex;
-  justify-content: center;
-  margin: 10px auto;
+  margin: 20px auto;
+  gap: 40px;
 `
 const StyledSelector = styled.div`
   width: 50%;

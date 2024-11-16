@@ -30,24 +30,35 @@ const useAcc = () => {
   }
 
   //★★ 활동 기록 누가 함수: 누가 기록을 누적하여 반환한다.
-  const makeAccRec = (actiList, curRec) => {
-    let accRec = actiList.reduce((acc, cur) => {
-      return acc.concat(" ", cur.record)        //리턴 값이 초기값으로 대입됨.
-    }, '')
-    if (curRec) { accRec = curRec.concat(" ", accRec) }
-    return accRec
+  const makeAccRec = (list) => {
+    if (list.length > 0) {
+      return list.reduce((acc, cur) => acc.concat(" ", cur.record), '') //리턴 값이 초기값으로 대입됨.
+    } else { return '' }
   }
 
-  //★★★★ 핵심 로직
+  //중복 제거
+  const makeUniqueList = (list) => {
+    return list.reduce((acc, cur) => {
+      if (acc.findIndex(({ id }) => id === cur.id) === -1) {  //배열에서 조건을 충족하는 index를 반환, 없을 경우 -1 반환; 
+        acc.push(cur);
+      } else {
+        acc = acc.filter(({ id }) => id !== cur.id)           //이전꺼 지우고 
+        acc.push(cur);                                        //새로 덮어 씌우기
+      }
+      return acc;
+    }, [])
+  }
+
+  //★★★★ 핵심 로직 //todo 코드 간결화 하기
   const writeAccDataOnDB = async (classId) => {
     studentSelectedList.map(({ value }) => { //선택된 모든 학생에게서 아래 작업 반복 
       let studentId = value //id 참조
-      const petRef = doc(appFireStore, "classRooms", classId, "students", studentId); //id로 학생 data 위치 참조
-      getDoc(petRef).then((student) => {                                              //참조한 학생 data 반환 Promise
+      let petRef = doc(appFireStore, "classRooms", classId, "students", studentId); //id로 학생 data 위치 참조
+      getDoc(petRef).then((pet) => {                                                //참조한 학생 data 반환 Promise
         try {
-          let curActiList = student.data().actList        //선택 학생 한명의 '기존 활동' 
+          let curActiList = pet.data().actList                  //선택 학생 한명의 '기존 활동' 
           makeAccWithSelectedActi().then(({ newActiList }) => { //선택한 활동의 누가 배열, 누가 기록 반환
-            if (!curActiList || curActiList.length === 0) { //기록 활동 x 누가 기록 x -> 완전한 첫 작성
+            if (!curActiList || curActiList.length === 0) {     //기록 활동 x 누가 기록 x -> 완전한 첫 작성
               let accRec = makeAccRec(newActiList)
               setDoc(petRef, {
                 actList: newActiList,              //누가'활동'에 선택 활동 반영
@@ -79,7 +90,27 @@ const useAcc = () => {
     })
   }
 
-  return { makeAccWithSelectedActi, writeAccDataOnDB }
+  //★★★★ 수행 관리 입력하기
+  const writePerfRecDataOnDB = async (studentList, classId, selectedPerf, perfRecord) => {
+    studentList.forEach((student, index) => {
+      let curActiList = student.actList || [];                                                                        //기존 list 없으면 []
+      if (curActiList.length > 0) { curActiList = curActiList.filter(({ id }) => { return id !== selectedPerf.id }) } //기존에 같은 수행평가를 입력했다면 제거
+      selectedPerf.record = perfRecord[index]                                                                         //성취도에 맞게 문구 변경    
+      let newActiList = [...curActiList]                                                                              //기존 활동에 추가
+      if (selectedPerf.record !== '') { newActiList.push(selectedPerf) }                                              //수행 문구 입력된 경우만 추가
+      let newAcc = makeAccRec(newActiList)                                                                            //누가 기록 생성하기    
+      let updatedStudent = { ...student, actList: newActiList, accRecord: newAcc }                                    //학생 업데이트    
+      //DB 통신
+      let petRef = doc(appFireStore, "classRooms", classId, "students", student.id);                                  //학생 DB ref
+      try {
+        setDoc(petRef, updatedStudent, { merge: true })
+      } catch (error) {
+        console.log(error.message)
+      }
+    })
+  }
+
+  return { makeAccWithSelectedActi, writeAccDataOnDB, writePerfRecDataOnDB }
 }
 
 export default useAcc

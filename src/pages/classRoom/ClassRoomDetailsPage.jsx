@@ -23,39 +23,17 @@ import MidBtn from '../../components/Btn/MidBtn.jsx';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
 import ArrowBtn from '../../components/Btn/ArrowBtn.jsx';
+import PerfModal from '../../components/Modal/PerfModal.jsx';
+import TransparentBtn from '../../components/Btn/TransParentBtn.jsx';
 
-//2024.08.01(클래스 헤더 수정)
+//2024.08.01(클래스 헤더 수정) -> 11.13 애니메이션 추가
 const ClassRoomDetailsPage = () => {
-  //1.변수
+  //----1.변수부--------------------------------
   //전역 변수
   const navigate = useNavigate()
   const dispatcher = useDispatch()
   const user = useSelector(({ user }) => { return user; })
   const thisClass = useSelector(({ classSelected }) => { return classSelected }) //반 전역변수
-  //hooks
-  const { cancelSignUpInClass } = useEnrollClass()
-  const { deleteClassWithStudents } = useDeleteFireData()
-
-  //개별 클래스 구별해주는 변수
-  //데이터 통신 변수
-  const { studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
-  const [_actiList, setActiList] = useState([])
-  const { fetchActiList } = useFetchFireData()
-  //모드
-  const [isApplied, setIsApplied] = useState(false)
-  const [isMember, setIsMember] = useState(false)
-  const [isModalShown, setIsModalShown] = useState(false)             //학생 클래스 가입 모달 
-  const [isAddStuModalShown, setIsAddStuModalShown] = useState(false) //교사 학생 추가 모달
-  const clientHeight = useClientHeight(document.documentElement)
-
-  useEffect(() => {
-    dispatcher(setAllStudents(studentList))       //전체 학생 전역변수화
-    fetchActiList(thisClass).then((actiList) => { //전체 활동 전역변수화
-      dispatcher(setAllActivities(actiList))
-      setActiList(actiList)
-    });
-  }, [studentList])
-
   useEffect(() => {
     if (!user.isTeacher) { //학생
       if (thisClass.appliedStudentList && thisClass.appliedStudentList.length !== 0) { //신청 중이라면
@@ -68,8 +46,34 @@ const ClassRoomDetailsPage = () => {
       }
     }
   }, [thisClass])
+  //hooks
+  const { cancelSignUpInClass } = useEnrollClass()
+  const { deleteClassWithStudents } = useDeleteFireData()
+  //데이터 통신 변수
+  const { studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
+  useEffect(() => {
+    setIsVisible(true)
+    dispatcher(setAllStudents(studentList))       //전체 학생 전역변수화
+    fetchActiList(thisClass).then((actiList) => { //전체 활동 전역변수화
+      dispatcher(setAllActivities(actiList))
+      setActiList(actiList)
+    });
+  }, [studentList])
+  const [_actiList, setActiList] = useState([])
+  const { fetchActiList } = useFetchFireData()
+  //모드
+  const [isApplied, setIsApplied] = useState(false)
+  const [isMember, setIsMember] = useState(false)
+  //모달
+  const [isModalShown, setIsModalShown] = useState(false)             //학생 클래스 가입
+  const [isAddStuModalShown, setIsAddStuModalShown] = useState(false) //교사 학생 추가
+  const [isPerfModalShow, setIsPerfModalShow] = useState(false)       //수행 관리
+  //에니메이션
+  const [isVisible, setIsVisible] = useState(false)
+  //모바일
+  const clientHeight = useClientHeight(document.documentElement)
 
-  //3.함수
+  //----2.함수부--------------------------------
   const handleBtnClick = (event) => {
     switch (event.target.id) {
       case "back_btn":
@@ -101,9 +105,9 @@ const ClassRoomDetailsPage = () => {
   }
 
   return (<>
-    {!thisClass && <StyledContainer><h3>반 정보를 불러올 수 없습니다.</h3></StyledContainer>}
+    {!thisClass && <Container><h3>반 정보를 불러올 수 없습니다.</h3></Container>}
     {thisClass &&
-      <StyledContainer $clientheight={clientHeight}>
+      <Container $clientheight={clientHeight} $isVisible={isVisible}>
         {/* 반 기본 정보 */}
         <StyeldHeader>
           <StyledClassTitle>{thisClass.classTitle}</StyledClassTitle>
@@ -128,9 +132,10 @@ const ClassRoomDetailsPage = () => {
           {(!user.isTeacher && !isMember && !isApplied) && <StyledMoveBtn id="join_btn" onClick={handleBtnClick}>가입하기</StyledMoveBtn>}
         </StyeldHeader>
         {/* 셀렉터(교사)*/}
-        <MainSelectorContainer>
-          {user.isTeacher && <MainSelector studentList={studentList} activitiyList={_actiList} classId={thisClass.id} />}
-        </MainSelectorContainer>
+        <MainSelectorWrapper>
+          <h5>빠른 세특 쫑알이</h5>
+          {user.isTeacher && <MainSelector studentList={studentList} actiList={_actiList} classId={thisClass.id} setIsPerfModalShow={setIsPerfModalShow} />}
+        </MainSelectorWrapper>
         {/* 퀘스트 목록(학생) */}
         {(!user.isTeacher && isMember) && <StyledMain>
           {(!_actiList || _actiList.length === 0)
@@ -140,7 +145,7 @@ const ClassRoomDetailsPage = () => {
         }
         {/* 학생 상세 보기 (가입 학생, 교사)*/}
         {((!user.isTeacher && isMember) || user.isTeacher) && <StyledMain>
-          <h4>학생 개인별 보기</h4>
+          <h5>학생 개별 보기</h5>
           {/* 학생 목록 없을 때 */}
           {(!studentList || studentList.length === 0) ?
             <>
@@ -150,15 +155,15 @@ const ClassRoomDetailsPage = () => {
         </StyledMain>}
         {/* 반 전체보기(교사)*/}
         {user.isTeacher && <StyledMain>
-          <h4>개별화하기</h4>
+          <h5>한 눈에 보기</h5>
           <MainBtn btnName="반 전체 세특 보기" btnOnClick={() => { navigate('allStudents') }} />
         </StyledMain>
         }
-        {user.isTeacher && <StyeldBtnDiv>
-          <StyledBtn id="back_btn" onClick={handleBtnClick}>반 목록</StyledBtn>
-          <StyledBtn id="delete_btn" onClick={handleBtnClick}>반 삭제</StyledBtn>
-        </StyeldBtnDiv>}
-      </StyledContainer>
+        {user.isTeacher && <BtnWrapper>
+          <TransparentBtn id="back_btn" btnName="반 목록" btnOnClick={handleBtnClick} />
+          <TransparentBtn id="delete_btn" btnName="반 삭제" btnOnClick={handleBtnClick} />
+        </BtnWrapper>}
+      </Container>
     }
     {/* 모달창 */}
     {isModalShown && <ClassMemberModal
@@ -170,13 +175,22 @@ const ClassRoomDetailsPage = () => {
       show={isAddStuModalShown}
       onHide={() => { setIsAddStuModalShown(false) }}
       classId={thisClass.id} />}
+    {/* 수행 관리 모달 */}
+    <PerfModal
+      show={isPerfModalShow}
+      onHide={() => setIsPerfModalShow(false)}
+      studentList={studentList}
+      classId={thisClass.id}
+    />
   </>)
 }
 
-const StyledContainer = styled.main`
+const Container = styled.main`
   box-sizing: border-box;
   width: 80%;
   margin: 0 auto 50px;
+  opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
+  transition: opacity 0.7s ease;
   @media screen and (max-width: 767px){
     position: fixed;
     width: 100%;
@@ -233,22 +247,29 @@ const ArrowWrapper = styled.div`
   align-items: center;
 }
 `
-const MainSelectorContainer = styled.div`
+const MainSelectorWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 5px;
   margin-top: 50px;
   border-left: 12px #3454d1 double;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
+  h5 {
+    display: flex;
+    justify-content: center;
+    font-weight: bold;
+    margin-top: 10px;
+  }
 `
 const StyledMain = styled.main`
   padding: 5px;
   margin-top: 50px;
   border-left: 12px #3454d1 double;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
-  h4 {
+  h5 {
     display: flex;
     justify-content: center;
+    font-weight: bold;
     margin: 10px auto;
   }
   @media screen and (max-width: 767px){
@@ -280,24 +301,9 @@ const StyledMoveBtn = styled.button`
   color: white;
   padding: 0.25em 1em;
 `
-const StyeldBtnDiv = styled.div`
+const BtnWrapper = styled.div`
+  margin-top: 40px;
   display: flex;
   justify-content: space-between;
-`
-const StyledBtn = styled.button`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 25px;
-  width: 250px;
-  color: royalBlue;
-  background-color: transparent;
-  border-radius: 15px;
-  border: 2px solid royalBlue;
-  padding: 25px;
-  @media screen and (max-width: 767px){
-    width: 110px;
-    height: 40px;
-  }
 `
 export default ClassRoomDetailsPage

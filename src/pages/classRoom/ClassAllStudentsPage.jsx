@@ -111,7 +111,7 @@ const ClassAllStudents = () => {
           let record = (student.accRecord || "기록 없음")
           let bytes = ((record !== '기록 없음') ? getByteLengthOfString(record) : 0)
 
-          return <React.Fragment key={student.id}>
+          return <React.Fragment key={key}>
             <StyledGridItem>{index + 1}</StyledGridItem>     {/* 연번 */}
             <StyledGridItem>{studentNumber}</StyledGridItem> {/* 학번 */}
             <StyledGridItem>
@@ -130,8 +130,8 @@ const ClassAllStudents = () => {
             <StyledGridItem>
               {!isModifying
                 ? <SmallBtn id="modi_btn" btnOnClick={() => { handleModifyingBtn(key, name, record) }} btnName="수정" btnColor="#3454d1" hoverBtnColor="blue" />
-                : <BtnWrapper> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(student.id) }} btnName="저장" btnColor="#3454d1" />
-                  <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(student.id) }} btnName="섞기" btnColor="#9b0c24" hoverBtnColor="red" />
+                : <BtnWrapper> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(key) }} btnName="저장" btnColor="#3454d1" />
+                  <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(key) }} btnName="섞기" btnColor="#9b0c24" hoverBtnColor="red" />
                 </BtnWrapper>
               }
             </StyledGridItem>

@@ -14,6 +14,9 @@ import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStuden
 import styled from 'styled-components';
 import useClassAuth from '../../hooks/useClassAuth';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal';
+import LongW100Btn from '../../components/Btn/LongW100Btn';
+import TransparentBtn from '../../components/Btn/TransParentBtn';
+import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData';
 
 //2024.10.22 생성
 const HomeroomDetailsPage = () => {
@@ -30,6 +33,7 @@ const HomeroomDetailsPage = () => {
   //모든 학생 List
   const { studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber")
   useEffect(() => { dispatcher(setAllStudents(studentList)) }, [studentList]) //전역변수
+  const { deleteClassWithStudents } = useDeleteFireData()
   //교사 학생 추가 모달
   const [isAddStuModalShown, setIsAddStuModalShown] = useState(false)
   //에니메이션
@@ -40,25 +44,44 @@ const HomeroomDetailsPage = () => {
     navigate(`/homeroom/${thisClass.id}/allStudents`)
   }
 
-  return (
-    <Container $isVisible={isVisible}>
-      <MainWrapper>
-        <h5>학생 행동특성 및 종합의견 작성</h5>
-        {(!studentList || studentList.length === 0) ?
-          <>{/* 학생 목록 없을 때 */}
-            <EmptyResult comment="등록된 학생이 없습니다." />
-            <MidBtn btnName="학생 추가" btnOnClick={() => { setIsAddStuModalShown(true) }} />
-          </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} />}
-      </MainWrapper>
-      <MainBtn btnName="행발 전체 보기" btnOnClick={handleAllStudentOnClick} />
+  const handleDeleteClassOnClick = () => {
+    let deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
+    if (deleteConfirm === "삭제합니다") {
+      deleteClassWithStudents(thisClass.id)
+      navigate("/classRooms")
+    } else {
+      window.alert("문구가 제대로 입력되지 않았습니다.");
+      return;
+    }
+  }
 
+  return (
+    <>
+      <Container $isVisible={isVisible}>
+        <MainWrapper>
+          <h5>학생 행동특성 및 종합의견 작성</h5>
+          {(!studentList || studentList.length === 0) ?
+            <>{/* 학생 목록 없을 때 */}
+              <EmptyResult comment="등록된 학생이 없습니다." />
+              <MidBtn btnName="학생 추가" btnOnClick={() => { setIsAddStuModalShown(true) }} />
+            </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} />}
+        </MainWrapper>
+        <MainWrapper>
+          <h5>한눈에 보기</h5>
+          <MainBtn btnName="행발 전체 보기" btnOnClick={handleAllStudentOnClick} />
+        </MainWrapper>
+        <BtnWrapper>
+          <TransparentBtn btnName="반 목록" btnOnClick={() => { navigate("/classRooms") }} />
+          <TransparentBtn btnName="반 삭제" btnOnClick={() => { handleDeleteClassOnClick() }} />
+        </BtnWrapper>
+      </Container>
       {/* 학생 추가 모달 */}
       {<AddNewStudentModal
         show={isAddStuModalShown}
         onHide={() => { setIsAddStuModalShown(false) }}
         classId={thisClass.id}
         type="homeroom" />}
-    </Container>
+    </>
   )
 }
 
@@ -86,5 +109,10 @@ const MainWrapper = styled.div`
     border-top: 12px #3454d1 double;
     box-shadow: none;
   }
+`
+const BtnWrapper = styled.div`
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
 `
 export default HomeroomDetailsPage

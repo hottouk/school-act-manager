@@ -14,7 +14,6 @@ const StyledBtn = styled.button`
   border-style: none;
   box-shadow: none;
   box-sizing: border-box;
-  margin: 20px auto;
   color: #fff;
   cursor: pointer;
   display: block;
@@ -24,6 +23,7 @@ const StyledBtn = styled.button`
   height: 50px;
   letter-spacing: normal;
   line-height: 1.5;
+  margin: 30px auto;
   outline: none;
   overflow: hidden;
   padding: 14px 30px;

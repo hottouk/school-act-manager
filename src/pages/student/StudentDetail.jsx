@@ -193,6 +193,8 @@ const StudentDetail = () => {
             {(user.isTeacher || _isMaster) && <>
               {!_actiList || _actiList.length === 0 ? <div className="no_act_record">활동이 없어요ㅠㅠ</div>
                 : _actiList.map((acti, index) => {
+                  console.log(acti)
+                  //1행 시작
                   return <StyledContentRow key={acti.id} ref={(element) => { return divRef.current[index] = element }} >
                     <StyledMidlDiv>
                       <div>

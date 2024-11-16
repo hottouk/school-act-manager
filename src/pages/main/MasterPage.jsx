@@ -8,19 +8,29 @@ import useFetchRtAllActiData from '../../hooks/RealTimeData/useFetchRtAllActiDat
 //css
 import styled from 'styled-components'
 import useMasterTool from '../../hooks/useMasterTool'
+import MainBtn from '../../components/Btn/MainBtn'
+import { appFireStore } from '../../firebase/config'
+import { collection, getDocs } from 'firebase/firestore'
 
 
 //2024.07.24
 const Master = () => {
-  const { teacherList, sortTListByCriterion } = useFetchRtAllUserData() //교사 데이터 구독
-  const { actiList, sortTActiListByCriterion, useFetchRtAllActiErr } = useFetchRtAllActiData()    //활동 데이터 구독
+  const db = appFireStore
+  const { teacherList, sortTListByCriterion } = useFetchRtAllUserData()//교사 데이터 구독
+  const { actiList, sortTActiListByCriterion, useFetchRtAllActiErr } = useFetchRtAllActiData()//활동 데이터 구독
   useEffect(() => { if (useFetchRtAllActiErr) window.alert(useFetchRtAllActiErr) }, [useFetchRtAllActiErr])
   const { plusLikedCount } = useMasterTool() //마스터 툴
   const [selectedTab, setSelectedTab] = useState("교사")
 
+  const handleTempAddOn = async () => {
+    const actiColRef = collection(db, "activities")
+    const actiSnap = await getDocs(actiColRef)
+  }
+
   return (
-    <StyledContainer>
+    <Container>
       <TabBtn tabItems={["교사", "활동"]} setActiveTab={setSelectedTab} />
+      <MainBtn btnName="타입 추가" btnOnClick={handleTempAddOn} />
       {/* 교사 탭 */}
       {(selectedTab === "교사") && <StyledTcherGirdContainer>
         <StyledHeader>연번</StyledHeader>
@@ -34,7 +44,7 @@ const Master = () => {
           <SortButton onClick={() => { sortTListByCriterion("likedCount") }}>⇅</SortButton>
         </StyledHeader>
         <StyledHeader>기능버튼</StyledHeader>
-        {teacherList.map((teacher, index) => { 
+        {teacherList.map((teacher, index) => {
           let school = teacher.school
           return (<React.Fragment key={teacher.id}>
             <StyledGridItem>{index + 1}</StyledGridItem>
@@ -59,7 +69,7 @@ const Master = () => {
           제작자 id
           <SortButton onClick={() => { sortTActiListByCriterion("uid") }}>⇅</SortButton>
         </StyledHeader>
-        <StyledHeader>좋아요</StyledHeader>
+        <StyledHeader>수행</StyledHeader>
         {actiList.map((acti, index) => {
           return (<React.Fragment key={acti.id}>
             <StyledGridItem>{index + 1}</StyledGridItem>
@@ -67,16 +77,16 @@ const Master = () => {
             <StyledGridItem>{acti.title}</StyledGridItem>
             <StyledGridItem>{acti.madeBy}</StyledGridItem>
             <StyledGridItem>{acti.uid}</StyledGridItem>
-            <StyledGridItem>{acti.likedCount || 0}</StyledGridItem>
+            <StyledGridItem>{acti.perfRecordList ? "O" : "X"}</StyledGridItem>
           </React.Fragment>)
         })}
       </StyledActiGridContainer>}
-    </StyledContainer >
+    </Container >
 
   )
 }
 
-const StyledContainer = styled.div`
+const Container = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
