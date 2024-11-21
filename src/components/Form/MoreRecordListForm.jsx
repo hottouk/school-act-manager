@@ -16,7 +16,7 @@ const MoreRecordListForm = ({ moreRecList, noListText, isBtnShown, btnOnClick })
         )}
       </InputWrapper>
       <BtnWrapper>
-        {isBtnShown && <SmallBtn id="extra_Rbtn" btnName="추가" btnColor="#9b0c24" hoverBtnColor="red" margin="0 10px" btnOnClick={btnOnClick} />}
+        {isBtnShown && <SmallBtn id="extra_Rbtn" btnName="설정" btnColor="#3454d1" hoverBtnColor="blue" margin="0 10px" btnOnClick={btnOnClick} />}
       </BtnWrapper>
     </Container>
   )

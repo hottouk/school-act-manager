@@ -6,9 +6,9 @@ const DotTitle = ({ title, pointer, onClick, styles }) => {
   let width = "30%";
   let marginBot = "10px";
   if (styles) {
-    width = styles.width
-    dotColor = styles.dotColor
-    marginBot = styles.marginBot
+    width = styles.width ? styles.width : width
+    dotColor = styles.dotColor ? styles.dotColor : dotColor
+    marginBot = styles.marginBot ? styles.marginBot : marginBot
   }
   // 샘플1 <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" />
   // 샘플2

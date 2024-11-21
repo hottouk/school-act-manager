@@ -4,7 +4,7 @@ import styled from "styled-components"
 //24.01.09
 const ScoreWrapper = (props) => {
   return (
-    <StyledScoreWrapper>
+    <Container>
       <Helmet>
         {/*폰트어썸 라이브러리*/}
         <link rel="stylesheet"
@@ -13,7 +13,7 @@ const ScoreWrapper = (props) => {
           crossorigin="anonymous"
           referrerpolicy="no-referrer" />
       </Helmet>
-      <div className="scores">
+      <FlexWrapper>
         <div>
           <label htmlFor="act_leadership">리더십 <i className="fa-solid fa-hand-fist"></i></label>
           <input id="act_leadership" type="number" min="0" max="8" disabled={props.disabled}
@@ -39,33 +39,30 @@ const ScoreWrapper = (props) => {
           <input id="act_attitude" type="number" min="0" max="8" disabled={props.disabled}
             value={props.attitudeScore} onChange={props.handleChange}></input>
         </div>
-      </div>
+      </FlexWrapper>
       <div className="money">
         <label htmlFor="act_coin">리아 <i className="fa-solid fa-coins"></i></label>
         <input id="act_coin" type="number" min="0" max="100" disabled={props.disabled}
           value={props.coin} onChange={props.handleChange}></input>
       </div>
-    </StyledScoreWrapper>
+    </Container>
   )
 }
 
-const StyledScoreWrapper = styled.div`
+const Container = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
   margin: 20px auto;
   text-align: center;
-  div {
-    color: #efefef;
-    display: inline-block;
-  }
+  color: black;
   input {
     width: 60px;
     height: 40px;
     margin: 5px 2px;
     border: none;
     border-radius: 15px;
-    background-color: #efefef;
+    background-color: white;
     text-align: center;
   }
   label {
@@ -79,5 +76,9 @@ const StyledScoreWrapper = styled.div`
       margin-top: 5px;
     }
   }
+`
+const FlexWrapper = styled.div`
+  display: flex;
+  
 `
 export default ScoreWrapper

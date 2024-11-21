@@ -15,11 +15,7 @@ import styled from 'styled-components';
 //2024.11.13 생성
 const PerfModal = ({ show, onHide, studentList, classId }) => {
   //----1.변수부--------------------------------
-  useEffect(() => {
-    setPerfRecord(createMatrix(studentList, ''))
-    setPerfTempRecord(createMatrix(studentList, ''))
-    setExtractResult(createMatrix(studentList, []))
-  }, [studentList])
+  useEffect(() => { initData() }, [studentList])
   const actiList = useSelector(({ allActivities }) => allActivities)
   //acti중에서 수행평가를 찾는다.
   useEffect(() => {
@@ -48,6 +44,13 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   const [replaceList, setReplaceList] = useState({})
 
   //----2.함수부--------------------------------
+  //초기화
+  const initData = () => {
+    setPerfRecord(createMatrix(studentList, ''))
+    setPerfTempRecord(createMatrix(studentList, ''))
+    setExtractResult(createMatrix(studentList, []))
+    setSelectedPerf(null)
+  }
   //이중 객체 생성
   const createMatrix = (list, initVal) => {
     let matrix = {}
@@ -93,14 +96,14 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     let replaced = replacePlaceholders(text, altList)
     setPerfRecord((prev) => { return { ...prev, [index]: replaced } })
   }
-  //개별화 부분 대체하기
+  //개별화 부분 대체
   const replacePlaceholders = (text, replaceList) => {
     if (!replaceList) { window.alert("빈칸을 채워주세요.") } else {
       let index = 0;
       return text.replace(/\{\/\*.*?\*\/\}/g, () => replaceList[index++] || '');
     }
   }
-  //특정 기호, {/*  */} 사이의 문자열 추출하기
+  //특정 기호, {/*  */} 사이의 문자열 추출
   const extractContent = (text, index) => {
     let matches = text.match(/\{\/\*\s*(.*?)\s*\*\/\}/g); //정규식
     let result = matches?.map(match => match.slice(3, -3).trim()) ?? []
@@ -120,13 +123,19 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       return getByteLengthOfString(text)
     } else { return 0 }
   }
-  //최종 저장 확인
+  //최종 저장 확인 버튼
   const saveBtnOnClick = () => {
-    if (window.confirm("저장하시겠습니까?")) {
-      if (selectedPerf) { writePerfRecDataOnDB(studentList, classId, selectedPerf, perfRecord) }
-      else { window.alert("선택된 수행평가가 없습니다.") }
-    }
-    setSelectedPerf(null)
+    if (selectedPerf) {
+      if (window.confirm("저장하시겠습니까?")) {
+        writePerfRecDataOnDB(studentList, classId, selectedPerf, perfRecord)
+        initData();
+        onHide();
+      }
+    } else { window.alert("선택된 수행평가가 없습니다.") }
+  }
+  //취소 버튼
+  const cancelBtnOnClick = () => {
+    initData();
     onHide();
   }
 
@@ -161,7 +170,6 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
             <StyledHeader>이름</StyledHeader>
             <StyledHeader>수행 성취도</StyledHeader>
             <StyledHeader>개별화 부분</StyledHeader>
-            <StyledHeader>임시 문구</StyledHeader>
             <StyledHeader>수행 문구</StyledHeader>
             <StyledHeader>바이트</StyledHeader>
           </TableHeaderWrapper>
@@ -176,6 +184,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
               <StyledGridItem>
                 <FormWrapper>
                   {achivList.map((val, subIndex) => {
+
                     return <label key={`${index}${subIndex}`}>
                       <input
                         type="radio"
@@ -204,7 +213,6 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
                   {extractResult[index]?.length > 0 && <MidBtn btnName="변경" btnOnClick={() => { handleAltBtnOnClick(index) }} />}
                 </ExtractWrapper>
               </StyledGridItem>
-              <StyledGridItem className="left-align">{perfTempRecord[index]}</StyledGridItem>
               <StyledGridItem className="left-align">{perfRecord[index]}</StyledGridItem>
               <StyledGridItem>{getPerfRecByte(index)}</StyledGridItem>
             </React.Fragment>
@@ -213,7 +221,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       </Modal.Body>
       <Modal.Footer>
         <BtnWrapper>
-          <ModalBtn btnName="취소" btnColor="#9b0c24" hoverColor="red" onClick={() => { onHide(); }} />
+          <ModalBtn btnName="취소" btnColor="#9b0c24" hoverColor="red" onClick={() => { cancelBtnOnClick(); }} />
           <ModalBtn btnName="저장" btnColor="#3454d1" hoverColor="blue" onClick={() => { saveBtnOnClick(); }} />
         </BtnWrapper>
       </Modal.Footer>
@@ -224,7 +232,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
 const GridContainer = styled.div`
   margin: 20px auto;
   display: grid;
-  grid-template-columns: 70px 100px 100px 120px 300px 600px 600px 70px;
+  grid-template-columns: 70px 100px 100px 120px 300px 600px 70px;
   justify-content: center;
 `
 const SelectWrapper = styled.div`
