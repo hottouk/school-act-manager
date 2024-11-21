@@ -35,6 +35,7 @@ import styled from "styled-components";
 
 //24.07.06 수정(실시간 바이트 갱신)
 const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
+  useEffect(() => { setIsVisible(true) }, [])
   //1. 변수
   const user = useSelector(({ user }) => { return user })
   //1.활동 기본 정보 변수
@@ -90,11 +91,12 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       default: return;
     }
   }, [gptRes, gptAnswer])
-
   //7. 바이트 계산
   const { getByteLengthOfString } = useGetByte();
-  //8.css
+  //8.css 및 에니
   const clientHeight = useClientHeight(document.documentElement)
+  const [isVisible, setIsVisible] = useState(false)
+
   useEffect(() => {
     if (state) {
       let acti = state.acti
@@ -299,38 +301,42 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       default: return
     }
   }
-  return (
-    <StyledContainer $clientheight={clientHeight}>
+  return (<>
+    <Container $clientheight={clientHeight} $isVisible={isVisible}>
       {/* 교사 */}
-      {user.isTeacher && <>
+      {user.isTeacher &&
         <StyledForm onSubmit={handleSubmit}>
+          <StyledHeader>
+            {state ? <legend>{_subjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}
+          </StyledHeader>
           <fieldset>
             <StyledDiv>
-              {state ? <legend>{_subjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}
               <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
             </StyledDiv>
             <InputWrapper>
-              <DotTitle title={"활동 제목"} />
+              <DotTitle title={"활동 제목"} styles={{ dotColor: "#3454d1;" }} />
               <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled={!isModified} placeholder="ex)포도당 산화 환원 실험" />
             </InputWrapper>
             {!state &&
               <InputWrapper>
-                <DotTitle title={"교과/과목"} />
+                <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
                 <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
               </InputWrapper>}
             {/* 활동 설명 */}
             <CommonTextArea id="act_content" title="활동 설명" onChange={handleChange} value={content} disabled={!isModified}
-              placeholder={"~활동으로 끝맺기. ex)포도당 산화 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동"} />
-            <CommonTextArea id="act_record" title="생기부 문구" onChange={handleChange} value={record} disabled={!isModified} required />
+              placeholder={"ex)포도당 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동."} />
+            <CommonTextArea id="act_record" title="생기부 문구" onChange={handleChange} value={record} disabled={!isModified} required
+              placeholder={"이 칸은 직접 채우지 마시고 gpt 버튼을 누르세요. 직접 작성도 가능함."}
+            />
             <StyledDiv>
               <label className="act_byte" htmlFor="act_byte" ></label>
               <div>
-                <input id="act_byte" className="act_byte" type="number" max={500} onChange={handleChange} value={byte} disabled={!isModified} />
+                <input id="act_byte" className="act_byte" type="number" onChange={handleChange} value={byte} disabled />
                 <p style={{ display: "inline-block" }}> /1500 Byte</p>
               </div>
             </StyledDiv>
             <RadioWrapper>
-              <DotTitle title={"공개 여부"} />
+              <DotTitle title={"공개 여부"} styles={{ dotColor: "#3454d1;" }} />
               <TwoRadios name="isPrivate_radio"
                 id={["private_radio", "public_radio"]}
                 value={_isPrivate} label={["비공개 활동", "공개 활동"]}
@@ -338,7 +344,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                 disabled={!isModified} />
             </RadioWrapper>
             {state && <>
-              <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" />
+              <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />
               <AnimMaxHightOpacity isVisible={isPerfRecShown}
                 content={<PerfWrapper>
                   {_perfRecList && <LevelWrapper>
@@ -352,7 +358,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                 </PerfWrapper>
                 }
               />
-              <DotTitle title={"돌려 쓰기 ▼"} onClick={() => { setIsExtraRecShown((prev) => !prev) }} pointer="pointer" />
+              <DotTitle title={"돌려 쓰기 ▼"} onClick={() => { setIsExtraRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />
               <AnimMaxHightOpacity isVisible={isExtraRecShown}
                 content={<MoreRecordListForm
                   moreRecList={_extraRecList}
@@ -396,60 +402,76 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
               <LongW100Btn id="go_back_btn" btnName="목록" btnOnClick={handleBtnClick} />
             </ButtonWrapper>
           </fieldset>
-        </StyledForm>
-      </>}
-      {/* 모달 */}
-      <GraphicDialogModal
-        show={graphicModalShow}
-        onHide={() => setgraphicModalShow(false)}
-        setMonImg={setMonImg} />
-      <Wait3SecondsModal
-        show={timerModalShow} />
-      <QuestModal
-        show={questModalShow}
-        onHide={() => setQuestModalShow(false)} />
-      {(state && isExtraRecModalShown) &&
-        < AddExtraRecModal
-          show={isExtraRecModalShown}
-          onHide={() => setIsExtraRecModalShown(false)}
-          acti={state.acti}
-          setExtraRecList={setExtraRecList} //부모 컴포넌트에 변경 data 반영
-        />}
-      {(state && isPerfRecModalShown) &&
-        < AddPerfRecModal
-          show={isPerfRecModalShown}
-          onHide={() => setIsPerfRecModalShown(false)}
-          acti={state.acti}
-          setPerfRecList={setPerfRecList}
-        />}
-    </StyledContainer>
+        </StyledForm>}
+    </Container>
+    {/* 모달 */}
+    <GraphicDialogModal
+      show={graphicModalShow}
+      onHide={() => setgraphicModalShow(false)}
+      setMonImg={setMonImg} />
+    <Wait3SecondsModal
+      show={timerModalShow} />
+    <QuestModal
+      show={questModalShow}
+      onHide={() => setQuestModalShow(false)} />
+    {(state && isExtraRecModalShown) &&
+      < AddExtraRecModal
+        show={isExtraRecModalShown}
+        onHide={() => setIsExtraRecModalShown(false)}
+        acti={state.acti}
+        setExtraRecList={setExtraRecList} //부모 컴포넌트에 변경 data 반영
+      />}
+    {(state && isPerfRecModalShown) &&
+      < AddPerfRecModal
+        show={isPerfRecModalShown}
+        onHide={() => setIsPerfRecModalShown(false)}
+        acti={state.acti}
+        setPerfRecList={setPerfRecList}
+      />}
+  </>
   )
 }
 
-const StyledContainer = styled.div`
+const Container = styled.div`
+  opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
+  transition: opacity 0.7s ease;
   @media screen and (max-width: 767px){
     width: 100%;
     height: ${(props) => { return props.$clientheight }}px;
     overflow-y: auto;
   }
 `
+const StyledHeader = styled.div`
+  width: 100%;
+  height: 35px;  
+  background-color: #3454d1;  
+  position: absolute;  
+  top: -35px;
+  left: 0;
+  padding: 5px 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  legend {
+    width: 70%;  
+    font-size: 1em;
+    color: white;
+    margin-bottom: 40px;
+  }
+`
 const StyledForm = styled.form`
-  max-width: 540px;
-  margin: 60px auto 30px;
+  position: relative;
+  width: 35%;
+  margin: 80px auto 30px;
   padding: 20px;
-  color: #efefef;
-  background-color: #3454d1;
+  color: black;
+  background-color: #efefef;
   border-radius: 10px;
-  border: rgb(120, 120, 120, 0.5) 1px solid;
-  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  box-shadow: rgba(52, 94, 209, 0.2) 0px 8px 24px, rgba(52, 84, 209, 0.2) 0px 16px 56px, rgba(52, 84, 209, 0.2) 0px 24px 80px;
   fieldset {
     position: relative;
     border: none;
-  }
-  legend {
-    width: 70%;  
-    font-size: 1.5em;
-    margin-bottom: 40px;
   }
   label {
     display: block;
@@ -509,8 +531,8 @@ const StyledDiv = styled.div`
     height: 35px;
     border-radius: 7px;
     padding-left: 5px;
-    &:disabled {             /* 해당 input disabled 되었을 때 */
-      color: #efefef;      /* 글자 색을 white로 설정 */
+    &:disabled {        /* 해당 input disabled 되었을 때 */
+      color: gray;      /* 글자 색을 white로 설정 */
     }
   }
   label.act_byte {
@@ -536,7 +558,7 @@ const InputWrapper = styled.div`
     border-radius: 7px;
     padding-left: 5px;
     &:disabled {             /* 해당 input disabled 되었을 때 */
-      color: #efefef;       /* 글자 색을 white로 설정 */
+      color: gray;           /* 글자 색을 white로 설정 */
     }
   }
 `

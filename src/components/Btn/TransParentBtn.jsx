@@ -27,7 +27,6 @@ const StyledBtn = styled.button`
              -5px -5px 15px rgba(255, 255, 255, 0.3); /* 입체감 */
   transition: all 0.5s ease;
   &:hover {
-    font-size: 18px;
     box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.3),
                 inset -5px -5px 10px rgba(255, 255, 255, 0.3); /* 눌린 느낌 */
   }
