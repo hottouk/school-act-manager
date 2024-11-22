@@ -94,10 +94,12 @@ const useAcc = () => {
   const writePerfRecDataOnDB = async (studentList, classId, selectedPerf, perfRecord) => {
     studentList.forEach((student, index) => {
       let curActiList = student.actList || [];                                                                        //기존 list 없으면 []
-      if (curActiList.length > 0) { curActiList = curActiList.filter(({ id }) => { return id !== selectedPerf.id }) } //기존에 같은 수행평가를 입력했다면 제거
-      selectedPerf.record = perfRecord[index]                                                                         //성취도에 맞게 문구 변경    
       let newActiList = [...curActiList]                                                                              //기존 활동에 추가
-      if (selectedPerf.record !== '') { newActiList.push(selectedPerf) }                                              //수행 문구 입력된 경우만 추가
+      if (perfRecord[index] !== '') {
+        newActiList = newActiList.filter(({ id }) => { return id !== selectedPerf.id })                               //기존에 같은 수행평가를 입력했다면 제거
+        selectedPerf.record = perfRecord[index]                                                                       //성취도에 맞게 문구 변경    
+        newActiList.push(selectedPerf)
+      }
       let newAcc = makeAccRec(newActiList)                                                                            //누가 기록 생성하기    
       let updatedStudent = { ...student, actList: newActiList, accRecord: newAcc }                                    //학생 업데이트    
       //DB 통신

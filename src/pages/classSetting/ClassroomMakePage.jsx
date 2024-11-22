@@ -16,10 +16,11 @@ import useClientHeight from '../../hooks/useClientHeight';
 //css
 import styled from 'styled-components';
 
-//2024.09.15 2차 수정(클래스 타입 추가, css정리)
-const ClassRoomMakeForm = () => {
-  //1. 변수
+//2024.11.23 3차 수정(클래스 타입 추가, css정리), ux 향상
+const ClassroomMakePage = () => {
+  //----1.변수부--------------------------------
   //인증
+  useEffect(() => { setIsVisible(true) }, [])
   const user = useSelector(({ user }) => { return user })
   //교실에 필요한 속성 값
   const [_classTitle, setClassTitle] = useState('');
@@ -43,9 +44,11 @@ const ClassRoomMakeForm = () => {
     setHow(state.how)
     setClassType(state.type)
   }, [state])
+  //8. css 및 에니
   const clientHeight = useClientHeight(document.documentElement)
+  const [isVisible, setIsVisible] = useState(false)
 
-  //2. 함수
+  //----2.함수부--------------------------------
   //내부 변수 꺼내는 함수
   const handleOnChange = (event) => {
     if (event.target.id === "class_title") {
@@ -60,7 +63,6 @@ const ClassRoomMakeForm = () => {
       setClassNumber(event.target.value)
     }
   }
-
   //제출 버튼: 유효성 검사
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -79,7 +81,6 @@ const ClassRoomMakeForm = () => {
       }
     }
   }
-
   //반 생성 함수
   const makeClass = (type) => {
     let uid = user.uid;
@@ -112,61 +113,90 @@ const ClassRoomMakeForm = () => {
   }
 
   return (
-    <StyledForm $clientheight={clientHeight} onSubmit={handleSubmit}>
-      <fieldset>
-        <legend>클래스 만들기</legend>
-        <label htmlFor="class_title">클래스 이름</label>
-        <input id="class_title" type="text" onChange={handleOnChange} value={_classTitle} required />
-        <InputWrapper>
-          <DotTitle title={"학년/반"} />
-          <SelectWrapper>
-            <CSInfoSelect grade={_grade} classNumber={_classNumber} subject={_subjDetail} handleOnChange={handleOnChange} classMode={true} />
-          </SelectWrapper>
-        </InputWrapper>
-        {/* 클래스 타입 */}
-        {classType === "subject" && <InputWrapper>
-          <DotTitle title={"교과/과목"} />
-          <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
-        </InputWrapper>}
-        {classType === "homeroom" && <InputWrapper>
-          <DotTitle title={"담임반 입니다."} styles={{ dotColor: "white", width: "50%" }} />
-        </InputWrapper>}
-        <label htmlFor="class_explanation">간단한 설명을 작성하세요</label>
-        <input id="class_explanation" type="text" value={_intro} onChange={handleOnChange} placeholder="ex)25 건강고 1-1 영어" required />
-        {(how === "with_neis") && <>
-          <p>나이스 출석부 엑셀 파일을 등록하세요.</p>
-          <ImportExcelFile getData={setXlsxData} />
-        </>}
-        {(how === "with_number") && <><label htmlFor="class_number_of_studnets">학생 수를 입력하세요. (최대 99명)</label>
-          <input id="class_number_of_studnets" type="number" min='1' max='99' value={_numberOfStudent} onChange={handleOnChange} required /></>}
-        {(how === "by_hand") && <label htmlFor="class_number_of_studnets">학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>}
-        <BtnWrapper>
-          <LongW100Btn type="submit" btnName="생성" />
-          <LongW100Btn id="cancel" btnName="취소" btnOnClick={() => { navigate('/classRooms') }} />
-        </BtnWrapper>
-      </fieldset>
-    </StyledForm >
+    <Container $clientheight={clientHeight} $isVisible={isVisible}>
+      <StyledForm onSubmit={handleSubmit}>
+        <StyledHeader>
+          <legend>클래스 만들기</legend>
+        </StyledHeader>
+        <fieldset>
+          <DotTitle title={"클래스 이름"} styles={{ dotColor: "#3454d1;" }} />
+          <input id="class_title" type="text" onChange={handleOnChange} value={_classTitle} required />
+          <InputWrapper>
+            <DotTitle title={"학년/반"} styles={{ dotColor: "#3454d1;" }} />
+            <SelectWrapper>
+              <CSInfoSelect grade={_grade} classNumber={_classNumber} subject={_subjDetail} handleOnChange={handleOnChange} classMode={true} />
+            </SelectWrapper>
+          </InputWrapper>
+          {/* 클래스 타입 */}
+          {classType === "subject" && <InputWrapper>
+            <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
+            <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
+          </InputWrapper>}
+          {classType === "homeroom" && <InputWrapper>
+            <DotTitle title={"담임반 입니다."} styles={{ dotColor: "white", width: "50%" }} />
+          </InputWrapper>}
+          <label htmlFor="class_explanation">간단한 설명을 작성하세요</label>
+          <input id="class_explanation" type="text" value={_intro} onChange={handleOnChange} placeholder="ex)25 건강고 1-1 영어" required />
+          {(how === "with_neis") && <>
+            <p>나이스 출석부 엑셀 파일을 등록하세요.</p>
+            <ImportExcelFile getData={setXlsxData} />
+          </>}
+          {(how === "with_number") && <><label htmlFor="class_number_of_studnets">학생 수를 입력하세요. (최대 99명)</label>
+            <input id="class_number_of_studnets" type="number" min='1' max='99' value={_numberOfStudent} onChange={handleOnChange} required /></>}
+          {(how === "by_hand") && <label htmlFor="class_number_of_studnets">학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>}
+          <BtnWrapper>
+            <LongW100Btn type="submit" btnName="생성" />
+            <LongW100Btn id="cancel" btnName="취소" btnOnClick={() => { navigate('/classRooms') }} />
+          </BtnWrapper>
+        </fieldset>
+      </StyledForm >
+    </Container>
   )
 }
-const StyledForm = styled.form`
-  max-width: 540px;
-  margin: 60px auto;
-  padding: 20px;
-  color: #efefef;
-  background-color: #3454d1;
-  border-radius: 10px;
-  border: rgb(120, 120, 120, 0.5) 1px solid;
-  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
-  filedset {
-    border: none;
+const Container = styled.div`
+  opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
+  transition: opacity 0.7s ease;
+  @media screen and (max-width: 767px) {
+    position: fixed;
+    width: 100%;
+    height: ${(props) => props.$clientheight}px;
+    margin: 0;
+    padding-bottom: 20px;
+    overflow-y: scroll;
   }
+`
+const StyledHeader = styled.div`
+  width: 100%;
+  height: 35px;  
+  background-color: #3454d1;  
+  position: absolute;  
+  top: -35px;
+  left: 0;
+  padding: 5px 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
   legend {
-    font-size: 1.5em;
-    margin-bottom: 20px;
+    width: 70%;  
+    font-size: 1em;
+    color: white;
+    margin-bottom: 40px;
   }
+`
+const StyledForm = styled.form`
+  position: relative;
+  width: 35%;
+  max-width: 540px;
+  margin: 80px auto 30px;
+  padding: 20px;
+  color: black;
+  background-color: #efefef;
+  border-radius: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  box-shadow: rgba(52, 94, 209, 0.2) 0px 8px 24px, rgba(52, 84, 209, 0.2) 0px 16px 56px, rgba(52, 84, 209, 0.2) 0px 24px 80px;
   label {
     display: block;
-    color: #efefef;
+    color: black;
   }
   input#class_title, input#class_explanation, input#class_number_of_studnets {
     width: 100%;
@@ -179,14 +209,7 @@ const StyledForm = styled.form`
     width: 100%;
     border-radius: 7px;
   }
-  @media screen and (max-width: 767px) {
-    position: fixed;
-    width: 100%;
-    height: ${(props) => props.$clientheight}px;
-    margin: 0;
-    padding-bottom: 20px;
-    overflow-y: scroll;
-  }
+  
 `
 const InputWrapper = styled.div`
   display: flex;
@@ -212,4 +235,4 @@ const BtnWrapper = styled.div`
   display: flex;
   gap: 20px;
 `
-export default ClassRoomMakeForm
+export default ClassroomMakePage

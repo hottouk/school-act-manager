@@ -83,10 +83,10 @@ const StyledDropzone = styled.div`
   padding: 20px;
   border-width: 2px;
   border-radius: 10px;
-  border-color: #efefef;
+  border-color: gray;
   border-style: dashed;
-  background-color: #3454d1;
-  color: #efefef;
+  background-color: transparent;
+  color: gray;
   outline: none;
   display: flex;
   align-items: center;
