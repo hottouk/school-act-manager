@@ -1,10 +1,12 @@
 import styled from 'styled-components'
 //2024.10.16 생성
-const ArrowBtn = ({ deg, onClick, cursor }) => {
+const ArrowBtn = ({ id, deg, onClick, cursor }) => {
   // 예시 <ArrowBtn deg={"315 or 135"} />
+  id = id || null;
   deg = deg || 315;
   cursor = cursor || "none";
-  return <StyledArrowBtn $deg={deg} $cursor={cursor} onClick={onClick} />
+  
+  return <StyledArrowBtn id={id} $deg={deg} $cursor={cursor} onClick={onClick} />
 }
 const StyledArrowBtn = styled.button`
   width: 25px;

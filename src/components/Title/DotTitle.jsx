@@ -2,14 +2,9 @@ import styled from 'styled-components'
 
 const DotTitle = ({ title, pointer, onClick, styles }) => {
   //기본값
-  let dotColor = "white";
-  let width = "30%";
-  let marginBot = "10px";
-  if (styles) {
-    width = styles.width ? styles.width : width
-    dotColor = styles.dotColor ? styles.dotColor : dotColor
-    marginBot = styles.marginBot ? styles.marginBot : marginBot
-  }
+  let dotColor = styles?.dotColor || "white";
+  let width = styles?.width || "30%";
+  let marginBot = styles?.marginBot || "10px";
   // 샘플1 <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" />
   // 샘플2
   // <DotTitle title={"학업 역량 ▼"} onClick={() => { setIsAcadShown((prev) => !prev) }} pointer="pointer"

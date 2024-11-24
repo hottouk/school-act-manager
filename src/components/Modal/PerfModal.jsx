@@ -30,6 +30,18 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     setOptionList([...options])
   }, [actiList])
   const [selectedPerf, setSelectedPerf] = useState(null)
+  useEffect(() => {
+    let perfId = selectedPerf?.id ?? null;
+    if (perfId) {
+      studentList.forEach((student, i) => {
+        let actiList = student.actList?.filter((acti) => acti.id === perfId) ?? null;
+        let record = actiList.length > 0 ? actiList[0].record : ''
+        setPerfTempRecord((prev) => { return { ...prev, [i]: record } })
+        setPerfRecord((prev) => { return { ...prev, [i]: record } })
+      })
+    }
+
+  }, [selectedPerf])
   const [optionList, setOptionList] = useState([])
   const [achivList] = useState(["상", "중", "하", "최하"])
   const radioRef = useRef({})
@@ -38,7 +50,17 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   const { writePerfRecDataOnDB } = useAcc()
   //수행 문구
   const [perfTempRecord, setPerfTempRecord] = useState()
+  useEffect(() => {
+    if (perfTempRecord) {
+      let lastNumber = Object.keys(perfTempRecord).length
+      for (let i = 0; i < lastNumber; i++) {
+        let rec = perfTempRecord[i]
+        extractContent(rec, i)
+      }
+    }
+  }, [perfTempRecord])
   const [perfRecord, setPerfRecord] = useState()
+
   const [extractResult, setExtractResult] = useState()
   //개별화 대체
   const [replaceList, setReplaceList] = useState({})
@@ -65,7 +87,6 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     for (let i = 0; i < lastNumber; i++) {
       setPerfRecord((prev) => { return { ...prev, [i]: achivRec } })
       setPerfTempRecord((prev) => { return { ...prev, [i]: achivRec } })
-      extractContent(achivRec, i)
     }
   }
   //라디오 버튼 변경 시
@@ -74,7 +95,6 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       let record = selectedPerf?.perfRecordList[subIndex]
       setPerfRecord((prev) => { return { ...prev, [index]: record } })
       setPerfTempRecord((prev) => { return { ...prev, [index]: record } })
-      extractContent(record, index)
     } else {
       window.alert("수행 평가를 먼저 선택하세요.")
     }

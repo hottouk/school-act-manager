@@ -106,7 +106,7 @@ const AddPerfRecModal = (props) => {
                 value={_textareaValueList[index]}
                 onChange={(e) => { handleInputOnChange(e, index) }}
               />
-              <LongW100Btn btnColor="#3454d1" btnOnClick={() => { handleBtnOnClick(index) }} btnName="개별화 틀 삽입" />
+              <LongW100Btn styles={{ btnColor: "#3454d1", color:"#efefef" }} btnOnClick={() => { handleBtnOnClick(index) }} btnName="개별화 틀 삽입" />
             </TextareaWrapper>
           })}
         </FlexWrapper>

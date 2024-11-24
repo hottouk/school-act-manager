@@ -23,7 +23,7 @@ import ClassRoomDetailsPage from './pages/classRoom/ClassRoomDetailsPage';
 import StudentDetail from './pages/student/StudentDetail';
 import ClassAllStudentsPage from './pages/classRoom/ClassAllStudentsPage';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
-import ClassRoomMakeForm from './pages/classSetting/ClassRoomMakeForm';
+import ClassroomMakePage from './pages/classSetting/ClassroomMakePage';
 import News from './pages/main/News';
 import Homework from './components/Homework';
 import UserMain from './pages/student/UserMain';
@@ -73,7 +73,7 @@ function App() {
           <Route path="/classrooms/:id/:studentId" element={uid ? <StudentDetail /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 만들기, 교사 회원만 가능 */}
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
-          <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassRoomMakeForm /> : <Navigate replace={true} to='/' />} />
+          <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomMakePage /> : <Navigate replace={true} to='/' />} />
           {/* 학생 관리 */}
           <Route path="/users" element={uid ? <UserMain /> : <Navigate replace={true} to='/login' />} />
           {/* 단어장 관리 */}

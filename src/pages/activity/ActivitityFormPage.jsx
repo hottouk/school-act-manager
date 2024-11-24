@@ -20,6 +20,7 @@ import QuestModal from "../../components/Modal/QuestModal";
 import CommonTextArea from "../../components/CommonTextArea";
 import MoreRecordListForm from "../../components/Form/MoreRecordListForm";
 import LongW100Btn from "../../components/Btn/LongW100Btn";
+import ByteCalculator from "../../components/Etc/ByteCalculator";
 //이미지
 import mon01 from "../../image/enemies/mon_01.png";
 import mon02 from "../../image/enemies/mon_02.png"
@@ -35,8 +36,8 @@ import styled from "styled-components";
 
 //24.07.06 수정(실시간 바이트 갱신)
 const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
+  //----1.변수부--------------------------------
   useEffect(() => { setIsVisible(true) }, [])
-  //1. 변수
   const user = useSelector(({ user }) => { return user })
   //1.활동 기본 정보 변수
   const [title, setTitle] = useState('');
@@ -73,13 +74,13 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const { deleteActi } = useFireActi();
   //5.경로 이동 관련 변수
   const { state } = useLocation() //state.acti는 활동
+  useEffect(() => { if (state) { initData() } else { setIsModified(true) } }, [state]);
   const navigate = useNavigate()
   //6. ChatGPt
-  const { gptAnswer, askChatGpt, gptRes, gptBytes } = useChatGpt();
+  const { gptAnswer, askChatGpt, gptRes } = useChatGpt();
   useEffect(() => {
     if (gptAnswer !== '') {
       setRecord(gptAnswer)
-      setByte(gptBytes)
     }
     switch (gptRes) {
       case 'loading':
@@ -91,45 +92,28 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       default: return;
     }
   }, [gptRes, gptAnswer])
-  //7. 바이트 계산
-  const { getByteLengthOfString } = useGetByte();
-  //8.css 및 에니
+  //8. css 및 에니
   const clientHeight = useClientHeight(document.documentElement)
   const [isVisible, setIsVisible] = useState(false)
 
-  useEffect(() => {
-    if (state) {
-      let acti = state.acti
-      let scoresObj = acti.scores
-      setTitle(acti.title)
-      setContent(acti.content)
-      setRecord(acti.record)
-      setExtraRecList(acti.extraRecordList)
-      setPerfRecList(acti.perfRecordList)
-      setMonImg(acti.monImg)
-      setSubjDetail(acti.subject)
-      setIsHomework(acti.isHomework)
-      if (acti.isPrivate !== undefined) setIsPrivate(acti.isPrivate)
-      setCoin(acti.money)
-      setByte(acti.byte ? acti.byte : 0)
-      if (scoresObj) { //todo: obj 하나로 관리한는건 어떨까?
-        setLeadershipScore(scoresObj.leadership)
-        setCareerScore(scoresObj.careerScore)
-        setSincerityScore(scoresObj.sincerityScore)
-        setCoopScore(scoresObj.coopScore)
-        setAttitudeScore(scoresObj.attitudeScore)
-      } else {
-        setLeadershipScore(0)
-        setCareerScore(0)
-        setSincerityScore(0)
-        setCoopScore(0)
-        setAttitudeScore(0)
-      }
-    } else {
-      setIsModified(true)
-    }
-  }, [state]);
-
+  //----2.함수부--------------------------------
+  const initData = () => {
+    let acti = state.acti
+    let scoresObj = acti.scores
+    setTitle(acti.title)
+    setContent(acti.content)
+    setRecord(acti.record)
+    setExtraRecList(acti.extraRecordList)
+    setPerfRecList(acti.perfRecordList)
+    setMonImg(acti.monImg)
+    setSubjDetail(acti.subject)
+    setIsHomework(acti.isHomework)
+    setIsPrivate(acti.isPrivate || false)
+    setLeadershipScore(scoresObj?.leadership ?? 0)
+    setCareerScore(scoresObj?.careerScore ?? 0)
+    setSincerityScore(scoresObj?.sincerityScore ?? 0)
+    setAttitudeScore(scoresObj?.attitudeScore ?? 0)
+  }
   //활동 저장 대화창 ==> 추후 디자인 수정 필요 (교사전용)
   const showConfirmModal = () => {
     let scores = { leadership: leadershipScore, careerScore, sincerityScore, coopScore, attitudeScore };
@@ -147,26 +131,16 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
         let newAct = {
-          uid: String(user.uid),
-          title,
-          subject: _subjGroup,
-          subjDetail: _subjDetail,
-          content,
-          record,
-          scores,
-          madeBy: user.name,
-          money,
-          monImg,
-          isHomework: _isHomework,
-          isPrivate: _isPrivate,
-          byte
+          uid: String(user.uid), title, subject: _subjGroup, subjDetail: _subjDetail,
+          content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework,
+          isPrivate: _isPrivate, byte
         };
         addActi(newAct)
         navigate("/activities")
       }
     }
   }
-  const handleChange = (event) => {
+  const handleOnChange = (event) => {
     switch (event.target.id) {
       case "act_title":
         setTitle(event.target.value)
@@ -176,7 +150,6 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
         break;
       case "act_record":
         setRecord(event.target.value)
-        setByte(getByteLengthOfString(event.target.value))
         break;
       case "act_leadership":
         setLeadershipScore(Number(event.target.value))
@@ -195,9 +168,6 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
         break;
       case "act_coin":
         setCoin(Number(event.target.value))
-        break;
-      case "act_byte":
-        setByte(Number(event.target.value))
         break;
       default:
         return;
@@ -233,6 +203,10 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       case "modi_btn":
         setIsModified((prev) => !prev)
         break;
+      case "cancel_modi_btn":
+        initData()
+        setIsModified((prev) => !prev)
+        break;
       case "delete_btn":
         if (window.confirm("이 활동을 정말로 삭제하시겠습니까?")) {
           deleteActi(state.acti.id)
@@ -242,7 +216,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       case "copied_delete_btn":
         if (window.confirm("이 활동을 정말로 삭제하시겠습니까?")) {
           delCopiedActiTransaction(state.acti.id)
-          navigate("/activities") //todo 삭제 후 잔상 남아있는거 해결해야함. 구독 눌러야 함.
+          navigate("/activities")
         }
         break;
       case "go_back_to_class_btn":
@@ -315,7 +289,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
             </StyledDiv>
             <InputWrapper>
               <DotTitle title={"활동 제목"} styles={{ dotColor: "#3454d1;" }} />
-              <input className="act_title" id="act_title" type="text" required onChange={handleChange} value={title} disabled={!isModified} placeholder="ex)포도당 산화 환원 실험" />
+              <input className="act_title" id="act_title" type="text" required onChange={handleOnChange} value={title} disabled={!isModified} placeholder="ex)포도당 산화 환원 실험" />
             </InputWrapper>
             {!state &&
               <InputWrapper>
@@ -323,18 +297,12 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                 <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
               </InputWrapper>}
             {/* 활동 설명 */}
-            <CommonTextArea id="act_content" title="활동 설명" onChange={handleChange} value={content} disabled={!isModified}
+            <CommonTextArea id="act_content" title="활동 설명" onChange={handleOnChange} value={content} disabled={!isModified}
               placeholder={"ex)포도당 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동."} />
-            <CommonTextArea id="act_record" title="생기부 문구" onChange={handleChange} value={record} disabled={!isModified} required
+            <CommonTextArea id="act_record" title="생기부 문구" onChange={handleOnChange} value={record} disabled={!isModified} required
               placeholder={"이 칸은 직접 채우지 마시고 gpt 버튼을 누르세요. 직접 작성도 가능함."}
             />
-            <StyledDiv>
-              <label className="act_byte" htmlFor="act_byte" ></label>
-              <div>
-                <input id="act_byte" className="act_byte" type="number" onChange={handleChange} value={byte} disabled />
-                <p style={{ display: "inline-block" }}> /1500 Byte</p>
-              </div>
-            </StyledDiv>
+            <ByteCalculator handleOnConhange={handleOnChange} str={record} />
             <RadioWrapper>
               <DotTitle title={"공개 여부"} styles={{ dotColor: "#3454d1;" }} />
               <TwoRadios name="isPrivate_radio"
@@ -367,7 +335,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                   btnOnClick={() => { setIsExtraRecModalShown(true) }} />}
               />
             </>}
-            <ScoreWrapper handleChange={handleChange}
+            <ScoreWrapper handleChange={handleOnChange}
               leadershipScore={leadershipScore}
               careerScore={careerScore}
               coopScore={coopScore}
@@ -391,7 +359,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                         {isModified && <>
                           <LongW100Btn id="gpt_btn" btnName="GPT로 세특 문구 작성" btnOnClick={handleBtnClick} />
                           <LongW100Btn type="submit" btnName="저장" />
-                          <LongW100Btn id="modi_btn" btnName="취소" btnOnClick={handleBtnClick} /></>}</>
+                          <LongW100Btn id="cancel_modi_btn" btnName="취소" btnOnClick={handleBtnClick} /></>}</>
                       : <>{/*업어온 활동 삭제하기 */}
                         <LongW100Btn id="copied_delete_btn" btnName="삭제" btnOnClick={handleBtnClick} /></>}
                   </>}
@@ -461,6 +429,7 @@ const StyledHeader = styled.div`
 const StyledForm = styled.form`
   position: relative;
   width: 35%;
+  max-width: 600px;
   margin: 80px auto 30px;
   padding: 20px;
   color: black;
@@ -534,13 +503,6 @@ const StyledDiv = styled.div`
     &:disabled {        /* 해당 input disabled 되었을 때 */
       color: gray;      /* 글자 색을 white로 설정 */
     }
-  }
-  label.act_byte {
-    margin-bottom: 15px;
-  }
-  input.act_byte {
-    width: 85px;
-    margin-right: 5px;
   }
   select {
     height: 35px;

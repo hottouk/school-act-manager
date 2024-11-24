@@ -24,7 +24,7 @@ import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
 import ArrowBtn from '../../components/Btn/ArrowBtn.jsx';
 import PerfModal from '../../components/Modal/PerfModal.jsx';
-import TransparentBtn from '../../components/Btn/TransParentBtn.jsx';
+import TransparentBtn from '../../components/Btn/TransparentBtn.jsx';
 
 //2024.08.01(클래스 헤더 수정) -> 11.13 애니메이션 추가
 const ClassRoomDetailsPage = () => {
