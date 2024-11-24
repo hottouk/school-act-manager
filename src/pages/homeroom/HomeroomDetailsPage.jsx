@@ -14,8 +14,7 @@ import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStuden
 import styled from 'styled-components';
 import useClassAuth from '../../hooks/useClassAuth';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal';
-import LongW100Btn from '../../components/Btn/LongW100Btn';
-import TransparentBtn from '../../components/Btn/TransParentBtn';
+import TransparentBtn from '../../components/Btn/TransparentBtn';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData';
 
 //2024.10.22 생성

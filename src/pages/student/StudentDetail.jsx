@@ -10,6 +10,7 @@ import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import RadarChart from '../../components/RadarChart';
 import AnimatedProgressBar from '../../components/ProgressBar';
 import SmallBtn from '../../components/Btn/SmallBtn';
+import TransparentBtn from '../../components/Btn/TransparentBtn';
 //이미지
 import x_btn from "../../image/icon/x_btn.png"
 import PetImg from '../../components/PetImg';
@@ -17,11 +18,13 @@ import useGetMyUserInfo from '../../hooks/useGetMyUserInfo';
 import GptModal from '../../components/Modal/GptModal';
 //스타일
 import styled from 'styled-components';
+import ArrowBtn from '../../components/Btn/ArrowBtn';
 
 //2024.07.20 업데이트(코드 간소화 + 기능추가)
 const StudentDetail = () => {
-  //1.변수
+  //----1.변수부--------------------------------
   //url 관련
+  useEffect(() => { setIsVisible(true) }, [])
   const user = useSelector(({ user }) => user)
   const navigate = useNavigate();
   const { state } = useLocation() //개별 학생 정보
@@ -71,14 +74,11 @@ const StudentDetail = () => {
       updateAccRecord(selectedActi.index, gptRecord);
     }
   }, [gptRecord])
+  useEffect(() => { if (!user.isTeacher) { if (user.uid === master) { fetchMyPetInfo(state) } } }, []) //학생만 실행, 펫정보 업데이트
+  //에니메이션
+  const [isVisible, setIsVisible] = useState(false)
 
-  useEffect(() => {
-    if (!user.isTeacher) { //학생만 실행
-      if (user.uid === master) { fetchMyPetInfo(state) }//학생 펫정보 업데이트
-    }
-  }, [])
-
-  //3.함수
+  //----2.함수부--------------------------------
   const moveStudent = (student) => { //학생 화살표 이동
     navigate(`/classrooms/${params.id}/${student.id}`, { state: student })
   }
@@ -86,7 +86,7 @@ const StudentDetail = () => {
   const updateActiList = (event, index) => {
     let newId = event.value //클릭한 새로운 이벤트 id
     let newActi = allActivityList.find((acti) => { return acti.id === newId }) //전체 활동에서 클릭한 활동과 id가 일치하는 활동을 찾기 -> 원본 반환.
-    let acti = { ...newActi }                                                  //★불변성 유지를 위한 복사★ allActivityList는 전역변수
+    let acti = { ...newActi }                                                  //★불변성 유지를 위한 복사★ allActivityList는 전역 변수
     setActiList(prevActiList => {
       let newActiList = [...prevActiList.slice(undefined, index), acti, ...prevActiList.slice(index + 1)]
       return newActiList
@@ -142,7 +142,7 @@ const StudentDetail = () => {
         let leftList = _actiList.filter((_, i) => { return i !== index })
         setActiList(leftList)
         break;
-      case "rightArwBtn":
+      case "right_arw_btn":
         if (nthStudent === allStudentList.length - 1) {
           window.alert("마지막 학생입니다.")
           return;
@@ -150,7 +150,7 @@ const StudentDetail = () => {
         let nextStudent = allStudentList[nthStudent + 1];
         moveStudent(nextStudent)
         break;
-      case "leftArwBtn":
+      case "left_arw_btn":
         if (nthStudent === 0) {
           window.alert("첫번째 학생입니다.")
           return;
@@ -164,9 +164,9 @@ const StudentDetail = () => {
   }
 
   return (
-    <Container>
-      {user.isTeacher && <StyledArrowLeftBtn id="leftArwBtn" onClick={handleBtnClick} />}
-      <StyledStudentInfoPannel>
+    <Container $isVisible={isVisible}>
+      {(user.isTeacher && !isModifiying) && <FloatLeftWrapper><ArrowBtn id="left_arw_btn" deg={135} onClick={handleBtnClick} /></FloatLeftWrapper>}
+      <StyledBackgroundPannel>
         <StyledTopPannel>
           <PetImg subject={_subject} level={expAndLevel.level} onClick={() => { }} />
           <StyledTopRightInfo>
@@ -193,8 +193,7 @@ const StudentDetail = () => {
             {(user.isTeacher || _isMaster) && <>
               {!_actiList || _actiList.length === 0 ? <div className="no_act_record">활동이 없어요ㅠㅠ</div>
                 : _actiList.map((acti, index) => {
-                  console.log(acti)
-                  //1행 시작
+
                   return <StyledContentRow key={acti.id} ref={(element) => { return divRef.current[index] = element }} >
                     <StyledMidlDiv>
                       <div>
@@ -246,24 +245,23 @@ const StudentDetail = () => {
             {(!user.isTeacher && !_isMaster) && <div className='no_act_record'>볼 권한이 없습니다. 본인만 열람 가능합니다.</div>}
           </StyledBotGridContainer>
         </StyledBotPannel>
-      </StyledStudentInfoPannel>
+      </StyledBackgroundPannel>
       {/* 교사전용 */}
       {user.isTeacher && <>
-        <StyledArrowRightBtn id="rightArwBtn" onClick={handleBtnClick} />
-        <StyeldBtnDiv>
-          <StyledBtn id='back_btn' onClick={handleBtnClick}>목록</StyledBtn>
-          {!isModifiying
-            ? <StyledBtn id='edit_btn' onClick={handleBtnClick}>수정</StyledBtn>
-            : <StyledBtn id='save_btn' onClick={handleBtnClick}>저장</StyledBtn>
-          }
-          <StyledBtn id='delete_btn' onClick={handleBtnClick}>삭제</StyledBtn>
-        </StyeldBtnDiv>
+        {!isModifiying && <FloatRightWrapper><ArrowBtn id="right_arw_btn" onClick={handleBtnClick} /></FloatRightWrapper>
+        }
+        <BtnWrapper>
+          <TransparentBtn id="back_btn" btnOnClick={handleBtnClick} btnName="목록" />
+          {!isModifiying && <TransparentBtn id="edit_btn" btnName="수정" btnOnClick={handleBtnClick} />}
+          {isModifiying && <TransparentBtn id="save_btn" btnName="저장" btnOnClick={handleBtnClick} />}
+          <TransparentBtn id="delete_btn" btnOnClick={handleBtnClick} btnName="삭제" />
+        </BtnWrapper>
       </>}
       {/* 학생전용 */}
       {!user.isTeacher &&
-        <StyeldBtnDiv>
-          <StyledBtn id='back_btn' onClick={handleBtnClick} $width="100%">목록</StyledBtn>
-        </StyeldBtnDiv>
+        <BtnWrapper>
+          <TransparentBtn id="back_btn" btnOnClick={handleBtnClick} btnName="목록" />
+        </BtnWrapper>
       }
       {isGptShown &&
         <GptModal show={isGptShown} acti={selectedActi && selectedActi.acti} setPersonalRecord={setGptRecord} onHide={() => { setIsGptShown(false) }}></GptModal>}
@@ -271,6 +269,8 @@ const StudentDetail = () => {
   )
 }
 const Container = styled.div`
+  opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
+  transition: opacity 0.7s ease;
   box-sizing: border-box;
   width: 80%;
   margin: 0 auto;
@@ -281,7 +281,7 @@ const Container = styled.div`
     margin: 0;
   }
 `
-const StyledStudentInfoPannel = styled.div`
+const StyledBackgroundPannel = styled.div`
   height: 1000px;
   padding: 15px;
   margin: 15px auto;
@@ -300,7 +300,6 @@ const StyledTopPannel = styled.div`
   height: 30%;
   padding: 15px;
   background-color: #efefef;
-  border: 1px solid black;
   border-radius: 15px;
   img {
   display: inline-block;
@@ -378,7 +377,6 @@ const StyledBotPannel = styled.div`
   margin-top: 15px;
   padding: 15px;
   background-color: #efefef;
-  border: 1px solid black;
   border-radius: 15px;
   .no_act_record {
     margin: auto;
@@ -422,7 +420,7 @@ const StyledContentRow = styled.li`
 const StyledMidlDiv = styled.div`
   flex-shrink: 0;
   flex-basis: 130px;
-display: flex;
+  display: flex;
   justify-content: center;
   align-items: center;
   border-bottom: 1px solid black;
@@ -464,69 +462,20 @@ const SmallBtnWrapper = styled.div`
   gap: 2px;
   margin: 2px;
 `
-const StyeldBtnDiv = styled.div`
+const BtnWrapper = styled.div`
   display: flex;
   justify-content: space-between;
 `
-const StyledBtn = styled.button`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 25px;
-  width: ${(props) => { return props.$width ? props.$width : "250px" }};
-  color: royalBlue;
-  background-color: transparent;
-  border-radius: 15px;
-  border: 2px solid royalBlue;
-  padding: 25px;
-  @media screen and (max-width: 767px){
-    width: 110px;
-    height: 40px;
-  }
-`
-const StyledArrowRightBtn = styled.button` 
+const FloatRightWrapper = styled.div`
   float: right;
   position: relative;
   bottom: 500px;
   left: 40px;
-  width: 25px;
-  height: 25px;
-  border: 10px solid #333;
-  border-left: 0;
-  border-top: 0;
-  transform: rotate(315deg);
-  opacity: 0.8;
-  cursor: pointer;
-  &:hover {
-    border-color: orange;
-    z-index: 1;
-    transform: rotate(315deg) scale(1.3);
-  }
-  opacity: 0.8;
-  @media screen and (max-width: 767px){
-    display: none;
-  }
 `
-const StyledArrowLeftBtn = styled.button` 
+const FloatLeftWrapper = styled.div`
   float: left;
   position: relative;
   top: 500px;
   right: 40px;
-  width: 25px;
-  height: 25px;
-  border: 10px solid #333;
-  border-left: 0;
-  border-top: 0;
-  transform: rotate(135deg);
-  cursor: pointer;
-  &:hover {
-    border-color: orange;
-    transform: rotate(135deg) scale(1.3);
-    z-index: 1;
-  }
-  opacity: 0.8;
-  @media screen and (max-width: 767px){
-    display: none;
-  }
 `
 export default StudentDetail

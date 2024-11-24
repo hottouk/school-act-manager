@@ -132,11 +132,8 @@ const ClassroomMakePage = () => {
             <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
             <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
           </InputWrapper>}
-          {classType === "homeroom" && <InputWrapper>
-            <DotTitle title={"담임반 입니다."} styles={{ dotColor: "white", width: "50%" }} />
-          </InputWrapper>}
           <label htmlFor="class_explanation">간단한 설명을 작성하세요</label>
-          <input id="class_explanation" type="text" value={_intro} onChange={handleOnChange} placeholder="ex)25 건강고 1-1 영어" required />
+          <input id="class_explanation" type="text" value={_intro} onChange={handleOnChange} placeholder="ex)25 건강고 1-1 강건쌤" required />
           {(how === "with_neis") && <>
             <p>나이스 출석부 엑셀 파일을 등록하세요.</p>
             <ImportExcelFile getData={setXlsxData} />
