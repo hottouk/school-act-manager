@@ -35,7 +35,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     if (perfId) {
       studentList.forEach((student, i) => {
         let actiList = student.actList?.filter((acti) => acti.id === perfId) ?? null;
-        let record = actiList.length > 0 ? actiList[0].record : ''
+        let record = actiList?.length > 0 ? actiList[0].record : ''
         setPerfTempRecord((prev) => { return { ...prev, [i]: record } })
         setPerfRecord((prev) => { return { ...prev, [i]: record } })
       })
