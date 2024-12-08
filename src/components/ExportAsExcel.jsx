@@ -53,7 +53,7 @@ const StyledExcelImgBtn = styled.img`
   margin-bottom: 5px;
   cursor: pointer;
   &:hover {
-    background-color: #3454d1;
+    background-color: rgba(49, 84, 209, 0.4);
     border: none;
     border-radius: 10px;
     transition: background-color 0.5s ease-in-out;

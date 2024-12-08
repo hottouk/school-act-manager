@@ -6,21 +6,25 @@ import { setAllStudents } from '../../store/allStudentsSlice';
 //컴포넌트
 import MidBtn from '../../components/Btn/MidBtn';
 import MainBtn from '../../components/Btn/MainBtn';
+import TransparentBtn from '../../components/Btn/TransparentBtn';
 import EmptyResult from '../../components/EmptyResult';
 import StudentList from '../../components/List/StudentList';
+import AddNewStudentModal from '../../components/Modal/AddNewStudentModal';
+import MainPanel from '../../components/MainPanel';
 //hooks
+import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData';
+import useClassAuth from '../../hooks/useClassAuth';
 //css
 import styled from 'styled-components';
-import useClassAuth from '../../hooks/useClassAuth';
-import AddNewStudentModal from '../../components/Modal/AddNewStudentModal';
-import TransparentBtn from '../../components/Btn/TransparentBtn';
-import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData';
+//img
+import changeSeatIcon from '../../image/logo.png'
 
 //2024.10.22 생성
 const HomeroomDetailsPage = () => {
   //----1.변수부--------------------------------
   //교사 인증
+  const user = useSelector(({ user }) => user)
   const { log } = useClassAuth();
   if (log) { window.alert(log) }
   useEffect(() => { setIsVisible(true) }, [])
@@ -40,7 +44,7 @@ const HomeroomDetailsPage = () => {
 
   //----2.함수부--------------------------------
   const handleAllStudentOnClick = () => {
-    navigate(`/homeroom/${thisClass.id}/allStudents`)
+    navigate(`/homeroom/${thisClass.id}/allstudents`)
   }
 
   const handleDeleteClassOnClick = () => {
@@ -57,18 +61,23 @@ const HomeroomDetailsPage = () => {
   return (
     <>
       <Container $isVisible={isVisible}>
-        <MainWrapper>
+        {/* 마스터만 볼 수 있게 */}
+        {user.isMaster && <MainPanel>
+          <h5>도구모음</h5>
+          <StyledImg src={changeSeatIcon} alt="자리바꾸기" onClick={() => { navigate(`/homeroom/${thisClass.id}/seat`) }} />
+        </MainPanel>}
+        <MainPanel>
           <h5>학생 행동특성 및 종합의견 작성</h5>
           {(!studentList || studentList.length === 0) ?
             <>{/* 학생 목록 없을 때 */}
               <EmptyResult comment="등록된 학생이 없습니다." />
               <MidBtn btnName="학생 추가" btnOnClick={() => { setIsAddStuModalShown(true) }} />
             </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} />}
-        </MainWrapper>
-        <MainWrapper>
+        </MainPanel>
+        <MainPanel>
           <h5>한눈에 보기</h5>
           <MainBtn btnName="행발 전체 보기" btnOnClick={handleAllStudentOnClick} />
-        </MainWrapper>
+        </MainPanel>
         <BtnWrapper>
           <TransparentBtn btnName="반 목록" btnOnClick={() => { navigate("/classRooms") }} />
           <TransparentBtn btnName="반 삭제" btnOnClick={() => { handleDeleteClassOnClick() }} />
@@ -91,23 +100,10 @@ const Container = styled.main`
   opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
   transition: opacity 0.7s ease;
 `
-const MainWrapper = styled.div`
-  padding: 5px;
-  margin-top: 50px;
-  border-left: 12px #3454d1 double;
-  box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
-  h5 {
-    display: flex;
-    justify-content: center;
-    font-weight: bold;
-    margin: 10px auto;
-  }
-  @media screen and (max-width: 767px){
-    margin-top: 0;
-    border-left: none;
-    border-top: 12px #3454d1 double;
-    box-shadow: none;
-  }
+const StyledImg = styled.img`
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
 `
 const BtnWrapper = styled.div`
   margin-top: 40px;

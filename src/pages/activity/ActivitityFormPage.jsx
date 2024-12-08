@@ -7,7 +7,6 @@ import useChatGpt from "../../hooks/useChatGpt";
 import useClientHeight from "../../hooks/useClientHeight";
 import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData";
 import useFireActi from "../../hooks/Firebase/useFireActi";
-import useGetByte from "../../hooks/useGetByte";
 //컴포넌트
 import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
 import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
@@ -33,6 +32,8 @@ import AddPerfRecModal from "../../components/Modal/AddPerfRecModal";
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
 //css
 import styled from "styled-components";
+import SubNav from "../../components/Nav/SubNav";
+import BackBtn from "../../components/Btn/BackBtn";
 
 //24.07.06 수정(실시간 바이트 갱신)
 const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
@@ -277,6 +278,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   }
   return (<>
     <Container $clientheight={clientHeight} $isVisible={isVisible}>
+      <SubNav><BackBtn /></SubNav>
       {/* 교사 */}
       {user.isTeacher &&
         <StyledForm onSubmit={handleSubmit}>
@@ -367,7 +369,6 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                     <LongW100Btn id="copy_btn" btnName="업어가기" btnOnClick={handleBtnClick} />
                   </>}
                 </>}
-              <LongW100Btn id="go_back_btn" btnName="목록" btnOnClick={handleBtnClick} />
             </ButtonWrapper>
           </fieldset>
         </StyledForm>}

@@ -1,7 +1,7 @@
-colors
+/* colors
 primaryWhite #efefef,
-royalBlue #3454d1,
-royalRed #9b0c24
+/* royalBlue #3454d1; rgba(49, 84, 209, 0.4); */
+/* royalRed #9b0c24
 grey #949192;
 Green #00a86b;
 Pink  #FF69B4;
@@ -11,5 +11,8 @@ phone max-width 767px
  w25 h25
 
  petImg
- default w134;
- 
+  default w134; 
+ icon size
+  width: 45px;
+  height: 45px;
+ */

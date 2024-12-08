@@ -12,6 +12,7 @@ const GptPersonalRow = ({ itemObj, onInputChange, }) => {
     optionList.push({ label: keyword, value: keyword, id: propTitle })
     return null
   })
+  
   return (
     <Container>
       {propTitle !== "희망 직군[학과]" ? <Select

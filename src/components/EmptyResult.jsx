@@ -2,20 +2,24 @@ import crying_cat from '../image/cat.png'
 import styled from 'styled-components'
 
 //24.01.24
-const EmptyResult = ({ comment, color }) => {
+const EmptyResult = ({ comment, color, styles }) => {
+  let border = styles?.border || "none";
+  let maxWidth = styles?.maxWidth || "540px";
+
   return (
-    <StyledEmptyClassRoomDiv $color={color}>
+    <Container $color={color} $border={border} $maxWidth={maxWidth}>
       <img src={crying_cat} alt="우는고양이" />
       <p>{comment}</p>
-    </StyledEmptyClassRoomDiv>
+    </Container>
   )
 }
 
-const StyledEmptyClassRoomDiv = styled.div`
-  max-width: 540px;
+const Container = styled.div`
+  max-width: ${(props) => props.$maxWidth};
   margin: 12px auto;
   padding: 30px 20px 0;
-  border-radius: 15px;
+  border: ${(props) => props.$border};
+  border-radius: 10px;
   img {
     display: block;
     width: 160px;

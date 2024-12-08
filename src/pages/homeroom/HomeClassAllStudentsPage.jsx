@@ -14,7 +14,8 @@ import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStuden
 //css
 import styled from 'styled-components';
 //이미지
-import back_icon from "../../image/icon/back_icon.png";
+import SubNav from '../../components/Nav/SubNav';
+import BackBtn from '../../components/Btn/BackBtn';
 
 //2024.10.22 생성
 const HomeClassAllStudentsPage = () => {
@@ -22,7 +23,6 @@ const HomeClassAllStudentsPage = () => {
   //교사 인증
   const { log } = useClassAuth();
   if (log) { window.alert(log) }
-  const navigate = useNavigate();
   useEffect(() => { setIsVisible(true) }, [])
   //반 정보
   const params = useParams(); //{ id:'id'} 반환
@@ -61,12 +61,10 @@ const HomeClassAllStudentsPage = () => {
 
   return (
     <Container $isVisible={isVisible}>
-      <TopNavWrapper>
-        <VCenterWrapper>
-          <img src={back_icon} alt="뒤로 가기" onClick={() => { navigate(-1) }} />
-        </VCenterWrapper>
+      <SubNav>
+        <BackBtn />
         <ExportAsExcel type="home" />
-      </TopNavWrapper>
+      </SubNav>
       <StyledGirdContainer>
         <HeaderWrapper>
           <StyledHeader>연번</StyledHeader>
@@ -121,32 +119,10 @@ const Container = styled.div`
   @media screen and (max-width: 767px){
   }
 `
-const TopNavWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #ddd;
-  gap: 20px;
-  background-color: #efefef;
-`
 const FlexColWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
-`
-const VCenterWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  img { 
-    width: 45px;
-    height: 45px;
-    cursor: pointer;
-    &:hover {
-    background-color: #3454d1;
-    border-radius: 5px;
-    transition: background-color 0.5s ease-in-out;
-    }
-  }
 `
 const StyledGirdContainer = styled.div`
   margin: 50px auto;

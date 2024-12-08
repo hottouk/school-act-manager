@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 //컴포넌트
 import ExportAsExcel from "../../components/ExportAsExcel"
 import SmallBtn from "../../components/Btn/SmallBtn"
+import SubNav from "../../components/Nav/SubNav"
 //hooks
 import useClassAuth from "../../hooks/useClassAuth"
 import useGetByte from "../../hooks/useGetByte"
@@ -89,11 +90,11 @@ const ClassAllStudents = () => {
 
   return (
     <Container $isVisible={isVisible} $clientheight={clientHeight}>
-      <TopBtnWrapper>
+      <SubNav>
         <p>※수정은 PC에서 가능함</p>
         <StyledShfBtn $wid="45" src={recycleIcon} alt="섞기 버튼" onClick={() => { handleShuffleAllBtnOnClick() }} />
         <ExportAsExcel />
-      </TopBtnWrapper>
+      </SubNav>
       <StyledGirdContainer>
         <TableHeaderWrapper>
           <StyledHeader>연번</StyledHeader>
@@ -153,24 +154,6 @@ const Container = styled.main`
     overflow-y: scroll;
   }
 `
-const TopBtnWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #ddd;
-  gap: 20px;
-  background-color: #efefef;
-  p {
-    display: none;
-    color: #3454d1;
-    font-weight: bold;
-    margin-right: 10px;
-    margin-bottom: 5px;
-    @media screen and (max-width: 767px){
-      display: inline-block;
-    }
-  }
-`
 const StyledShfBtn = styled.img`
   display: flex;
   align-items: center;
@@ -179,7 +162,7 @@ const StyledShfBtn = styled.img`
   padding: 4px;
   cursor: pointer;
   &:hover {
-    background-color: #3454d1;
+    background-color: rgba(49, 84, 209, 0.4);
     border: none;
     border-radius: 10px;
     transition: background-color 0.5s ease-in-out;

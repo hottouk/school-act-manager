@@ -77,8 +77,8 @@ const Nav = () => {
           <span className="pcOnly">클래스 관리</span></Link></li>
         {/*todo <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>
           <span className="pcOnly">사람 찾기</span></Link></li> */}
-        {/* <li id="word_btn" ><Link to="/wordbattle"><i className="fa-solid fa-khanda"></i>
-          <span className="pcOnly">단어 배틀</span></Link></li> */}
+        {user.isMaster && <li id="word_btn" ><Link to="/lab"><i className="fa-solid fa-khanda"></i>
+          <span className="pcOnly">실험실</span></Link></li>}
         {user.isMaster && <li id="master_btn" ><Link to="/master"><i className="fa-solid fa-key"></i>
           <span className="pcOnly">마스터</span></Link></li>}
         <li className="news_btn" >

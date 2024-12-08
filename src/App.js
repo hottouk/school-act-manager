@@ -18,9 +18,8 @@ import ClassRoomMain from './pages/classRoom/ClassRoomMain';
 import HomeroomDetailsPage from './pages/homeroom/HomeroomDetailsPage';
 import HomeStudentDetailsPage from './pages/homeroom/HomeStudentDetailsPage';
 import HomeClassAllStudentsPage from './pages/homeroom/HomeClassAllStudentsPage';
-
 import ClassRoomDetailsPage from './pages/classRoom/ClassRoomDetailsPage';
-import StudentDetail from './pages/student/StudentDetail';
+import StudentDetailPage from './pages/classRoom/StudentDetailPage';
 import ClassAllStudentsPage from './pages/classRoom/ClassAllStudentsPage';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassroomMakePage from './pages/classSetting/ClassroomMakePage';
@@ -30,10 +29,11 @@ import UserMain from './pages/student/UserMain';
 import { useSelector } from 'react-redux';
 import { Helmet } from "react-helmet";
 //단어 배틀
-import WordSetMain from './pages/wordBattle/WordSetMain';
 import WordForm from './pages/wordBattle/WordForm';
 //관리자
 import MasterPage from './pages/main/MasterPage';
+import Lab from './pages/lab/Lab';
+import HomeSeatChange from './pages/homeroom/HomeSeatChange';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -66,18 +66,19 @@ function App() {
           <Route path="/homeroom/:id" element={uid ? <HomeroomDetailsPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/homeroom/:id/:studentId" element={uid ? <HomeStudentDetailsPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/homeroom/:id/allStudents" element={uid ? <HomeClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/homeroom/:id/seat" element={uid ? <HomeSeatChange /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 관리 */}
           <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms/:id" element={uid ? <ClassRoomDetailsPage /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/classrooms/:id/allStudents" element={uid ? <ClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/classrooms/:id/:studentId" element={uid ? <StudentDetail /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/classrooms/:id/allstudents" element={uid ? <ClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/classrooms/:id/:studentId" element={uid ? <StudentDetailPage /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 만들기, 교사 회원만 가능 */}
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
           <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomMakePage /> : <Navigate replace={true} to='/' />} />
           {/* 학생 관리 */}
           <Route path="/users" element={uid ? <UserMain /> : <Navigate replace={true} to='/login' />} />
           {/* 단어장 관리 */}
-          <Route path="/wordbattle" element={uid ? <WordSetMain /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/lab" element={uid ? <Lab /> : <Navigate replace={true} to='/login' />} />
           <Route path="/words_setting" element={uid ? <WordForm /> : <Navigate replace={true} to='/login' />} />
           {/* 새소식 관리 */}
           <Route path="/news" element={uid ? <News /> : <Navigate replace={true} to='/' />} />

@@ -27,7 +27,6 @@ const useFetchFireData = () => {
     }
   }
 
-
   //8. 문서 한개(2024.07.19)
   const fetchDoc = async (colName, docId) => {
     let noticeDocRef = doc(collection(db, colName), docId)
@@ -100,7 +99,6 @@ const useFetchFireData = () => {
     let q
     if (user.isTeacher) { //교사
       if (!thisClass) { //활동 관리
-        // q = query(actiColRef, where("uid", "==", user.uid), orderBy("subject", "desc")); 사용하지 않음
       } else {  //반 활동
         q = query(actiColRef, where("uid", "==", user.uid), where("subject", "==", thisClass.subject));
       }

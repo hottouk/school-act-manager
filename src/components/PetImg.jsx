@@ -58,9 +58,7 @@ const PetImg = ({ subject, level, wid, onClick }) => {
   const imageSrc = getImage();
 
   return (
-    imageSrc && (
-      <StyledImg $wid={wid} src={imageSrc} alt="펫이미지" onClick={() => { onClick() }} />
-    )
+    imageSrc ? (<StyledImg $wid={wid} src={imageSrc} alt="펫이미지" onClick={() => { onClick() }} />) : <StyledImg src={normalEgg} alt="기본" />
   )
 }
 
