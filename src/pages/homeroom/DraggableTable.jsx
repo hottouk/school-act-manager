@@ -27,6 +27,7 @@ const DraggableTable = ({ studentList, positionList, setPositionList, objInfoLis
       x: e.clientX - x,
       y: e.clientY - y,
     });
+    console.log(x, y)
   };
   //마우스 이동
   const handleMouseMove = (e) => {

@@ -7,11 +7,27 @@ import SubNav from '../../components/Nav/SubNav';
 import BackBtn from '../../components/Btn/BackBtn';
 
 const HomeSeatChange = () => {
-  const studentList = useSelector(({ allStudents }) => { return allStudents; })
+  const frozenStudentList = useSelector(({ allStudents }) => { return allStudents; })
+  const [studentList, setStudentList] = useState([...frozenStudentList])
   //todo 앞에서 40명만 바꿀 수 있게 자르기
   const [positionList, setPositionList] = useState(
-    studentList.map(() => ({ x: 100, y: 100 })) // table 내 초기 위치
+    studentList.map((_, i) => {
+      let row = Math.floor(i / 5);
+      let col = i % 5;
+      return { x: 150 + col * 150, y: 150 + row * 100 };
+    }) // table 내 초기 위치
   );
+
+  //todo 노션에 추가하고 공부하기
+  const shuffleStudents = () => {
+    const shuffledList = [...studentList];
+    for (let i = shuffledList.length - 1; i > 0; i--) {
+      const randomIndex = Math.floor(Math.random() * (i + 1));
+      [shuffledList[i], shuffledList[randomIndex]] = [shuffledList[randomIndex], shuffledList[i]];
+    }
+    setStudentList(shuffledList);
+  };
+
   const ObjList = ["칠판", "TV", "교탁", "앞문", "뒷문", "복도쪽", "운동장쪽"]
   const [objInfoList, setObjInfoList] = useState(ObjList.map((obj) => ({ name: obj, isShown: false })))
   const [objPositionList, setObjPositionList] = useState(
@@ -28,6 +44,9 @@ const HomeSeatChange = () => {
         fetchData().then((data) => {
           setPositionList(data[0].positionList)
         })
+        break;
+      case "shuffle_btn":
+        shuffleStudents()
         break;
       default: return;
     }
@@ -83,6 +102,7 @@ const HomeSeatChange = () => {
           </Controller>
         </GridContainer>
         <button id="save_btn" onClick={(e) => { handleOnClick(e) }}>자리 저장</button>
+        <button id="shuffle_btn" onClick={(e) => { handleOnClick(e) }}>자리 섞기</button>
         <button id="fetch_btn" onClick={(e) => { handleOnClick(e) }}>자리 불러오기</button>
 
       </FlexWrapper>
