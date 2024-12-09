@@ -1,8 +1,8 @@
-import { addDoc, collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore'
+import { addDoc, collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore'
 import { appFireStore, timeStamp } from '../../firebase/config'
 import { useSelector } from 'react-redux'
 
-//2024.12.05 생성(firebase 기본 기능)
+//2024.12.05 생성(firebase 기본 기능, lab실에서 시험시 사용)
 const useFireBasic = (col) => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
@@ -28,6 +28,16 @@ const useFireBasic = (col) => {
     }
   }
 
+  const fetchDoc = async (id) => {
+    let docRef = doc(colRef, id)
+    try {
+      let docSnapshot = await getDoc(docRef);
+      return docSnapshot.data();
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
   const fetchData = async () => {
     let q = query(colRef, where("uid", "==", String(user.uid)));
     try {
@@ -38,7 +48,7 @@ const useFireBasic = (col) => {
       console.log(err)
     }
   }
-  return ({ addData, fetchData })
+  return ({ addData, fetchData, fetchDoc })
 }
 
 export default useFireBasic

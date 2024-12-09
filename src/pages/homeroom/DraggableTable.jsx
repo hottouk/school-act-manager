@@ -79,11 +79,10 @@ const DraggableTable = ({ studentList, positionList, setPositionList, objInfoLis
           $left={objPositionList[i].x} $top={objPositionList[i].y} >{objInfo.name}</StyledObj>)
       })}
       {studentList.map((student, i) => {
-        let name = student.writtenName
         return <StyledSeat key={i}
           $gridXSize={gridXSize} $gridYSize={gridYSize} $left={positionList[i].x} $top={positionList[i].y}
           onMouseDown={(e) => handleMouseDown(positionList, i, e)}>
-          <p>{name}</p>
+          <p>{ student.name}</p>
         </StyledSeat>
       }
       )}

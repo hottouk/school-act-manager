@@ -1,15 +1,27 @@
-import React, { useState } from 'react'
-import useFireBasic from '../../hooks/Firebase/useFireBasic';
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components';
 import DraggableTable from './DraggableTable';
 import { useSelector } from 'react-redux';
 import SubNav from '../../components/Nav/SubNav';
 import BackBtn from '../../components/Btn/BackBtn';
-
+import useFireClassData from '../../hooks/Firebase/useFireClassData';
+import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData';
+//241210 저장 기능 완성
 const HomeSeatChange = () => {
   const frozenStudentList = useSelector(({ allStudents }) => { return allStudents; })
-  const [studentList, setStudentList] = useState([...frozenStudentList])
-  //todo 앞에서 40명만 바꿀 수 있게 자르기
+  const frozenClassInfo = useSelector(({ classSelected }) => { return classSelected })
+  const [studentList, setStudentList] = useState(
+    [...frozenStudentList].map(({ id, studentNumber, writtenName }) => {
+      return { id: id, studentNumber: studentNumber, name: writtenName }
+    })) //학생 정보 및 자리 순서
+  const { addSeatMaps } = useFireClassData();
+  const classroomRtInfo = useFetchRtClassroomData(frozenClassInfo.id);
+  console.log(classroomRtInfo)
+  useEffect(() => { if (classroomRtInfo.seatInfo) setSeatMapList(classroomRtInfo.seatInfo) }, [classroomRtInfo])
+  const [seatMapsList, setSeatMapList] = useState('')
+
+  //반 전역 변수
+  //학생 자리 위치: todo 앞에서 40명만 바꿀 수 있게 자르기
   const [positionList, setPositionList] = useState(
     studentList.map((_, i) => {
       let row = Math.floor(i / 5);
@@ -30,20 +42,17 @@ const HomeSeatChange = () => {
 
   const ObjList = ["칠판", "TV", "교탁", "앞문", "뒷문", "복도쪽", "운동장쪽"]
   const [objInfoList, setObjInfoList] = useState(ObjList.map((obj) => ({ name: obj, isShown: false })))
+  //기물 자리 위치
   const [objPositionList, setObjPositionList] = useState(
     ObjList.map(() => ({ x: 0, y: 0 })))
 
-  const { addData, fetchData } = useFireBasic("lab")
 
   const handleOnClick = (event) => {
     switch (event.target.id) {
       case "save_btn":
-        addData(positionList, "positionList");
+        addSeatMaps(frozenClassInfo.id, { seatMapsList, positionList, objPositionList, studentList })
         break;
       case "fetch_btn":
-        fetchData().then((data) => {
-          setPositionList(data[0].positionList)
-        })
         break;
       case "shuffle_btn":
         shuffleStudents()
