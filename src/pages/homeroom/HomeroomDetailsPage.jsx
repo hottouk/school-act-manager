@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setAllStudents } from '../../store/allStudentsSlice';
+import styled from 'styled-components';
 //컴포넌트
 import MidBtn from '../../components/Btn/MidBtn';
 import MainBtn from '../../components/Btn/MainBtn';
@@ -15,16 +16,13 @@ import MainPanel from '../../components/MainPanel';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData';
 import useClassAuth from '../../hooks/useClassAuth';
-//css
-import styled from 'styled-components';
 //img
-import changeSeatIcon from '../../image/logo.png'
+import deskIcon from '../../image/icon/desk_icon.png'
 
 //2024.10.22 생성
 const HomeroomDetailsPage = () => {
   //----1.변수부--------------------------------
   //교사 인증
-  const user = useSelector(({ user }) => user)
   const { log } = useClassAuth();
   if (log) { window.alert(log) }
   useEffect(() => { setIsVisible(true) }, [])
@@ -62,10 +60,13 @@ const HomeroomDetailsPage = () => {
     <>
       <Container $isVisible={isVisible}>
         {/* 마스터만 볼 수 있게 */}
-        {user.isMaster && <MainPanel>
+        <MainPanel>
           <h5>도구모음</h5>
-          <StyledImg src={changeSeatIcon} alt="자리바꾸기" onClick={() => { navigate(`/homeroom/${thisClass.id}/seat`) }} />
-        </MainPanel>}
+          <IconWrapper>
+            <StyledImg src={deskIcon} alt="자리바꾸기" onClick={() => { navigate(`/homeroom/${thisClass.id}/seat`) }} />
+            <p>자리바꾸기(test)</p>
+          </IconWrapper>
+        </MainPanel>
         <MainPanel>
           <h5>학생 행동특성 및 종합의견 작성</h5>
           {(!studentList || studentList.length === 0) ?
@@ -99,6 +100,15 @@ const Container = styled.main`
   margin: 0 auto 50px;
   opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
   transition: opacity 0.7s ease;
+`
+const IconWrapper = styled.div`
+  position: relative;
+  padding: 0 0 12px 16px;
+  p {
+    position: absolute;
+    bottom: 10px;
+    margin: 0; 
+  }
 `
 const StyledImg = styled.img`
   width: 100px;

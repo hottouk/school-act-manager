@@ -1,18 +1,20 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const SubNav = ({ children }) => {
+const SubNav = ({ children, styles }) => {
+  let gap = styles?.gap || "20px";
   return (
-    <Container>{children}</Container>
+    <Container $gap={gap}>{children}</Container>
   )
 }
 
 const Container = styled.div`
   display: flex;
   justify-content: center;
+  align-items: center;
   margin-bottom: 20px;
   border-bottom: 1px solid #ddd;
-  gap: 20px;
+  gap: ${(props) => props.$gap};
   background-color: #efefef;
   p {
     display: none;

@@ -4,13 +4,12 @@ import styled from 'styled-components'
 const MidBtn = (props) => {
   return (
     <StyledBtn
-      type="button"
-      onClick={props.btnOnClick}
       id={props.id}
+      onClick={props.onClick}
       $backgroundColor={props.btnColor || "#3454d1"}
       $fontColor={props.fontColor || "#fff"}
       $hoverBackgroundColor={props.hoverBtnColor || "#1366d6"}
-    >{props.btnName || "샘플"}</StyledBtn>
+    >{props.children || "샘플"}</StyledBtn>
   )
 }
 

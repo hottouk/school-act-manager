@@ -14,10 +14,6 @@ const StyledImg = styled.img`
   width: 45px;
   height: 45px;
   cursor: pointer;
-  &:hover {
-  background-color: rgba(49, 84, 209, 0.4);
-  border-radius: 5px;
-  transition: background-color 0.5s ease-in-out;
 `
 
 export default BackBtn
