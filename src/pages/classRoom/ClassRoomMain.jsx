@@ -11,55 +11,56 @@ import useFetchRtMyClassData from '../../hooks/RealTimeData/useFetchRtMyClassDat
 import useClientHeight from '../../hooks/useClientHeight';
 //css
 import styled from 'styled-components';
+import SearchBar from '../../components/Bar/SearchBar';
 
 //24.09.18(1차 수정)
 const ClassRoomMain = () => {
-  //1. 변수
+  //----1.변수부--------------------------------
   const navigate = useNavigate()
   //전역변수 
   const user = useSelector(({ user }) => user)
   const { classList, searchResult, appliedClassList, errByGetClass } = useFetchRtMyClassData() //useEffect 실행 함수
-  const [subjKlassList, setSubjKlassList] = useState(null)
-  const [homeroomKlassList, setHomerooomKlassList] = useState(null)
-  useEffect(() => {
-    let subjKlassList = [];
-    let homeroomKlassList = [];
-    classList.map(klass => {
-      if (!klass.type || klass.type === 'subject') subjKlassList.push(klass)
-      else homeroomKlassList.push(klass)
-      return null;
-    })
-    setSubjKlassList(subjKlassList)
-    setHomerooomKlassList(homeroomKlassList)
-  }, [classList])
-  useEffect(() => {
-    setAppliedClassList(appliedClassList)
-  }, [appliedClassList, searchResult,])
+  const [_subjClassList, setSubjClassList] = useState(null)
+  const [homeroomClassList, setHomerooomClassList] = useState(null)
+  useEffect(() => { sortClassroom() }, [classList])
+  //todo 학생 관련 함수 정리하기
+  useEffect(() => { setAppliedClassList(appliedClassList) }, [appliedClassList, searchResult,])
   const [_teacherList, setTeacherList] = useState(null)
   const [_teacherClassList, setTeacherClassList] = useState(null)
   const [_appliedClassList, setAppliedClassList] = useState(null)
   //css
   const clientHeight = useClientHeight(document.documentElement)   //화면 높이
 
-  //3. 함수
-  const handleBtnClick = (event) => {
-    event.preventDefault()
-    navigate('/classrooms_setting', { state: { step: "first" } })
+  //----2.함수부--------------------------------
+  //교과, 담임반 분류
+  const sortClassroom = () => {
+    let subjClassList = [];
+    let homeroomClassList = [];
+    classList.forEach(classroom => {
+      if (!classroom.type || classroom.type === "subject") subjClassList.push(classroom)
+      else homeroomClassList.push(classroom)
+    })
+    setSubjClassList(subjClassList)
+    setHomerooomClassList(homeroomClassList)
   }
 
   return (
-    <StyledContainer $clientheight={clientHeight}>
+    <Container $clientheight={clientHeight}>
       {/* 교사 */}
       {user.isTeacher && <>
-        <CardList dataList={subjKlassList} type="classroom"
-          title="교과반 목록"
+        <SearchBar title="교과반 목록" type="classroom" list={_subjClassList} setList={setSubjClassList} />
+        <CardList
+          dataList={_subjClassList}
+          type="classroom"
           comment="아직 교과반이 없어요. 클래스를 생성해주세요" />
-        <CardList dataList={homeroomKlassList} type="homeroom"
-          title="담임반 목록"
+        <SearchBar title="담임반 목록" />
+        <CardList
+          dataList={homeroomClassList}
+          type="homeroom"
           comment="아직 담임반이 없어요. 클래스를 생성해주세요" />
-        <MainBtn btnOnClick={handleBtnClick} btnName="클래스 만들기" />
+        <MainBtn btnOnClick={() => navigate('/classrooms_setting', { state: { step: "first" } })} btnName="클래스 만들기" />
       </>}
-      {/* 학생 */}
+      {/* todo 학생 관련 정리하기 */}
       {!user.isTeacher && <>
         {_teacherList && <CardList dataList={_teacherList} type="teacher"
           title="선생님"
@@ -70,7 +71,7 @@ const ClassRoomMain = () => {
           title="선생님이 만든 교실"
           comment="선생님이 아직 생성하신 교실이 없습니다. "
         />}
-        <CardList dataList={subjKlassList} type="classroom" //학생
+        <CardList dataList={_subjClassList} type="classroom" //학생
           title="나의 클래스"
           comment="가입한 클래스가 없어요. 클래스에 가입해주세요" />
         <CardList dataList={_appliedClassList} type="appliedClassList"
@@ -78,13 +79,13 @@ const ClassRoomMain = () => {
           comment="가입 신청한 클래스가 없어요." />
         <TSearchInputBtn setTeacherList={setTeacherList} />
       </>}
-    </StyledContainer>
+    </Container>
   )
 }
 
-const StyledContainer = styled.div`
+const Container = styled.div`
   box-sizing: border-box;
-  margin: 20px auto;  
+  margin: 2px auto;  
   @media screen and (max-width: 767px) {
     position: fixed;
     width: 100%;

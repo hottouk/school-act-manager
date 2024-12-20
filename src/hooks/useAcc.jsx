@@ -11,20 +11,18 @@ const useAcc = () => {
   //★★★ 활동 누가 함수: 선택 활동을 누적하여 반환한다.
   const makeAccWithSelectedActi = async () => {
     let newActiList = []
-    await Promise.all( //Promise.All을 사용하면 모든 Promise가 반환될 때까지 기다린다. 캐시에서 해도 될듯한 작업 코딩.
-      activitySelectedList.map(async ({ value }) => { //선택된 모든 활동에서 아래 작업 반복
-        let actiId = value                           //id 참조
-        let actiRef = doc(db, "activities", actiId); //id로 활동 acti 참조
-        let actiSnap = getDoc(actiRef);              //데이터 통신
-        await actiSnap.then((snapshot) => {
-          let acti = snapshot.data();
-          if (acti.extraRecordList && acti.extraRecordList.length > 1) {                       //extra가 있으면 랜덤문구
-            let randomIndex = Math.floor(Math.random() * acti.extraRecordList.length);
-            acti.record = acti.extraRecordList[randomIndex]
-          }
-          newActiList.push({ id: snapshot.id, ...acti });
-        })
-        return null
+    await Promise.all(                                     //모든 Promise가 반환될 때까지 기다린다.
+      activitySelectedList.map(async ({ value }) => {      //선택된 활동에서 아래 반복
+        let actiId = value                                 //id 참조
+        let actiRef = doc(db, "activities", actiId);       //id로 활동 acti 참조
+        let actiSnap = await getDoc(actiRef);              //데이터 통신
+        let acti = actiSnap.data();
+        const { createdTime, isPrivate, ...rest } = acti   //불필요 속성 제거
+        if (acti.extraRecordList && acti.extraRecordList.length > 1) {                       //extra가 있으면 랜덤문구
+          let randomIndex = Math.floor(Math.random() * acti.extraRecordList.length);
+          acti.record = acti.extraRecordList[randomIndex]
+        }
+        newActiList.push({ id: actiSnap.id, ...rest });
       }))
     return { newActiList }
   }
@@ -89,6 +87,26 @@ const useAcc = () => {
       //학생 반복 종료
     })
   }
+  //★★★★ 담임반 누가기록
+  const writeHomeAccOnDB = async (classId, type) => {
+    let typeList = `${type}List`;
+    let typeAccRecord = `${type}AccRecord`;
+    try {
+      await Promise.all(
+        studentSelectedList.map(async ({ value }) => { //선택된 모든 학생에게서 아래 작업 반복 
+          let id = value //id 참조
+          let petRef = doc(appFireStore, "classRooms", classId, "students", id);        //id로 학생 data 참조
+          let pet = await getDoc(petRef);
+          let curActiList = pet.data()[typeList] || [];            // 선택 학생의 '기존 활동'
+          let { newActiList } = await makeAccWithSelectedActi();   // 선택한 활동의 누가 배열, 누가 기록 반환
+          let actiList = [...curActiList, ...newActiList];         // 기존 활동들과 새로운 활동을 합치기.
+          let uniqueList = makeUniqueList(actiList);
+          setDoc(petRef, { [typeList]: uniqueList, [typeAccRecord]: makeAccRec(uniqueList) }, { merge: true })
+        }))
+    } catch (e) {
+      window.alert("데이터 기록에 오류가 발생했습니다. 오류번호 001, 관리자에게 문의하십시오.")
+    }
+  }
 
   //★★★★ 수행 관리 입력하기
   const writePerfRecDataOnDB = async (studentList, classId, selectedPerf, perfRecord) => {
@@ -112,7 +130,7 @@ const useAcc = () => {
     })
   }
 
-  return { makeAccWithSelectedActi, writeAccDataOnDB, writePerfRecDataOnDB }
+  return { makeAccWithSelectedActi, writeAccDataOnDB, writePerfRecDataOnDB, writeHomeAccOnDB }
 }
 
 export default useAcc

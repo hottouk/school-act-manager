@@ -1,30 +1,31 @@
 import React, { useEffect, useState } from 'react'
 //데이터
-import subjectGroupList from '../../data/subjectGroupList'
+import { subjectGroupList, homeroomGroupList } from '../../data/subjectGroupList'
 //css
 import styled from 'styled-components'
 
 //24.07.22
-const SubjectSelects = ({ subjGroup, subjDetail, subjGrpOnChange, subjOnChange }) => {
-  const [_subjectList, setSubjectList] = useState([]) //선택한 교과군 세부 교과목
+const SubjectSelects = ({ sort, selectedGroup, selectedDetail, setSelectedGroup, setSelectedDetail }) => {
+  let groupList = (sort === "subject" ? subjectGroupList : homeroomGroupList)
+  const [_detailList, setDetailList] = useState([]) //선택한 교과군 세부 교과목
   useEffect(() => {
-    let selectedSubjList = subjectGroupList.find((sbujGrp) => Object.keys(sbujGrp)[0] === subjGroup) || [];
-    setSubjectList(...Object.values(selectedSubjList))
-    subjOnChange("default")
-  }, [subjGroup])
+    let selectedSubjList = groupList.find((sbujGrp) => Object.keys(sbujGrp)[0] === selectedGroup) || [];
+    setDetailList(...Object.values(selectedSubjList))
+    setSelectedDetail("default")
+  }, [selectedGroup])
 
   return (
     <StyledSubjContainer>
-      <select className="acti_subjGrp" value={subjGroup} onChange={(event) => { subjGrpOnChange(event.target.value) }} required  >
+      <select className="acti_subjGrp" value={selectedGroup} onChange={(event) => { setSelectedGroup(event.target.value) }} required  >
         <option value="default" disabled >교과</option>
-        {subjectGroupList.map((subjGroup) => {
+        {groupList.map((subjGroup) => {
           let subjGroupKey = Object.keys(subjGroup)[0]
           return <option key={subjGroupKey} value={subjGroupKey}>{subjGroupKey}과</option>
         })}
       </select>
-      <select className="acti_subj" value={subjDetail} onChange={(event) => { subjOnChange(event.target.value) }} required  >
+      <select className="acti_subj" value={selectedDetail} onChange={(event) => { setSelectedDetail(event.target.value) }} required  >
         <option value="default" disabled >과목</option>
-        {_subjectList && _subjectList.map((subj) => {
+        {_detailList && _detailList.map((subj) => {
           return <option key={subj} value={subj}>{subj}</option>
         })}
       </select>

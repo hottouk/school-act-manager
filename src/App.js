@@ -7,13 +7,13 @@ import LoginPage from './pages/login/LoginPage';
 import EmailSignupPage from './pages/login/EmailSignupPage';
 //대문
 import ClassMain from './pages/main/ClassMain';
-import Nav from './components/Nav';
+import Nav from './components/Bar/Nav';
 //활동 관리
 import ActivityMain from './pages/activity/ActivityMain';
 import ActivityFormPage from './pages/activity/ActivitityFormPage';
 import ActivitySortPage from './pages/activity/ActivitySortPage';
 //반 관리
-import ClassRoomMain from './pages/classRoom/ClassRoomMain';
+import ClassRoomMain from './pages/classRoom/ClassroomMain';
 //담임반
 import HomeroomDetailsPage from './pages/homeroom/HomeroomDetailsPage';
 import HomeStudentDetailsPage from './pages/homeroom/HomeStudentDetailsPage';

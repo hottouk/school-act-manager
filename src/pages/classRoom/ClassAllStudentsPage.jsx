@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom"
 //컴포넌트
 import ExportAsExcel from "../../components/ExportAsExcel"
 import SmallBtn from "../../components/Btn/SmallBtn"
-import SubNav from "../../components/Nav/SubNav"
+import SubNav from "../../components/Bar/SubNav"
 //hooks
 import useClassAuth from "../../hooks/useClassAuth"
 import useGetByte from "../../hooks/useGetByte"

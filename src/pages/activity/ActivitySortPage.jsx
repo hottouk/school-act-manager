@@ -10,14 +10,17 @@ import styled from 'styled-components'
 
 //2024.08.08(생성)
 const ActivitySortPage = () => {
-  //1. 변수
+  //----1.변수부--------------------------------
   const navigate = useNavigate()
   //2. 세로 길이
   const clientHeight = useClientHeight(document.documentElement)
   const handleCardBtnClick = (event) => {
     switch (event.target.id) {
       case "subjectActi":
-        navigate("/activities_setting_details")
+        navigate("/activities_setting_details?sort=subject")
+        break;
+      case "homeroomActi":
+        navigate("/activities_setting_details?sort=homeroom")
         break;
       default:
         return;
@@ -26,9 +29,10 @@ const ActivitySortPage = () => {
   //활동 데이터
   const actiSortList = [
     { id: "subjectActi", legend: "교과용 활동", subTitle: "과세특 기록용", imgNumber: 1 },
-    { id: "homeroomActi", legend: "담임반 활동", subTitle: "행발, 자율, 진로, 봉사용", imgNumber: 2, ing: true },
+    { id: "homeroomActi", legend: "담임반 활동", subTitle: "자율, 진로, 봉사활동", imgNumber: 2 },
     { id: "clubActi", legend: "동아리 활동", subTitle: "동아리 활동 기록용", imgNumber: 3, ban: true }
   ]
+  //----2.함수부--------------------------------
 
   return (
     <Container $clientheight={clientHeight}>
@@ -60,7 +64,6 @@ const StyledTitle = styled.h3`
   text-align: center;
   margin-bottom: 5%;
 `
-
 const BtnWrapper = styled.div`
   margin-top: 5%;
 `

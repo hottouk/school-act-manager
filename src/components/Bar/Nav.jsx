@@ -5,12 +5,12 @@ import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet'
 import { Badge } from 'react-bootstrap';
 //컴포넌트
-import MyInfoModal from './Modal/MyInfoModal'
+import MyInfoModal from '../Modal/MyInfoModal'
 //hooks
-import DropDownBtn from './Btn/DropDownBtn';
+import DropDownBtn from '../Btn/DropDownBtn';
 //이미지
-import brandLogo from "../image/icon/h-logo.png";
-import unknown from '../image/icon/unkown_icon.png'
+import brandLogo from "../../image/icon/h-logo.png";
+import unknown from '../../image/icon/unkown_icon.png'
 //css
 import styled from 'styled-components'
 

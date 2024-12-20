@@ -17,4 +17,8 @@ const subjectGroupList = [
   { '국제': ['국제 경제', '국제 관계와 국제기구', '국제 정치', '국제법', '비교 문화', '사회 탐구 방법', '사회과제 연구', '세계문화와 미래사회', '지역 이해', '한국사회의 이해', '현대 세계의 변화'] },
   { '기타': ['연극', '무용', '사진 감상', '영상 제작', '영화', '합주'] },
 ]
-export default subjectGroupList
+const homeroomGroupList = [
+  { '담임': ['자율', '진로'] }
+]
+
+export { subjectGroupList, homeroomGroupList }

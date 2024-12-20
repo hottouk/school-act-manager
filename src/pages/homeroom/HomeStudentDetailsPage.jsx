@@ -28,6 +28,7 @@ import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity';
 import arrows_icon from '../../image/icon/arrows_icon.png';
 import AnimRotation from '../../anim/AnimRotation';
 import TransparentBtn from '../../components/Btn/TransparentBtn';
+import UpperTab from '../../components/UpperTab';
 
 //2024.10.16 생성-> 회전효과 추가(24.12.01)
 const HomeStudentDetailPage = () => {
@@ -41,12 +42,12 @@ const HomeStudentDetailPage = () => {
   const user = useSelector(({ user }) => { return user; })
   //시작
   useEffect(() => { //학생 한명 데이터 통신
-    fetchSubDoc("classRooms", id, "students", studentId).then((data) => {
-      let behavior = data.behaviorOpinion || ''
-      let selected = data.selectedSpec || ''
-      if (selected) { setDesiredMajor(data.selectedSpec["희망진로"]?.[0] ?? '') }
+    fetchSubDoc("classRooms", id, "students", studentId).then((student) => {
+      let record = student.behaviorOpinion || ''
+      let selected = student.selectedSpec || ''
+      if (selected) { setDesiredMajor(student.selectedSpec["희망진로"]?.[0] ?? '') }
       setSelectedSpec(selected)
-      setBehaviorOpinion(behavior)
+      setRecord(record)
       setIsVisible(true)
     })
   }, [studentId])
@@ -54,7 +55,7 @@ const HomeStudentDetailPage = () => {
   const { studentNumber, writtenName } = state //개별 학생 정보
   useEffect(() => {
     setSelectedSpec(state.selectedSpec || '')
-    setBehaviorOpinion(state.behaviorOpinion || '')
+    setRecord(state.behaviorOpinion || '')
     setNthStudent(allStudentList.findIndex(({ id }) => { return id === studentId })) //전체 학생에서 몇 번째 index
     setStep('')
   }, [state])
@@ -69,24 +70,22 @@ const HomeStudentDetailPage = () => {
   const [gptTempAnswer, setGptTempAnswer] = useState('')
   const [gptTempRes, setGptTempRes] = useState(null)
   //★★ 행발 ★★
-  const [selectedSpec, setSelectedSpec] = useState('') //선택된 spec { spec1: [], spec2: [], spec3:[]..}
-  const [prevBehavOpin, setPrevBehavOpin] = useState('') //수정 클릭시 원본 저장 변수
-  const [behaviorOpinion, setBehaviorOpinion] = useState('');
+  const [selectedSpec, setSelectedSpec] = useState(''); //선택된 spec { spec1: [], spec2: [], spec3:[]..}
+  const [prevBehavOpin, setPrevBehavOpin] = useState(''); //수정 클릭시 원본 저장 변수
+  const [record, setRecord] = useState('');
   const [isFreeze, setIsFreeze] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
-  useEffect(() => { if (isEditable === true) setPrevBehavOpin(behaviorOpinion) }, [isEditable])
+  useEffect(() => { if (isEditable === true) setPrevBehavOpin(record) }, [isEditable]);
+  const [tab, setTab] = useState(1);
   //저장
   const { updateStudent, deleteStudent } = useAddUpdFireData("classRooms"); //매개변수 없으면 에러나서 억지로 넣은거임..
   const { fetchSubDoc } = useFetchFireData();
-  useEffect(() => {
-    console.log(selectedSpec)
-  }, [selectedSpec])
   //학생 이동
-  const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //전체 학생 전역 변수 받기
+  const allStudentList = useSelector(({ allStudents }) => { return allStudents }); //전체 학생 전역 변수 받기
   const [nthStudent, setNthStudent] = useState(null);
-  let expAndLevel = { exp: 0, level: 0 }
+  let expAndLevel = { exp: 0, level: 0 };
   //에니메이션
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   //----2.함수부--------------------------------
@@ -102,13 +101,24 @@ const HomeStudentDetailPage = () => {
       setIsAnimating(false);
     }, 500); // 애니메이션 시간과 동일하게 설정
   }
+  //tab에 따라 다른 기록 반환
+  const handleRecord = (student) => {
+    if (tab === 1) {
+      return student.behaviorOpinion
+    } else if (tab === 2) {
+      console.log("2")
+      return student.selfAccRecord
+    } else if (tab === 3) {
+      return student.careerAccRecord
+    }
+  }
   //목록 이동
   const handleBackOnClick = () => {
     navigate(`/homeroom/${id}/`)
   }
   //textarea 변경
   const handleTextAreaOnChange = (event) => {
-    setBehaviorOpinion(event.target.value)
+    setRecord(event.target.value)
   }
   //gpt 생성 버튼 클릭
   const handleGptOnClick = () => {
@@ -118,11 +128,11 @@ const HomeStudentDetailPage = () => {
   }
   //행발 db에 저장
   const handleSaveOnClick = () => {
-    let check = behaviorOpinion !== ''
+    let check = record !== ''
     if (check) {
       if (window.confirm("행동의견을 저장하시겠습니까?")) {
-        updateStudent({ behaviorOpinion }, id, studentId)
-        dispatch(setEditHomeroomStudent({ id: studentId, behaviorOpinion, selectedSpec })) //현재 학생 정보 전역 변수에 저장
+        updateStudent({ behaviorOpinion: record }, id, studentId)
+        dispatch(setEditHomeroomStudent({ id: studentId, behaviorOpinion: record, selectedSpec })) //현재 학생 정보 전역 변수에 저장
         setIsEditable(false)
         setStep('')
         window.alert("저장되었습니다.")
@@ -132,7 +142,7 @@ const HomeStudentDetailPage = () => {
   //작성 취소
   const handleCancelOnClick = () => {
     setIsEditable(false)
-    setBehaviorOpinion(prevBehavOpin)
+    setRecord(prevBehavOpin)
   }
   //현재 특성 db 저장
   const handleCurSaveOnClick = () => {
@@ -140,7 +150,7 @@ const HomeStudentDetailPage = () => {
     if (check) {
       if (window.confirm("현재 상태를 저장하시겠습니까?")) {
         updateStudent({ selectedSpec }, id, studentId)                                     //서버에 저장
-        dispatch(setEditHomeroomStudent({ id: studentId, behaviorOpinion, selectedSpec })) //현재 학생 정보 전역 변수에 저장
+        dispatch(setEditHomeroomStudent({ id: studentId, behaviorOpinion: record, selectedSpec })) //현재 학생 정보 전역 변수에 저장
         window.alert("저장되었습니다.")
       }
     } else { window.alert("체크된 특성이 없습니다.") }
@@ -152,7 +162,7 @@ const HomeStudentDetailPage = () => {
       setSelectedSpec('')
       setGptTempAnswer('')
       setGptTempRes(null)
-      setBehaviorOpinion((prev) => { return prev + ' ' + gptTempAnswer })
+      setRecord((prev) => { return prev + ' ' + gptTempAnswer })
       setDesiredMajor('')
     } else { window.alert("gpt 생성 결과가 없습니다.") }
   }
@@ -178,6 +188,11 @@ const HomeStudentDetailPage = () => {
           && <ArrowWrapper><ArrowBtn deg={135} onClick={() => { handleMoveOnClick("prev") }} /></ArrowWrapper>}
         <AnimRotation isAnimating={isAnimating}>
           <StyledStudentPannel>
+            <TabWrapper>
+              <UpperTab className="tab1" value={tab} onClick={() => { setTab(1) }}>행동특성</UpperTab>
+              <UpperTab className="tab2" value={tab} left="94px" onClick={() => { setTab(2) }}>자율</UpperTab>
+              <UpperTab className="tab3" value={tab} left="156px" onClick={() => { setTab(3) }}>진로</UpperTab>
+            </TabWrapper>
             <StyledGrayPannel>
               <FlexWrapper>
                 <ImgWrapper>
@@ -194,11 +209,13 @@ const HomeStudentDetailPage = () => {
             <StyledGrayPannel>
               {/* 개요 */}
               {(step === '') && <IntroWrapper>
-                <p>행동 특성 종합 의견</p>
+                {tab === 1 && <p>행동 특성 종합 의견</p>}
+                {tab === 2 && <p>자율 활동 특이사항</p>}
+                {tab === 3 && <p>진로 활동 특이사항</p>}
                 <StyledTextarea
-                  value={behaviorOpinion}
+                  value={record}
                   onChange={handleTextAreaOnChange}
-                  placeholder='내용이 없습니다. 직접 작성하거나 도우미를 이용하세요'
+                  placeholder='내용이 없습니다.'
                   disabled={!isEditable} />
                 <ByteWrapper>
                   <FlexWrapper $marginTop="0">
@@ -206,9 +223,9 @@ const HomeStudentDetailPage = () => {
                     {isEditable && <SmallBtn btnName="취소" btnOnClick={handleCancelOnClick} />}
                     {!isEditable && <SmallBtn btnName="작성" btnOnClick={() => { setIsEditable(!isEditable) }} />}
                   </FlexWrapper>
-                  <ByteCalculator str={behaviorOpinion} />
+                  <ByteCalculator str={record} />
                 </ByteWrapper>
-                <MainBtn btnName="행동종합 의견 작성 도우미" btnOnClick={() => { setStep("first") }}></MainBtn>
+                {tab === 1 && <MainBtn btnName="행동종합 의견 작성 도우미" btnOnClick={() => { setStep("first") }}></MainBtn>}
               </IntroWrapper>}
               {/* 1단계 */}
               <AnimOpacity isVisible={step === "first"} content={
@@ -293,8 +310,8 @@ const HomeStudentDetailPage = () => {
                 </ByteWrapper>
                 <FlexWrapper $marginTop="20px" $marginBottom="15px"><img src={arrows_icon} alt="아래 화살표" /></FlexWrapper>
                 <HeadTitle>최종 행동특성 및 종합 의견</HeadTitle>
-                <StyledTextarea value={behaviorOpinion} onChange={handleTextAreaOnChange} />
-                <ByteCalculator str={behaviorOpinion} />
+                <StyledTextarea value={record} onChange={handleTextAreaOnChange} />
+                <ByteCalculator str={record} />
                 <FlexWrapper>
                   <MainBtn btnName="이전 단계로" btnOnClick={() => { setStep("third") }}></MainBtn>
                   <MainBtn btnName="gpt 생성하기" btnOnClick={handleGptOnClick}></MainBtn>
@@ -331,6 +348,11 @@ const FlexWrapper = styled.div`
   gap: 10px;
   justify-content: center;
 `
+const TabWrapper = styled.div`
+  position: relative;
+  top: -48px;
+  left: -15px;
+`
 const ArrowWrapper = styled.div`
   display: flex;
   align-items: center;
@@ -346,6 +368,7 @@ const StyledStudentPannel = styled.div`
   gap: 15px;
   background-color: royalBlue;
   border-radius: 20px;
+  border-top-left-radius: 0;
   perspective: 1000px; /* 3D 효과를 위한 원근법 */
   @media screen and (max-width: 767px){
     margin-top: 0;

@@ -12,12 +12,15 @@ import EmptyResult from '../../components/EmptyResult';
 import StudentList from '../../components/List/StudentList';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal';
 import MainPanel from '../../components/MainPanel';
+import UpperTab from '../../components/UpperTab';
 //hooks
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData';
 import useClassAuth from '../../hooks/useClassAuth';
 //img
 import deskIcon from '../../image/icon/desk_icon.png'
+import MainSelector from '../classRoom/MainSelector';
+import useFetchFireData from '../../hooks/Firebase/useFetchFireData';
 
 //2024.10.22 생성
 const HomeroomDetailsPage = () => {
@@ -25,7 +28,10 @@ const HomeroomDetailsPage = () => {
   //교사 인증
   const { log } = useClassAuth();
   if (log) { window.alert(log) }
-  useEffect(() => { setIsVisible(true) }, [])
+  useEffect(() => {
+    setIsVisible(true)
+    fetchActiList("담임").then((actiList) => { setActiList(actiList) })
+  }, [])
   //라이브러리
   const navigate = useNavigate();
   const dispatcher = useDispatch()
@@ -34,16 +40,25 @@ const HomeroomDetailsPage = () => {
   //모든 학생 List
   const { studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber")
   useEffect(() => { dispatcher(setAllStudents(studentList)) }, [studentList]) //전역변수
+  const { fetchActiList } = useFetchFireData()
+  //담임반 활동 List
+  const [actiList, setActiList] = useState([])
+  useEffect(() => {
+    setSelfActiList(actiList.filter(acti => acti.subjDetail === "자율"))
+    setCareerActiList(actiList.filter(acti => acti.subjDetail === "진로"))
+  }, [actiList])
+  const [selfActiList, setSelfActiList] = useState([])
+  const [careerActiList, setCareerActiList] = useState([])
   const { deleteClassWithStudents } = useDeleteFireData()
+  //tab
+  const [tab, setTab] = useState(1)
   //교사 학생 추가 모달
   const [isAddStuModalShown, setIsAddStuModalShown] = useState(false)
   //에니메이션
   const [isVisible, setIsVisible] = useState(false)
 
   //----2.함수부--------------------------------
-  const handleAllStudentOnClick = () => {
-    navigate(`/homeroom/${thisClass.id}/allstudents`)
-  }
+  const handleAllStudentOnClick = () => { navigate(`/homeroom/${thisClass.id}/allstudents`) }
 
   const handleDeleteClassOnClick = () => {
     let deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
@@ -59,7 +74,6 @@ const HomeroomDetailsPage = () => {
   return (
     <>
       <Container $isVisible={isVisible}>
-        {/* 마스터만 볼 수 있게 */}
         <MainPanel>
           <h5>도구모음</h5>
           <IconWrapper>
@@ -68,6 +82,18 @@ const HomeroomDetailsPage = () => {
           </IconWrapper>
         </MainPanel>
         <MainPanel>
+          <TabWrapper>
+            <UpperTab className="tab1" value={tab} top="-41px" onClick={() => { setTab(1) }}>자율</UpperTab>
+            <UpperTab className="tab2" value={tab} top="-41px" left="62px" onClick={() => { setTab(2) }}>진로</UpperTab>
+          </TabWrapper>
+          <h5>빠른 세특 쫑알이</h5>
+          {tab === 1 && <MainSelector type="self" studentList={studentList} actiList={selfActiList} classId={thisClass.id} />}
+          {tab === 2 && <MainSelector type="career" studentList={studentList} actiList={careerActiList} classId={thisClass.id} />}
+        </MainPanel>
+        <MainPanel>
+          <TabWrapper>
+            <UpperTab value={tab} top="-41px" >행동특성</UpperTab>
+          </TabWrapper>
           <h5>학생 행동특성 및 종합의견 작성</h5>
           {(!studentList || studentList.length === 0) ?
             <>{/* 학생 목록 없을 때 */}
@@ -100,6 +126,9 @@ const Container = styled.main`
   margin: 0 auto 50px;
   opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
   transition: opacity 0.7s ease;
+`
+const TabWrapper = styled.div`
+  position: relative;
 `
 const IconWrapper = styled.div`
   position: relative;

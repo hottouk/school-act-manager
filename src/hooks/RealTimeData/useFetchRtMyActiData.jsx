@@ -8,22 +8,27 @@ const useFetchRtMyActiData = () => {
   const db = appFireStore
   const user = useSelector(({ user }) => { return user })
   const actiColRef = collection(db, "activities")
-  const [actiList, setActiList] = useState([])
-
+  const [subjActiList, setSubjActiList] = useState([])
+  const [homeActiList, setHomeActiList] = useState([])
   useEffect(() => {
     let q = query(actiColRef, where("uid", "==", user.uid), orderBy("subject", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setActiList(data)
+      let subjActiList = []
+      let homeActiList = []
+      snapshot.docs.forEach((doc) => {
+        let acti = { id: doc.id, ...doc.data() }
+        if (doc.data().subject === "담임") { homeActiList.push(acti) }
+        else { subjActiList.push(acti) }
+      });
+      setSubjActiList(subjActiList)
+      setHomeActiList(homeActiList)
+      console.log(subjActiList, homeActiList)
     })
     // 컴포넌트 언마운트 시 구독 해제
     return () => unsubscribe();
   }, [db])
 
-  return actiList;
+  return { subjActiList, homeActiList };
 }
 
 export default useFetchRtMyActiData

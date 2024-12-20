@@ -75,51 +75,19 @@ const useFetchFireData = () => {
       console.log(err)
     }
   }
+  //5. 다른 교사 Acti 리스트 - 활동관리(241215 삭제)
 
-  //5. 다른 교사 Acti 리스트 - 활동관리
-  const fetchOtrActiList = async (otherTrId) => {
-    let otrActiList = []
-    let q = query(actiColRef, where("uid", "==", otherTrId), orderBy("subject", "desc"));
-    try {
-      let querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        otrActiList.push({ id: doc.id, ...doc.data() })
-        otrActiList.sort((a, b) => a.title.localeCompare(b.title))
-      })
-    } catch (err) {
-      window.alert(err.message);
-      console.log(err);
-    }
-    return otrActiList;
-  }
-
-  //4. 내 Acti 리스트
-  const fetchActiList = async (thisClass) => {
+  //4. 내 Acti 리스트(개별클래스 내에서 사용)
+  const fetchActiList = async (subject) => {
     let actiList = []
-    let q
-    if (user.isTeacher) { //교사
-      if (!thisClass) { //활동 관리
-      } else {  //반 활동
-        q = query(actiColRef, where("uid", "==", user.uid), where("subject", "==", thisClass.subject));
-      }
-    } else { //학생
-      if (!thisClass) { //활동 관리
-        q = query(actiColRef, where("particiSIdList", "array-contains", user.uid));
-      } else { //반 활동
-        q = query(actiColRef, where("uid", "==", thisClass.uid), where("subject", "==", thisClass.subject));
-      }
-    }
+    let q = query(actiColRef, where("uid", "==", user.uid), where("subject", "==", subject));
     try {
       let querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        actiList.push({ id: doc.id, ...doc.data() })
+      querySnapshot.forEach((doc) => { actiList.push({ id: doc.id, ...doc.data() }) })
+      await fetchCopiedActiList().then((copiedList) => {
+        let filterdList = !copiedList || copiedList.filter((copied) => { return copied.subject === subject })
+        actiList = actiList.concat(filterdList)
       })
-      if (thisClass) { //교실 - 셀렉터 활동 
-        await fetchCopiedActiList().then((copiedList) => {
-          let filterdList = !copiedList || copiedList.filter((copied) => { return copied.subject === thisClass.subject })
-          actiList = actiList.concat(filterdList)
-        })
-      }
       actiList.sort((a, b) => a.title.localeCompare(b.title))
     } catch (err) {
       window.alert(err.message);
@@ -242,7 +210,7 @@ const useFetchFireData = () => {
     }
     return q
   }
-  return ({ db, fetchDoc, fetchSubDoc, fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchOtrActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
+  return ({ db, fetchDoc, fetchSubDoc, fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
 }
 
 export default useFetchFireData

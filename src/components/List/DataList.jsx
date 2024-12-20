@@ -6,7 +6,6 @@ import { setSelectClass } from '../../store/classSelectedSlice'
 import { setAppliedClassList, setJoinedClassList } from '../../store/userSlice'
 //hooks
 import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData'
-import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 //이미지
 import unknown from '../../image/icon/unkown_icon.png'
 import MonImg from '../MonImg'
@@ -15,13 +14,12 @@ import likeIcon from '../../image/icon/like_icon.png'
 import styled from 'styled-components'
 
 //2024.01.09
-const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 리스트, 타입으로 정리하기
-  //1. 변수
+const DataList = ({ dataList, type }) => {//todo 데이터 리스트, 타입으로 정리하기
+  //----1.변수부--------------------------------
   const navigate = useNavigate()
   const user = useSelector(({ user }) => user)
   const [studentUser, setStudentUser] = useState(null);
   const { updateClassListInfo } = useAddUpdFireData("user")
-  const { fetchDataList } = useFetchFireData()
   //전역변수
   const dispatcher = useDispatch()
 
@@ -30,7 +28,7 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
     else { setStudentUser({ email: user.email, name: user.name, studentNumber: user.studentNumber, uid: user.uid }) }
   }, [user])
 
-  //3. 함수
+  //----2.함수부--------------------------------
   const handleOnClick = (item) => {
     switch (type) {
       case "classroom":
@@ -62,16 +60,6 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
       case "copiedActi":
         if (user.isTeacher) { navigate(`/activities/${item.id}`, { state: { acti: item } }) } //교사
         break;
-      case "teacher":
-        if (setTeacherClassList) {
-          fetchDataList("classRooms", "uid", item.uid).then((classroomList) => {
-            classroomList.sort((a, b) => a.subject.localeCompare(b.subject)) //정렬
-            setTeacherClassList(classroomList)
-          })
-        } else {
-          navigate(`/activities/others`, { state: { otherTrId: item.id } })
-        }
-        break;
       case "word":
         //todo 단어 목록 만들기
         break;
@@ -80,58 +68,47 @@ const DataList = ({ dataList, type, setTeacherClassList }) => {//todo 데이터 
   }
 
   return (
-    <StyledListContainer>
-      {type === "teacher" && dataList.map((item) => { //교사
-        return (
-          <StyledTeacherLi key={item.uid} onClick={() => { handleOnClick(item) }}>
-            <div className="t_info">
-              <p className="t_name">{item.name} 선생님</p>
-              <p>{item.school.schoolName}</p>
-              <p className="like_count"><img className={"like_icon"} src={likeIcon} alt={"받은좋아요"} />{item.likedCount ? item.likedCount : 0} </p>
-            </div>
-            <div><img src={item.profileImg ? item.profileImg : unknown} alt="프사" /></div>
-          </StyledTeacherLi>)
-      })}
+    <Container>
       {(type === "classroom" || type === "appliedClassList") && dataList.map((item) => { //교실
         return (<StyledClassroomLi key={item.id} onClick={() => { handleOnClick(item) }}>
-          <h4>{item.classTitle}</h4>
+          <h5>{item.classTitle}</h5>
           <p>{item.intro}</p>
           <p>{item.subject ? `${item.subject}과` : "교사가 삭제한 클래스입니다."}{item.subjDetail ? '-' + item.subjDetail : ''} </p>
         </StyledClassroomLi>)
       })}
       {(type === "homeroom") && dataList.map((item) => { //담임반
         return (<StyledHomeroomLi key={item.id} onClick={() => { handleOnClick(item) }}>
-          <h4>{item.classTitle}</h4>
-          <h4 className="klass_info">{item.grade}</h4><span>학년</span><h4 className="klass_info">{item.classNumber}</h4><span>반</span>
+          <h5>{item.classTitle}</h5>
+          <h5 className="klass_info">{item.grade}</h5><span>학년</span><h5 className="klass_info">{item.classNumber}</h5><span>반</span>
           <p>{item.intro}</p>
         </StyledHomeroomLi>)
       })}
       {type === "activity" && dataList.map((item) => { //활동
-        return (<ActiList key={item.id} onClick={() => { handleOnClick(item) }}>
+        return (<ActiLi key={item.id} onClick={() => { handleOnClick(item) }}>
           <div className="acti_info">
-            <h4 >{item.title}</h4>
+            <h5 >{item.title}</h5>
             <p>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
             <p className="like_count"><img className={"like_icon"} src={likeIcon} alt={"받은좋아요"} />{item.likedCount ? item.likedCount : 0} </p>
             <p className="madeBy">by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</p>
           </div>
           <div><MonImg monImg={item.monImg}></MonImg></div>
-        </ActiList>)
+        </ActiLi>)
       })}
       {type === "copiedActi" && dataList.map((item) => { //복사한 활동
-        return (<ActiList key={item.id} onClick={() => { handleOnClick(item) }}>
+        return (<ActiLi key={item.id} onClick={() => { handleOnClick(item) }}>
           <div className="acti_info">
-            <h4 style={{ color: '#FF69B4' }}>{item.title}</h4>
+            <h5 style={{ color: '#FF69B4' }}>{item.title}</h5>
             <p>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
             <p style={{ backgroundColor: '#FF69B4' }} className="madeBy">by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</p>
           </div>
           <div><MonImg className="monImg" monImg={item.monImg}></MonImg></div>
-        </ActiList>)
+        </ActiLi>)
       })}
 
-    </StyledListContainer>
+    </Container>
   )
 }
-const StyledListContainer = styled.ul`
+const Container = styled.ul`
   display: flex;
   width: 100%;
   flex-wrap: wrap;
@@ -145,7 +122,7 @@ const StyledListContainer = styled.ul`
     border-radius: 15px;
     cursor: pointer;  
   }
-  h4 { 
+  h5 { 
     width: 80%;
     margin: 0 0 8px;
     color: royalBlue;
@@ -160,14 +137,13 @@ const StyledListContainer = styled.ul`
     padding: 0;
   }
 `
-
 const StyledClassroomLi = styled.li`
-  h4 { color: #3454d1;  }
-  h4.klass_info { display: inline;}  
+  h5 { color: #3454d1;  }
+  h5.klass_info { display: inline;}  
 `
 const StyledHomeroomLi = styled.li`
-  h4 { color: #3454d1;  }
-  h4.klass_info { display: inline;}  
+  h5 { color: #3454d1;  }
+  h5.klass_info { display: inline;}  
   p { margin-top: 15px; }
 `
 
@@ -199,7 +175,7 @@ const StyledTeacherLi = styled.li`
   }
 `
 
-const ActiList = styled.li`
+const ActiLi = styled.li`
   position: relative;
   display: flex;
   .acti_info {

@@ -14,14 +14,15 @@ const ClassSortSelection = () => {
   //1. 변수
   const navigate = useNavigate()
   const { state } = useLocation(); //=>에 따라 보여줄 화면 결정
-  const [step, setStep] = useState('')
-  const [type, setType] = useState('')
-  //2. 세로 길이
-  const clientHeight = useClientHeight(document.documentElement)
   useEffect(() => {
     setStep(state.step)
     setType(state.type)
   }, [state])
+  const [step, setStep] = useState('')
+  const [type, setType] = useState('')
+  //2. 세로 길이
+  const clientHeight = useClientHeight(document.documentElement)
+
 
   //2. 함수
   const handleCardBtnClick = (event) => {

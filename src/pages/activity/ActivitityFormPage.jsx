@@ -32,7 +32,7 @@ import AddPerfRecModal from "../../components/Modal/AddPerfRecModal";
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
 //css
 import styled from "styled-components";
-import SubNav from "../../components/Nav/SubNav";
+import SubNav from "../../components/Bar/SubNav";
 import BackBtn from "../../components/Btn/BackBtn";
 
 //24.07.06 수정(실시간 바이트 갱신)
@@ -42,8 +42,8 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const user = useSelector(({ user }) => { return user })
   //1.활동 기본 정보 변수
   const [title, setTitle] = useState('');
-  const [_subjGroup, setSubjGroup] = useState('default');
-  const [_subjDetail, setSubjDetail] = useState('default');
+  const [_selectedSubjGroup, setSelectedSubjGroup] = useState('default');
+  const [_selectedSubjDetail, setSelectedSubjDetail] = useState('default');
   const [content, setContent] = useState('');
   const [record, setRecord] = useState('');
   const [_extraRecList, setExtraRecList] = useState(null);
@@ -74,8 +74,12 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const { copyActiTransaction, delCopiedActiTransaction } = useFireTransaction()
   const { deleteActi } = useFireActi();
   //5.경로 이동 관련 변수
-  const { state } = useLocation() //state.acti는 활동
-  useEffect(() => { if (state) { initData() } else { setIsModified(true) } }, [state]);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const sort = queryParams.get("sort")
+  const { state } = location //state.acti는 활동
+
+  useEffect(() => { if (state?.acti) { initData() } else { setIsModified(true) } }, [state]);
   const navigate = useNavigate()
   //6. ChatGPt
   const { gptAnswer, askChatGpt, gptRes } = useChatGpt();
@@ -107,7 +111,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
     setExtraRecList(acti.extraRecordList)
     setPerfRecList(acti.perfRecordList)
     setMonImg(acti.monImg)
-    setSubjDetail(acti.subject)
+    setSelectedSubjDetail(acti.subject)
     setIsHomework(acti.isHomework)
     setIsPrivate(acti.isPrivate || false)
     setLeadershipScore(scoresObj?.leadership ?? 0)
@@ -132,7 +136,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
         let newAct = {
-          uid: String(user.uid), title, subject: _subjGroup, subjDetail: _subjDetail,
+          uid: String(user.uid), title, subject: _selectedSubjGroup, subjDetail: _selectedSubjDetail,
           content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework,
           isPrivate: _isPrivate, byte
         };
@@ -178,7 +182,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   // 저장버튼 클릭 제출
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (_subjDetail !== 'default') {
+    if (_selectedSubjDetail !== 'default') {
       showConfirmModal();
     } else {
       window.alert('과목을 입력해주세요')
@@ -190,9 +194,9 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
     event.preventDefault();
     switch (event.target.id) {
       case "gpt_btn": //교사 전용
-        if (title !== '' && _subjDetail !== 'default' && content !== '') {
+        if (title !== '' && _selectedSubjDetail !== 'default' && content !== '') {
           try {
-            askChatGpt(title, _subjDetail, content, byte)
+            askChatGpt(title, _selectedSubjDetail, content, byte)
             setTimerModalShow(true)
           } catch (error) {
             window.alert.log(error.message)
@@ -283,7 +287,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       {user.isTeacher &&
         <StyledForm onSubmit={handleSubmit}>
           <StyledHeader>
-            {state ? <legend>{_subjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}
+            {state ? <legend>{_selectedSubjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}
           </StyledHeader>
           <fieldset>
             <StyledDiv>
@@ -296,13 +300,16 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
             {!state &&
               <InputWrapper>
                 <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
-                <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
+                <SubjectSelects sort={sort}
+                  selectedGroup={_selectedSubjGroup} selectedDetail={_selectedSubjDetail}
+                  setSelectedGroup={setSelectedSubjGroup} setSelectedDetail={setSelectedSubjDetail}
+                />
               </InputWrapper>}
             {/* 활동 설명 */}
             <CommonTextArea id="act_content" title="활동 설명" onChange={handleOnChange} value={content} disabled={!isModified}
               placeholder={"ex)포도당 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동."} />
             <CommonTextArea id="act_record" title="생기부 문구" onChange={handleOnChange} value={record} disabled={!isModified} required
-              placeholder={"이 칸은 직접 채우지 마시고 gpt 버튼을 누르세요. 직접 작성도 가능함."}
+              placeholder={"직접 쓰지 마시고 gpt 버튼 클릭! 직접 작성도 가능함."}
             />
             <ByteCalculator handleOnConhange={handleOnChange} str={record} />
             <RadioWrapper>

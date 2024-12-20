@@ -13,13 +13,8 @@ import { useNavigate } from 'react-router-dom';
 //css
 import styled from "styled-components"
 
-const MainSelector = ({ studentList, actiList, classId, setIsPerfModalShow }) => {
-  //1. 변수
-  //MultiSelector 내부 변수
-  const selectStudentRef = useRef(null); //학생 선택 셀렉터 객체, 재랜더링 X 
-  const selectActRef = useRef(null); //활동 선택 셀렉터 객체, 재랜더링 X
-  const studentCheckBoxRef = useRef(null); //모든 학생 체크박스, 재랜더링 X
-  const actCheckBoxRef = useRef(null); //모든 활동 체크박스, 재랜더링 X
+const MainSelector = ({ type, studentList, actiList, classId, setIsPerfModalShow }) => {
+  //----1.변수부--------------------------------
   //전역 변수
   const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })
   useEffect(() => {
@@ -31,16 +26,22 @@ const MainSelector = ({ studentList, actiList, classId, setIsPerfModalShow }) =>
   //UseState
   const [isAllStudentChecked, setIsAllStudentChecked] = useState(false) //모든학생 선택 유무
   const [isAllActivityChecked, setIsAllActivityChecked] = useState(false) //모든활동 선택 유무
-  //모달창
-  const [isCompleteModalShow, setIsCompleteModalShow] = useState(false)
   //주요 정보
   const [_accRecord, setAccRecords] = useState();
   const [_byte, setByte] = useState(0)
   //1-2 핵심로직
-  const { writeAccDataOnDB } = useAcc()
+  const { writeAccDataOnDB, writeHomeAccOnDB } = useAcc()
   const { getByteLengthOfString } = useGetByte()
   //1-3. 라이브러리
   const navigate = useNavigate();
+  //MultiSelector 내부 변수
+  const selectStudentRef = useRef(null); //학생 선택 셀렉터 객체, 재랜더링 X 
+  const selectActRef = useRef(null); //활동 선택 셀렉터 객체, 재랜더링 X
+  const studentCheckBoxRef = useRef(null); //모든 학생 체크박스, 재랜더링 X
+  const actCheckBoxRef = useRef(null); //모든 활동 체크박스, 재랜더링 X
+  //모달창
+  const [isCompleteModalShow, setIsCompleteModalShow] = useState(false)
+
 
   //----2.함수부--------------------------------
   //셀렉터에서 선택된 값 해제하기
@@ -56,6 +57,14 @@ const MainSelector = ({ studentList, actiList, classId, setIsPerfModalShow }) =>
       setIsAllActivityChecked(false)
     }
   }
+  //type에 따른 prop 전달 함수
+  const functionMap = {
+    subject: () => writeAccDataOnDB(classId),
+    self: () => writeHomeAccOnDB(classId, "self"),
+    career: () => writeHomeAccOnDB(classId, "career"),
+  };
+  //전달 함수 선택
+  const handleFunction = functionMap[type] || (window.alert("functionMap에 type 지정 바람"));
 
   return (
     <>
@@ -85,7 +94,7 @@ const MainSelector = ({ studentList, actiList, classId, setIsPerfModalShow }) =>
         </StyledSelector>}
         {(!actiList || actiList.length === 0) &&
           <StyledSelector>활동이 없습니다. 활동을 추가해주세요.
-            <MidBtn btnName="활동 추가" btnOnClick={() => { navigate('/activities_setting') }} />
+            <MidBtn onClick={() => { navigate("/activities_setting") }}>활동 추가</MidBtn>
           </StyledSelector>}
         <StyledAccContainer>
           <textarea type="text" value={_accRecord} disabled={true} />
@@ -96,7 +105,7 @@ const MainSelector = ({ studentList, actiList, classId, setIsPerfModalShow }) =>
         </StyledAccContainer>
         <BtnWrapper>
           <MainBtn btnOnClick={() => { setIsCompleteModalShow(true) }} btnName="선택 완료" />
-          <MainBtn btnOnClick={() => { setIsPerfModalShow(true) }} btnName="수행 평가 관리" />
+          {setIsPerfModalShow && <MainBtn btnOnClick={() => { setIsPerfModalShow(true) }} btnName="수행 평가 관리" />}
         </BtnWrapper>
       </Container>
       {/* 선택 완료 모달 */}
@@ -104,7 +113,7 @@ const MainSelector = ({ studentList, actiList, classId, setIsPerfModalShow }) =>
         show={isCompleteModalShow}
         onHide={() => setIsCompleteModalShow(false)}
         onClearSelect={onClearSelect}
-        writeAccDataOnDB={() => writeAccDataOnDB(classId)}
+        writeAccDataOnDB={handleFunction}
       />
     </>
   )

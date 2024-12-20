@@ -1,7 +1,7 @@
 //라이브러리
 import { useSelector } from 'react-redux';
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 //컴포넌트
 import SmallBtn from '../../components/Btn/SmallBtn';
 import ExportAsExcel from '../../components/ExportAsExcel';
@@ -11,10 +11,11 @@ import useGetByte from '../../hooks/useGetByte';
 import useClassAuth from '../../hooks/useClassAuth';
 import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData';
+import UpperTab from '../../components/UpperTab';
 //css
 import styled from 'styled-components';
 //이미지
-import SubNav from '../../components/Nav/SubNav';
+import SubNav from '../../components/Bar/SubNav';
 import BackBtn from '../../components/Btn/BackBtn';
 
 //2024.10.22 생성
@@ -30,11 +31,13 @@ const HomeClassAllStudentsPage = () => {
   const thisClass = useSelector(({ classSelected }) => { return classSelected }) //반 전역변수
   //학생 정보 데이터 통신
   const { studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
+  //선택 탭
+  const [tab, setTab] = useState(1)
   //현재 행 수정
   const [thisModifying, setThisModifying] = useState('')
   //학생 속성
   const [newName, setNewName] = useState('')
-  const [newOpinion, setNewOpinion] = useState('')
+  const [newRecord, setNewRecord] = useState('')
   const { getByteLengthOfString } = useGetByte();
   const { updateStudent } = useAddUpdFireData("classRooms")
   //에니메이션
@@ -45,18 +48,36 @@ const HomeClassAllStudentsPage = () => {
   const handleModiBtnOnClick = (key, name, record) => {
     setThisModifying(key)
     setNewName(name)
-    setNewOpinion(record)
+    setNewRecord(record)
+  }
+  //tab에 따라 다른 기록 반환
+  const handleRecord = (student) => {
+    if (tab === 1) {
+      return student.behaviorOpinion
+    } else if (tab === 2) {
+      return student.selfAccRecord
+    } else if (tab === 3) {
+      return student.careerAccRecord
+    }
   }
   //저장 버튼
   const handleSaveBtnOnClick = (key) => {
-    updateStudent({ behaviorOpinion: newOpinion, writtenName: newName }, classId, key); //데이터 통신       
+    let student
+    if (tab === 1) {
+      student = { behaviorOpinion: newRecord, writtenName: newName }
+    } else if (tab === 2) {
+      student = { selfAccRecord: newRecord, writtenName: newName }
+    } else if (tab === 3) {
+      student = { behaviorOpinion: newRecord, writtenName: newName }
+    }
+    updateStudent(student, classId, key); //데이터 통신       
     setThisModifying('');
   }
   //취소 버튼
   const handleCancleBtnOnClick = () => {
     setThisModifying('');
     setNewName('');
-    setNewOpinion('');
+    setNewRecord('');
   }
 
   return (
@@ -65,6 +86,11 @@ const HomeClassAllStudentsPage = () => {
         <BackBtn />
         <ExportAsExcel type="home" />
       </SubNav>
+      <TabWrapper>
+        <UpperTab className="tab1" value={tab} top="-4px" left="96px" onClick={() => { setTab(1) }}>행동특성</UpperTab>
+        <UpperTab className="tab2" value={tab} top="-4px" left="190px" onClick={() => { setTab(2) }}>자율</UpperTab>
+        <UpperTab className="tab3" value={tab} top="-4px" left="252px" onClick={() => { setTab(3) }}>진로</UpperTab>
+      </TabWrapper>
       <StyledGirdContainer>
         <HeaderWrapper>
           <StyledHeader>연번</StyledHeader>
@@ -80,7 +106,7 @@ const HomeClassAllStudentsPage = () => {
           let isModifying = (thisModifying === key)                          //현재 수정 중
           let studentNumber = student.studentNumber
           let name = (student.writtenName || "미등록")
-          let record = (student.behaviorOpinion || "기록 없음")
+          let record = (handleRecord(student) || "기록 없음")
           let bytes = ((record !== "기록 없음") ? getByteLengthOfString(record) : 0)
 
           return <React.Fragment key={key}>
@@ -94,7 +120,7 @@ const HomeClassAllStudentsPage = () => {
             <StyledGridItem className="left-align">                          {/* 행발 */}
               {!isModifying
                 ? record
-                : <StyledTextArea type="text" value={newOpinion} onChange={(event) => setNewOpinion(event.target.value)} />}
+                : <StyledTextArea type="text" value={newRecord} onChange={(event) => setNewRecord(event.target.value)} />}
             </StyledGridItem> {/* 기록 */}
             <StyledGridItem>{bytes}</StyledGridItem>                         {/* 바이트 */}
             <StyledGridItem>
@@ -131,6 +157,9 @@ const StyledGirdContainer = styled.div`
   grid-template-columns: 70px 100px 100px 1000px 60px 100px; 
   grid-template-rows: 40px;
 `
+const TabWrapper = styled.div`
+  position: relative;
+`
 // lastChild의 범위를 한정하는 역할
 const HeaderWrapper = styled.div` 
   display: contents;
@@ -143,7 +172,7 @@ const StyledHeader = styled.div`
   font-weight: bold;
   justify-content: center;
   &: first-child {
-    border-top-left-radius: 5px;
+    border-top-left-radius: 0px;
   }
   &: last-child {
     border-top-right-radius: 5px;

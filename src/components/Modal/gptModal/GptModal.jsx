@@ -17,7 +17,6 @@ import styled from 'styled-components';
 //img
 import plusIcon from '../../../image/icon/plus.png'
 import arrowsIcon from '../../../image/icon/arrows_icon.png'
-import { gptPersonalonReportMsg } from '../../../data/gptMsgDataList';
 //2024.09.04(수정) => 12.03(보고서 탭 추가)
 const GptModal = (props) => {
   //----1.변수부--------------------------------
@@ -119,7 +118,7 @@ const GptModal = (props) => {
             <StyledImg src={plusIcon} alt="plus_icon" />
             <DotTitleWrapper>
               <StyledTab $tab={tab} onClick={() => { setTab(1) }}>특성</StyledTab>
-              <StyledTab className='tab2' $tab={tab} onClick={() => { setTab(2) }}>보고서</StyledTab>
+              <StyledTab className="tab2" $tab={tab} onClick={() => { setTab(2) }}>보고서</StyledTab>
               {tab === 1 && <>
                 <StyledSpan>학생의 특성을 간단히 적어주세요</StyledSpan>
                 <DotTitle title={"학업 역량 ▼"} onClick={() => { setIsAcadShown((prev) => !prev) }} pointer="pointer"

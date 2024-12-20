@@ -130,7 +130,7 @@ const ClassroomMakePage = () => {
           {/* 클래스 타입 */}
           {classType === "subject" && <InputWrapper>
             <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
-            <SubjectSelects subjGroup={_subjGroup} subjDetail={_subjDetail} subjGrpOnChange={setSubjGroup} subjOnChange={setSubjDetail} />
+            <SubjectSelects sort={classType} selectedGroup={_subjGroup} selectedDetail={_subjDetail} setSelectedGroup={setSubjGroup} setSelectedDetail={setSubjDetail} />
           </InputWrapper>}
           <label htmlFor="class_explanation">간단한 설명을 작성하세요</label>
           <input id="class_explanation" type="text" value={_intro} onChange={handleOnChange} placeholder="ex)25 건강고 1-1 강건쌤" required />

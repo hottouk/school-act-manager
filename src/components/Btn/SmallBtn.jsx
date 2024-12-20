@@ -3,6 +3,7 @@ import styled from 'styled-components'
 
 //2024.07.26 샘플
 const SmallBtn = (props) => {
+  //SearchBar에 사용
   return (
     <StyledBtn
       type="button"

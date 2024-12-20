@@ -25,6 +25,7 @@ import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
 import ArrowBtn from '../../components/Btn/ArrowBtn.jsx';
 import PerfModal from '../../components/Modal/PerfModal.jsx';
 import TransparentBtn from '../../components/Btn/TransparentBtn.jsx';
+import MainPanel from '../../components/MainPanel.jsx';
 
 //2024.08.01(클래스 헤더 수정) -> 11.13 애니메이션 추가
 const ClassRoomDetailsPage = () => {
@@ -51,10 +52,11 @@ const ClassRoomDetailsPage = () => {
   const { deleteClassWithStudents } = useDeleteFireData()
   //데이터 통신 변수
   const { studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
+  console.log(studentList) //
   useEffect(() => {
     setIsVisible(true)
     dispatcher(setAllStudents(studentList))       //전체 학생 전역변수화
-    fetchActiList(thisClass).then((actiList) => { //전체 활동 전역변수화
+    fetchActiList(thisClass.subject).then((actiList) => { //전체 활동 전역변수화
       dispatcher(setAllActivities(actiList))
       setActiList(actiList)
     });
@@ -132,19 +134,19 @@ const ClassRoomDetailsPage = () => {
           {(!user.isTeacher && !isMember && !isApplied) && <StyledMoveBtn id="join_btn" onClick={handleBtnClick}>가입하기</StyledMoveBtn>}
         </StyeldHeader>
         {/* 셀렉터(교사)*/}
-        <MainSelectorWrapper>
+        <MainPanel>
           <h5>빠른 세특 쫑알이</h5>
-          {user.isTeacher && <MainSelector studentList={studentList} actiList={_actiList} classId={thisClass.id} setIsPerfModalShow={setIsPerfModalShow} />}
-        </MainSelectorWrapper>
+          {user.isTeacher && <MainSelector type="subject" studentList={studentList} actiList={_actiList} classId={thisClass.id} setIsPerfModalShow={setIsPerfModalShow} />}
+        </MainPanel>
         {/* 퀘스트 목록(학생) */}
-        {(!user.isTeacher && isMember) && <StyledMain>
+        {(!user.isTeacher && isMember) && <MainPanel>
           {(!_actiList || _actiList.length === 0)
             ? <EmptyResult comment="등록된 활동이 없습니다." />
             : <ActivityList activityList={_actiList} classInfo={thisClass} />}
-        </StyledMain>
+        </MainPanel>
         }
         {/* 학생 상세 보기 (가입 학생, 교사)*/}
-        {((!user.isTeacher && isMember) || user.isTeacher) && <StyledMain>
+        {((!user.isTeacher && isMember) || user.isTeacher) && <MainPanel>
           <h5>학생 개별 보기</h5>
           {/* 학생 목록 없을 때 */}
           {(!studentList || studentList.length === 0) ?
@@ -152,12 +154,12 @@ const ClassRoomDetailsPage = () => {
               <EmptyResult comment="등록된 학생이 없습니다." />
               <MidBtn btnName="학생 추가" btnOnClick={() => { setIsAddStuModalShown(true) }} />
             </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} classType={"subject"} />}
-        </StyledMain>}
+        </MainPanel>}
         {/* 반 전체보기(교사)*/}
-        {user.isTeacher && <StyledMain>
+        {user.isTeacher && <MainPanel>
           <h5>한 눈에 보기</h5>
           <MainBtn btnName="반 전체 세특 보기" btnOnClick={() => { navigate('allStudents') }} />
-        </StyledMain>
+        </MainPanel>
         }
         {user.isTeacher && <BtnWrapper>
           <TransparentBtn id="back_btn" btnName="반 목록" btnOnClick={handleBtnClick} />
@@ -246,38 +248,6 @@ const ArrowWrapper = styled.div`
   display: flex;
   align-items: center;
 }
-`
-const MainSelectorWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 5px;
-  margin-top: 50px;
-  border-left: 12px #3454d1 double;
-  box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
-  h5 {
-    display: flex;
-    justify-content: center;
-    font-weight: bold;
-    margin-top: 10px;
-  }
-`
-const StyledMain = styled.main`
-  padding: 5px;
-  margin-top: 50px;
-  border-left: 12px #3454d1 double;
-  box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
-  h5 {
-    display: flex;
-    justify-content: center;
-    font-weight: bold;
-    margin: 10px auto;
-  }
-  @media screen and (max-width: 767px){
-    margin-top: 0;
-    border-left: none;
-    border-top: 12px #3454d1 double;
-    box-shadow: none;
-  }
 `
 const StyledSignupBtn = styled.button`
   display: block;

@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import styled, { css } from 'styled-components';
 import { useReactToPrint } from 'react-to-print';
 //컴포넌트
-import SubNav from '../../components/Nav/SubNav';
+import SubNav from '../../components/Bar/SubNav';
 import BackBtn from '../../components/Btn/BackBtn';
 import MidBtn from '../../components/Btn/MidBtn';
 import LongW100Btn from '../../components/Btn/LongW100Btn';

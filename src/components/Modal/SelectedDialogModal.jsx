@@ -1,13 +1,16 @@
+//라이브러리
 import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
+//2024.12.19 코드 정리리
 const SelectedDialogModal = (props) => {
+  //----1.변수부--------------------------------
   //redux 전역변수
   const studentSelected = useSelector(({ studentSelected }) => { return studentSelected })
   const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })
-
   //지역 변수
   const [studentList, setStudentList] = useState(null)
   const [actList, setActList] = useState(null)
@@ -31,6 +34,7 @@ const SelectedDialogModal = (props) => {
     }
   }, [studentSelected, activitySelected])
 
+  //----2.함수부--------------------------------
   const handleConfirm = () => {
     props.onHide()
     props.writeAccDataOnDB().then(
@@ -61,14 +65,18 @@ const SelectedDialogModal = (props) => {
       </Modal.Body>
       <Modal.Footer>
         {(!(studentSelected.length === 0) && !(activitySelected.length === 0))
-          ? <div>
+          ? <BtnWrapper>
             <Button variant="secondary" onClick={handleCancel}>취소</Button>
             <Button variant="primary" onClick={handleConfirm}>확인</Button>
-          </div>
+          </BtnWrapper>
           : <Button variant="secondary" onClick={handleCancel}>확인</Button>}
       </Modal.Footer>
     </Modal>
   );
 }
 
+const BtnWrapper = styled.div`
+  display: flex;
+  gap: 10px;
+` 
 export default SelectedDialogModal;
