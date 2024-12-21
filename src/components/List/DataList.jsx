@@ -50,15 +50,16 @@ const DataList = ({ dataList, type }) => {//todo 데이터 리스트, 타입으�
           dispatcher(setAppliedClassList(newList))
         } break;
       case "homeroom":
-        dispatcher(setSelectClass(item))   //선택한 교실 비휘발성 전역변수화
+        dispatcher(setSelectClass(item)) //선택한 교실 비휘발성 전역변수화
         navigate(`/homeroom/${item.id}`) //url 이동
         break;
       case "activity":
-        if (user.isTeacher) { navigate(`/activities/${item.id}`, { state: { acti: item } }) } //교사
-        else { navigate(`/activities/${item.id}`, { state: { acti: item, student: studentUser } }) } //학생
+        console.log(item)
+        if (item.subject === "담임") { navigate(`/activities/${item.id}?sort=homeroom`, { state: { acti: item } }) }
+        else { navigate(`/activities/${item.id}?sort=subject`, { state: { acti: item } }) }
         break;
       case "copiedActi":
-        if (user.isTeacher) { navigate(`/activities/${item.id}`, { state: { acti: item } }) } //교사
+        navigate(`/activities/${item.id}`, { state: { acti: item } })
         break;
       case "word":
         //todo 단어 목록 만들기

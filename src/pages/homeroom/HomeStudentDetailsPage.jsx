@@ -43,19 +43,22 @@ const HomeStudentDetailPage = () => {
   //시작
   useEffect(() => { //학생 한명 데이터 통신
     fetchSubDoc("classRooms", id, "students", studentId).then((student) => {
-      let record = student.behaviorOpinion || ''
       let selected = student.selectedSpec || ''
       if (selected) { setDesiredMajor(student.selectedSpec["희망진로"]?.[0] ?? '') }
       setSelectedSpec(selected)
-      setRecord(record)
+      setRecord(student.behaviorOpinion || '')
       setIsVisible(true)
+      console.log(student)
     })
   }, [studentId])
   const { state } = useLocation()
-  const { studentNumber, writtenName } = state //개별 학생 정보
+  const { studentNumber, writtenName, behaviorOpinion, selfAccRecord, careerAccRecord, selectedSpec } = state //개별 학생 정보
   useEffect(() => {
-    setSelectedSpec(state.selectedSpec || '')
-    setRecord(state.behaviorOpinion || '')
+    setSelectedSpec(selectedSpec || '')
+    setBehaviorOpinion(behaviorOpinion || '')
+    setSelfAccRecord(selfAccRecord || '')
+    setCareerAccRecord(careerAccRecord || '')
+    setRecord(behaviorOpinion || '')
     setNthStudent(allStudentList.findIndex(({ id }) => { return id === studentId })) //전체 학생에서 몇 번째 index
     setStep('')
   }, [state])
@@ -69,14 +72,22 @@ const HomeStudentDetailPage = () => {
   }, [gptAnswer, gptRes, gptBytes]);
   const [gptTempAnswer, setGptTempAnswer] = useState('')
   const [gptTempRes, setGptTempRes] = useState(null)
-  //★★ 행발 ★★
-  const [selectedSpec, setSelectedSpec] = useState(''); //선택된 spec { spec1: [], spec2: [], spec3:[]..}
+  //나타나는 정보
+  const [_selectedSpec, setSelectedSpec] = useState(''); //선택된 spec { spec1: [], spec2: [], spec3:[]..}
   const [prevBehavOpin, setPrevBehavOpin] = useState(''); //수정 클릭시 원본 저장 변수
   const [record, setRecord] = useState('');
+  //★★ 행발, 자율, 진로 ★★
+  const [tab, setTab] = useState(1);
+  const [_behaviorOpinion, setBehaviorOpinion] = useState('');
+  const [_selfAccRecord, setSelfAccRecord] = useState('');
+  const [_careerAccRecord, setCareerAccRecord] = useState('');
+  useEffect(() => {
+    setRecord(handleRecord());
+  }, [tab])
+
   const [isFreeze, setIsFreeze] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
   useEffect(() => { if (isEditable === true) setPrevBehavOpin(record) }, [isEditable]);
-  const [tab, setTab] = useState(1);
   //저장
   const { updateStudent, deleteStudent } = useAddUpdFireData("classRooms"); //매개변수 없으면 에러나서 억지로 넣은거임..
   const { fetchSubDoc } = useFetchFireData();
@@ -102,14 +113,13 @@ const HomeStudentDetailPage = () => {
     }, 500); // 애니메이션 시간과 동일하게 설정
   }
   //tab에 따라 다른 기록 반환
-  const handleRecord = (student) => {
+  const handleRecord = () => {
     if (tab === 1) {
-      return student.behaviorOpinion
+      return _behaviorOpinion
     } else if (tab === 2) {
-      console.log("2")
-      return student.selfAccRecord
+      return _selfAccRecord
     } else if (tab === 3) {
-      return student.careerAccRecord
+      return _careerAccRecord
     }
   }
   //목록 이동
@@ -122,8 +132,8 @@ const HomeStudentDetailPage = () => {
   }
   //gpt 생성 버튼 클릭
   const handleGptOnClick = () => {
-    let check = selectedSpec !== ''
-    if (check) { askBehavioralOp(selectedSpec) }
+    let check = _selectedSpec !== ''
+    if (check) { askBehavioralOp(_selectedSpec) }
     else { window.alert("체크된 특성이 없습니다.") }
   }
   //행발 db에 저장
@@ -132,7 +142,7 @@ const HomeStudentDetailPage = () => {
     if (check) {
       if (window.confirm("행동의견을 저장하시겠습니까?")) {
         updateStudent({ behaviorOpinion: record }, id, studentId)
-        dispatch(setEditHomeroomStudent({ id: studentId, behaviorOpinion: record, selectedSpec })) //현재 학생 정보 전역 변수에 저장
+        dispatch(setEditHomeroomStudent({ id: studentId, behaviorOpinion: record, selectedSpec: _selectedSpec })) //현재 학생 정보 전역 변수에 저장
         setIsEditable(false)
         setStep('')
         window.alert("저장되었습니다.")
@@ -146,11 +156,11 @@ const HomeStudentDetailPage = () => {
   }
   //현재 특성 db 저장
   const handleCurSaveOnClick = () => {
-    let check = selectedSpec !== ''
+    let check = _selectedSpec !== ''
     if (check) {
       if (window.confirm("현재 상태를 저장하시겠습니까?")) {
-        updateStudent({ selectedSpec }, id, studentId)                                     //서버에 저장
-        dispatch(setEditHomeroomStudent({ id: studentId, behaviorOpinion: record, selectedSpec })) //현재 학생 정보 전역 변수에 저장
+        updateStudent({ selectedSpec: _selectedSpec }, id, studentId)                                     //서버에 저장
+        dispatch(setEditHomeroomStudent({ id: studentId, behaviorOpinion: record, selectedSpec: _selectedSpec })) //현재 학생 정보 전역 변수에 저장
         window.alert("저장되었습니다.")
       }
     } else { window.alert("체크된 특성이 없습니다.") }
@@ -230,7 +240,7 @@ const HomeStudentDetailPage = () => {
               {/* 1단계 */}
               <AnimOpacity isVisible={step === "first"} content={
                 <><p>1/3단계: 학생의 학업역량에 해당되는 것에 체크해주세요.</p>
-                  <TitledChkBoxList step={step} selectedSpec={selectedSpec} setSelectedSpec={setSelectedSpec} />
+                  <TitledChkBoxList step={step} selectedSpec={_selectedSpec} setSelectedSpec={setSelectedSpec} />
                   <FlexWrapper>
                     <MainBtn btnName="이전" btnOnClick={() => { setStep('') }}></MainBtn>
                     <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
@@ -240,7 +250,7 @@ const HomeStudentDetailPage = () => {
               {/* 2단계 */}
               <AnimOpacity isVisible={step === "second"} content={
                 <><p>2/3단계: 학생의 공동체 역량에 해당되는 것에 체크해주세요.</p>
-                  <TitledChkBoxList step={step} selectedSpec={selectedSpec} setSelectedSpec={setSelectedSpec} />
+                  <TitledChkBoxList step={step} selectedSpec={_selectedSpec} setSelectedSpec={setSelectedSpec} />
                   <FlexWrapper>
                     <MainBtn btnName="이전" btnOnClick={() => { setStep("first") }}></MainBtn>
                     <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
@@ -250,7 +260,7 @@ const HomeStudentDetailPage = () => {
               {/* 3단계 */}
               <AnimOpacity isVisible={step === "third"} content={<>
                 <p>3/3단계: 학생의 진로 역량에 해당되는 것에 체크해주세요.</p>
-                <TitledChkBoxList step={step} selectedSpec={selectedSpec} setSelectedSpec={setSelectedSpec} />
+                <TitledChkBoxList step={step} selectedSpec={_selectedSpec} setSelectedSpec={setSelectedSpec} />
                 <FlexWrapper>
                   <SmallTitle title={"희망 진로"} />
                   <input type="text" value={desiredMajor} onChange={(event) => { setDesiredMajor(event.target.value) }} style={{ borderRadius: "5px", height: "28px", flexGrow: "1" }} disabled={isFreeze} />
@@ -274,7 +284,7 @@ const HomeStudentDetailPage = () => {
                   <MainBtn
                     btnName="다음"
                     btnOnClick={() => {
-                      let check = Object.values(selectedSpec)?.filter((arrItem) => { return arrItem.length > 0 }).length > 0
+                      let check = Object.values(_selectedSpec)?.filter((arrItem) => { return arrItem.length > 0 }).length > 0
                       if (check) { setStep("last") } else {
                         window.alert("특성이 하나도 선택되지 않았습니다.")
                       }
@@ -284,10 +294,10 @@ const HomeStudentDetailPage = () => {
               {/* 최종 생성단계 */}
               <AnimOpacity isVisible={step === "last"} content={<>
                 <HeadTitle>선택된 특성</HeadTitle>
-                {!selectedSpec && <HeadTitle>반영 완료</HeadTitle>}
+                {!_selectedSpec && <HeadTitle>반영 완료</HeadTitle>}
                 {/* 중요 */}
-                {selectedSpec && <SelectedSpecWrapper>
-                  {Object.entries(selectedSpec).map((selected) => {
+                {_selectedSpec && <SelectedSpecWrapper>
+                  {Object.entries(_selectedSpec).map((selected) => {
                     if (selected[1].length > 0) {
                       let title = selected[0]
                       let spec = selected[1]

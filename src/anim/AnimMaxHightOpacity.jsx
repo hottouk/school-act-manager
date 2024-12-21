@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const AnimMaxHightOpacity = ({ isVisible, content }) => {
+const AnimMaxHightOpacity = ({ isVisible, content, children }) => {
   return (
     <AnimationWrapper $isVisible={isVisible}>
-      {isVisible && content}
+      {isVisible && (content || children)}
     </AnimationWrapper>
   )
 }
