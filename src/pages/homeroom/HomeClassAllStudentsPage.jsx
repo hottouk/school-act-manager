@@ -21,7 +21,7 @@ import BackBtn from '../../components/Btn/BackBtn';
 //2024.10.22 생성
 const HomeClassAllStudentsPage = () => {
   //----1.변수부--------------------------------
-  //교사 인증
+  //교사 인
   const { log } = useClassAuth();
   if (log) { window.alert(log) }
   useEffect(() => { setIsVisible(true) }, [])
