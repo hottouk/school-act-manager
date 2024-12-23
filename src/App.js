@@ -33,7 +33,7 @@ import WordForm from './pages/wordBattle/WordForm';
 //관리자
 import MasterPage from './pages/main/MasterPage';
 import Lab from './pages/lab/Lab';
-import HomeSeatChange from './pages/homeroom/HomeSeatChange';
+import HomeSeatChange from './pages/homeroom/HomeSeatChangePage';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })

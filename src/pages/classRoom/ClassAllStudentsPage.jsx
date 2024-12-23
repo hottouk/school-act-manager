@@ -14,6 +14,9 @@ import useFetchRtMyStudentData from "../../hooks/RealTimeData/useFetchRtMyStuden
 import styled from "styled-components"
 //이미지
 import recycleIcon from "../../image/icon/recycle_icon.png"
+import BackBtn from "../../components/Btn/BackBtn"
+import { useReactToPrint } from "react-to-print"
+import PrintBtn from "../../components/Btn/PrintBtn"
 
 //2024.10.27(실시간 학생 데이터로 변경, writtenName, accRecord useState로 관리, transition 추가)
 const ClassAllStudents = () => {
@@ -40,6 +43,9 @@ const ClassAllStudents = () => {
   const [isVisible, setIsVisible] = useState(false)
   //css
   const clientHeight = useClientHeight(document.documentElement)
+  //인쇄
+  const printRef = useRef({});
+  const handlePrint = useReactToPrint({ contentRef: printRef });
 
   //----2.함수부--------------------------------
   //수정버튼
@@ -92,10 +98,12 @@ const ClassAllStudents = () => {
     <Container $isVisible={isVisible} $clientheight={clientHeight}>
       <SubNav>
         <p>※수정은 PC에서 가능함</p>
+        <BackBtn />
         <StyledShfBtn $wid="45" src={recycleIcon} alt="섞기 버튼" onClick={() => { handleShuffleAllBtnOnClick() }} />
         <ExportAsExcel />
+        <PrintBtn onClick={() => { handlePrint() }} />
       </SubNav>
-      <StyledGirdContainer>
+      <StyledGirdContainer ref={printRef}>
         <TableHeaderWrapper>
           <StyledHeader>연번</StyledHeader>
           <StyledHeader>학번</StyledHeader>
@@ -174,6 +182,11 @@ const StyledGirdContainer = styled.div`
   justify-content: center;
   grid-template-columns: 70px 100px 100px 1000px 60px 100px; 
   grid-template-rows: 40px;
+  @media print {
+    @page {
+      margin: 5mm;
+    }
+  } 
 `
 // lastChild의 범위를 명확하게 하기 위함.
 const TableHeaderWrapper = styled.div` 
