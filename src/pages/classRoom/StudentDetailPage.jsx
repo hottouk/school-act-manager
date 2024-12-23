@@ -65,7 +65,6 @@ const StudentDetailPage = () => {
   //객체 접근
   const textAreaRef = useRef({})
   const selectRef = useRef({})
-
   //GPT 모달
   const [isGptShown, setIsGptShown] = useState(false)
   const [selectedActi, setSelectedActi] = useState(null)
@@ -83,7 +82,7 @@ const StudentDetailPage = () => {
 
   //----2.함수부--------------------------------
   //학생  이동(24.12.2)
-  const handleMoveOnClick = (student) => {
+  const moveStudent = (student) => {
     if (isAnimating) return;
     setIsAnimating(true);
     setTimeout(() => {
@@ -91,6 +90,18 @@ const StudentDetailPage = () => {
       setIsAnimating(false);
     }, 500); // 애니메이션 시간과 동일하게 설정
   }
+  //활동 순서 변경
+  const moveActiItem = (index, direction) => {
+    setActiList((prevActiList) => {
+      let newActiList = [...prevActiList];
+      let targetIndex = direction === 'up' ? index - 1 : index + 1;
+      // 범위를 벗어나면 이동하지 않음
+      if (targetIndex < 0 || targetIndex >= newActiList.length) return prevActiList;
+      // swap
+      [newActiList[index], newActiList[targetIndex]] = [newActiList[targetIndex], newActiList[index]];
+      return newActiList;
+    });
+  };
   //셀렉터 변경시_2
   const updateActiList = (event, index) => {
     let newId = event.value //클릭한 새로운 이벤트 id
@@ -162,7 +173,7 @@ const StudentDetailPage = () => {
           return;
         }
         let nextStudent = allStudentList[nthStudent + 1];
-        handleMoveOnClick(nextStudent)
+        moveStudent(nextStudent)
         break;
       case "left_arw_btn":
         if (nthStudent === 0) {
@@ -170,7 +181,7 @@ const StudentDetailPage = () => {
           return;
         }
         let previousStudent = allStudentList[nthStudent - 1];
-        handleMoveOnClick(previousStudent)
+        moveStudent(previousStudent)
         break;
       default: return
     }
@@ -204,6 +215,7 @@ const StudentDetailPage = () => {
             <StyledBotPannel>
               <BotGridContainer>
                 <HeaderWrapper>
+                  <StyledHeader>순서</StyledHeader>
                   <StyledHeader>활동</StyledHeader>
                   <StyledHeader>생기부</StyledHeader>
                   <StyledHeader>바이트</StyledHeader>
@@ -213,6 +225,14 @@ const StudentDetailPage = () => {
                     ? <><div /><div className="no_act_record">활동이 없어요ㅠㅠ</div></>
                     : _actiList.map((acti, index) => {
                       return <React.Fragment key={acti.id}>
+                        {/* 0열 */}
+                        <StyledGridItem>
+                          {!isModifiying && index + 1}
+                          {isModifiying && <div style={{ display: "flex", flexDirection: "column" }}>
+                            <button onClick={() => moveActiItem(index, 'up')}>▲</button>
+                            <button onClick={() => moveActiItem(index, 'down')}>▼</button>
+                          </div>}
+                        </StyledGridItem>
                         {/* 1열 */}
                         <StyledGridItem>
                           <div>
@@ -429,10 +449,9 @@ const BotGridContainer = styled.div`
   margin: 10px auto;
   border: 1px solid black;
   border-radius: 10px;
-  display: grid;
-  grid-template-columns: 130px 9fr 1fr;
+display: grid;
+  grid-template-columns: 52px 130px 9fr 1fr;
   grid-template-rows: 40px;
-  grid-auto-rows: minmax(5px, 120px);
   overflow-y: scroll
 `
 const HeaderWrapper = styled.div` 

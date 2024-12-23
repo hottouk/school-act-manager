@@ -7,9 +7,9 @@ const ByteCalculator = ({ str, handleOnChange, styles }) => {
   const { getByteLengthOfString } = useGetByte();
   //기본값
   let isTotalByteHide = styles?.isTotalByteHide || false
-
+  let justifyContent = styles?.justifyContent || "flex-end"
   return (
-    <Container>
+    <Container $justifyContent={justifyContent}>
       <label htmlFor="act_byte" ></label>
       <div>
         <input className="act_byte" type="number" onChange={handleOnChange} value={getByteLengthOfString(str)} disabled />
@@ -21,7 +21,7 @@ const ByteCalculator = ({ str, handleOnChange, styles }) => {
 const Container = styled.div`
   margin-top: -8px;
   display:flex;
-  justify-content: flex-end;
+  justify-content: ${(props) => props.$justifyContent};
   label {
     margin-bottom: 15px;
   }

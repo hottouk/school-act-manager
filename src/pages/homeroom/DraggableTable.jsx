@@ -147,12 +147,12 @@ const Container = styled.div`
     @page {
       margin: 15mm;
     }
-  * {
-    animation: none !important;
-    transition: none !important;
-    opacity: 1 !important;
-  }
-}
+    * {
+      animation: none !important;
+      transition: none !important;
+      opacity: 1 !important;
+    }
+  } 
 `
 const StyledSeat = styled.div.attrs((props) => ({
   style: {

@@ -9,12 +9,12 @@ import BackBtn from '../../components/Btn/BackBtn';
 import MidBtn from '../../components/Btn/MidBtn';
 import LongW100Btn from '../../components/Btn/LongW100Btn';
 import DraggableTable from './DraggableTable';
+import PrintBtn from '../../components/Btn/PrintBtn';
 //hooks
 import useClassAuth from '../../hooks/useClassAuth';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
 import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData';
-//img
-import printIcon from '../../image/icon/print_icon.png'
+
 
 //24.12.14 생성
 const HomeSeatChange = () => {
@@ -76,8 +76,8 @@ const HomeSeatChange = () => {
   //애니메이션
   const [isAnimating, setIsAnimating] = useState(false);
   //인쇄
-  const contentRef = useRef({});
-  const handlePrint = useReactToPrint({ contentRef });
+  const printRef = useRef({});
+  const handlePrint = useReactToPrint({ contentRef: printRef });
 
   //----2.함수부--------------------------------
   //시험 대형 
@@ -202,7 +202,7 @@ const HomeSeatChange = () => {
       <GridItem $column={"1/4"} $row={"1/2"}>
         <SubNav styles={{ gap: "0" }}>
           <BackBtn />
-          <StyledImg id="print_btn" src={printIcon} alt="인쇄" onClick={() => { handlePrintBtnOnClick() }}></StyledImg>
+          <PrintBtn onClick={() => { handlePrintBtnOnClick() }} />
         </SubNav>
       </GridItem>
       <GridItem className="title" $column={"1/4"} $row={"2/3"}>
@@ -218,7 +218,7 @@ const HomeSeatChange = () => {
         </div>
       </GridItem>
       <GridItem className="center" $column={"2/3"} $row={"3/4"}>
-        <div ref={contentRef}>
+        <div ref={printRef}>
           <DraggableTable tileHeight={tileHeight}
             studentList={studentList} positionList={positionList} setPositionList={setPositionList}
             objInfoList={objInfoList} objPositionList={objPositionList} setObjPositionList={setObjPositionList}
@@ -249,12 +249,6 @@ const GridContainer = styled.div`
   width: 100%;
   grid-template-columns: 1fr 4fr 1fr;
   grid-template-rows: 55px 80px 8fr 1fr;
-`
-const StyledImg = styled.img`
-  width: 45px;
-  height: 45px;
-  cursor: pointer;
-  margin-top: 8px;
 `
 const SeatDateWrapper = styled.div`
   display: flex;

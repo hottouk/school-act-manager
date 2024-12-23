@@ -230,7 +230,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
                       />
                     </React.Fragment>)
                   })}
-                  {extractResult[index]?.length > 0 && <MidBtn btnName="변경" btnOnClick={() => { handleAltBtnOnClick(index) }} />}
+                  {extractResult[index]?.length > 0 && <MidBtn onClick={() => { handleAltBtnOnClick(index) }}>변경</MidBtn>}
                 </ExtractWrapper>
               </StyledGridItem>
               <StyledGridItem className="left-align">{perfRecord[index]}</StyledGridItem>

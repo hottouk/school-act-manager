@@ -1,11 +1,15 @@
 //라이브러리
 import { useSelector } from 'react-redux';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useReactToPrint } from 'react-to-print';
 //컴포넌트
 import SmallBtn from '../../components/Btn/SmallBtn';
 import ExportAsExcel from '../../components/ExportAsExcel';
 import EmptyResult from '../../components/EmptyResult';
+import SubNav from '../../components/Bar/SubNav';
+import BackBtn from '../../components/Btn/BackBtn';
+import PrintBtn from '../../components/Btn/PrintBtn';
 //hooks
 import useGetByte from '../../hooks/useGetByte';
 import useClassAuth from '../../hooks/useClassAuth';
@@ -14,11 +18,8 @@ import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStuden
 import UpperTab from '../../components/UpperTab';
 //css
 import styled from 'styled-components';
-//이미지
-import SubNav from '../../components/Bar/SubNav';
-import BackBtn from '../../components/Btn/BackBtn';
 
-//2024.10.22 생성
+//2024.10.22 생성-->24.12.23(인쇄, 진로, 자율 추가)
 const HomeClassAllStudentsPage = () => {
   //----1.변수부--------------------------------
   //교사 인증
@@ -42,6 +43,9 @@ const HomeClassAllStudentsPage = () => {
   const { updateStudent } = useAddUpdFireData("classRooms")
   //에니메이션
   const [isVisible, setIsVisible] = useState(false)
+  //인쇄
+  const printRef = useRef({});
+  const handlePrint = useReactToPrint({ contentRef: printRef });
 
   //----2.함수부--------------------------------
   //학생 개별 수정
@@ -85,13 +89,15 @@ const HomeClassAllStudentsPage = () => {
       <SubNav>
         <BackBtn />
         <ExportAsExcel type="home" />
+        <PrintBtn onClick={() => { handlePrint() }} />
       </SubNav>
-      <TabWrapper>
-        <UpperTab className="tab1" value={tab} top="-4px" left="96px" onClick={() => { setTab(1) }}>행동특성</UpperTab>
-        <UpperTab className="tab2" value={tab} top="-4px" left="190px" onClick={() => { setTab(2) }}>자율</UpperTab>
-        <UpperTab className="tab3" value={tab} top="-4px" left="252px" onClick={() => { setTab(3) }}>진로</UpperTab>
+      
+      <StyledGirdContainer ref={printRef}>
+      <TabWrapper >
+        <UpperTab className="tab1" value={tab} onClick={() => { setTab(1) }}>행동특성</UpperTab>
+        <UpperTab className="tab2" value={tab} left="94px" onClick={() => { setTab(2) }}>자율</UpperTab>
+        <UpperTab className="tab3" value={tab}  left="156px" onClick={() => { setTab(3) }}>진로</UpperTab>
       </TabWrapper>
-      <StyledGirdContainer>
         <HeaderWrapper>
           <StyledHeader>연번</StyledHeader>
           <StyledHeader>학번</StyledHeader>
@@ -155,10 +161,18 @@ const StyledGirdContainer = styled.div`
   display: grid;
   justify-content: center;
   grid-template-columns: 70px 100px 100px 1000px 60px 100px; 
-  grid-template-rows: 40px;
+  grid-template-rows: 1fr 40px;
+  @media print {
+    @page {
+      margin : 5mm;
+    }
+  }
 `
 const TabWrapper = styled.div`
+  grid-column: 1/7;
+  grid-row: 1/2;
   position: relative;
+  top: -34px;
 `
 // lastChild의 범위를 한정하는 역할
 const HeaderWrapper = styled.div` 
