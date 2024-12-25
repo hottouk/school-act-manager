@@ -38,7 +38,7 @@ const useChatGpt = () => {
       ...gptExtraRecordMsg,
       {
         role: "user", content: `[주어진 문장]: '${curRecord}'
-        "위 주어진 문장의 의미와 길이가 비슷한 문구를 4개 생성해주세요. 4개의 문구 사이에 각각 '^' 구분자를 사용하여 제시해야함.`
+        "위 주어진 문장의 의미와 길이가 비슷한 문구를 6개 생성해주세요. 문구들 사이에 각각 '^' 구분자를 사용하여 제시해야함.`
       },
     ]
     playGpt(messages)

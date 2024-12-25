@@ -12,8 +12,9 @@ const ByteCalculator = ({ str, handleOnChange, styles }) => {
     <Container $justifyContent={justifyContent}>
       <label htmlFor="act_byte" ></label>
       <div>
-        <input className="act_byte" type="number" onChange={handleOnChange} value={getByteLengthOfString(str)} disabled />
-        {!isTotalByteHide && <p style={{ display: "inline-block" }}> /1500 Byte</p>}
+        <input className="act_byte" type="number" onChange={handleOnChange} value={getByteLengthOfString(str || '')} disabled />
+        {!isTotalByteHide && <p style={{ display: "inline-block" }}> /1500</p>}
+        <p>Byte</p>
       </div>
     </Container>
   )
