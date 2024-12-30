@@ -1,6 +1,6 @@
 //라이브러리
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 //컴포넌트
 import CardList from '../../components/List/CardList';
@@ -12,15 +12,18 @@ import useClientHeight from '../../hooks/useClientHeight';
 //css
 import styled from 'styled-components';
 import SearchBar from '../../components/Bar/SearchBar';
+import { setAllSubjClasses } from '../../store/allClassesSlice';
 
 //24.09.18(1차 수정)
-const ClassRoomMain = () => {
+const ClassRoomMainPage = () => {
   //----1.변수부--------------------------------
+  //준비
   const navigate = useNavigate()
+  const dispatcher = useDispatch()
   //전역변수 
   const user = useSelector(({ user }) => user)
   const { classList, searchResult, appliedClassList, errByGetClass } = useFetchRtMyClassData() //useEffect 실행 함수
-  const [_subjClassList, setSubjClassList] = useState(null)
+  const [subjClassList, setSubjClassList] = useState(null)
   const [homeroomClassList, setHomerooomClassList] = useState(null)
   useEffect(() => { sortClassroom() }, [classList])
   //todo 학생 관련 함수 정리하기
@@ -28,7 +31,7 @@ const ClassRoomMain = () => {
   const [_teacherList, setTeacherList] = useState(null)
   const [_teacherClassList, setTeacherClassList] = useState(null)
   const [_appliedClassList, setAppliedClassList] = useState(null)
-  //css
+  //모니터 높이
   const clientHeight = useClientHeight(document.documentElement)   //화면 높이
 
   //----2.함수부--------------------------------
@@ -41,6 +44,7 @@ const ClassRoomMain = () => {
       else homeroomClassList.push(classroom)
     })
     setSubjClassList(subjClassList)
+    dispatcher(setAllSubjClasses(subjClassList)) //교과반 전역 변수화
     setHomerooomClassList(homeroomClassList)
   }
 
@@ -48,9 +52,9 @@ const ClassRoomMain = () => {
     <Container $clientheight={clientHeight}>
       {/* 교사 */}
       {user.isTeacher && <>
-        <SearchBar title="교과반 목록" type="classroom" list={_subjClassList} setList={setSubjClassList} />
+        <SearchBar title="교과반 목록" type="classroom" list={subjClassList} setList={setSubjClassList} />
         <CardList
-          dataList={_subjClassList}
+          dataList={subjClassList}
           type="classroom"
           comment="아직 교과반이 없어요. 클래스를 생성해주세요" />
         <SearchBar title="담임반 목록" />
@@ -71,7 +75,7 @@ const ClassRoomMain = () => {
           title="선생님이 만든 교실"
           comment="선생님이 아직 생성하신 교실이 없습니다. "
         />}
-        <CardList dataList={_subjClassList} type="classroom" //학생
+        <CardList dataList={subjClassList} type="classroom" //학생
           title="나의 클래스"
           comment="가입한 클래스가 없어요. 클래스에 가입해주세요" />
         <CardList dataList={_appliedClassList} type="appliedClassList"
@@ -94,4 +98,4 @@ const Container = styled.div`
     overflow-y: scroll;
   }
 `
-export default ClassRoomMain
+export default ClassRoomMainPage

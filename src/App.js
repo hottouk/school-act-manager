@@ -12,15 +12,15 @@ import Nav from './components/Bar/Nav';
 import ActivityMain from './pages/activity/ActivityMain';
 import ActivityFormPage from './pages/activity/ActivitityFormPage';
 import ActivitySortPage from './pages/activity/ActivitySortPage';
-//반 관리
-import ClassRoomMain from './pages/classRoom/ClassroomMain';
+//교과반
+import ClassroomMainPage from './pages/classRoom/ClassroomMainPage';
+import ClassroomDetailsPage from './pages/classRoom/ClassroomDetailsPage';
+import StudentDetailPage from './pages/classRoom/StudentDetailPage';
+import ClassAllStudentsPage from './pages/classRoom/ClassAllStudentsPage';
 //담임반
 import HomeroomDetailsPage from './pages/homeroom/HomeroomDetailsPage';
 import HomeStudentDetailsPage from './pages/homeroom/HomeStudentDetailsPage';
 import HomeClassAllStudentsPage from './pages/homeroom/HomeClassAllStudentsPage';
-import ClassRoomDetailsPage from './pages/classRoom/ClassRoomDetailsPage';
-import StudentDetailPage from './pages/classRoom/StudentDetailPage';
-import ClassAllStudentsPage from './pages/classRoom/ClassAllStudentsPage';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassroomMakePage from './pages/classSetting/ClassroomMakePage';
 import News from './pages/main/News';
@@ -68,8 +68,8 @@ function App() {
           <Route path="/homeroom/:id/allStudents" element={uid ? <HomeClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/homeroom/:id/seat" element={uid ? <HomeSeatChange /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 관리 */}
-          <Route path="/classrooms" element={uid ? <ClassRoomMain /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/classrooms/:id" element={uid ? <ClassRoomDetailsPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/classrooms" element={uid ? <ClassroomMainPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/classrooms/:id" element={uid ? <ClassroomDetailsPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms/:id/allstudents" element={uid ? <ClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/classrooms/:id/:studentId" element={uid ? <StudentDetailPage /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 만들기, 교사 회원만 가능 */}

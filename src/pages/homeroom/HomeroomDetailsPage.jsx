@@ -98,7 +98,7 @@ const HomeroomDetailsPage = () => {
           {(!studentList || studentList.length === 0) ?
             <>{/* 학생 목록 없을 때 */}
               <EmptyResult comment="등록된 학생이 없습니다." />
-              <MidBtn btnName="학생 추가" btnOnClick={() => { setIsAddStuModalShown(true) }} />
+              <MidBtn onClick={() => { setIsAddStuModalShown(true) }}>학생 추가</MidBtn>
             </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} />}
         </MainPanel>
         <MainPanel>

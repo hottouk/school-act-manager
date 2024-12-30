@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import useGetLevel from '../../hooks/useGetLevel';
 import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 //컴포넌트
+import SubNav from '../../components/Bar/SubNav';
 import RadarChart from '../../components/RadarChart';
 import AnimatedProgressBar from '../../components/ProgressBar';
 import SmallBtn from '../../components/Btn/SmallBtn';
@@ -26,23 +27,24 @@ import AnimRotation from '../../anim/AnimRotation';
 const StudentDetailPage = () => {
   //----1.변수부--------------------------------
   //url 관련
-  useEffect(() => { setIsVisible(true) }, [])
-  const user = useSelector(({ user }) => user)
   const navigate = useNavigate();
-  const { state } = useLocation() //개별 학생 정보
-  const { studentNumber, actList, writtenName, master, subject } = state
+  useEffect(() => { setIsVisible(true) }, [])
+  //전역변수(Frozen)
+  const user = useSelector((state) => state.user);
+  const allStudentList = useSelector((state) => state.allStudents);
+  const allActivityList = useSelector((state) => state.allActivities);
+  //개별 학생 정보
+  const { state } = useLocation()
+  const { studentNumber, actList, writtenName, master, subject } = state || {}
   useEffect(() => {
     setStudentNumber(studentNumber)
     if (writtenName) { setWrittenName(writtenName) } //이름 or 미등록
     setSubject(subject)
     setActiList(actList)
     setIsMaster(master === user.uid) //누른 학생 본인 여부 확인
-    setNthStudent(allStudentList.findIndex(({ id }) => { return id === params.studentId })) //전체 학생에서 몇번째인지 index 찾는다.
+    setNthStudent(allStudentList.findIndex(({ id }) => { return id === params.studentId })) //전체 학생에서 몇 번째인지 index 찾기기
   }, [state])
   const params = useParams()
-  //전역 변수
-  const allActivityList = useSelector(({ allActivities }) => { return allActivities })
-  const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //전체 학생 전역 변수
   //hooks
   const { getAbilityScores, getExpAndLevelByActList } = useGetLevel()
   const { fetchMyPetInfo } = useGetMyUserInfo()
@@ -81,6 +83,9 @@ const StudentDetailPage = () => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   //----2.함수부--------------------------------
+  const getAccRec = () => {
+    return _actiList?.reduce((acc, cur) => acc + cur.record, '')
+  }
   //학생  이동(24.12.2)
   const moveStudent = (student) => {
     if (isAnimating) return;
@@ -90,7 +95,7 @@ const StudentDetailPage = () => {
       setIsAnimating(false);
     }, 500); // 애니메이션 시간과 동일하게 설정
   }
-  //활동 순서 변경
+  //활동 순서 변경(24.12.24)
   const moveActiItem = (index, direction) => {
     setActiList((prevActiList) => {
       let newActiList = [...prevActiList];
@@ -102,7 +107,7 @@ const StudentDetailPage = () => {
       return newActiList;
     });
   };
-  //셀렉터 변경시_2
+  //활동 셀렉터 변경시_2
   const updateActiList = (event, index) => {
     let newId = event.value //클릭한 새로운 이벤트 id
     let newActi = allActivityList.find((acti) => { return acti.id === newId }) //전체 활동에서 클릭한 활동과 id가 일치하는 활동을 찾기 -> 원본 반환.
@@ -112,7 +117,7 @@ const StudentDetailPage = () => {
       return newActiList
     })
   }
-  //셀렉터 변경 시_1
+  //활동 셀렉터 변경 시_1
   const handleSelectOnchange = (event, index) => { //event는 선택 acti Obj
     if ((_actiList.findIndex(({ id }) => { return id === event.value })) === -1) {  //기존 활동과 중복된 활동이 아닌 경우만
       updateActiList(event, index)
@@ -134,12 +139,6 @@ const StudentDetailPage = () => {
   }
   const handleBtnClick = (event, index) => {
     switch (event.target.id) {
-      case "back_btn":
-        navigate(`/classrooms/${params.id}`)
-        break;
-      case "edit_btn": //수정 버튼
-        setIsModifying(!isModifiying)
-        break;
       case "delete_btn": //삭제 버튼
         if (window.confirm('학생을 삭제하시겠습니까? 삭제한 학생은 복구할 수 없습니다.')) {
           deleteStudent(params.id, params.studentId) //데이터 통신
@@ -189,6 +188,12 @@ const StudentDetailPage = () => {
   }
 
   return (<>
+    <SubNav styles={{ padding: "10px" }}>
+      <Select
+        placeholder="학생 바로 이동"
+        options={allStudentList.map((student) => { return { label: `${student.studentNumber} ${student.writtenName || '미등록'}`, value: student.id, key: student.id } })}
+        onChange={(event) => { moveStudent(allStudentList.find((student) => student.id === event.value)) }} />
+    </SubNav>
     <Container $isVisible={isVisible}>
       <ContentWrapper><ArrowBtn deg={225} onClick={() => { navigate(`/classrooms/${params.id}`) }} /></ContentWrapper>
       <div>
@@ -213,19 +218,20 @@ const StudentDetailPage = () => {
               </StyeldChartDiv>
             </StyledTopPannel>
             <StyledBotPannel>
-              <BotGridContainer>
+              <GridBotContainer>
                 <HeaderWrapper>
                   <StyledHeader>순서</StyledHeader>
                   <StyledHeader>활동</StyledHeader>
                   <StyledHeader>생기부</StyledHeader>
+                  <StyledHeader>날짜</StyledHeader>
                   <StyledHeader>바이트</StyledHeader>
                 </HeaderWrapper>
                 {(user.isTeacher || _isMaster) && <>
                   {!_actiList || _actiList.length === 0
                     ? <><div /><div className="no_act_record">활동이 없어요ㅠㅠ</div></>
                     : _actiList.map((acti, index) => {
-                      return <React.Fragment key={acti.id}>
-                        {/* 0열 */}
+                      return <GridRowWrapper key={acti.id}>
+                        {/* 1열 */}
                         <StyledGridItem>
                           {!isModifiying && index + 1}
                           {isModifiying && <div style={{ display: "flex", flexDirection: "column" }}>
@@ -233,7 +239,7 @@ const StudentDetailPage = () => {
                             <button onClick={() => moveActiItem(index, 'down')}>▼</button>
                           </div>}
                         </StyledGridItem>
-                        {/* 1열 */}
+                        {/* 2열 */}
                         <StyledGridItem>
                           <div>
                             <p>{acti.title}</p>
@@ -245,7 +251,7 @@ const StudentDetailPage = () => {
                               onChange={(event) => { handleSelectOnchange(event, index) }} />}
                           </div>
                         </StyledGridItem>
-                        {/* 2열 */}
+                        {/* 3열 */}
                         <StyledGridItem className="left-align">
                           {!isModifiying && <span>{acti.record}</span>}
                           {isModifiying && <> {/*수정할때*/}
@@ -281,26 +287,30 @@ const StudentDetailPage = () => {
                             </SmallBtnWrapper>
                           </>}
                         </StyledGridItem>
-                        {/* 3열 */}
-                        <StyledGridItem className="byte">
+                        {/* 4열 */}
+                        <StyledGridItem>{acti.date || '없음'}</StyledGridItem>
+                        <StyledGridItem>
                           <ByteCalculator str={_actiList[index].record} styles={{ isTotalByteHide: true }} />
-                          <p>byte</p>
                         </StyledGridItem>
-                      </React.Fragment>
+                      </GridRowWrapper>
                     })}
                 </>}
                 {(!user.isTeacher && !_isMaster) && <div className='no_act_record'>볼 권한이 없습니다. 본인만 열람 가능합니다.</div>}
-              </BotGridContainer>
+              </GridBotContainer>
             </StyledBotPannel>
           </StyledBackgroundPannel>
+          <TotalByteWrapper>
+            <StyledBotBackground>
+              <ByteCalculator str={getAccRec()} styles={{ justifyContent: "center", fontSize: "22px", fontColor: "white", width: "81px" }}></ByteCalculator>
+            </StyledBotBackground>
+          </TotalByteWrapper>
         </AnimRotation>
       </div>
       {/* 교사전용 */}
       {user.isTeacher && <>
-        {!isModifiying && <FloatRightWrapper><ArrowBtn id="right_arw_btn" onClick={handleBtnClick} /></FloatRightWrapper>
-        }
+        {!isModifiying && <FloatRightWrapper><ArrowBtn id="right_arw_btn" onClick={handleBtnClick} /></FloatRightWrapper>}
         <BtnWrapper>
-          {!isModifiying && <TransparentBtn id="edit_btn" btnName="수정" btnOnClick={handleBtnClick} />}
+          {!isModifiying && <TransparentBtn id="edit_btn" btnName="수정" btnOnClick={() => { setIsModifying(!isModifiying) }} />}
           {isModifiying && <TransparentBtn id="save_btn" btnName="저장" btnOnClick={handleBtnClick} />}
           {isModifiying && <TransparentBtn id="cancel_btn" btnName="취소" btnOnClick={handleBtnClick} />}
           <TransparentBtn id="delete_btn" btnOnClick={handleBtnClick} btnName="삭제" />
@@ -316,7 +326,7 @@ const Container = styled.div`
   opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
   transition: opacity 0.7s ease;
   box-sizing: border-box;
-  width: 80%;
+  width: 85%;
   margin: 0 auto;
   margin-bottom: 50px;
   @media screen and (max-width: 767px){
@@ -335,11 +345,12 @@ const ContentWrapper = styled.div`
 const StyledBackgroundPannel = styled.div`
   height: 1000px;
   padding: 15px;
-  margin: 15px auto;
+  margin: 15px auto 0;
   margin-top: 35px;
   color: black;
   background-color: #3454d1;
-  border-radius: 20px;
+  border-radius: 15px;
+  border-bottom-right-radius: 0;
   perspective: 1000px; /* 3D 효과를 위한 원근법 */
   @media screen and (max-width: 767px){
     margin-top: 0;
@@ -366,7 +377,7 @@ const StyledTopPannel = styled.div`
     height: 80px;
     border-radius: 40px;
   }
-  }
+}
 `
 const StyledTopRightInfo = styled.div`
   position: absolute;
@@ -440,7 +451,7 @@ const StyledBotPannel = styled.div`
     flex-direction: column;
   }
 `
-const BotGridContainer = styled.div`
+const GridBotContainer = styled.div`
   position: absolute;
   width: 98%;
   top: 0px;
@@ -449,10 +460,13 @@ const BotGridContainer = styled.div`
   margin: 10px auto;
   border: 1px solid black;
   border-radius: 10px;
-display: grid;
-  grid-template-columns: 52px 130px 9fr 1fr;
-  grid-template-rows: 40px;
+    display: grid;
+  grid-template-columns: 52px 130px 9fr 1fr 1fr;
+  grid-template-rows: 40px repeat(auto-fill, minmax(100px, auto));
   overflow-y: scroll
+`
+const GridRowWrapper = styled.div`
+  display: contents;
 `
 const HeaderWrapper = styled.div` 
   display: contents;
@@ -479,6 +493,7 @@ const StyledGridItem = styled.div`
   border: 1px solid #ddd;
   border-radius: 5px;
   text-align: center;
+  justify-content: center;
   align-items: center;
   img {
     width: 30px;
@@ -494,12 +509,7 @@ const StyledGridItem = styled.div`
   }
   &.left-align { 
     text-align: left;
-  }
-  &.byte { 
-    text-align: left;
-    flex-direction: column;
-    justify-content: center;
-    p { margin: 0;}
+    justify-content: flex-start;
   }
 `
 const SmallBtnWrapper = styled.div`
@@ -510,6 +520,21 @@ const SmallBtnWrapper = styled.div`
   &.gpt { 
     gap: 12px;
   }
+`
+const TotalByteWrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`
+const StyledBotBackground = styled.div`
+  background-color: #3454d1;
+  height: 50px;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-right-radius: 30px;
+  border-bottom-left-radius: 30px;
+  margin-bottom: 20px;
+  padding: 10px 15px 50px 10px;
+}
 `
 const BtnWrapper = styled.div`
   display: flex;

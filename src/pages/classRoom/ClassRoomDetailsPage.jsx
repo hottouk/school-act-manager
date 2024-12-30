@@ -1,67 +1,62 @@
 //라이브러리
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
 import { setAllStudents } from '../../store/allStudentsSlice.jsx';
 import { setAllActivities } from '../../store/allActivitiesSlice.jsx';
+import Select from 'react-select';
 import styled from 'styled-components';
 //컴포넌트
 import MainSelector from './MainSelector.jsx';
 import StudentList from '../../components/List/StudentList.jsx';
 import ActivityList from '../../components/List/ActivityList.jsx';
 import EmptyResult from '../../components/EmptyResult.jsx';
-import ClassMemberModal from '../../components/Modal/ClassMemberModal.jsx';
 import MainBtn from '../../components/Btn/MainBtn.jsx';
-import PetImg from '../../components/PetImg.jsx';
+import MidBtn from '../../components/Btn/MidBtn.jsx';
+import ArrowBtn from '../../components/Btn/ArrowBtn.jsx';
+import TransparentBtn from '../../components/Btn/TransparentBtn.jsx';
+import MainPanel from '../../components/MainPanel.jsx';
+import SubNav from '../../components/Bar/SubNav.jsx';
+import PerfModal from '../../components/Modal/PerfModal.jsx';
+import ClassMemberModal from '../../components/Modal/ClassMemberModal.jsx';
+import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
 //hooks
 import useEnrollClass from '../../hooks/useEnrollClass.jsx';
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData.jsx';
-//이미지
-import MidBtn from '../../components/Btn/MidBtn.jsx';
-import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
-import ArrowBtn from '../../components/Btn/ArrowBtn.jsx';
-import PerfModal from '../../components/Modal/PerfModal.jsx';
-import TransparentBtn from '../../components/Btn/TransparentBtn.jsx';
-import MainPanel from '../../components/MainPanel.jsx';
+//이미지
+import PetImg from '../../components/PetImg.jsx';
 
 //2024.08.01(클래스 헤더 수정) -> 11.13 애니메이션 추가
-const ClassRoomDetailsPage = () => {
+const ClassroomDetailsPage = () => {
   //----1.변수부--------------------------------
-  //전역 변수
+  //준비
   const navigate = useNavigate()
   const dispatcher = useDispatch()
-  const user = useSelector(({ user }) => { return user; })
-  const thisClass = useSelector(({ classSelected }) => { return classSelected }) //반 전역변수
+  const { id: klassId } = useParams()
   useEffect(() => {
-    if (!user.isTeacher) { //학생
-      if (thisClass.appliedStudentList && thisClass.appliedStudentList.length !== 0) { //신청 중이라면
-        let isApplied = (thisClass.appliedStudentList.filter(({ uid }) => { return uid === user.uid })).length !== 0
-        setIsApplied(isApplied)
-      }
-      if (thisClass.memberList && thisClass.memberList.length !== 0) { //가입 회원이라면
-        let isMemeber = (thisClass.memberList.filter(({ uid }) => { return uid === user.uid })).length !== 0
-        setIsMember(isMemeber)
-      }
-    }
-  }, [thisClass])
+    setIsVisible(false)
+    setTimeout(() => setIsVisible(true), 200)
+  }, [klassId])
+  //전역 변수  
+  const user = useSelector(({ user }) => user)
+  const allSubjClassList = useSelector(({ allClasses }) => allClasses)
+  const thisClass = allSubjClassList.find((klass) => klass.id === klassId)
   //hooks
   const { cancelSignUpInClass } = useEnrollClass()
   const { deleteClassWithStudents } = useDeleteFireData()
   //데이터 통신 변수
-  const { studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
-  console.log(studentList) //
+  const { studentList } = useFetchRtMyStudentData("classRooms", klassId, "students", "studentNumber") //모든 학생 List
   useEffect(() => {
-    setIsVisible(true)
-    dispatcher(setAllStudents(studentList))       //전체 학생 전역변수화
+    dispatcher(setAllStudents(studentList))               //전체 학생 전역변수화
     fetchActiList(thisClass.subject).then((actiList) => { //전체 활동 전역변수화
       dispatcher(setAllActivities(actiList))
       setActiList(actiList)
     });
   }, [studentList])
-  const [_actiList, setActiList] = useState([])
+  const [actiList, setActiList] = useState([])
   const { fetchActiList } = useFetchFireData()
   //모드
   const [isApplied, setIsApplied] = useState(false)
@@ -84,7 +79,7 @@ const ClassRoomDetailsPage = () => {
       case "delete_btn":
         let deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
         if (deleteConfirm === "삭제합니다") {
-          deleteClassWithStudents(thisClass.id)
+          deleteClassWithStudents(klassId)
           navigate("/classRooms")
         } else {
           window.alert("문구가 제대로 입력되지 않았습니다.");
@@ -105,8 +100,15 @@ const ClassRoomDetailsPage = () => {
     }
     return null
   }
+  //클래스 이동
+  const moveKlass = (event) => { navigate(`/classrooms/${event.value}`) }
 
   return (<>
+    <SubNav styles={{ padding: "10px" }}>
+      <Select options={allSubjClassList.map((klass) => { return { label: klass.classTitle, value: klass.id } })} placeholder="반 바로 이동"
+        onChange={moveKlass} />
+    </SubNav>
+    {/* todo */}
     {!thisClass && <Container><h3>반 정보를 불러올 수 없습니다.</h3></Container>}
     {thisClass &&
       <Container $clientheight={clientHeight} $isVisible={isVisible}>
@@ -136,13 +138,13 @@ const ClassRoomDetailsPage = () => {
         {/* 셀렉터(교사)*/}
         <MainPanel>
           <h5>빠른 세특 쫑알이</h5>
-          {user.isTeacher && <MainSelector type="subject" studentList={studentList} actiList={_actiList} classId={thisClass.id} setIsPerfModalShow={setIsPerfModalShow} />}
+          {user.isTeacher && <MainSelector type="subject" studentList={studentList} actiList={actiList} classId={klassId} setIsPerfModalShow={setIsPerfModalShow} />}
         </MainPanel>
         {/* 퀘스트 목록(학생) */}
         {(!user.isTeacher && isMember) && <MainPanel>
-          {(!_actiList || _actiList.length === 0)
+          {(!actiList || actiList.length === 0)
             ? <EmptyResult comment="등록된 활동이 없습니다." />
-            : <ActivityList activityList={_actiList} classInfo={thisClass} />}
+            : <ActivityList activityList={actiList} classInfo={thisClass} />}
         </MainPanel>
         }
         {/* 학생 상세 보기 (가입 학생, 교사)*/}
@@ -152,7 +154,7 @@ const ClassRoomDetailsPage = () => {
           {(!studentList || studentList.length === 0) ?
             <>
               <EmptyResult comment="등록된 학생이 없습니다." />
-              <MidBtn btnName="학생 추가" btnOnClick={() => { setIsAddStuModalShown(true) }} />
+              <MidBtn onClick={() => { setIsAddStuModalShown(true) }}>학생 추가</MidBtn>
             </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} classType={"subject"} />}
         </MainPanel>}
         {/* 반 전체보기(교사)*/}
@@ -176,13 +178,13 @@ const ClassRoomDetailsPage = () => {
     {<AddNewStudentModal
       show={isAddStuModalShown}
       onHide={() => { setIsAddStuModalShown(false) }}
-      classId={thisClass.id} />}
+      classId={klassId} />}
     {/* 수행 관리 모달 */}
     <PerfModal
       show={isPerfModalShow}
       onHide={() => setIsPerfModalShow(false)}
       studentList={studentList}
-      classId={thisClass.id}
+      classId={klassId}
     />
   </>)
 }
@@ -276,4 +278,4 @@ const BtnWrapper = styled.div`
   display: flex;
   justify-content: space-between;
 `
-export default ClassRoomDetailsPage
+export default ClassroomDetailsPage

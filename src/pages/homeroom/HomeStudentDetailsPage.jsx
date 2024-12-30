@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import Select from 'react-select';
 import { Spinner } from 'react-bootstrap';
 //페이지
 import TitledChkBoxList from './TitledChkBoxList'
@@ -29,36 +30,45 @@ import arrows_icon from '../../image/icon/arrows_icon.png';
 import AnimRotation from '../../anim/AnimRotation';
 import TransparentBtn from '../../components/Btn/TransparentBtn';
 import UpperTab from '../../components/UpperTab';
+import SubNav from '../../components/Bar/SubNav';
 
 //2024.10.16 생성-> 회전효과 추가(24.12.01)
+//todo state를 유지할 필요가 없음.
 const HomeStudentDetailPage = () => {
   //----1.변수부--------------------------------
   //유저 인증
   const { log } = useClassAuth();
   if (log) { window.alert(log) }
+  //준비
   const navigate = useNavigate();
   let dispatch = useDispatch();
   const { id, studentId } = useParams(); //클래스id, 학생 id
-  const user = useSelector(({ user }) => { return user; })
+  //전역 변수
+  const user = useSelector(({ user }) => user);
+  const allStudentList = useSelector(({ allStudents }) => allStudents);
   //시작
   useEffect(() => { //학생 한명 데이터 통신
     fetchSubDoc("classRooms", id, "students", studentId).then((student) => {
       let selected = student.selectedSpec || ''
       if (selected) { setDesiredMajor(student.selectedSpec["희망진로"]?.[0] ?? '') }
       setSelectedSpec(selected)
-      setRecord(student.behaviorOpinion || '')
+      setBehaviorOpinion(student.behaviorOpinion || '')
+      setSelfAccRecord(student.selfAccRecord || '')
+      setCareerAccRecord(student.careerAccRecord || '')
+      if (tab === 1) { setRecord(student.behaviorOpinion || '') } else if (tab === 2) { setRecord(student.selfAccRecord || '') } else { setRecord(student.careerAccRecord || '') }
       setIsVisible(true)
-      console.log(student)
+      console.log('online', student)
     })
   }, [studentId])
   const { state } = useLocation()
   const { studentNumber, writtenName, behaviorOpinion, selfAccRecord, careerAccRecord, selectedSpec } = state //개별 학생 정보
   useEffect(() => {
+    console.log('state', state)
     setSelectedSpec(selectedSpec || '')
     setBehaviorOpinion(behaviorOpinion || '')
     setSelfAccRecord(selfAccRecord || '')
     setCareerAccRecord(careerAccRecord || '')
-    setRecord(behaviorOpinion || '')
+    if (tab === 1) { setRecord(behaviorOpinion) } else if (tab === 2) { setRecord(selfAccRecord) } else { setRecord(careerAccRecord) }
     setNthStudent(allStudentList.findIndex(({ id }) => { return id === studentId })) //전체 학생에서 몇 번째 index
     setStep('')
   }, [state])
@@ -76,6 +86,7 @@ const HomeStudentDetailPage = () => {
   const [_selectedSpec, setSelectedSpec] = useState(''); //선택된 spec { spec1: [], spec2: [], spec3:[]..}
   const [prevBehavOpin, setPrevBehavOpin] = useState(''); //수정 클릭시 원본 저장 변수
   const [record, setRecord] = useState('');
+  console.log(record)
   //★★ 행발, 자율, 진로 ★★
   const [tab, setTab] = useState(1);
   const [_behaviorOpinion, setBehaviorOpinion] = useState('');
@@ -84,7 +95,6 @@ const HomeStudentDetailPage = () => {
   useEffect(() => {
     setRecord(handleRecord());
   }, [tab])
-
   const [isFreeze, setIsFreeze] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
   useEffect(() => { if (isEditable === true) setPrevBehavOpin(record) }, [isEditable]);
@@ -92,7 +102,6 @@ const HomeStudentDetailPage = () => {
   const { updateStudent, deleteStudent } = useAddUpdFireData("classRooms"); //매개변수 없으면 에러나서 억지로 넣은거임..
   const { fetchSubDoc } = useFetchFireData();
   //학생 이동
-  const allStudentList = useSelector(({ allStudents }) => { return allStudents }); //전체 학생 전역 변수 받기
   const [nthStudent, setNthStudent] = useState(null);
   let expAndLevel = { exp: 0, level: 0 };
   //에니메이션
@@ -100,14 +109,18 @@ const HomeStudentDetailPage = () => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   //----2.함수부--------------------------------
-  //학생 이동(24.12.1)
+  //학생 이동 버튼 클릭(24.12.1)
   const handleMoveOnClick = (direction) => {
+    let student
+    if (direction === "next") { student = allStudentList[nthStudent + 1]; }
+    else { student = allStudentList[nthStudent - 1]; }
+    moveStudent(student)
+  }
+  //학생 이동
+  const moveStudent = (student) => {
     if (isAnimating) return;
     setIsAnimating(true);
     setTimeout(() => {
-      let student
-      if (direction === "next") { student = allStudentList[nthStudent + 1]; }
-      else { student = allStudentList[nthStudent - 1]; }
       navigate(`/homeroom/${id}/${student.id}`, { state: student })
       setIsAnimating(false);
     }, 500); // 애니메이션 시간과 동일하게 설정
@@ -188,7 +201,10 @@ const HomeStudentDetailPage = () => {
     }
   }
 
-  return (
+  return (<>
+    <SubNav styles={{ padding: "10px" }}>
+      <Select placeholder="학생 바로 이동 작업중" />
+    </SubNav>
     <Container $isVisible={isVisible}>
       <FlexWrapper>
         <ArrowBtn deg={225} onClick={handleBackOnClick} />
@@ -336,7 +352,7 @@ const HomeStudentDetailPage = () => {
       </FlexWrapper>
       <FlexWrapper><TransparentBtn id="delete_btn" btnOnClick={handleDelBtnOnClick} btnName="삭제" />
       </FlexWrapper>
-    </Container >
+    </Container ></>
   )
 }
 

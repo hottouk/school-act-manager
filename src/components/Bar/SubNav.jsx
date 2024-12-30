@@ -3,8 +3,9 @@ import styled from 'styled-components'
 
 const SubNav = ({ children, styles }) => {
   let gap = styles?.gap || "20px";
+  let padding = styles?.padding || "0";
   return (
-    <Container $gap={gap}>{children}</Container>
+    <Container $gap={gap} $padding={padding}>{children}</Container>
   )
 }
 
@@ -14,6 +15,7 @@ const Container = styled.div`
   align-items: center;
   margin-bottom: 20px;
   border-bottom: 1px solid #ddd;
+  padding: ${(props) => props.$padding};
   gap: ${(props) => props.$gap};
   background-color: #efefef;
   p {

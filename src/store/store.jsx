@@ -10,6 +10,7 @@ import user from './userSlice';
 import { persistReducer } from 'redux-persist';
 import storageSession from 'redux-persist/lib/storage/session'
 import tempUser from './tempUserSlice';
+import allClasses from './allClassesSlice';
 
 const reducers = combineReducers(
   {
@@ -20,6 +21,7 @@ const reducers = combineReducers(
     allActivities: allActivities.reducer, //전체 활동
     user: user.reducer,
     tempUser: tempUser.reducer,
+    allClasses: allClasses.reducer,
   }
 )
 
