@@ -1,10 +1,7 @@
-import React, { useState } from "react";
-import DraggableTable from "../homeroom/DraggableTable";
-import styled from "styled-components";
-import useFireBasic from "../../hooks/Firebase/useFireBasic";
+import Pixi from "./Pixi";
 
 const Lab = () => {
-  
+    return (<Pixi></Pixi>)
 };
 
 
