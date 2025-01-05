@@ -17,12 +17,13 @@ const useAcc = () => {
         let actiRef = doc(db, "activities", actiId);       //id로 활동 acti 참조
         let actiSnap = await getDoc(actiRef);              //데이터 통신
         let acti = actiSnap.data();
-        const { createdTime, isPrivate, ...rest } = acti   //불필요 속성 제거
-        if (acti.extraRecordList && acti.extraRecordList.length > 1) {                       //extra가 있으면 랜덤문구
+        let assignedDate = new Date().toISOString().split("T")[0];
+        let { byte, studentDoneList, particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, record, ...rest } = acti   //불필요 속성 제거
+        if (acti.extraRecordList && acti.extraRecordList.length > 1) {                                                                 //extra가 있으면 랜덤문구
           let randomIndex = Math.floor(Math.random() * acti.extraRecordList.length);
-          acti.record = acti.extraRecordList[randomIndex]
+          record = acti.extraRecordList[randomIndex]
         }
-        newActiList.push({ id: actiSnap.id, ...rest });
+        newActiList.push({ id: actiSnap.id, record, ...rest, assignedDate });
       }))
     return { newActiList }
   }
@@ -47,37 +48,31 @@ const useAcc = () => {
     }, [])
   }
 
-  //★★★★ 핵심 로직 //todo 코드 간결화 하기
+  //★★★★ 핵심 로직 
   const writeAccDataOnDB = async (classId) => {
     studentSelectedList.map(({ value }) => { //선택된 모든 학생에게서 아래 작업 반복 
-      let studentId = value //id 참조
+      let studentId = value                                                         //id 참조
       let petRef = doc(appFireStore, "classRooms", classId, "students", studentId); //id로 학생 data 위치 참조
       getDoc(petRef).then((pet) => {                                                //참조한 학생 data 반환 Promise
         try {
-          let curActiList = pet.data().actList                  //선택 학생 한명의 '기존 활동' 
-          makeAccWithSelectedActi().then(({ newActiList }) => { //선택한 활동의 누가 배열, 누가 기록 반환
-            if (!curActiList || curActiList.length === 0) {     //기록 활동 x 누가 기록 x -> 완전한 첫 작성
-              let accRec = makeAccRec(newActiList)
-              setDoc(petRef, {
-                actList: newActiList,              //누가'활동'에 선택 활동 반영
-                accRecord: accRec                  //누가'기록'에 선택 활동 반영
-              }, { merge: true })
-            } else if (curActiList) { //기존 활동 o, 누가 기록 o
-              let actiList = [...curActiList, ...newActiList];              //기존 누가 활동과 새로운 입력할 활동을 섞는다.
-              let uniqueList = actiList.reduce((acc, current) => {          //중복 제거 id값 비교
-                if (acc.findIndex(({ id }) => id === current.id) === -1) {  //배열에서 조건을 충족하는 index를 반환, 없을 경우 -1 반환; 
-                  acc.push(current);
-                } else {
-                  acc = acc.filter(({ id }) => id !== current.id)          //이전꺼 지우고 
-                  acc.push(current);                                       //새로 덮어 씌우기
-                }
-                return acc;
-              }, [])
-              setDoc(petRef, {
-                actList: uniqueList,                          //기존 활동 + 새로운 활동
-                accRecord: makeAccRec(uniqueList)             //기존 기록 + 새로운 기록
-              }, { merge: true })
-            }
+          let curActiList = pet.data().actList                            //선택 학생 한명의 '기존 활동' 
+          makeAccWithSelectedActi().then(({ newActiList }) => {           //선택한 활동의 누가 배열, 누가 기록 반환
+            console.log(newActiList.record)
+            let actiList = [...(curActiList || []), ...newActiList];      //기존 누가 활동과 새로운 입력할 활동을 섞는다. 신규입력이면 []
+            let uniqueList = actiList.reduce((acc, current) => {          //중복 제거 id값 비교
+              if (acc.findIndex(({ id }) => id === current.id) === -1) { acc.push(current); }  //배열에서 조건을 충족하는 index를 반환, 없을 경우 -1 반환; 
+              else {
+                acc = acc.filter(({ id }) => id !== current.id)                                      //이전꺼 지우고 
+                let assignedDate = new Date().toISOString().split('T')[0]                            //오늘 날짜로 
+                acc.push({ ...current, assignedDate });                                              //새로 덮어 씌우기
+              }
+              return acc;
+            }, [])
+            setDoc(petRef, {
+              actList: uniqueList,                          //기존 활동 + 새로운 활동
+              accRecord: makeAccRec(uniqueList)             //기존 기록 + 새로운 기록
+            }, { merge: true })
+            // }
           })
         } catch (error) {
           console.log(error.message)

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
+import { useReactToPrint } from "react-to-print"
 //컴포넌트
 import ExportAsExcel from "../../components/ExportAsExcel"
 import SmallBtn from "../../components/Btn/SmallBtn"
@@ -15,7 +16,6 @@ import styled from "styled-components"
 //이미지
 import recycleIcon from "../../image/icon/recycle_icon.png"
 import BackBtn from "../../components/Btn/BackBtn"
-import { useReactToPrint } from "react-to-print"
 import PrintBtn from "../../components/Btn/PrintBtn"
 
 //2024.10.27(실시간 학생 데이터로 변경, writtenName, accRecord useState로 관리, transition 추가)
@@ -25,8 +25,9 @@ const ClassAllStudents = () => {
   const { log } = useClassAuth();
   if (log) { window.alert(log) }
   useEffect(() => { setIsVisible(true) }, [])
-  //경로 이동 props
+  //준비
   const params = useParams(); //id와 param의 key-value(id:'id') 오브젝트로 반환
+  const navigate = useNavigate();
   const classId = params.id
   //학생 정보 데이터 통신
   const { studentList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber")
@@ -113,6 +114,7 @@ const ClassAllStudents = () => {
           <StyledHeader>수정</StyledHeader>
         </TableHeaderWrapper>
         {(studentList && studentList.length > 0) && studentList.map((student, index) => {
+          console.log(student)
           let key = student.id
           let isModifying = (thisModifying === key)
           let studentNumber = student.studentNumber
@@ -124,9 +126,7 @@ const ClassAllStudents = () => {
             <StyledGridItem>{index + 1}</StyledGridItem>     {/* 연번 */}
             <StyledGridItem>{studentNumber}</StyledGridItem> {/* 학번 */}
             <StyledGridItem>
-              {!isModifying
-                ? name
-                : <StyledNameInput type="text" value={newName} onChange={(event) => { setNewName(event.target.value) }} />}
+              <p onClick={() => { navigate(`/classrooms/${classId}/${key}`) }} style={{ cursor: "pointer", fontWeight: "bold" }}>{name}</p>
             </StyledGridItem>
             <StyledGridItem className="left-align">
               {!isModifying
@@ -213,7 +213,6 @@ const StyledGridItem = styled.div`
   border: 1px solid #ddd;
   border-radius: 5px;
   text-align: center;
-  
   &.left-align { 
     text-align: left;
   }
@@ -222,12 +221,6 @@ const BtnWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 7px;
-`
-const StyledNameInput = styled.input`
-  display: block;
-  width: 85px;
-  height: 50%;
-  border-radius: 10px;
 `
 const StyledTextArea = styled.textarea`
   display: block;

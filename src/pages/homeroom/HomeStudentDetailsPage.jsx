@@ -1,7 +1,7 @@
 //라이브러리
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import Select from 'react-select';
 import { Spinner } from 'react-bootstrap';
 //페이지
@@ -18,7 +18,6 @@ import ByteCalculator from '../../components/Etc/ByteCalculator';
 import useChatGpt from '../../hooks/useChatGpt'
 import useClassAuth from '../../hooks/useClassAuth';
 import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData'
-import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 //전역변수
 import { setEditHomeroomStudent } from '../../store/allStudentsSlice'
 //css
@@ -31,9 +30,9 @@ import AnimRotation from '../../anim/AnimRotation';
 import TransparentBtn from '../../components/Btn/TransparentBtn';
 import UpperTab from '../../components/UpperTab';
 import SubNav from '../../components/Bar/SubNav';
+import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetDoc';
 
-//2024.10.16 생성-> 회전효과 추가(24.12.01)
-//todo state를 유지할 필요가 없음.
+//2024.10.16 생성-> 회전효과 추가(24.12.01) -> 정보 통신 일원화(25.01.04)
 const HomeStudentDetailPage = () => {
   //----1.변수부--------------------------------
   //유저 인증
@@ -43,35 +42,25 @@ const HomeStudentDetailPage = () => {
   const navigate = useNavigate();
   let dispatch = useDispatch();
   const { id, studentId } = useParams(); //클래스id, 학생 id
-  //전역 변수
+  //전역 변수(Frozen)
   const user = useSelector(({ user }) => user);
   const allStudentList = useSelector(({ allStudents }) => allStudents);
-  //시작
-  useEffect(() => { //학생 한명 데이터 통신
-    fetchSubDoc("classRooms", id, "students", studentId).then((student) => {
-      let selected = student.selectedSpec || ''
-      if (selected) { setDesiredMajor(student.selectedSpec["희망진로"]?.[0] ?? '') }
-      setSelectedSpec(selected)
-      setBehaviorOpinion(student.behaviorOpinion || '')
-      setSelfAccRecord(student.selfAccRecord || '')
-      setCareerAccRecord(student.careerAccRecord || '')
-      if (tab === 1) { setRecord(student.behaviorOpinion || '') } else if (tab === 2) { setRecord(student.selfAccRecord || '') } else { setRecord(student.careerAccRecord || '') }
-      setIsVisible(true)
-      console.log('online', student)
-    })
-  }, [studentId])
-  const { state } = useLocation()
-  const { studentNumber, writtenName, behaviorOpinion, selfAccRecord, careerAccRecord, selectedSpec } = state //개별 학생 정보
+  //개별 학생 정보
+  const { pet } = useFetchRtPetDoc(id, studentId) //실시간
+  const { studentNumber, writtenName, behaviorOpinion, selfAccRecord, careerAccRecord, selectedSpec } = pet || {}
+  //정보 랜더링
   useEffect(() => {
-    console.log('state', state)
-    setSelectedSpec(selectedSpec || '')
-    setBehaviorOpinion(behaviorOpinion || '')
+    let selected = selectedSpec || ''
+    if (selected) { setDesiredMajor(selectedSpec["희망진로"]?.[0] ?? '') }
+    setSelectedSpec(selected)
     setSelfAccRecord(selfAccRecord || '')
+    setBehaviorOpinion(behaviorOpinion || '')
     setCareerAccRecord(careerAccRecord || '')
-    if (tab === 1) { setRecord(behaviorOpinion) } else if (tab === 2) { setRecord(selfAccRecord) } else { setRecord(careerAccRecord) }
-    setNthStudent(allStudentList.findIndex(({ id }) => { return id === studentId })) //전체 학생에서 몇 번째 index
+    if (tab === 1) { setRecord(behaviorOpinion || '') } else if (tab === 2) { setRecord(selfAccRecord || '') } else { setRecord(careerAccRecord || '') }
+    setNthStudent(allStudentList.findIndex(({ id }) => { return id === studentId }))      //전체 학생에서 몇 번째 index
+    setIsVisible(true)
     setStep('')
-  }, [state])
+  }, [pet])
   const [step, setStep] = useState('') //행발 작성 단계 
   const [desiredMajor, setDesiredMajor] = useState('')
   //gpt
@@ -86,7 +75,6 @@ const HomeStudentDetailPage = () => {
   const [_selectedSpec, setSelectedSpec] = useState(''); //선택된 spec { spec1: [], spec2: [], spec3:[]..}
   const [prevBehavOpin, setPrevBehavOpin] = useState(''); //수정 클릭시 원본 저장 변수
   const [record, setRecord] = useState('');
-  console.log(record)
   //★★ 행발, 자율, 진로 ★★
   const [tab, setTab] = useState(1);
   const [_behaviorOpinion, setBehaviorOpinion] = useState('');
@@ -100,7 +88,6 @@ const HomeStudentDetailPage = () => {
   useEffect(() => { if (isEditable === true) setPrevBehavOpin(record) }, [isEditable]);
   //저장
   const { updateStudent, deleteStudent } = useAddUpdFireData("classRooms"); //매개변수 없으면 에러나서 억지로 넣은거임..
-  const { fetchSubDoc } = useFetchFireData();
   //학생 이동
   const [nthStudent, setNthStudent] = useState(null);
   let expAndLevel = { exp: 0, level: 0 };
@@ -124,6 +111,11 @@ const HomeStudentDetailPage = () => {
       navigate(`/homeroom/${id}/${student.id}`, { state: student })
       setIsAnimating(false);
     }, 500); // 애니메이션 시간과 동일하게 설정
+  }
+  //탭 클릭
+  const handleTabOnClick = (number) => {
+    setStep('')
+    setTab(number)
   }
   //tab에 따라 다른 기록 반환
   const handleRecord = () => {
@@ -172,7 +164,7 @@ const HomeStudentDetailPage = () => {
     let check = _selectedSpec !== ''
     if (check) {
       if (window.confirm("현재 상태를 저장하시겠습니까?")) {
-        updateStudent({ selectedSpec: _selectedSpec }, id, studentId)                                     //서버에 저장
+        updateStudent({ selectedSpec: _selectedSpec }, id, studentId)                                             //서버에 저장
         dispatch(setEditHomeroomStudent({ id: studentId, behaviorOpinion: record, selectedSpec: _selectedSpec })) //현재 학생 정보 전역 변수에 저장
         window.alert("저장되었습니다.")
       }
@@ -203,21 +195,23 @@ const HomeStudentDetailPage = () => {
 
   return (<>
     <SubNav styles={{ padding: "10px" }}>
-      <Select placeholder="학생 바로 이동 작업중" />
+      <Select placeholder="학생 바로 이동"
+        options={allStudentList.map((student) => { return { label: `${student.studentNumber} ${student.writtenName || '미등록'}`, value: student.id, key: student.id } })}
+        onChange={(event) => { moveStudent(allStudentList.find((student) => student.id === event.value)) }}
+      />
     </SubNav>
+    {/* 컨테이너 */}
     <Container $isVisible={isVisible}>
-      <FlexWrapper>
-        <ArrowBtn deg={225} onClick={handleBackOnClick} />
-      </FlexWrapper>
+      <CenterWrapper><ArrowBtn deg={225} onClick={handleBackOnClick} /></CenterWrapper>
       <FlexWrapper>
         {(user.isTeacher && nthStudent !== 0 && (step === ''))
           && <ArrowWrapper><ArrowBtn deg={135} onClick={() => { handleMoveOnClick("prev") }} /></ArrowWrapper>}
         <AnimRotation isAnimating={isAnimating}>
-          <StyledStudentPannel>
+          <StyledBackgroundPannel>
             <TabWrapper>
-              <UpperTab className="tab1" value={tab} onClick={() => { setTab(1) }}>행동특성</UpperTab>
-              <UpperTab className="tab2" value={tab} left="94px" onClick={() => { setTab(2) }}>자율</UpperTab>
-              <UpperTab className="tab3" value={tab} left="156px" onClick={() => { setTab(3) }}>진로</UpperTab>
+              <UpperTab className="tab1" value={tab} onClick={() => { handleTabOnClick(1) }}>행동특성</UpperTab>
+              <UpperTab className="tab2" value={tab} left="94px" onClick={() => { handleTabOnClick(2) }}>자율</UpperTab>
+              <UpperTab className="tab3" value={tab} left="156px" onClick={() => { handleTabOnClick(3) }}>진로</UpperTab>
             </TabWrapper>
             <StyledGrayPannel>
               <FlexWrapper>
@@ -249,7 +243,7 @@ const HomeStudentDetailPage = () => {
                     {isEditable && <SmallBtn btnName="취소" btnOnClick={handleCancelOnClick} />}
                     {!isEditable && <SmallBtn btnName="작성" btnOnClick={() => { setIsEditable(!isEditable) }} />}
                   </FlexWrapper>
-                  <ByteCalculator str={record} />
+                  <ByteCalculator str={record} styles={{ width: "70px" }} />
                 </ByteWrapper>
                 {tab === 1 && <MainBtn btnName="행동종합 의견 작성 도우미" btnOnClick={() => { setStep("first") }}></MainBtn>}
               </IntroWrapper>}
@@ -332,12 +326,12 @@ const HomeStudentDetailPage = () => {
                 <AnimMaxHightOpacity isVisible={gptTempRes === "complete"} content={<StyledTextarea value={gptTempAnswer} disabled />} />
                 <ByteWrapper>
                   <SmallBtn btnName="반영" btnOnClick={handleJoinBtnOnClick} />
-                  <ByteCalculator str={gptTempAnswer} />
+                  <ByteCalculator str={gptTempAnswer} styles={{ width: "70px" }} />
                 </ByteWrapper>
                 <FlexWrapper $marginTop="20px" $marginBottom="15px"><img src={arrows_icon} alt="아래 화살표" /></FlexWrapper>
                 <HeadTitle>최종 행동특성 및 종합 의견</HeadTitle>
                 <StyledTextarea value={record} onChange={handleTextAreaOnChange} />
-                <ByteCalculator str={record} />
+                <ByteCalculator str={record} styles={{ width: "70px" }} />
                 <FlexWrapper>
                   <MainBtn btnName="이전 단계로" btnOnClick={() => { setStep("third") }}></MainBtn>
                   <MainBtn btnName="gpt 생성하기" btnOnClick={handleGptOnClick}></MainBtn>
@@ -345,7 +339,7 @@ const HomeStudentDetailPage = () => {
                 </FlexWrapper>
               </>} />
             </StyledGrayPannel>
-          </StyledStudentPannel>
+          </StyledBackgroundPannel>
         </AnimRotation>
         {(user.isTeacher && nthStudent !== allStudentList.length - 1 && (step === ''))
           && <ArrowWrapper><ArrowBtn deg={315} onClick={() => { handleMoveOnClick("next") }} /></ArrowWrapper>}
@@ -358,13 +352,17 @@ const HomeStudentDetailPage = () => {
 
 const Container = styled.div`
   box-sizing: border-box;
-  width: 80%;
+  width: 85%;
   margin: 0 auto;
   margin-bottom: 50px;
   opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
   transition: opacity 0.7s ease;
   @media screen and (max-width: 767px){
   }
+`
+const CenterWrapper = styled.div`
+  display: flex;
+  justify-content: center;
 `
 const FlexWrapper = styled.div`
   position: relative;
@@ -383,9 +381,8 @@ const ArrowWrapper = styled.div`
   display: flex;
   align-items: center;
 `
-const StyledStudentPannel = styled.div`
+const StyledBackgroundPannel = styled.div`
   position: relative;
-  width: 50%;
   padding: 15px;
   margin: 0 auto;
   color: black;
@@ -418,7 +415,6 @@ const IntroWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
-  p { margin: 0; }
 `
 const ImgWrapper = styled.div`
   display: flex;
@@ -468,8 +464,7 @@ const StyledTextarea = styled.textarea`
   border-radius: 5px;
 `
 const ByteWrapper = styled.div`
-  button { margin: 0;}
-  p { margin: 0;}
+  button { margin: 0; }
   display: flex;
   justify-content: space-between;
 `

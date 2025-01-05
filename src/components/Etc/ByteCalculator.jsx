@@ -7,6 +7,7 @@ const ByteCalculator = ({ str, handleOnChange, styles }) => {
   const { getByteLengthOfString } = useGetByte();
   //기본값
   let isTotalByteHide = styles?.isTotalByteHide || false
+  let totalByte = styles?.totalByte || "1500"
   let justifyContent = styles?.justifyContent || "flex-end"
   let fontSize = styles?.fontSize || "16px"
   let fontColor = styles?.fontColor || "black;"
@@ -16,8 +17,8 @@ const ByteCalculator = ({ str, handleOnChange, styles }) => {
       <FlexWrapper $fontSize={fontSize} $fontColor={fontColor} >
         <StyledInput $fontSize={fontSize} $width={width}
           className="act_byte" type="number" onChange={handleOnChange} value={getByteLengthOfString(str || '')} disabled />
-        {!isTotalByteHide && <p style={{ display: "inline-block" }}>/1500</p>}
-        <p>Byte</p>
+        {!isTotalByteHide && <p style={{ display: "inline-block" }}>/{totalByte}</p>}
+        <p> Byte</p>
       </FlexWrapper>
     </Container>
   )

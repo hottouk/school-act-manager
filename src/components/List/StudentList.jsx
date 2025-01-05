@@ -20,8 +20,8 @@ const StudentList = ({ petList, plusBtnOnClick, classType }) => {
   //2. 함수
   const handleImgClick = (pet) => {
     let petId = pet.id //클릭한 펫 id
-    if (classType === "subject") { navigate(`/classrooms/${classId.id}/${petId}`, { state: pet }) }
-    else { navigate(`/homeroom/${classId.id}/${petId}`, { state: pet }) }
+    if (classType === "subject") { navigate(`/classrooms/${classId.id}/${petId}`) }
+    else { navigate(`/homeroom/${classId.id}/${petId}`) }
   }
 
   return (

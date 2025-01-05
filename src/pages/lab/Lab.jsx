@@ -1,4 +1,4 @@
-import Pixi from "./Pixi";
+import Pixi from "./WordBattlePage";
 
 const Lab = () => {
     return (<Pixi></Pixi>)
