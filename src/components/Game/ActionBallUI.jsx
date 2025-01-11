@@ -1,7 +1,7 @@
 import { Graphics } from '@pixi/react';
 import React from 'react'
 
-const ActionBall = ({ x, y, width, height, correctAnswer }) => {
+const ActionBallUI = ({ x, y, width, height, correctAnswer }) => {
   const circleRadius = 15;  // 동그라미 반지름
   const circleSpacing = 40; // 동그라미 간격
   const totalCircles = 5;   // 동그라미 개수
@@ -42,4 +42,4 @@ const ActionBall = ({ x, y, width, height, correctAnswer }) => {
   )
 }
 
-export default ActionBall
+export default ActionBallUI

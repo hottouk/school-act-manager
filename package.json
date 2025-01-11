@@ -13,6 +13,7 @@
     "bootstrap": "^5.3.1",
     "chart.js": "^4.4.1",
     "firebase": "^10.2.0",
+    "gsap": "^3.12.5",
     "jwt-decode": "^3.1.2",
     "normalize.css": "^8.0.1",
     "openai": "^4.24.1",
