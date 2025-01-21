@@ -10,7 +10,6 @@ import styled from 'styled-components'
 
 //2024.08.08(생성)
 const ActivitySortPage = () => {
-  //----1.변수부--------------------------------
   const navigate = useNavigate()
   //2. 세로 길이
   const clientHeight = useClientHeight(document.documentElement)
@@ -22,6 +21,9 @@ const ActivitySortPage = () => {
       case "homeroomActi":
         navigate("/activities_setting_details?sort=homeroom")
         break;
+      case "quizGameActi":
+        navigate("/activities_setting_quiz")
+        break;
       default:
         return;
     }
@@ -30,17 +32,16 @@ const ActivitySortPage = () => {
   const actiSortList = [
     { id: "subjectActi", legend: "교과용 활동", subTitle: "과세특 기록용", imgNumber: 1 },
     { id: "homeroomActi", legend: "담임반 활동", subTitle: "자율, 진로, 봉사활동", imgNumber: 2 },
+    { id: "quizGameActi", legend: "게임 활동", subTitle: "단어, 퀴즈, 교과 관련", imgNumber: 2 },
     { id: "clubActi", legend: "동아리 활동", subTitle: "동아리 활동 기록용", imgNumber: 3, ban: true }
   ]
-  //----2.함수부--------------------------------
 
   return (
     <Container $clientheight={clientHeight}>
-      <StyledTitle>활동 종류 선택</StyledTitle>
       {/* 카드 랜더링 */}
       <CardSortForm itemList={actiSortList} handleCardBtnClick={handleCardBtnClick} />
       <BtnWrapper>
-        <MainBtn btnName="뒤로가기" btnOnClick={() => { navigate(-1) }} />
+        <Row><MainBtn onClick={() => { navigate(-1) }}>뒤로가기</MainBtn></Row>
       </BtnWrapper>
     </Container>
   )
@@ -59,6 +60,10 @@ const Container = styled.div`
     padding-bottom: 20px;
     overflow-y: scroll;
   }
+`
+const Row = styled.div`
+  display: flex;
+  justify-content: center;
 `
 const StyledTitle = styled.h3`
   text-align: center;

@@ -55,20 +55,6 @@ const useAddUpdFireData = (collectionName) => {
       console.error(err)
     }
   }
-  //8. 워드set 추가 함수(24.6.22)
-  const addWordSet = async (wordInfo) => {
-    try {
-      let createdTime = timeStamp.fromDate(new Date());
-      let setTitle = wordInfo.title
-      let wordSet = wordInfo.wordSet
-      let result = await addDoc(colRef, { setTitle, wordSet, createdTime, madeBy: user.uid });
-      return result;
-    } catch (err) {
-      window.alert(err.message)
-      console.error(err)
-    }
-  }
-
   //7. 활동 추가 함수
   const addActi = async (activity) => {
     try {
@@ -134,7 +120,7 @@ const useAddUpdFireData = (collectionName) => {
   }
 
   return (
-    { getInfo, addNotice, addActi, updateActi, updateStudent, deleteStudent, addClassroom, addStudent, addWordSet, updateClassListInfo }
+    { getInfo, addNotice, addActi, updateActi, updateStudent, deleteStudent, addClassroom, addStudent, updateClassListInfo }
   )
 }
 

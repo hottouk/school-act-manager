@@ -34,7 +34,6 @@ const Countdown = ({ isCountdown, setIsCountdown, setPhase, x, y }) => {
         setPhase("quiz")
       }, 3000);
     }
-
   }, [isCountdown]);
 
   useEffect(() => {

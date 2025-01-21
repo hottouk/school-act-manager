@@ -8,6 +8,7 @@ const SmallBtn = (props) => {
     <StyledBtn
       type="button"
       id={props.id}
+      tabIndex={-1}
       $backgroundColor={props.btnColor || "#3454d1"}
       $fontColor={props.fontColor || "#fff"}
       $hoverBackgroundColor={props.hoverBtnColor || "#1366d6"}

@@ -1,6 +1,6 @@
 import { appFireStore, timeStamp } from '../../firebase/config'
 import { useSelector } from 'react-redux'
-import { collection, doc, updateDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { useState } from 'react'
 
 const useFireClassData = () => {
@@ -21,6 +21,7 @@ const useFireClassData = () => {
       window.alert("Error updating document: ", error);
     }
   }
+  
   //좌석배치도 삭제하기(241210)
   const deleteSeatMap = async (id, list, index) => {
     let deleted = list.filter((_, i) => i !== index)
@@ -29,7 +30,30 @@ const useFireClassData = () => {
     catch (error) { window.alert("Error updating document: ", error); }
   }
 
-  return ({ addSeatMap, deleteSeatMap })
+  //클래스 불러오기(250122)
+  const fetchClassrooms = async (field, value) => {
+    const q = query(colRef, where(field, "==", value))
+    try {
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  //반 분류하기(250122)
+  const sortClassrooms = (list) => {
+    let subjClassList = [];
+    let homeroomClassList = [];
+    list.forEach(classroom => {
+      if (!classroom.type || classroom.type === "subject") subjClassList.push(classroom)
+      else homeroomClassList.push(classroom)
+    })
+    return { subjClassList, homeroomClassList }
+  }
+
+  return ({ addSeatMap, deleteSeatMap, fetchClassrooms, sortClassrooms })
 }
 
 export default useFireClassData

@@ -1,35 +1,30 @@
+//라이브러리리
 import React, { useEffect, useState } from 'react'
 import useClientHeight from '../../hooks/useClientHeight'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 //컴포넌트
 import CardList from '../../components/List/CardList'
-//CSS
-import styled from 'styled-components'
 import MainBtn from '../../components/Btn/MainBtn'
-import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
-
-
-const WordSetMain = () => {
-  //전역변수 user정보
+//hooks
+import useFireBasic from '../../hooks/Firebase/useFireBasic'
+//25.01.14
+const WordMain = () => {
+  //준비
   const user = useSelector(({ user }) => { return user })
   const navigate = useNavigate()
-  const [_wordList, setWordList] = useState([])
-  const { fetchWordList } = useFetchFireData()
-  //CSS
   const clientHeight = useClientHeight(document.documentElement)
-
-  useEffect(() => {
-    fetchWordList().then(wordList => { setWordList(wordList); })
-  }, [])
-
+  //랜더링 데이터
+  const [_quizSetList, setQuizSetList] = useState([])
+  const { fetchData } = useFireBasic("quiz")
+  useEffect(() => { fetchData("uid").then(quizSetList => { setQuizSetList(quizSetList) }) }, [])
   return (
     <StyledContainer $clientheight={clientHeight}>
       {user.isTeacher && <>
-        <CardList dataList={_wordList} type="word" //교사
-          title="생성 단어 세트 목록"
-          comment="아직 단어 세트가 없습니다. 단어 세트를 생성해주세요" />
-        <MainBtn btnName="단어 세트 만들기" btnOnClick={() => { navigate("/words_setting") }} />
+        <CardList dataList={_quizSetList} type="quiz" //교사
+          comment="아직 퀴즈 세트가 없습니다. 퀴즈 세트를 생성해주세요" />
+        <Row><MainBtn onClick={() => { navigate("/quiz_setting") }}>퀴즈 세트 만들기</MainBtn></Row>
       </>}
     </StyledContainer>
   )
@@ -47,5 +42,10 @@ const StyledContainer = styled.div`
     overflow-y: scroll;
   }
 `
+const Row = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 30px 0; 
+`
 
-export default WordSetMain
+export default WordMain

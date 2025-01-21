@@ -6,13 +6,15 @@ const BasicDefense = ({ x, y, radius, trigger }) => {
   const defenseRef = useRef()
 
   useEffect(() => {
+    let animation
     if (!defenseRef.current) return;
-    gsap.fromTo(defenseRef.current, { alpha: 0 }, {
+    animation = gsap.fromTo(defenseRef.current, { alpha: 0 }, {
       alpha: 0.5,
       duration: 0.5,
       yoyo: true,
       repeat: 1
     })
+    return () => { if (animation) { animation.kill(); } };// 애니메이션 종료
   }, [trigger])
 
   const drawCircle = (g) => {

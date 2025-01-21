@@ -75,9 +75,9 @@ const Nav = () => {
         </li>
         <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>
           <span className="pcOnly">클래스 관리</span></Link></li>
-        {/*todo <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>
-          <span className="pcOnly">사람 찾기</span></Link></li> */}
-        {user.isMaster && <li id="word_btn" ><Link to="/lab"><i className="fa-solid fa-khanda"></i>
+        <li id="class_btn" ><Link to="/quiz"><i className="fa-solid fa-school"></i>
+          <span className="pcOnly">단어 관리</span></Link></li>
+        {user.isMaster && <li id="lab_btn" ><Link to="/lab"><i className="fa-solid fa-khanda"></i>
           <span className="pcOnly">실험실</span></Link></li>}
         {user.isMaster && <li id="master_btn" ><Link to="/master"><i className="fa-solid fa-key"></i>
           <span className="pcOnly">마스터</span></Link></li>}
@@ -96,14 +96,15 @@ const Nav = () => {
       <ul className="menu_container">
         <li id="home_btn"><Link to="/"><i className="fa-solid fa-house"></i>
           <span className="pcOnly">Home</span></Link></li>
-        <li id="acti_btn"><Link to="/activities"><i className="fa-solid fa-scroll"></i>
-          <span className="pcOnly">참여 활동</span></Link></li>
         <li id="class_btn"><Link to="/classRooms"><i className="fa-solid fa-school"></i>
           <span className="pcOnly">참여 클래스</span></Link></li>
+        <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>
+          <span className="pcOnly">교사 찾기</span></Link></li>
         <li className="news_btn">
           {_isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news" ><i className="fa-solid fa-bell" /></Link>
         </li>
+
         {/* 모바일 전용 */}
         <li className="mobileOnly"><i id="my_info_btn" className="fa-solid fa-user" onClick={handleBtnClick}></i></li>
       </ul>

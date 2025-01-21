@@ -17,30 +17,33 @@ import ArrowBtn from '../../components/Btn/ArrowBtn.jsx';
 import TransparentBtn from '../../components/Btn/TransparentBtn.jsx';
 import MainPanel from '../../components/MainPanel.jsx';
 import SubNav from '../../components/Bar/SubNav.jsx';
+import QuizMonListItem from '../../components/List/ListItem/QuizMonListItem.jsx';
+//모달
 import PerfModal from '../../components/Modal/PerfModal.jsx';
 import ClassMemberModal from '../../components/Modal/ClassMemberModal.jsx';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
+import GameModal from '../../components/Modal/GameModal.jsx';
 //hooks
 import useEnrollClass from '../../hooks/useEnrollClass.jsx';
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData.jsx';
+import useFetchRtMyActiData from '../../hooks/RealTimeData/useFetchRtMyActiData.jsx'
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
 //이미지
 import PetImg from '../../components/PetImg.jsx';
-
-//2024.08.01(클래스 헤더 수정) -> 11.13 애니메이션 추가
+//todo 활동 중복으로 받음
+//todo 학생과 교사 로직 분리
+//2024.08.01(클래스 헤더 수정) -> 11.13(애니메이션 추가) -> 25.01.18(게임 추가)
 const ClassroomDetailsPage = () => {
-  //----1.변수부--------------------------------
   //준비
   const navigate = useNavigate()
   const dispatcher = useDispatch()
   const { id: klassId } = useParams()
-  useEffect(() => {
+  useEffect(() => { //화면 이동
     setIsVisible(false)
     setTimeout(() => setIsVisible(true), 200)
   }, [klassId])
-  //전역 변수  
   const user = useSelector(({ user }) => user)
   const allSubjClassList = useSelector(({ allClasses }) => allClasses)
   const thisClass = allSubjClassList.find((klass) => klass.id === klassId)
@@ -48,7 +51,12 @@ const ClassroomDetailsPage = () => {
   const { cancelSignUpInClass } = useEnrollClass()
   const { deleteClassWithStudents } = useDeleteFireData()
   //데이터 통신 변수
-  const { studentList } = useFetchRtMyStudentData("classRooms", klassId, "students", "studentNumber") //모든 학생 List
+  const { studentList } = useFetchRtMyStudentData("classRooms", klassId, "students", "studentNumber") //학생 List
+  const { quizActiList } = useFetchRtMyActiData();                                                    //퀴즈 List
+  const { fetchActiList } = useFetchFireData();           //todo 활동 중복으로 받고 있음.
+  useEffect(() => {
+    setQuizList(quizActiList)
+  }, [quizActiList])
   useEffect(() => {
     dispatcher(setAllStudents(studentList))               //전체 학생 전역변수화
     fetchActiList(thisClass.subject).then((actiList) => { //전체 활동 전역변수화
@@ -57,21 +65,27 @@ const ClassroomDetailsPage = () => {
     });
   }, [studentList])
   const [actiList, setActiList] = useState([])
-  const { fetchActiList } = useFetchFireData()
+  const [quizList, setQuizList] = useState([])
+  const [quizId, setQuizId] = useState([])
+  const [monsterDetails, setMonsterDetails] = useState()
   //모드
   const [isApplied, setIsApplied] = useState(false)
   const [isMember, setIsMember] = useState(false)
   //모달
-  const [isModalShown, setIsModalShown] = useState(false)             //학생 클래스 가입
-  const [isAddStuModalShown, setIsAddStuModalShown] = useState(false) //교사 학생 추가
-  const [isPerfModalShow, setIsPerfModalShow] = useState(false)       //수행 관리
+  const [isModalShown, setIsModalShown] = useState(false)     //학생 클래스 가입
+  const [isAddStuModal, setIsAddStuModal] = useState(false)   //교사 학생 추가
+  const [isPerfModal, setIsPerfModal] = useState(false)       //수행 관리
+  const [isGameModal, setIsGameModal] = useState(false)       //게임 
   //에니메이션
   const [isVisible, setIsVisible] = useState(false)
   //모바일
   const clientHeight = useClientHeight(document.documentElement)
 
-  //----2.함수부--------------------------------
-  const handleBtnClick = (event) => {
+  //------함수부------------------------------------------------  
+  //클래스 이동
+  const moveKlass = (event) => { navigate(`/classrooms/${event.value}`) }
+
+  const handleOnClick = (event) => {
     switch (event.target.id) {
       case "back_btn":
         navigate("/classRooms")
@@ -83,7 +97,7 @@ const ClassroomDetailsPage = () => {
           navigate("/classRooms")
         } else {
           window.alert("문구가 제대로 입력되지 않았습니다.");
-          return;
+          return
         }
         break;
       //학생 전용
@@ -100,21 +114,25 @@ const ClassroomDetailsPage = () => {
     }
     return null
   }
-  //클래스 이동
-  const moveKlass = (event) => { navigate(`/classrooms/${event.value}`) }
+  //몬스터 클릭
+  const handleMonsterOnClick = (item) => {
+    let { monster, quizInfo } = item
+    setIsGameModal(true)
+    setQuizId(quizInfo.id)
+    setMonsterDetails({ ...monster.step[0], level: item.level })
+  }
 
   return (<>
     <SubNav styles={{ padding: "10px" }}>
       <Select options={allSubjClassList.map((klass) => { return { label: klass.classTitle, value: klass.id } })} placeholder="반 바로 이동"
         onChange={moveKlass} />
     </SubNav>
-    {/* todo */}
     {!thisClass && <Container><h3>반 정보를 불러올 수 없습니다.</h3></Container>}
     {thisClass &&
       <Container $clientheight={clientHeight} $isVisible={isVisible}>
         {/* 반 기본 정보 */}
         <StyeldHeader>
-          <StyledClassTitle>{thisClass.classTitle}</StyledClassTitle>
+          <StyledBoldText>{thisClass.classTitle}</StyledBoldText>
           <p className="subjectInfo">{thisClass.subject}-{thisClass.subjDetail}</p>
           <p>{thisClass.intro}</p>
           <p>{!studentList ? 0 : studentList.length}명의 학생들이 있습니다.</p>
@@ -128,17 +146,26 @@ const ClassroomDetailsPage = () => {
             <ArrowWrapper><ArrowBtn direction="right" /></ArrowWrapper>
             <PetImg subject={thisClass.subject} level={3} onClick={() => { }} />
           </PetImgWrapper>
+          <StyledBoldText style={{ marginTop: "10px" }}>vs</StyledBoldText>
+
+          {/* 단어 게임부 */}
+          <GameMonListWrapper>
+            {quizList.length === 0 && < EmptyResult comment="등록단 단어 게임이 없습니다." />}
+            {quizList.length !== 0 && quizList.map((item) => {
+              return <QuizMonListItem key={item.id} item={item} onClick={handleMonsterOnClick} />
+            })}
+          </GameMonListWrapper>
           {/* 학생*/}
           {(!user.isTeacher && isApplied) && <div className="btn_wrapper">
             <StyledSignupBtn $backgroundcolor="gray">가입 신청 중..</StyledSignupBtn>
-            <StyledSignupBtn id="cancel_btn" onClick={handleBtnClick}>신청 취소</StyledSignupBtn>
+            <StyledSignupBtn id="cancel_btn" onClick={handleOnClick}>신청 취소</StyledSignupBtn>
           </div>}
-          {(!user.isTeacher && !isMember && !isApplied) && <StyledMoveBtn id="join_btn" onClick={handleBtnClick}>가입하기</StyledMoveBtn>}
+          {(!user.isTeacher && !isMember && !isApplied) && <StyledMoveBtn id="join_btn" onClick={handleOnClick}>가입하기</StyledMoveBtn>}
         </StyeldHeader>
         {/* 셀렉터(교사)*/}
         <MainPanel>
           <h5>빠른 세특 쫑알이</h5>
-          {user.isTeacher && <MainSelector type="subject" studentList={studentList} actiList={actiList} classId={klassId} setIsPerfModalShow={setIsPerfModalShow} />}
+          {user.isTeacher && <MainSelector type="subject" studentList={studentList} actiList={actiList} classId={klassId} setIsPerfModalShow={setIsPerfModal} />}
         </MainPanel>
         {/* 퀘스트 목록(학생) */}
         {(!user.isTeacher && isMember) && <MainPanel>
@@ -154,18 +181,18 @@ const ClassroomDetailsPage = () => {
           {(!studentList || studentList.length === 0) ?
             <>
               <EmptyResult comment="등록된 학생이 없습니다." />
-              <MidBtn onClick={() => { setIsAddStuModalShown(true) }}>학생 추가</MidBtn>
-            </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModalShown(true) }} classType={"subject"} />}
+              <MidBtn onClick={() => { setIsAddStuModal(true) }}>학생 추가</MidBtn>
+            </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModal(true) }} classType={"subject"} />}
         </MainPanel>}
         {/* 반 전체보기(교사)*/}
         {user.isTeacher && <MainPanel>
           <h5>한 눈에 보기</h5>
-          <MainBtn btnName="반 전체 세특 보기" btnOnClick={() => { navigate('allStudents') }} />
+          <Row style={{ margin: "30px 0" }}><MainBtn onClick={() => { navigate('allStudents') }} >반 전체 세특 보기</MainBtn></Row>
         </MainPanel>
         }
         {user.isTeacher && <BtnWrapper>
-          <TransparentBtn id="back_btn" btnName="반 목록" btnOnClick={handleBtnClick} />
-          <TransparentBtn id="delete_btn" btnName="반 삭제" btnOnClick={handleBtnClick} />
+          <TransparentBtn id="back_btn" onClick={handleOnClick}>반 수정</TransparentBtn>
+          <TransparentBtn id="delete_btn" onClick={handleOnClick}>반 삭제</TransparentBtn>
         </BtnWrapper>}
       </Container>
     }
@@ -176,16 +203,23 @@ const ClassroomDetailsPage = () => {
       thisClass={thisClass}
     />}
     {<AddNewStudentModal
-      show={isAddStuModalShown}
-      onHide={() => { setIsAddStuModalShown(false) }}
+      show={isAddStuModal}
+      onHide={() => { setIsAddStuModal(false) }}
       classId={klassId} />}
     {/* 수행 관리 모달 */}
     <PerfModal
-      show={isPerfModalShow}
-      onHide={() => setIsPerfModalShow(false)}
+      show={isPerfModal}
+      onHide={() => setIsPerfModal(false)}
       studentList={studentList}
       classId={klassId}
     />
+    {/* 게임 모달 */}
+    {isGameModal && <GameModal
+      show={isGameModal}
+      onHide={() => setIsGameModal(false)}
+      quizSetId={quizId}
+      monsterDetails={monsterDetails}
+    />}
   </>)
 }
 
@@ -204,10 +238,20 @@ const Container = styled.main`
     overflow-y: scroll;
   }
 `
-const StyledClassTitle = styled.h2`
+const Row = styled.div`
+  display: flex;
+  justify-content: center;
+`
+const StyledBoldText = styled.h2`
   display: flex;
   font-weight: bold;
   justify-content: center;
+`
+const GameMonListWrapper = styled.ul`
+  display: flex;
+  gap: 15px;
+  border-top: 1px solid rgb(120, 120, 120, 0.5);
+  border-bottom: 1px solid rgb(120, 120, 120, 0.5);
 `
 const StyeldHeader = styled.header`
   margin-top: 25px;

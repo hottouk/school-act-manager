@@ -1,9 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const MainBtn = ({ btnName, btnOnClick }) => {
+const MainBtn = ({ children, onClick, type }) => {
   return (
-    <StyledBtn onClick={btnOnClick}>{btnName || "샘플"} </StyledBtn>
+    <StyledBtn type={type || "button"} onClick={onClick}>{children || "샘플"} </StyledBtn>
   )
 }
 const StyledBtn = styled.button`
@@ -23,7 +23,6 @@ const StyledBtn = styled.button`
   height: 50px;
   letter-spacing: normal;
   line-height: 1.5;
-  margin: 30px auto;
   outline: none;
   overflow: hidden;
   padding: 14px 30px;

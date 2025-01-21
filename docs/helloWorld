@@ -6,6 +6,7 @@ grey #949192;
 Green #00a86b;
 Pink  #FF69B4;
 phone max-width 767px
+BorderColor: rgb(120, 120, 120, 0.5);
     
  icon size
  w25 h25

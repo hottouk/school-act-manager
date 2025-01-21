@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 //컴포넌트
 import CardList from '../../components/List/CardList';
-import TSearchInputBtn from '../../components/Form/TSearchInputBtn';
 import MainBtn from '../../components/Btn/MainBtn';
 //hooks
 import useFetchRtMyClassData from '../../hooks/RealTimeData/useFetchRtMyClassData';
@@ -13,28 +12,23 @@ import useClientHeight from '../../hooks/useClientHeight';
 import styled from 'styled-components';
 import SearchBar from '../../components/Bar/SearchBar';
 import { setAllSubjClasses } from '../../store/allClassesSlice';
+import { setSelectClass } from '../../store/classSelectedSlice';
 
-//24.09.18(1차 수정)
+//24.09.18(1차 수정) -> 25.01.21(학생 파트 제거)
 const ClassRoomMainPage = () => {
-  //----1.변수부--------------------------------
   //준비
   const navigate = useNavigate()
   const dispatcher = useDispatch()
   //전역변수 
   const user = useSelector(({ user }) => user)
-  const { classList, searchResult, appliedClassList, errByGetClass } = useFetchRtMyClassData() //useEffect 실행 함수
+  const { classList } = useFetchRtMyClassData() //useEffect 실행 함수
   const [subjClassList, setSubjClassList] = useState(null)
   const [homeroomClassList, setHomerooomClassList] = useState(null)
   useEffect(() => { sortClassroom() }, [classList])
-  //todo 학생 관련 함수 정리하기
-  useEffect(() => { setAppliedClassList(appliedClassList) }, [appliedClassList, searchResult,])
-  const [_teacherList, setTeacherList] = useState(null)
-  const [_teacherClassList, setTeacherClassList] = useState(null)
-  const [_appliedClassList, setAppliedClassList] = useState(null)
   //모니터 높이
-  const clientHeight = useClientHeight(document.documentElement)   //화면 높이
+  const clientHeight = useClientHeight(document.documentElement)
 
-  //----2.함수부--------------------------------
+  //------함수부------------------------------------------------  
   //교과, 담임반 분류
   const sortClassroom = () => {
     let subjClassList = [];
@@ -48,41 +42,41 @@ const ClassRoomMainPage = () => {
     setHomerooomClassList(homeroomClassList)
   }
 
+  //교과반 클릭
+  const handleSubjClassOnClick = (item) => {
+    dispatcher(setSelectClass(item))   //선택한 교실 비휘발성 전역변수화
+    navigate(`/classrooms/${item.id}`) //url 이동
+  }
+
+  //담임반 클릭
+  const handleHomeroomOnClick = (item) => {
+    dispatcher(setSelectClass(item)) //선택한 교실 비휘발성 전역변수화
+    navigate(`/homeroom/${item.id}`) //url 이동
+  }
+
   return (
     <Container $clientheight={clientHeight}>
       {/* 교사 */}
       {user.isTeacher && <>
-        <SearchBar title="교과반 목록" type="classroom" list={subjClassList} setList={setSubjClassList} />
-        <CardList
-          dataList={subjClassList}
-          type="classroom"
-          comment="아직 교과반이 없어요. 클래스를 생성해주세요" />
-        <SearchBar title="담임반 목록" />
-        <CardList
-          dataList={homeroomClassList}
-          type="homeroom"
-          comment="아직 담임반이 없어요. 클래스를 생성해주세요" />
-        <MainBtn btnOnClick={() => navigate('/classrooms_setting', { state: { step: "first" } })} btnName="클래스 만들기" />
+        <SearchBar title="교과 클래스 목록" type="classroom" list={subjClassList} setList={setSubjClassList} />
+        <CardList dataList={subjClassList} type="classroom" onClick={handleSubjClassOnClick} />
+
+        <SearchBar title="담임 클래스 목록" />
+        <CardList dataList={homeroomClassList} type="homeroom" onClick={handleHomeroomOnClick} />
+        <Row><MainBtn onClick={() => navigate('/classrooms_setting', { state: { step: "first" } })}>클래스 만들기</MainBtn></Row>
       </>}
-      {/* todo 학생 관련 정리하기 */}
+
+      {/* 학생 */}
       {!user.isTeacher && <>
-        {_teacherList && <CardList dataList={_teacherList} type="teacher"
-          title="선생님"
-          comment="선생님 id를 확인해주세요."
-          setTeacherClassList={setTeacherClassList}
-        />}
-        {_teacherClassList && <CardList dataList={_teacherClassList} type="classroom"
-          title="선생님이 만든 교실"
-          comment="선생님이 아직 생성하신 교실이 없습니다. "
-        />}
-        <CardList dataList={subjClassList} type="classroom" //학생
-          title="나의 클래스"
-          comment="가입한 클래스가 없어요. 클래스에 가입해주세요" />
-        <CardList dataList={_appliedClassList} type="appliedClassList"
-          title="승인 대기중 클래스"
-          comment="가입 신청한 클래스가 없어요." />
-        <TSearchInputBtn setTeacherList={setTeacherList} />
+        <SearchBar title="가입 신청 중인 클래스" />
+        <CardList dataList={[]} type="classroom" onClick={() => { }} />
+
+        <SearchBar title="나의 클래스" />
+        <CardList dataList={[]} type="classroom" onClick={() => { }} />
       </>}
+
+
+
     </Container>
   )
 }
@@ -97,5 +91,10 @@ const Container = styled.div`
     padding-bottom: 20px;
     overflow-y: scroll;
   }
+`
+const Row = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
 `
 export default ClassRoomMainPage

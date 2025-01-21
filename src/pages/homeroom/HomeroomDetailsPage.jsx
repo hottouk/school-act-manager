@@ -103,7 +103,7 @@ const HomeroomDetailsPage = () => {
         </MainPanel>
         <MainPanel>
           <h5>한눈에 보기</h5>
-          <MainBtn btnName="행발 전체 보기" btnOnClick={handleAllStudentOnClick} />
+          <Row><MainBtn onClick={handleAllStudentOnClick}>행발 전체 보기</MainBtn></Row>
         </MainPanel>
         <BtnWrapper>
           <TransparentBtn btnName="반 목록" btnOnClick={() => { navigate("/classRooms") }} />
@@ -126,6 +126,11 @@ const Container = styled.main`
   margin: 0 auto 50px;
   opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
   transition: opacity 0.7s ease;
+`
+const Row = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
 `
 const TabWrapper = styled.div`
   position: relative;

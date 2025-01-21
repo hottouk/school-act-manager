@@ -4,7 +4,6 @@ const DotTitle = ({ title, pointer, onClick, styles }) => {
   //기본값
   let dotColor = styles?.dotColor || "white";
   let width = styles?.width || "30%";
-  let marginBot = styles?.marginBot || "10px";
   // 샘플1 <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" />
   // 샘플2
   // <DotTitle title={"학업 역량 ▼"} onClick={() => { setIsAcadShown((prev) => !prev) }} pointer="pointer"
@@ -15,7 +14,6 @@ const DotTitle = ({ title, pointer, onClick, styles }) => {
       $width={width}
       $pointer={pointer}
       $dotColor={dotColor || "white"}
-      $marginBot={marginBot}
     > {title || "샘플"}</StyledTitle >
   )
 }
@@ -27,7 +25,7 @@ const StyledTitle = styled.p`
   width: ${(props) => { return props.$width }};
   font-weight: bold;
   padding: 0 20px;  /* 텍스트가 동그라미와 겹치지 않도록 왼쪽 여백 추가 */
-  margin-bottom: ${(props) => { return props.$marginBot }};
+  margin: 0;
   cursor: ${(props) => { return props.$pointer }};
   &::before {
     content: '';

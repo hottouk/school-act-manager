@@ -11,10 +11,8 @@ const useFetchFireData = () => {
   const user = useSelector(({ user }) => { return user })
   const actiColRef = collection(appFireStore, "activities")
   const userColRef = collection(appFireStore, "user")
-  const wordColRef = collection(db, "words")
 
   //2024.06.30 수정
-
   //9. 하위 문서(학생) 1개
   const fetchSubDoc = async (colName, docId, subColName, subDocId) => {
     let docRef = doc(collection(db, colName, docId, subColName), subDocId)
@@ -112,22 +110,6 @@ const useFetchFireData = () => {
     return teacherList;
   }
 
-  //2. 워드 리스트 출력
-  const fetchWordList = async () => {
-    let wordList = []
-    let q = query(wordColRef, where("madeBy", "==", user.uid))
-    try {
-      let querySnapshot = await getDocs(q);
-      querySnapshot.forEach(doc => {
-        wordList.push({ id: doc.id, ...doc.data() })
-      });
-    } catch (err) {
-      window.alert(err.message)
-      console.log(err)
-    }
-    return wordList;
-  }
-
   //1. 유저 리스트 출력
   const fetchUserList = async (type, propKnd, prop) => {
     let userList = []
@@ -210,7 +192,7 @@ const useFetchFireData = () => {
     }
     return q
   }
-  return ({ db, fetchDoc, fetchSubDoc, fetchUserList, fetchWordList, fetchTeacherList, fetchActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
+  return ({ db, fetchDoc, fetchSubDoc, fetchUserList, fetchTeacherList, fetchActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
 }
 
 export default useFetchFireData

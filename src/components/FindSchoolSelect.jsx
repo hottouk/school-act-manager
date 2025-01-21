@@ -72,8 +72,8 @@ const FindSchoolSelect = ({ setSchool }) => {
       });
   }
 
-  return (<StyledContainer>
-    <div className="upper_section">
+  return (<Container>
+    <Row style={{ justifyContent: "space-between", marginBottom: "15px", gap: "20px" }}>
       <select id="school_office_select" value={_schoolOffice} onChange={handleOnChange} required>
         <option value="default" disabled >시도교육청</option>
         <option value="B10">서울특별시교육청</option>
@@ -101,7 +101,7 @@ const FindSchoolSelect = ({ setSchool }) => {
         <option value="초등학교">초등학교</option>
       </select>
       <input id="school_name_input" type="text" value={_schoolName} onChange={handleOnChange} placeholder="학교명" />
-    </div>
+    </Row>
     <div className="bot_section">
       <StyledSearchBtn id="search_school_btn" type="button" onClick={handleOnClick}>검색</StyledSearchBtn>
     </div>
@@ -124,23 +124,21 @@ const FindSchoolSelect = ({ setSchool }) => {
         })}
       </ul>
     </StyledSchoolListWrapper>
-  </StyledContainer>
+  </Container>
   )
 }
 
-const StyledContainer = styled.div`
+const Container = styled.div`
 margin-bottom: 0;
   select, input {
     width: 100%;
     padding: 5px;
     border-radius: 7px;
   }
-  div.upper_section {
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-  }
+`
+const Row = styled.div`
+  display: flex;
+  margin-bottom: 10px;
 `
 const StyledSearchBtn = styled.button`
   width: 100%;
@@ -148,10 +146,10 @@ const StyledSearchBtn = styled.button`
   margin: 10px 0;
   padding: 10px 15px;
   border-radius: 15px;
-  border: 2px solid whitesmoke;
+  border: 2px solid gray;
   background-color: transparent;
   font-size: 12px;
-  color: whitesmoke;
+  color: black;
 `
 const StyledSchoolListWrapper = styled.div`
   width: 100%;

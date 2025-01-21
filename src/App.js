@@ -25,15 +25,17 @@ import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassroomMakePage from './pages/classSetting/ClassroomMakePage';
 import News from './pages/main/News';
 import Homework from './components/Homework';
-import UserMain from './pages/student/UserMain';
+import UserMainPage from './pages/user/UserMainPage';
 import { useSelector } from 'react-redux';
 import { Helmet } from "react-helmet";
 //단어 배틀
-import WordForm from './pages/wordBattle/WordForm';
+import QuizFormPage from './pages/quizBattle/QuizFormPage';
 //관리자
 import MasterPage from './pages/main/MasterPage';
 import Lab from './pages/lab/Lab';
 import HomeSeatChange from './pages/homeroom/HomeSeatChangePage';
+import QuizMainPage from './pages/quizBattle/QuizMainPage';
+import QuizActiFormPage from './pages/quizBattle/QuizActiFormPage';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -76,10 +78,12 @@ function App() {
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
           <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomMakePage /> : <Navigate replace={true} to='/' />} />
           {/* 학생 관리 */}
-          <Route path="/users" element={uid ? <UserMain /> : <Navigate replace={true} to='/login' />} />
-          {/* 단어장 관리 */}
+          <Route path="/users" element={uid ? <UserMainPage /> : <Navigate replace={true} to='/login' />} />
+          {/* 퀴즈 관리 */}
           <Route path="/lab" element={uid ? <Lab /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/words_setting" element={uid ? <WordForm /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/quiz" element={uid ? <QuizMainPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/quiz_setting" element={uid ? <QuizFormPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
           {/* 새소식 관리 */}
           <Route path="/news" element={uid ? <News /> : <Navigate replace={true} to='/' />} />
           {/* 로그인/회원가입 */}

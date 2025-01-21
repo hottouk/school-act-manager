@@ -6,34 +6,42 @@ const BasicRest = ({ x, y, size, thick, movingPoint, trigger }) => {
   const plusRef1 = useRef();
   const plusRef2 = useRef();
   const plusRef3 = useRef();
+  const animationListRef = useRef([]); // 애니메이션 인스턴스를 저장할 배열
 
   useEffect(() => {
-    if (plusRef1.current) { 
-      gsap.fromTo(plusRef1.current, { alpha: 1, y: y }, {
+    if (plusRef1.current) {
+      const anim1 = gsap.fromTo(plusRef1.current, { alpha: 1, y: y }, {
         y: y - movingPoint,
         alpha: 0,
         duration: 1,
         ease: 'power2.out'
       })
+      animationListRef.current.push(anim1); // 저장
     }
     if (plusRef2.current) {
-      gsap.fromTo(plusRef2.current, { alpha: 1, y: y }, {
+      const anim2 = gsap.fromTo(plusRef2.current, { alpha: 1, y: y }, {
         y: y - movingPoint,
         alpha: 0,
         duration: 0.7,
         ease: 'power2.out',
         delay: 0.1, // 0.5초 후 시작
       })
+      animationListRef.current.push(anim2); // 저장
     }
     if (plusRef3.current) {
-      gsap.fromTo(plusRef3.current, { alpha: 1, y: y }, {
+      const anim3 = gsap.fromTo(plusRef3.current, { alpha: 1, y: y }, {
         y: y - movingPoint,
         alpha: 0,
         duration: 0.7,
         ease: 'power2.out',
         delay: 0.2, // 0.5초 후 시작
       })
+      animationListRef.current.push(anim3); // 저장
     }
+    return () => {
+      animationListRef.current.forEach((anim) => anim.kill()); // 모든 애니메이션 중지
+      animationListRef.current = []; // 배열 초기화
+    };
   }, [trigger])
 
   const drawPlus1 = (g) => {

@@ -24,7 +24,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   //교사 인증
   const { log } = useTeacherAuth();
   if (log) { window.alert(log) }
-  const user = useSelector(({ user }) => { return user })
+  const user = useSelector(({ user }) => user)
   const navigate = useNavigate()
   //활동관리-전체 활동 선택된 과목
   const [selectedSubj, setSelectedSubj] = useState(null);
@@ -37,13 +37,15 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   const [_allActiList, setAllActiList] = useState(null)
   const [_mySubjActiList, setMySubjActiList] = useState(null)
   const [_myHomeActiList, setMyHomeActiList] = useState(null)
+  const [_myQuizActiList, setMyQuizActiList] = useState(null);
   const [copiedList, setCopiedList] = useState(null)
   //실시간 활동 정보
-  const { subjActiList, homeActiList } = useFetchRtMyActiData()
+  const { subjActiList, homeActiList, quizActiList } = useFetchRtMyActiData();
   useEffect(() => {
     setMySubjActiList(subjActiList)
     setMyHomeActiList(homeActiList)
-  }, [subjActiList, homeActiList])
+    setMyQuizActiList(quizActiList)
+  }, [subjActiList, homeActiList, quizActiList])
   //진입 경로
   const location = useLocation();
   useEffect(() => { fetchDataByLocation() }, [location, selectedSubj])
@@ -73,18 +75,27 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
     }
   }
 
+  //활동 클릭
+  const handleActiOnClick = (item) => {
+    if (item.subject === "담임") { navigate(`/activities/${item.id}?sort=homeroom`, { state: { acti: item } }) }  //담임
+    else if (item.monster) { navigate(`/activities_setting_quiz`, { state: { ...item } }) }                       //퀴즈
+    else { navigate(`/activities/${item.id}?sort=subject`, { state: { acti: item } }) }                           //교과
+  }
+
   return (
     <Container $clientheight={clientHeight}>
       {/* 교사: 활동관리 - 나의활동 */}
       {(user.isTeacher && !location.state) && <>
-        <SearchBar title="나의 활동" type="acti" list={_mySubjActiList} setList={setMySubjActiList} />
-        <CardList dataList={_mySubjActiList} type="activity" comment="교과 활동이 없습니다. 활동을 생성해주세요" />
+        <SearchBar title="교과 활동" type="acti" list={_mySubjActiList} setList={setMySubjActiList} />
+        <CardList dataList={_mySubjActiList} type="activity" onClick={handleActiOnClick} />
         <HorizontalBannerAd />
         <SearchBar title="담임반 활동" />
-        <CardList dataList={_myHomeActiList} type="activity" comment="담임반 활동이 없습니다. 활동을 생성해주세요" />
+        <CardList dataList={_myHomeActiList} type="activity" onClick={handleActiOnClick} />
         <SearchBar title="업어온 활동" />
-        <CardList dataList={copiedList} type="copiedActi" comment="업어온 활동이 없습니다." />
-        <MainBtn btnOnClick={() => { navigate("/activities_setting") }} btnName="활동 만들기" />
+        <CardList dataList={copiedList} type="copiedActi" />
+        <SearchBar title="퀴즈 활동" />
+        <CardList dataList={_myQuizActiList} type="quizActi" onClick={handleActiOnClick} />
+        <Row><MainBtn onClick={() => { navigate("/activities_setting") }} >활동 만들기</MainBtn></Row>
       </>}
       {/* 교사: 활동관리-전체 활동 */}
       {(user.isTeacher && location.state === "acti_all") && <>
@@ -110,6 +121,11 @@ const Container = styled.div`
     padding-bottom: 20px;
     overflow-y: scroll;
   }
+`
+const Row = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
 `
 const TabBtnContainer = styled.div`
   display: flex;

@@ -104,8 +104,8 @@ const MainSelector = ({ type, studentList, actiList, classId, setIsPerfModalShow
           </div>
         </StyledAccContainer>
         <BtnWrapper>
-          <MainBtn btnOnClick={() => { setIsCompleteModalShow(true) }} btnName="선택 완료" />
-          {setIsPerfModalShow && <MainBtn btnOnClick={() => { setIsPerfModalShow(true) }} btnName="수행 평가 관리" />}
+          <MainBtn onClick={() => { setIsCompleteModalShow(true) }}>선택 완료</MainBtn>
+          {setIsPerfModalShow && <MainBtn onClick={() => { setIsPerfModalShow(true) }}>수행 평가 관리</MainBtn>}
         </BtnWrapper>
       </Container>
       {/* 선택 완료 모달 */}

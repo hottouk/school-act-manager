@@ -1,7 +1,7 @@
 import { Graphics, Text } from '@pixi/react'
 import React, { useEffect, useState } from 'react'
 //2025.01.12
-const VocaUI = ({ x, y, width, height, pivotX, pivotY, word }) => {
+const QuizUI = ({ x, y, width, height, pivotX, pivotY, quiz }) => {
   const [progress, setProgress] = useState(0);
   useEffect(() => {
     let startTime = performance.now();
@@ -16,7 +16,7 @@ const VocaUI = ({ x, y, width, height, pivotX, pivotY, word }) => {
     };
     updateProgress(); // 진행도 업데이트 시작
     return () => setProgress(0); // 새 단어로 리셋
-  }, [word])
+  }, [quiz])
 
   let draw = (g) => {
     g.clear();
@@ -33,7 +33,7 @@ const VocaUI = ({ x, y, width, height, pivotX, pivotY, word }) => {
   return (<>
     <Graphics draw={draw} pivot={{ x: pivotX, y: pivotY }} />
     <Text
-      text={word}
+      text={quiz}
       x={x}
       y={y}
       anchor={0.5}
@@ -42,4 +42,4 @@ const VocaUI = ({ x, y, width, height, pivotX, pivotY, word }) => {
   </>)
 }
 
-export default VocaUI
+export default QuizUI

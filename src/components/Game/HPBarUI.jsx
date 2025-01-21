@@ -7,13 +7,15 @@ const HPBarUI = ({ x, y, width, height, curHp, maxHp }) => {
   const clampedHP = Math.min(Math.max(curHp, 0), maxHp)
 
   useEffect(() => {
+    let animation
     const hpRatio = clampedHP / maxHp
     if (!hpBarRef.current) return
-    gsap.to(hpBarRef.current.scale, {
+    animation = gsap.to(hpBarRef.current.scale, {
       x: hpRatio,
       duration: 0.5,
       ease: 'power2.out',
     });
+    return () => { if (animation) { animation.kill(); } };// 애니메이션 종료
   }, [curHp, maxHp]);
 
   let drawMaxHP = (g) => {

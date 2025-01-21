@@ -8,7 +8,7 @@ import useClientHeight from "../../hooks/useClientHeight";
 import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData";
 import useFireActi from "../../hooks/Firebase/useFireActi";
 //컴포넌트
-import GraphicDialogModal from "../../components/Modal/GraphicDialogModal";
+import GraphicDialogModal from "../../components/Modal/MonsterModal";
 import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
 import AddExtraRecModal from "../../components/Modal/AddExtraRecModal";
 import ScoreWrapper from "../../components/ScoreWrapper"
@@ -34,18 +34,19 @@ import AddPerfRecModal from "../../components/Modal/AddPerfRecModal";
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
 //css
 import styled from "styled-components";
+import FormHeader from "../../components/Form/FormHeader";
+import ImagePicker from "../../components/Form/ImagePicker";
 
 //24.07.06 수정(실시간 바이트 갱신) -> 24.12.21(담임반 활동)
-const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
-  //----1.변수부--------------------------------
+const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
   useEffect(() => { setIsVisible(true) }, [])
   const user = useSelector(({ user }) => { return user })
   //1.활동 기본 정보 변수
-  const [title, setTitle] = useState('');
+  const [_title, setTitle] = useState('');
   const [_selectedSubjGroup, setSelectedSubjGroup] = useState('default');
   const [_selectedSubjDetail, setSelectedSubjDetail] = useState('default');
-  const [content, setContent] = useState('');
-  const [record, setRecord] = useState('');
+  const [_content, setContent] = useState('');
+  const [_record, setRecord] = useState('');
   const [_extraRecList, setExtraRecList] = useState(null);
   const [_perfRecList, setPerfRecList] = useState(null);
   //담임반 활동
@@ -112,7 +113,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
   const clientHeight = useClientHeight(document.documentElement)
   const [isVisible, setIsVisible] = useState(false)
 
-  //----2.함수부--------------------------------
+  //------함수부------------------------------------------------  
   //데이터 초기화
   const initData = () => {
     let acti = state.acti
@@ -140,7 +141,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       const confirm = window.confirm("활동을 수정하시겠습니까?")
       let actId = state.acti.id
       if (confirm) {
-        let modifiedActi = { title, content, record, scores, money, monImg, isHomework: _isHomework, isPrivate: _isPrivate };
+        let modifiedActi = { title: _title, content: _content, record: _record, scores, money, monImg, isHomework: _isHomework, isPrivate: _isPrivate };
         updateActi(modifiedActi, "activities", actId)
         navigate("/activities")
         setIsModified(false)
@@ -149,8 +150,8 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       const confirm = window.confirm('활동을 생성하시겠습니까?')
       if (confirm) {
         let newAct = {
-          uid: String(user.uid), title, subject: _selectedSubjGroup, subjDetail: _selectedSubjDetail,
-          content, record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework,
+          uid: String(user.uid), title: _title, subject: _selectedSubjGroup, subjDetail: _selectedSubjDetail,
+          content: _content, record: _record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework,
           isPrivate: _isPrivate
         };
         addActi(newAct)
@@ -212,9 +213,9 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
     event.preventDefault();
     switch (event.target.id) {
       case "gpt_btn": //교사 전용
-        if (title !== '' && _selectedSubjDetail !== 'default' && content !== '') {
+        if (_title !== '' && _selectedSubjDetail !== 'default' && _content !== '') {
           try {
-            if (sort === "homeroom") { askHomeroomReccord(title, _selectedSubjDetail, content, _timeFormat, _myByte) } else { askSubjRecord(title, _selectedSubjDetail, content) }
+            if (sort === "homeroom") { askHomeroomReccord(_title, _selectedSubjDetail, _content, _timeFormat, _myByte) } else { askSubjRecord(_title, _selectedSubjDetail, _content) }
             setTimerModalShow(true)
           } catch (error) {
             window.alert.log(error.message)
@@ -316,62 +317,61 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
       {/* 교사 */}
       {user.isTeacher &&
         <StyledForm onSubmit={handleSubmit}>
-          <StyledHeader>
-            {state ? <legend>{_selectedSubjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}
-          </StyledHeader>
-          <fieldset>
-            <StyledDiv>
-              <StyledImgPicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
-            </StyledDiv>
-            <InputWrapper>
+          <FormHeader>{state ? <legend>{_selectedSubjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}</FormHeader>
+          <fieldset style={{ padding: "2px" }}>
+            <ImagePicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
+            <Row style={{ justifyContent: "space-between", margin: "13px 0" }}>
               <DotTitle title={"활동 제목"} styles={{ dotColor: "#3454d1;" }} />
-              <input className="act_title" id="act_title" type="text" required onChange={handleOnChange} value={title} disabled={!isModified} placeholder="ex)포도당 산화 환원 실험" />
-            </InputWrapper>
-            {!state &&
-              <InputWrapper>
-                <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
-                <SubjectSelects sort={sort}
-                  selectedGroup={_selectedSubjGroup} selectedDetail={_selectedSubjDetail}
-                  setSelectedGroup={setSelectedSubjGroup} setSelectedDetail={setSelectedSubjDetail}
-                />
-              </InputWrapper>}
+              <StyledInput className="act_title" id="act_title" type="text" required onChange={handleOnChange} value={_title} disabled={!isModified} placeholder="ex)포도당 산화 환원 실험" />
+            </Row>
+            <Row style={{ marginBottom: "13px" }}>
+              <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
+              <SubjectSelects sort={sort}
+                selectedGroup={_selectedSubjGroup} selectedDetail={_selectedSubjDetail}
+                setSelectedGroup={setSelectedSubjGroup} setSelectedDetail={setSelectedSubjDetail}
+                disabled={!isModified} />
+            </Row>
             {/* 활동 설명 */}
-            <CommonTextArea id="act_content" title="활동 설명" onChange={handleOnChange} value={content} disabled={!isModified}
+            <CommonTextArea id="act_content" title="활동 설명" onChange={handleOnChange} value={_content} disabled={!isModified}
               placeholder={"ex)포도당 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동."} />
-            <CommonTextArea id="act_record" title="생기부 문구" onChange={handleOnChange} value={record} disabled={!isModified} required
+            <CommonTextArea id="act_record" title="생기부 문구" onChange={handleOnChange} value={_record} disabled={!isModified} required
               placeholder={"직접 쓰지 마시고 gpt 버튼 클릭! 직접 작성도 가능함."} />
-            <ByteCalculator handleOnConhange={handleOnChange} str={record} />
+            <ByteCalculator handleOnConhange={handleOnChange} str={_record} />
             {/* 날짜_담임반 전용 */}
-            {sort === "homeroom" && <DotTitle title={"날짜 정보 ▼"} onClick={() => { setIsDateShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+            <Row style={{ marginBottom: "13px" }}>{sort === "homeroom" && <DotTitle title={"날짜 정보 ▼"} onClick={() => { setIsDateShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}</Row>
             <AnimMaxHightOpacity isVisible={isDateShown}>
               <HiddenWrapper>
-                <InputWrapper $margin="0" $maxWidth="100%"><input type="text" value={_timeFormat} disabled style={{ width: "100%" }} /></InputWrapper>
-                <InputWrapper $margin="10px 0">
-                  <input type="date" id="first_date" onChange={handleOnChange} />부터
-                  <input type="date" id="second_date" onChange={handleOnChange} />까지
-                </InputWrapper>
-                <InputWrapper $margin="10px 0"><input type="number" min={0} max={99} value={_hour} onChange={(event) => { setHour(event.target.value) }} />시간</InputWrapper>
+                <Row style={{ margin: "0" }}><StyledInput type="text" value={_timeFormat} disabled style={{ flexGrow: 1, width: "55px" }} /></Row>
+                <Row style={{ margin: "10px 0", justifyContent: "space-between" }}>
+                  <StyledInput type="date" id="first_date" onChange={handleOnChange} />부터
+                  <StyledInput type="date" id="second_date" onChange={handleOnChange} />까지
+                </Row>
+                <Row style={{ margin: "5px 0", alignItems: "center", gap: "10px" }}><StyledInput type="number" min={0} max={99} value={_hour} onChange={(event) => { setHour(event.target.value) }} />시간</Row>
               </HiddenWrapper>
             </AnimMaxHightOpacity>
             {/* GPT 세부 설정 */}
-            {sort === "homeroom" && <DotTitle title={"GPT 설정 ▼"} onClick={() => { setIsGptDetailShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+            <Row style={{ marginBottom: "13px" }}>
+              {sort === "homeroom" && <DotTitle title={"GPT 설정 ▼"} onClick={() => { setIsGptDetailShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+            </Row>
             <AnimMaxHightOpacity isVisible={isGptDetailShown}>
               <HiddenWrapper>
-                <InputWrapper $margin="0"> 요청 바이트<input type="number" min={200} max={1200} value={_myByte} onChange={(e) => { setMyByte(e.target.value) }} /></InputWrapper>
+                <Row style={{ alignItems: "center", justifyContent: "space-between" }}> 요청 바이트<StyledInput type="number" min={200} max={1200} value={_myByte} onChange={(e) => { setMyByte(e.target.value) }} /></Row>
               </HiddenWrapper>
             </AnimMaxHightOpacity>
             {/* 공개/비공개 */}
-            <RadioWrapper>
+            <Row style={{ justifyContent: "space-between", marginBottom: "10px" }}>
               <DotTitle title={"공개 여부"} styles={{ dotColor: "#3454d1;" }} />
               <TwoRadios name="isPrivate_radio"
                 id={["private_radio", "public_radio"]}
                 value={_isPrivate} label={["비공개 활동", "공개 활동"]}
                 onChange={handleRadioBtnClick}
                 disabled={!isModified} />
-            </RadioWrapper>
-            {(state && sort === "subject") && <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+            </Row>
+            <Row style={{ marginBottom: "10px" }}>
+              {(state && sort === "subject") && <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+            </Row>
             <AnimMaxHightOpacity isVisible={isPerfRecShown}>
-              <PerfWrapper>
+              <Row style={{ gap: "5px" }}>
                 {_perfRecList && <LevelWrapper>
                   <p>상</p><p>중</p><p>하</p><p>최하</p>
                 </LevelWrapper>}
@@ -380,9 +380,11 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                   noListText="등록된 수행평가 문구가 없습니다."
                   isBtnShown={state?.acti?.uid === user.uid && !state?.acti?.madeById}
                   btnOnClick={() => { setIsPerfRecModalShown(true) }} />
-              </PerfWrapper>
+              </Row>
             </AnimMaxHightOpacity>
-            {(state && sort === "subject") && <DotTitle title={"돌려 쓰기 ▼"} onClick={() => { setIsExtraRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+            <Row style={{ marginBottom: "10px" }}>
+              {(state && sort === "subject") && <DotTitle title={"돌려 쓰기 ▼"} onClick={() => { setIsExtraRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+            </Row>
             <AnimMaxHightOpacity isVisible={isExtraRecShown}>
               <MoreRecordListForm
                 moreRecList={_extraRecList}
@@ -399,7 +401,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
               coin={coin}
               disabled={!isModified} />
             {/*교사 버튼 영역 */}
-            <ButtonWrapper>
+            <BtnWrapper>
               {!state ? <> {/*활동 첫 생성 */}
                 <LongW100Btn id="gpt_btn" btnName="GPT로 세특 문구 작성" btnOnClick={handleBtnClick} />
                 <LongW100Btn type="submit" btnName="생성" /></>
@@ -422,7 +424,7 @@ const ActivityForm = () => { //진입 경로 총 4곳: 교사 3(활동관리-활
                     <LongW100Btn id="copy_btn" btnName="업어가기" btnOnClick={handleBtnClick} />
                   </>}
                 </>}
-            </ButtonWrapper>
+            </BtnWrapper>
           </fieldset>
         </StyledForm>}
     </Container>
@@ -463,23 +465,6 @@ const Container = styled.div`
     overflow-y: auto;
   }
 `
-const StyledHeader = styled.div`
-  width: 100%;
-  height: 35px;  
-  background-color: #3454d1;  
-  position: absolute;  
-  top: -35px;
-  left: 0;
-  padding: 5px 10px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  legend {
-    width: 70%;  
-    font-size: 1em;
-    color: white;
-    margin-bottom: 40px;
-  }
-`
 const StyledForm = styled.form`
   position: relative;
   width: 35%;
@@ -492,13 +477,6 @@ const StyledForm = styled.form`
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   box-shadow: rgba(52, 94, 209, 0.2) 0px 8px 24px, rgba(52, 84, 209, 0.2) 0px 16px 56px, rgba(52, 84, 209, 0.2) 0px 24px 80px;
-  fieldset {
-    position: relative;
-    border: none;
-  }
-  label {
-    display: block;
-  }
   @media screen and (max-width: 767px){
     padding-bottom: 20px;
     max-width: 100%;
@@ -510,14 +488,15 @@ const StyledForm = styled.form`
     border-radius: 0;
     box-shadow: none;
   }
-  fieldset {
-    padding: 2px;
-  }
-  textarea {
-    width: 80%;
-    min-width: 100%;
-    min-height: 75px;
-  }
+`
+const Row = styled.div`
+  display: flex;
+`
+const StyledInput = styled.input`
+  height: 35px;
+  border-radius: 7px;
+  padding-left: 5px;
+  &:disabled { color: gray; } /* 해당 input disabled 되었을 때 */
 `
 const HiddenWrapper = styled.div`
   display: flex;
@@ -526,9 +505,6 @@ const HiddenWrapper = styled.div`
   margin-bottom: 15px;
   padding: 15px;
   border-radius: 5px;
-`
-const RadioWrapper = styled.div`
-  display: flex;
 `
 const LevelWrapper = styled.div`
   margin-top: 15px;
@@ -540,64 +516,10 @@ const LevelWrapper = styled.div`
     height: 35px;
     margin: 0;
     padding: 4px;
-    text-align:center;
+    text-align: center;
   }
 `
-const PerfWrapper = styled.div`
-  display: flex;
-  gap: 5px;
-`
-const StyledDiv = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  select{
-    height: 60%;
-    margin-bottom: 15px;
-  }
-  input {
-    margin-top: 5px;
-    margin-bottom: 15px;
-    max-width: 280px;
-    height: 35px;
-    border-radius: 7px;
-    padding-left: 5px;
-    &:disabled {        /* 해당 input disabled 되었을 때 */
-      color: gray;      /* 글자 색을 white로 설정 */
-    }
-  }
-  select {
-    height: 35px;
-    border-radius: 7px;
-  }
-`
-const InputWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: ${(props) => props.$margin || "20px 0"};
-  input {
-    max-width: ${(props) => props.$maxWidth || "280px"};
-    height: 35px;
-    border-radius: 7px;
-    padding-left: 5px;
-    &:disabled {             /* 해당 input disabled 되었을 때 */
-      color: gray;           /* 글자 색을 white로 설정 */
-    }
-  }
-`
-const StyledImgPicker = styled.img`
-  position: relative;
-  float: right;
-  width: 100px;
-  height: 100px;
-  padding: 3px;
-  border-radius: 20px;
-  border: 1px solid black;
-  background-color: #efefef;
-  cursor: pointer;
-`
-const ButtonWrapper = styled.div`
+const BtnWrapper = styled.div`
   width: 90%;
   margin: 0 auto;
   display: flex;
@@ -605,4 +527,4 @@ const ButtonWrapper = styled.div`
   align-items: center;
   gap: 20px;
 `
-export default ActivityForm
+export default ActivityFormPage
