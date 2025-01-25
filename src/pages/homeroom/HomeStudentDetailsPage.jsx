@@ -30,7 +30,7 @@ import AnimRotation from '../../anim/AnimRotation';
 import TransparentBtn from '../../components/Btn/TransparentBtn';
 import UpperTab from '../../components/UpperTab';
 import SubNav from '../../components/Bar/SubNav';
-import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetDoc';
+import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetData';
 
 //2024.10.16 생성-> 회전효과 추가(24.12.01) -> 정보 통신 일원화(25.01.04)
 const HomeStudentDetailPage = () => {

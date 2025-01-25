@@ -1,6 +1,6 @@
 //라이브러리
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
 import { setAllStudents } from '../../store/allStudentsSlice.jsx';
 import { setAllActivities } from '../../store/allActivitiesSlice.jsx';
@@ -10,6 +10,7 @@ import styled from 'styled-components';
 import MainSelector from './MainSelector.jsx';
 import StudentList from '../../components/List/StudentList.jsx';
 import ActivityList from '../../components/List/ActivityList.jsx';
+import QuizMonListItem from '../../components/List/ListItem/QuizMonListItem.jsx';
 import EmptyResult from '../../components/EmptyResult.jsx';
 import MainBtn from '../../components/Btn/MainBtn.jsx';
 import MidBtn from '../../components/Btn/MidBtn.jsx';
@@ -17,62 +18,52 @@ import ArrowBtn from '../../components/Btn/ArrowBtn.jsx';
 import TransparentBtn from '../../components/Btn/TransparentBtn.jsx';
 import MainPanel from '../../components/MainPanel.jsx';
 import SubNav from '../../components/Bar/SubNav.jsx';
-import QuizMonListItem from '../../components/List/ListItem/QuizMonListItem.jsx';
+import PetImg from '../../components/PetImg.jsx';
 //모달
 import PerfModal from '../../components/Modal/PerfModal.jsx';
-import ClassMemberModal from '../../components/Modal/ClassMemberModal.jsx';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
 import GameModal from '../../components/Modal/GameModal.jsx';
 //hooks
-import useEnrollClass from '../../hooks/useEnrollClass.jsx';
-import useFetchFireData from '../../hooks/Firebase/useFetchFireData.jsx';
-import useClientHeight from '../../hooks/useClientHeight.jsx';
+import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData.jsx';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData.jsx';
-import useFetchRtMyActiData from '../../hooks/RealTimeData/useFetchRtMyActiData.jsx'
+import useFireActiData from '../../hooks/Firebase/useFireActiData.jsx';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
-//이미지
-import PetImg from '../../components/PetImg.jsx';
-//todo 활동 중복으로 받음
-//todo 학생과 교사 로직 분리
-//2024.08.01(클래스 헤더 수정) -> 11.13(애니메이션 추가) -> 25.01.18(게임 추가)
+import useClientHeight from '../../hooks/useClientHeight.jsx';
+import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData.jsx';
+
+//240801(클래스 헤더 수정) -> 1113(애니메이션 추가) -> 250122(게임 추가, 가입 제거) -> 0125(학생 페이지 정비)
 const ClassroomDetailsPage = () => {
   //준비
-  const navigate = useNavigate()
-  const dispatcher = useDispatch()
-  const { id: klassId } = useParams()
-  useEffect(() => { //화면 이동
-    setIsVisible(false)
-    setTimeout(() => setIsVisible(true), 200)
-  }, [klassId])
+  const navigate = useNavigate();
+  const dispatcher = useDispatch();
   const user = useSelector(({ user }) => user)
   const allSubjClassList = useSelector(({ allClasses }) => allClasses)
-  const thisClass = allSubjClassList.find((klass) => klass.id === klassId)
+  const { id: thisKlassId } = useParams();
+  const location = useLocation();
+  //학생 회원 검증
+  const { state: studentKlassInfo } = location;
+  const { isApproved: isMember, uid: masterId } = studentKlassInfo
   //hooks
-  const { cancelSignUpInClass } = useEnrollClass()
-  const { deleteClassWithStudents } = useDeleteFireData()
-  //데이터 통신 변수
-  const { studentList } = useFetchRtMyStudentData("classRooms", klassId, "students", "studentNumber") //학생 List
-  const { quizActiList } = useFetchRtMyActiData();                                                    //퀴즈 List
-  const { fetchActiList } = useFetchFireData();           //todo 활동 중복으로 받고 있음.
-  useEffect(() => {
-    setQuizList(quizActiList)
-  }, [quizActiList])
-  useEffect(() => {
-    dispatcher(setAllStudents(studentList))               //전체 학생 전역변수화
-    fetchActiList(thisClass.subject).then((actiList) => { //전체 활동 전역변수화
-      dispatcher(setAllActivities(actiList))
-      setActiList(actiList)
-    });
-  }, [studentList])
-  const [actiList, setActiList] = useState([])
-  const [quizList, setQuizList] = useState([])
+  const { deleteClassWithStudents } = useDeleteFireData();
+  const { getSubjKlassActiList } = useFireActiData();
+  //실시간 데이터
+  const { myUserData } = useFetchRtMyUserData();
+  const { klassData } = useFetchRtClassroomData(thisKlassId)                                                  //클래스
+  const { studentDataList } = useFetchRtMyStudentData("classRooms", thisKlassId, "students", "studentNumber") //학생
+  useEffect(() => {                                           //애니메이션 처리 및 데이터 바인딩
+    setIsVisible(false)
+    setTimeout(() => setIsVisible(true), 200)
+    renderData();
+  }, [thisKlassId, klassData, studentDataList])
+  useEffect(() => { fetchPetData(); }, [myUserData])          //마이 펫 바인딩
+  const [actiList, setActiList] = useState([]);
+  const [quizList, setQuizList] = useState([]);
+  const [studentList, setStudentList] = useState([]);
   const [quizId, setQuizId] = useState([])
+  // 게임 구동 정보
   const [monsterDetails, setMonsterDetails] = useState()
-  //모드
-  const [isApplied, setIsApplied] = useState(false)
-  const [isMember, setIsMember] = useState(false)
+  const [myPetDetails, setMyPetDetails] = useState(null)
   //모달
-  const [isModalShown, setIsModalShown] = useState(false)     //학생 클래스 가입
   const [isAddStuModal, setIsAddStuModal] = useState(false)   //교사 학생 추가
   const [isPerfModal, setIsPerfModal] = useState(false)       //수행 관리
   const [isGameModal, setIsGameModal] = useState(false)       //게임 
@@ -82,38 +73,31 @@ const ClassroomDetailsPage = () => {
   const clientHeight = useClientHeight(document.documentElement)
 
   //------함수부------------------------------------------------  
+  //초기화
+  const renderData = () => {
+    if (!klassData || !studentDataList) return;
+    const classMasterId = user.isTeacher ? user.uid : masterId
+    getSubjKlassActiList(classMasterId, klassData?.subject).then((list) => { //활동 data
+      dispatcher(setAllActivities(list.subjActiList));
+      setActiList(list.subjActiList);
+      setQuizList(list.quizActiList);
+    });
+    dispatcher(setAllStudents(studentDataList))                              //학생 data
+    setStudentList(studentDataList);
+  }
+
   //클래스 이동
   const moveKlass = (event) => { navigate(`/classrooms/${event.value}`) }
 
-  const handleOnClick = (event) => {
-    switch (event.target.id) {
-      case "back_btn":
-        navigate("/classRooms")
-        break;
-      case "delete_btn":
-        let deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
-        if (deleteConfirm === "삭제합니다") {
-          deleteClassWithStudents(klassId)
-          navigate("/classRooms")
-        } else {
-          window.alert("문구가 제대로 입력되지 않았습니다.");
-          return
-        }
-        break;
-      //학생 전용
-      case "join_btn":
-        setIsModalShown(true)
-        break;
-      case "cancel_btn":
-        if (window.confirm("클래스 가입 신청을 취소하겠습니까?")) {
-          cancelSignUpInClass(thisClass)
-          setIsApplied(false)
-        }
-        break;
-      default: return
-    }
-    return null
+  //펫 정보 불러오기(학생 전용)
+  const fetchPetData = () => {
+    if (user.isTeacher || !myUserData) return;
+    const { myPetList } = myUserData;
+    const thisPet = myPetList.find(({ classId }) => classId === thisKlassId)
+    setMyPetDetails(thisPet)
   }
+
+  //유저 상호작용
   //몬스터 클릭
   const handleMonsterOnClick = (item) => {
     let { monster, quizInfo } = item
@@ -122,32 +106,43 @@ const ClassroomDetailsPage = () => {
     setMonsterDetails({ ...monster.step[0], level: item.level })
   }
 
+  //삭제 클릭
+  const handleDeleteBtnOnClick = () => {
+    let deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
+    if (deleteConfirm === "삭제합니다") {
+      deleteClassWithStudents(thisKlassId)
+      navigate("/classRooms")
+    } else {
+      window.alert("문구가 제대로 입력되지 않았습니다.");
+    }
+  }
+
   return (<>
     <SubNav styles={{ padding: "10px" }}>
       <Select options={allSubjClassList.map((klass) => { return { label: klass.classTitle, value: klass.id } })} placeholder="반 바로 이동"
         onChange={moveKlass} />
     </SubNav>
-    {!thisClass && <Container><h3>반 정보를 불러올 수 없습니다.</h3></Container>}
-    {thisClass &&
+
+    {!klassData && <EmptyResult comment={"Error: 반 정보를 불러올 수 없습니다."} />}
+    {klassData &&
       <Container $clientheight={clientHeight} $isVisible={isVisible}>
-        {/* 반 기본 정보 */}
+        {/* 반 기본 정보(공용) */}
         <StyeldHeader>
-          <StyledBoldText>{thisClass.classTitle}</StyledBoldText>
-          <p className="subjectInfo">{thisClass.subject}-{thisClass.subjDetail}</p>
-          <p>{thisClass.intro}</p>
+          <StyledBoldText>{klassData.classTitle}</StyledBoldText>
+          <p className="subjectInfo">{klassData.subject}-{klassData.subjDetail}</p>
+          <p>{klassData.intro}</p>
           <p>{!studentList ? 0 : studentList.length}명의 학생들이 있습니다.</p>
           <p className="petInfo">이 클래스에서 학생들이 얻을 수 있는 펫</p>
           <PetImgWrapper>
-            <PetImg subject={thisClass.subject} level={0} onClick={() => { }} />
+            <PetImg subject={klassData.subject} level={0} onClick={() => { }} />
             <ArrowWrapper><ArrowBtn direction="right" /></ArrowWrapper>
-            <PetImg subject={thisClass.subject} level={1} onClick={() => { }} />
+            <PetImg subject={klassData.subject} level={1} onClick={() => { }} />
             <ArrowWrapper><ArrowBtn direction="right" /></ArrowWrapper>
-            <PetImg subject={thisClass.subject} level={2} onClick={() => { }} />
+            <PetImg subject={klassData.subject} level={2} onClick={() => { }} />
             <ArrowWrapper><ArrowBtn direction="right" /></ArrowWrapper>
-            <PetImg subject={thisClass.subject} level={3} onClick={() => { }} />
+            <PetImg subject={klassData.subject} level={3} onClick={() => { }} />
           </PetImgWrapper>
           <StyledBoldText style={{ marginTop: "10px" }}>vs</StyledBoldText>
-
           {/* 단어 게임부 */}
           <GameMonListWrapper>
             {quizList.length === 0 && < EmptyResult comment="등록단 단어 게임이 없습니다." />}
@@ -155,69 +150,66 @@ const ClassroomDetailsPage = () => {
               return <QuizMonListItem key={item.id} item={item} onClick={handleMonsterOnClick} />
             })}
           </GameMonListWrapper>
-          {/* 학생*/}
-          {(!user.isTeacher && isApplied) && <div className="btn_wrapper">
-            <StyledSignupBtn $backgroundcolor="gray">가입 신청 중..</StyledSignupBtn>
-            <StyledSignupBtn id="cancel_btn" onClick={handleOnClick}>신청 취소</StyledSignupBtn>
-          </div>}
-          {(!user.isTeacher && !isMember && !isApplied) && <StyledMoveBtn id="join_btn" onClick={handleOnClick}>가입하기</StyledMoveBtn>}
         </StyeldHeader>
-        {/* 셀렉터(교사)*/}
-        <MainPanel>
+
+        {/* 쫑알이(교사)*/}
+        {user.isTeacher && <MainPanel>
           <h5>빠른 세특 쫑알이</h5>
-          {user.isTeacher && <MainSelector type="subject" studentList={studentList} actiList={actiList} classId={klassId} setIsPerfModalShow={setIsPerfModal} />}
-        </MainPanel>
-        {/* 퀘스트 목록(학생) */}
-        {(!user.isTeacher && isMember) && <MainPanel>
-          {(!actiList || actiList.length === 0)
-            ? <EmptyResult comment="등록된 활동이 없습니다." />
-            : <ActivityList activityList={actiList} classInfo={thisClass} />}
-        </MainPanel>
-        }
-        {/* 학생 상세 보기 (가입 학생, 교사)*/}
-        {((!user.isTeacher && isMember) || user.isTeacher) && <MainPanel>
-          <h5>학생 개별 보기</h5>
-          {/* 학생 목록 없을 때 */}
-          {(!studentList || studentList.length === 0) ?
-            <>
-              <EmptyResult comment="등록된 학생이 없습니다." />
-              <MidBtn onClick={() => { setIsAddStuModal(true) }}>학생 추가</MidBtn>
-            </> : <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModal(true) }} classType={"subject"} />}
+          <MainSelector type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
         </MainPanel>}
+
+
+        {/* 학생 상세 보기(교사)*/}
+        {(user.isTeacher) && <MainPanel>
+          <h5>학생 개별 보기</h5>
+          {studentList && <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModal(true) }} classType={"subject"} />}
+          {(!studentList || studentList.length === 0) && <>
+            <EmptyResult comment="등록된 학생이 없습니다." />
+            <MidBtn onClick={() => { setIsAddStuModal(true) }}>학생 추가</MidBtn>
+          </>}
+        </MainPanel>}
+
         {/* 반 전체보기(교사)*/}
         {user.isTeacher && <MainPanel>
           <h5>한 눈에 보기</h5>
           <Row style={{ margin: "30px 0" }}><MainBtn onClick={() => { navigate('allStudents') }} >반 전체 세특 보기</MainBtn></Row>
+        </MainPanel>}
+
+        {/* 버튼 패널 */}
+        {user.isTeacher && <BtnWrapper>
+          <TransparentBtn onClick={() => { }}>반 수정</TransparentBtn>
+          <TransparentBtn id="delete_btn" onClick={handleDeleteBtnOnClick}>반 삭제</TransparentBtn>
+        </BtnWrapper>}
+
+        {/* 퀘스트 목록(학생) */}
+        {(!user.isTeacher && isMember) && <MainPanel>
+          <h5>퀘스트 목록</h5>
+          {(!actiList || actiList.length === 0)
+            ? <EmptyResult comment="등록된 활동이 없습니다." />
+            : <ActivityList actiList={actiList} classInfo={klassData} />}
         </MainPanel>
         }
-        {user.isTeacher && <BtnWrapper>
-          <TransparentBtn id="back_btn" onClick={handleOnClick}>반 수정</TransparentBtn>
-          <TransparentBtn id="delete_btn" onClick={handleOnClick}>반 삭제</TransparentBtn>
-        </BtnWrapper>}
+
       </Container>
     }
     {/* 모달창 */}
-    {isModalShown && <ClassMemberModal
-      show={isModalShown}
-      onHide={() => { setIsModalShown(false) }}
-      thisClass={thisClass}
-    />}
     {<AddNewStudentModal
       show={isAddStuModal}
       onHide={() => { setIsAddStuModal(false) }}
-      classId={klassId} />}
+      classId={thisKlassId} />}
     {/* 수행 관리 모달 */}
     <PerfModal
       show={isPerfModal}
       onHide={() => setIsPerfModal(false)}
       studentList={studentList}
-      classId={klassId}
+      classId={thisKlassId}
     />
     {/* 게임 모달 */}
     {isGameModal && <GameModal
       show={isGameModal}
       onHide={() => setIsGameModal(false)}
       quizSetId={quizId}
+      myPetDetails={myPetDetails}
       monsterDetails={monsterDetails}
     />}
   </>)
@@ -294,28 +286,6 @@ const ArrowWrapper = styled.div`
   display: flex;
   align-items: center;
 }
-`
-const StyledSignupBtn = styled.button`
-  display: block;
-  width: 200px;
-  height: 50px;
-  margin: 50px 20px;
-  background-color: ${(props) => props.$backgroundcolor ? props.$backgroundcolor : "#3454d1"};
-  border: none;
-  border-radius: 5px;
-  color: white;
-  padding: 0.25em 1em;
-`
-const StyledMoveBtn = styled.button`
-  display: block;
-  margin: 50px auto;
-  width: 240px;
-  height: 50px;
-  background-color: ${(props) => props.$backgroundcolor ? props.$backgroundcolor : "#3454d1"};
-  border: none;
-  border-radius: 5px;
-  color: white;
-  padding: 0.25em 1em;
 `
 const BtnWrapper = styled.div`
   margin-top: 40px;

@@ -7,13 +7,12 @@ import { useSelector } from 'react-redux'
 const useFetchFireData = () => {
   const db = appFireStore
   const { getExpAndLevelByActList } = useGetLevel()
-
   const user = useSelector(({ user }) => { return user })
   const actiColRef = collection(appFireStore, "activities")
   const userColRef = collection(appFireStore, "user")
 
   //2024.06.30 수정
-  //9. 하위 문서(학생) 1개
+  //9. 하위 문서(학생) 1개 //todo 삭제 1순위위
   const fetchSubDoc = async (colName, docId, subColName, subDocId) => {
     let docRef = doc(collection(db, colName, docId, subColName), subDocId)
     try {
@@ -75,24 +74,7 @@ const useFetchFireData = () => {
   }
   //5. 다른 교사 Acti 리스트 - 활동관리(241215 삭제)
 
-  //4. 내 Acti 리스트(개별클래스 내에서 사용)
-  const fetchActiList = async (subject) => {
-    let actiList = []
-    let q = query(actiColRef, where("uid", "==", user.uid), where("subject", "==", subject));
-    try {
-      let querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => { actiList.push({ id: doc.id, ...doc.data() }) })
-      await fetchCopiedActiList().then((copiedList) => {
-        let filterdList = !copiedList || copiedList.filter((copied) => { return copied.subject === subject })
-        actiList = actiList.concat(filterdList)
-      })
-      actiList.sort((a, b) => a.title.localeCompare(b.title))
-    } catch (err) {
-      window.alert(err.message);
-      console.log(err);
-    }
-    return actiList;
-  }
+  //4. 내 Acti 리스트(250125 삭제)
 
   //3. 교사 리스트 출력
   const fetchTeacherList = async () => {
@@ -192,7 +174,7 @@ const useFetchFireData = () => {
     }
     return q
   }
-  return ({ db, fetchDoc, fetchSubDoc, fetchUserList, fetchTeacherList, fetchActiList, fetchAlActiiBySubjList, fetchCopiedActiList })
+  return ({ db, fetchDoc, fetchSubDoc, fetchUserList, fetchTeacherList, fetchAlActiiBySubjList, fetchCopiedActiList })
 }
 
 export default useFetchFireData

@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 //Hooks
 import useGetLevel from '../../hooks/useGetLevel';
 import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
-import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetDoc';
+import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetData';
 //컴포넌트
 import SubNav from '../../components/Bar/SubNav';
 import RadarChart from '../../components/RadarChart';
@@ -38,6 +38,7 @@ const StudentDetailPage = () => {
   const user = useSelector((state) => state.user);
   const allStudentList = useSelector((state) => state.allStudents);
   const allActivityList = useSelector((state) => state.allActivities);
+  console.log(allStudentList)
   //개별 학생 정보
   const { pet } = useFetchRtPetDoc(params.id, params.studentId)
   const { studentNumber, actList, writtenName, master, subject } = pet || {}

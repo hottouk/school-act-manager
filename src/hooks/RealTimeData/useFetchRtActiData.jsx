@@ -4,15 +4,14 @@ import { useSelector } from 'react-redux'
 import { appFireStore } from '../../firebase/config'
 
 //2024.07.09 -> 25.01.18 단어 퀴즈추가
-const useFetchRtMyActiData = () => {
+const useFetchRtMyActiData = (uid) => {
   const db = appFireStore
-  const user = useSelector(({ user }) => { return user })
   const actiColRef = collection(db, "activities")
   const [subjActiList, setSubjActiList] = useState([])
   const [homeActiList, setHomeActiList] = useState([])
   const [quizActiList, setQuizActiList] = useState([])
   useEffect(() => {
-    let q = query(actiColRef, where("uid", "==", user.uid), orderBy("subject", "desc"));
+    let q = query(actiColRef, where("uid", "==", uid), orderBy("subject", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       snapshot.docs.forEach((doc) => {
         let acti = { id: doc.id, ...doc.data() }

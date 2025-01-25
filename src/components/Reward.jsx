@@ -9,7 +9,7 @@ import coopImg from "../image/icon/s_coop_icon.png"
 import attImg from "../image/icon/s_att_icon.png"
 import { useEffect, useState } from "react";
 
-const Reward = ({ rewards }) => { 
+const Reward = ({ rewards }) => {
   const [_money, setMoney] = useState(null)
   const [_sincerity, setSincerity] = useState(null)
   const [_leadership, setLeadership] = useState(null)
@@ -103,7 +103,6 @@ const Reward = ({ rewards }) => {
 
   return (
     <StyledRewardContainer>
-      <h3>보상</h3>
       {rewards.type === "homework" && <div className="img_container">
         {_money && <div className="img_wrapper"><img id="money_btn" src={moneyImg} alt="리라" onClick={handleOnClick} /></div>}
         {_sincerity && <div className="img_wrapper"><img id="sin_btn" src={sincerImg} alt="학업" onClick={handleOnClick} /></div>}

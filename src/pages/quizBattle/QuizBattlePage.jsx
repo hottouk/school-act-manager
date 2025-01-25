@@ -1,6 +1,6 @@
 //라이브러리
 import React, { useEffect, useRef, useState } from 'react';
-import { Stage } from '@pixi/react';
+import { Stage, Text } from '@pixi/react';
 import { Spinner } from 'react-bootstrap';
 import styled from 'styled-components';
 //컴포넌트
@@ -24,14 +24,14 @@ import useFireBasic from '../../hooks/Firebase/useFireBasic';
 //img
 import qustion_icon from '../../image/icon/question.png'
 //todo 브라우져 처음 열었을때 오류
-//2025.01.11 생성
-const QuizBattlePage = ({ quizSetId, monsterDetails }) => {
+//250111 생성
+const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails }) => {
   useEffect(() => {
-    if (!monsterDetails || !quizSetId) return;
+    if (!monsterDetails || !quizSetId || !myPetDetails) return;
     fetchInitData();
-  }, [monsterDetails, quizSetId])
+  }, [monsterDetails, quizSetId, myPetDetails])
   //준비
-  const { fetchImgUrlList, fetchImgUrl } = useFetchStorageImg(); //이미지 불러오기
+  const { fetchImgUrl } = useFetchStorageImg(); //이미지 불러오기
   const { fetchDoc } = useFireBasic("quiz");
   const [quizList, setQuizList] = useState([]);
   useEffect(() => {
@@ -150,7 +150,7 @@ const QuizBattlePage = ({ quizSetId, monsterDetails }) => {
   const fetchInitData = () => {
     fetchImgUrl(monsterDetails.path, setEnmImg)
     fetchImgUrl('images/battle_background.png', setBackground)
-    fetchImgUrl('images/pet_water_001_back.png', setMyPetImg)
+    fetchImgUrl(myPetDetails.path, setMyPetImg)
     fetchDoc(quizSetId).then((quizSetInfo) => {
       setQuizList(quizSetInfo.quizList)
     });
@@ -166,11 +166,17 @@ const QuizBattlePage = ({ quizSetId, monsterDetails }) => {
   //게임 초기화
   const initGame = () => {
     qNumRef.current = 0;
-    const renewedDetails = getLevelStatus(monsterDetails)
+    const renewedDetails = getLevelStatus(monsterDetails);
+    const mySpec = myPetDetails.spec
+    const { atk: meAtk, def: meDef, hp: meHp } = mySpec
     const { hp, atk, def, spd, desc } = renewedDetails
     setMessage(desc);
     setBattleTurn(0)
-    setEnemyHP(hp)
+    setMyHP(meHp)  //내 스펙
+    setMyCurHP(meHp);
+    setMyAttck(meAtk)
+    setMyDef(meDef)
+    setEnemyHP(hp) //적 스펙
     setEnemyCurHP(hp)
     setEmenyAttck(atk)
     setEnemyDef(def)
@@ -178,7 +184,6 @@ const QuizBattlePage = ({ quizSetId, monsterDetails }) => {
     setCurQuiz('');
     setCorrect(0);
     setActionBall(0);
-    setMyCurHP(myHP);
     quizListRef.current = (quizList?.map((voca) => voca.split("#")[0]));
     answerListRef.current = (quizList?.map((voca) => voca.split("#")[1]));
   }
@@ -313,17 +318,17 @@ const QuizBattlePage = ({ quizSetId, monsterDetails }) => {
       case "공격":
         setMessage("서로 공격해 피해를 입혔다.")
         setIsEnmAttack(prev => !prev)
-        setEnemyCurHP((prev) => prev - (myAttck - enemyDef));
-        setMyCurHP((prev) => prev - (enemyAttck - myDef));
+        setEnemyCurHP((prev) => prev - Math.max(Math.floor(myAttck - enemyDef)), 1);
+        setMyCurHP((prev) => prev - Math.floor(enemyAttck - myDef));
         break;
       case "방어":
         setMessage("상대는 효과적으로 방어했다. 상대 다음턴 공격력 증가!!")
         setIsEnmDefense(prev => !prev);
-        setEnemyCurHP((prev) => prev - Math.max((myAttck - (enemyDef * 2)), 1));
+        setEnemyCurHP((prev) => prev - Math.max(Math.floor(myAttck - (enemyDef * 2)), 1));
         break;
       case "휴식":
         setMessage("상대의 휴식 중에 공격하여 휴식을 방해했다")
-        setEnemyCurHP((prev) => prev - myAttck * 1.2);
+        setEnemyCurHP((prev) => prev - Math.floor(myAttck * 1.2));
         break;
       default:
         break;
@@ -337,7 +342,7 @@ const QuizBattlePage = ({ quizSetId, monsterDetails }) => {
       case "공격":
         setMessage("상대의 공격을 효과적으로 막아냈다. 전투 의욕이 상승한다");
         setIsEnmAttack(prev => !prev)
-        setMyCurHP((prev) => prev - Math.max((enemyAttck - (myDef * 2)), 1))
+        setMyCurHP((prev) => prev - Math.max(Math.floor(enemyAttck - (myDef * 2)), 1))
         setActionBall(prev => Math.min(prev + 1, 5))
         break;
       case "방어":
@@ -360,7 +365,7 @@ const QuizBattlePage = ({ quizSetId, monsterDetails }) => {
       case "공격":
         setMessage("휴식 중에 공격당해 제대로 방비하지 못했다")
         setIsEnmAttack(prev => !prev)
-        setMyCurHP((prev) => prev - enemyAttck * 1.2)
+        setMyCurHP((prev) => prev - Math.floor(enemyAttck * 1.2))
         break;
       case "방어":
         setMessage("상대는 무의미한 방어를 했다.");
@@ -415,9 +420,13 @@ const QuizBattlePage = ({ quizSetId, monsterDetails }) => {
         <MessageUI x={50} y={50} msg3={`남은 문제: ${quizListRef.current.length}개`} />
         {/* 준비창 phase */}
         {(phase === "ready") && <>
-          <PetSprite src={enmImg || qustion_icon} x={600} y={200} width={150} height={150} trigger={isEnmAttack} />
-          <MessageUI x={450} y={300} width={300} height={300}
-            msg2={`총 문제: ${quizListRef.current.length}개\n이름: ${monsterDetails.name}\n레벨: ${monsterDetails.level}\n체력: ${enemyHP}\n공격력: ${enemyAttck}\n방어력: ${enemyDef}\n스피드: ${enmSpd}`} />
+          <PetSprite src={myPetImg || qustion_icon} x={350} y={200} width={150} height={150} trigger={isEnmAttack} />
+          <MessageUI x={200} y={300} width={300} height={275}
+            msg2={`이름: ${myPetDetails.petName}\n레벨: ${myPetDetails.level || 1}\n체력: ${myPetDetails.spec.hp}\n공격력: ${myPetDetails.spec.atk}\n방어력: ${myPetDetails.spec.def}\n스피드: ${myPetDetails.spec.spd}`} />
+          <Text text='vs' x={600} y={450} anchor={0.5} style={{ fontSize: 60, fontWeight: 'bold', }} ></Text>
+          <PetSprite src={enmImg || qustion_icon} x={850} y={200} width={150} height={150} trigger={isEnmAttack} />
+          <MessageUI x={700} y={300} width={300} height={275}
+            msg2={`이름: ${monsterDetails.name}\n레벨: ${monsterDetails.level}\n체력: ${enemyHP}\n공격력: ${enemyAttck}\n방어력: ${enemyDef}\n스피드: ${enmSpd}`} />
         </>}
         {/* 카운트다운 phase*/}
         {(phase === "countdown") && <Countdown isCountdown={isCountdown} setIsCountdown={setIsCountdown} setPhase={setPhase} x={600} y={450} />}

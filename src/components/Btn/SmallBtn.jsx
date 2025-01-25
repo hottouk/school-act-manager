@@ -2,19 +2,19 @@ import React from 'react'
 import styled from 'styled-components'
 
 //2024.07.26 샘플
-const SmallBtn = (props) => {
+const SmallBtn = ({ id, btnColor, hoverBtnColor, margin, btnOnClick, btnName, fontColor, children }) => {
   //SearchBar에 사용
   return (
     <StyledBtn
       type="button"
-      id={props.id}
+      id={id}
       tabIndex={-1}
-      $backgroundColor={props.btnColor || "#3454d1"}
-      $fontColor={props.fontColor || "#fff"}
-      $hoverBackgroundColor={props.hoverBtnColor || "#1366d6"}
-      $margin={props.margin || "auto"}
-      onClick={props.btnOnClick}
-    >{props.btnName || "샘플"}
+      $backgroundColor={btnColor || "#3454d1"}
+      $fontColor={fontColor || "#fff"}
+      $hoverBackgroundColor={hoverBtnColor || "#1366d6"}
+      $margin={margin || "auto"}
+      onClick={btnOnClick}
+    >{btnName || children || "샘플"}
     </StyledBtn>
   )
 }

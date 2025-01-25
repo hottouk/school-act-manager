@@ -1,9 +1,4 @@
 //이미지
-//물
-import water001 from "../image/myPet/water/pet_water_001.png"
-import water002 from "../image/myPet/water/pet_water_002.png"
-import water003 from "../image/myPet/water/pet_water_003.png"
-import waterEgg from "../image/myPet/water/waterEgg.png"
 //불
 import fire001 from "../image/myPet/fire/pet_fire_001.png"
 import fire002 from "../image/myPet/fire/pet_fire_002.png"
@@ -19,17 +14,20 @@ import normal001 from "../image/myPet/normal/pet_normal_001.png"
 import normal002 from "../image/myPet/normal/pet_normal_002.png"
 import normal003 from "../image/myPet/normal/pet_normal_003.png"
 import normalEgg from "../image/myPet/normal/normalEgg.png"
+import questionMark from "../image/icon/question.png"
 import styled from 'styled-components'
+import { monsterWaterList } from "../data/monsterList"
+import useFetchStorageImg from "../hooks/Game/useFetchStorageImg"
+import { useEffect, useState } from "react"
+//25.01.25 변경 중..
+const PetImg = ({ subject, level, onClick, styles }) => {
+  const width = styles?.width || "134px"
+  const margin = styles?.margin || "0"
 
-
-const PetImg = ({ subject, level, wid, onClick }) => {
+  useEffect(() => { getImage(); }, [subject, level])
+  const { getPathList, fetchImgUrl } = useFetchStorageImg();
+  const [imgSrc, setImgSrc] = useState(null);
   const imageMap = {
-    영어: {
-      0: waterEgg,
-      1: water001,
-      2: water002,
-      3: water003,
-    },
     국어: {
       0: grassEgg,
       1: grass001,
@@ -51,19 +49,23 @@ const PetImg = ({ subject, level, wid, onClick }) => {
   };
 
   const getImage = () => {
-    let subjectImages = imageMap[subject] || imageMap["기본"];
-    return subjectImages[level];
+    if (level === undefined || !subject) return;
+    if (subject === "영어") {
+      const pathList = getPathList(monsterWaterList[0].step)
+      fetchImgUrl(pathList[level], setImgSrc)
+    } else {
+      return setImgSrc(imageMap[subject][level] || imageMap["기본"][level]);
+    }
   };
 
-  const imageSrc = getImage();
-
   return (
-    imageSrc ? (<StyledImg $wid={wid} src={imageSrc} alt="펫이미지" onClick={() => { onClick() }} />) : <StyledImg src={normalEgg} alt="기본" />
+    imgSrc ? (<img src={imgSrc} alt="펫이미지" onClick={() => { onClick() }} style={{ width: width, margin: margin }} />) : <LoadingImg src={questionMark} alt="로딩중" style={{ width: width, margin: margin }} />
   )
 }
 
-const StyledImg = styled.img`
-  width: ${(props) => props.$wid || 134}px
+const LoadingImg = styled.img`
+  width: 134px;
+  padding: 20px;
 `
 
 export default PetImg

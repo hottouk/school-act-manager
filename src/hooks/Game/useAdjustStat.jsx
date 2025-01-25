@@ -1,6 +1,6 @@
+//250126 생성
 const useAdjustStat = () => {
-
-  //레벨 스텟 보정 수치 제공
+  //몬스터 레벨 스텟 보정 수치 제공
   const getStatUp = (level) => {
     switch (level) {
       case 1:
@@ -17,7 +17,7 @@ const useAdjustStat = () => {
         break;
     }
   }
-  //스펙 보정 수치 적용
+  //몬스터 스펙 보정 수치 적용
   const getLevelStatus = (monsterDetails) => {
     if (!monsterDetails) return
     let { hp, atk, def, spd, level, ...rest } = monsterDetails

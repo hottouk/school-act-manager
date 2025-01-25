@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import useChatGpt from "../../hooks/useChatGpt";
 import useClientHeight from "../../hooks/useClientHeight";
 import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData";
-import useFireActi from "../../hooks/Firebase/useFireActi";
+import useFireActiData from "../../hooks/Firebase/useFireActiData";
 //컴포넌트
 import GraphicDialogModal from "../../components/Modal/MonsterModal";
 import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
@@ -84,7 +84,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   //4.데이터 통신 변수
   const { addActi, updateActi } = useAddUpdFireData("activities");
   const { copyActiTransaction, delCopiedActiTransaction } = useFireTransaction()
-  const { deleteActi } = useFireActi();
+  const { deleteActi } = useFireActiData();
   //5.경로 이동 관련 변수
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);

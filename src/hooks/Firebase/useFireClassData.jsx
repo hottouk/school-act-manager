@@ -21,7 +21,7 @@ const useFireClassData = () => {
       window.alert("Error updating document: ", error);
     }
   }
-  
+
   //좌석배치도 삭제하기(241210)
   const deleteSeatMap = async (id, list, index) => {
     let deleted = list.filter((_, i) => i !== index)

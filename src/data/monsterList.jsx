@@ -19,5 +19,17 @@ const monsterEvilList = [
   },
 ]
 
+const monsterWaterList = [{
+  monId: "water_001",
+  path: "images/pet/pet_water_001_1.png",
+  step: [
+    { path: "images/pet/pet_water_001_1.png", getlevel: 0, name: "물의 알", spec: { hp: 25, atk: 3, def: 0, mat: 0, mdf: 0, spd: 1 }, desc: "푸른 물의 기운을 머금은 알이다. 영어에 밀접하게 반응한다. 어떤 아이가 깨어날지는 알 수 없다." },
+    { path: "images/pet/pet_water_001_2.png", name: "몰랑이", desc: "보송보송한 먼지들이 뭉쳐 조금은 단단해지고 뾰족뾰족해졌다. 보송이 여러마리가 합쳐져 가운데 핵에서 융합을 일으키고 있다. 이제 닿거나 만지면 단순히 따끔한 것으로 끝나지 않는다. 홀로 있는 사냥감을 노린다. 그게 너일지도 모르니 조심해야한다." },
+    { path: "images/pet/pet_water_001_3.png", name: "몰랑둥이", desc: "흑악게 개체들이 동족을 잡아먹고 최종 각성한 끔찍한 개체. 전 세계적으로 몇 백 개체밖에 없다고 보고되며 주로 한 무리의 흑보송을 거느린다. 악의 기운으로 주변을 물들이거나 사냥감을 타락시켜 잡아먹는다. 가운데 눈을 오래 바라본다면 이상한 속삭임이 들리고 환각을 듣는다는 실험 보고서가 있다." },
+    { path: "images/pet/pet_water_001_4.png", name: "몰랑둥이", desc: "흑악게 개체들이 동족을 잡아먹고 최종 각성한 끔찍한 개체. 전 세계적으로 몇 백 개체밖에 없다고 보고되며 주로 한 무리의 흑보송을 거느린다. 악의 기운으로 주변을 물들이거나 사냥감을 타락시켜 잡아먹는다. 가운데 눈을 오래 바라본다면 이상한 속삭임이 들리고 환각을 듣는다는 실험 보고서가 있다." }
+  ]
+},
 
-export { monsterEvilList }
+]
+
+export { monsterEvilList, monsterWaterList }

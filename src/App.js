@@ -23,7 +23,7 @@ import HomeStudentDetailsPage from './pages/homeroom/HomeStudentDetailsPage';
 import HomeClassAllStudentsPage from './pages/homeroom/HomeClassAllStudentsPage';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassroomMakePage from './pages/classSetting/ClassroomMakePage';
-import News from './pages/main/News';
+import WhatsNewPage from './pages/main/WhatsNewPage';
 import Homework from './components/Homework';
 import UserMainPage from './pages/user/UserMainPage';
 import { useSelector } from 'react-redux';
@@ -85,7 +85,7 @@ function App() {
           <Route path="/quiz_setting" element={uid ? <QuizFormPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
           {/* 새소식 관리 */}
-          <Route path="/news" element={uid ? <News /> : <Navigate replace={true} to='/' />} />
+          <Route path="/news" element={uid ? <WhatsNewPage /> : <Navigate replace={true} to='/' />} />
           {/* 로그인/회원가입 */}
           <Route path="/login" element={!uid ? <LoginPage /> : <Navigate replace={true} to='/' />} />
           <Route path="/login/email" element={!uid ? <EmailSignupPage /> : <Navigate replace={true} to='/' />} />

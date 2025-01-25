@@ -12,7 +12,7 @@ import SearchBar from '../../components/Bar/SearchBar'
 import useTeacherAuth from '../../hooks/useTeacherAuth'
 import useClientHeight from '../../hooks/useClientHeight'
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
-import useFetchRtMyActiData from '../../hooks/RealTimeData/useFetchRtMyActiData'
+import useFetchRtActiData from '../../hooks/RealTimeData/useFetchRtActiData'
 //데이터
 import { subjectGroupList } from '../../data/subjectGroupList'
 //css
@@ -20,7 +20,6 @@ import styled from 'styled-components'
 
 //24.09.37 subjList update -> 24.12.18 코드 정리 및 담임반 섹션 추가
 const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 나의 활동, 활동 관리 - 전체 활동)
-  //----1.변수부--------------------------------
   //교사 인증
   const { log } = useTeacherAuth();
   if (log) { window.alert(log) }
@@ -33,14 +32,14 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   const [subjectList, setSubjectList] = useState(null);
   useEffect(() => { extractSubjFromData() }, [subjectGroupList])
   //모든 활동, 업어온 활동, 내 활동
-  const { fetchAlActiiBySubjList, fetchCopiedActiList } = useFetchFireData()
+  const { fetchAlActiiBySubjList, fetchCopiedActiList } = useFetchFireData();
   const [_allActiList, setAllActiList] = useState(null)
   const [_mySubjActiList, setMySubjActiList] = useState(null)
   const [_myHomeActiList, setMyHomeActiList] = useState(null)
   const [_myQuizActiList, setMyQuizActiList] = useState(null);
   const [copiedList, setCopiedList] = useState(null)
   //실시간 활동 정보
-  const { subjActiList, homeActiList, quizActiList } = useFetchRtMyActiData();
+  const { subjActiList, homeActiList, quizActiList } = useFetchRtActiData(user.uid);
   useEffect(() => {
     setMySubjActiList(subjActiList)
     setMyHomeActiList(homeActiList)

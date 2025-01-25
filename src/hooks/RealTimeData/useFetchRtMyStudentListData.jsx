@@ -5,8 +5,7 @@ import { appFireStore } from "../../firebase/config"
 //하위 Col에서 문서 여러 개를 한번에 읽어올 때 사용, 사용처(1): 담임반 학생) -> 12.30 docName 의존성 추가
 const useFetchRtMyStudentData = (colName, docName, subColName, order) => {
   const db = appFireStore
-  const [studentList, setStudentList] = useState(null)
-  const [subColErr, setSubColErr] = useState(null)
+  const [studentDataList, setStudentDataList] = useState(null)
   const colRef = collection(db, colName, docName, subColName)
   useEffect(() => {
     let q;
@@ -21,17 +20,17 @@ const useFetchRtMyStudentData = (colName, docName, subColName, order) => {
         snapshot.docs.forEach((doc) => {
           result.push({ ...doc.data(), id: doc.id })
         })
-        setStudentList(result)
+        setStudentDataList(result)
       }
       , (error) => {
-        setSubColErr(error.message)
+        console.log(error.message)
       }
     )
 
-    return unsubscribe
+    return unsubscribe;
   }, [docName])
 
-  return { studentList, subColErr }
+  return { studentDataList }
 }
 
 export default useFetchRtMyStudentData
