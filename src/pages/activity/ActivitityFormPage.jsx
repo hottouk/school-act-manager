@@ -2,40 +2,32 @@
 import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import styled from "styled-components";
 //hooks
 import useChatGpt from "../../hooks/useChatGpt";
 import useClientHeight from "../../hooks/useClientHeight";
 import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData";
 import useFireActiData from "../../hooks/Firebase/useFireActiData";
-//컴포넌트
+import useFireTransaction from "../../hooks/useFireTransaction";
+//모달
 import GraphicDialogModal from "../../components/Modal/MonsterModal";
 import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
 import AddExtraRecModal from "../../components/Modal/AddExtraRecModal";
+import AddPerfRecModal from "../../components/Modal/AddPerfRecModal";
+//컴포넌트
+import FormHeader from "../../components/Form/FormHeader";
 import ScoreWrapper from "../../components/ScoreWrapper"
 import SubjectSelects from "../../components/Select/SubjectSelects";
 import DotTitle from "../../components/Title/DotTitle";
 import TwoRadios from "../../components/Radio/TwoRadios";
-import QuestModal from "../../components/Modal/QuestModal";
 import CommonTextArea from "../../components/CommonTextArea";
 import MoreRecordListForm from "../../components/Form/MoreRecordListForm";
 import LongW100Btn from "../../components/Btn/LongW100Btn";
 import ByteCalculator from "../../components/Etc/ByteCalculator";
 import SubNav from "../../components/Bar/SubNav";
 import BackBtn from "../../components/Btn/BackBtn";
-//이미지
-import mon01 from "../../image/enemies/mon_01.png";
-import mon02 from "../../image/enemies/mon_02.png"
-import mon03 from "../../image/enemies/mon_03.png"
-import mon04 from "../../image/enemies/mon_04.png"
-import mon05 from "../../image/enemies/mon_05.png"
-import question from "../../image/icon/question.png"
-import useFireTransaction from "../../hooks/useFireTransaction";
-import AddPerfRecModal from "../../components/Modal/AddPerfRecModal";
+//애니
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
-//css
-import styled from "styled-components";
-import FormHeader from "../../components/Form/FormHeader";
-import ImagePicker from "../../components/Form/ImagePicker";
 
 //24.07.06 수정(실시간 바이트 갱신) -> 24.12.21(담임반 활동)
 const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
@@ -55,10 +47,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const [_hour, setHour] = useState('')
   useEffect(() => { setTimeFormat(handleTimeFormatted()) }, [_date, _secondDate, _hour])
   const [_timeFormat, setTimeFormat] = useState('')
-  //동기부여
-  const [monImg, setMonImg] = useState(null);
   //공개/비공개
-  const [_isHomework, setIsHomework] = useState(false)
   const [_isPrivate, setIsPrivate] = useState(true)
   //gpt 요청 바이트
   const [_myByte, setMyByte] = useState(0);
@@ -70,9 +59,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const [attitudeScore, setAttitudeScore] = useState(0);
   const [coin, setCoin] = useState(0);
   //3.대화창 보여주기 변수
-  const [graphicModalShow, setgraphicModalShow] = useState(false)
   const [timerModalShow, setTimerModalShow] = useState(false)
-  const [questModalShow, setQuestModalShow] = useState(false)
   const [isExtraRecModalShown, setIsExtraRecModalShown] = useState(false)
   const [isPerfRecModalShown, setIsPerfRecModalShown] = useState(false)
   const [isModified, setIsModified] = useState(false)
@@ -123,9 +110,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     setRecord(acti.record)
     setExtraRecList(acti.extraRecordList)
     setPerfRecList(acti.perfRecordList)
-    setMonImg(acti.monImg)
     setSelectedSubjDetail(acti.subject)
-    setIsHomework(acti.isHomework)
     setIsPrivate(acti.isPrivate || false)
     setLeadershipScore(scoresObj?.leadership ?? 0)
     setCareerScore(scoresObj?.careerScore ?? 0)
@@ -141,7 +126,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
       const confirm = window.confirm("활동을 수정하시겠습니까?")
       let actId = state.acti.id
       if (confirm) {
-        let modifiedActi = { title: _title, content: _content, record: _record, scores, money, monImg, isHomework: _isHomework, isPrivate: _isPrivate };
+        let modifiedActi = { title: _title, content: _content, record: _record, scores, money, isPrivate: _isPrivate };
         updateActi(modifiedActi, "activities", actId)
         navigate("/activities")
         setIsModified(false)
@@ -151,8 +136,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
       if (confirm) {
         let newAct = {
           uid: String(user.uid), title: _title, subject: _selectedSubjGroup, subjDetail: _selectedSubjDetail,
-          content: _content, record: _record, scores, madeBy: user.name, money, monImg, isHomework: _isHomework,
-          isPrivate: _isPrivate
+          content: _content, record: _record, isPrivate: _isPrivate, scores, money, madeBy: user.name,
         };
         addActi(newAct)
         navigate("/activities")
@@ -258,47 +242,12 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
       default: return
     }
   }
-  //퀘스트 이미지 선택
-  const handleImgPickerClick = () => {
-    if (isModified) {
-      setgraphicModalShow(true)
-    }
+
+  //공개, 비공개
+  const handleRadioBtnClick = () => {
+    setIsPrivate(!_isPrivate)
   }
 
-  const handleQuestImg = (monImg) => {
-    let img = question
-    switch (monImg) {
-      case "mon_01":
-        img = mon01
-        break;
-      case "mon_02":
-        img = mon02
-        break;
-      case "mon_03":
-        img = mon03
-        break;
-      case "mon_04":
-        img = mon04
-        break;
-      case "mon_05":
-        img = mon05
-        break;
-      default: img = question;
-    }
-    return img
-  }
-  //공개, 비공개
-  const handleRadioBtnClick = (event) => {
-    switch (event.target.name) {
-      case "isHomework_radio":
-        setIsHomework(!_isHomework)
-        break;
-      case "isPrivate_radio":
-        setIsPrivate(!_isPrivate)
-        break;
-      default: return
-    }
-  }
   //날짜, 시간, 생기부 포맷으로
   const handleTimeFormatted = () => {
     let result = ''
@@ -319,7 +268,6 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
         <StyledForm onSubmit={handleSubmit}>
           <FormHeader>{state ? <legend>{_selectedSubjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}</FormHeader>
           <fieldset style={{ padding: "2px" }}>
-            <ImagePicker src={handleQuestImg(monImg)} alt="퀘스트이미지" onClick={handleImgPickerClick} />
             <Row style={{ justifyContent: "space-between", margin: "13px 0" }}>
               <DotTitle title={"활동 제목"} styles={{ dotColor: "#3454d1;" }} />
               <StyledInput className="act_title" id="act_title" type="text" required onChange={handleOnChange} value={_title} disabled={!isModified} placeholder="ex)포도당 산화 환원 실험" />
@@ -368,7 +316,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                 disabled={!isModified} />
             </Row>
             <Row style={{ marginBottom: "10px" }}>
-              {(state && sort === "subject") && <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+              {(state && sort === "subject") && <DotTitle title={"성취도별 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
             </Row>
             <AnimMaxHightOpacity isVisible={isPerfRecShown}>
               <Row style={{ gap: "5px" }}>
@@ -428,16 +376,8 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
           </fieldset>
         </StyledForm>}
     </Container>
-    {/* 모달 */}
-    <GraphicDialogModal
-      show={graphicModalShow}
-      onHide={() => setgraphicModalShow(false)}
-      setMonImg={setMonImg} />
     <Wait3SecondsModal
       show={timerModalShow} />
-    <QuestModal
-      show={questModalShow}
-      onHide={() => setQuestModalShow(false)} />
     {(state && isExtraRecModalShown) &&
       < AddExtraRecModal
         show={isExtraRecModalShown}

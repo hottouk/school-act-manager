@@ -1,10 +1,9 @@
 import styled from "styled-components"
 
 const CommonTextarea = ({ id, title, value, onChange, placeholder, disabled, required, styles }) => {
-  let height = styles?.height || "150px"
-  
+
   return (
-    <StyledTextAraeWrapper>
+    <Container>
       <label htmlFor={id} >{title || "샘플"}</label>
       <textarea
         id={id}
@@ -15,11 +14,11 @@ const CommonTextarea = ({ id, title, value, onChange, placeholder, disabled, req
         required={required || false}
         disabled={disabled}
       />
-    </StyledTextAraeWrapper>
+    </Container>
   )
 }
 
-const StyledTextAraeWrapper = styled.div`
+const Container = styled.div`
   label {
     display: block;
   }
@@ -31,6 +30,7 @@ const StyledTextAraeWrapper = styled.div`
     margin-bottom: 15px;
     padding: 5px;
     border-radius: 7px;
+    border: none;
   }
 `
 export default CommonTextarea

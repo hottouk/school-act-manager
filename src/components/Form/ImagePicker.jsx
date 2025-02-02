@@ -14,7 +14,7 @@ const StyledImgPicker = styled.img`
   height: 100px;
   padding: 5px;
   border-radius: 20px;
-  border: 1px solid black;
+  border: 1px solid rgba(120,120,120,0.7);
   cursor: pointer;
 `
 

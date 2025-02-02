@@ -1,18 +1,15 @@
 import { appFireStore } from '../../firebase/config'
-import { collection, doc, getDocFromCache, getDocFromServer, getDocs, orderBy, query, where } from 'firebase/firestore'
-import useGetLevel from '../useGetLevel'
-import PetImg from '../../components/PetImg'
+import { collection, doc, getDocFromCache, getDocFromServer, getDocs, query, where } from 'firebase/firestore'
 import { useSelector } from 'react-redux'
 
 const useFetchFireData = () => {
   const db = appFireStore
-  const { getExpAndLevelByActList } = useGetLevel()
   const user = useSelector(({ user }) => { return user })
   const actiColRef = collection(appFireStore, "activities")
   const userColRef = collection(appFireStore, "user")
-
+  //todo 삭제 1순위
   //2024.06.30 수정
-  //9. 하위 문서(학생) 1개 //todo 삭제 1순위위
+  //9. 하위 문서(학생) 1개 
   const fetchSubDoc = async (colName, docId, subColName, subDocId) => {
     let docRef = doc(collection(db, colName, docId, subColName), subDocId)
     try {
@@ -92,89 +89,17 @@ const useFetchFireData = () => {
     return teacherList;
   }
 
-  //1. 유저 리스트 출력
-  const fetchUserList = async (type, propKnd, prop) => {
-    let userList = []
-    let q = userQSetter(type, propKnd, prop)
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      userList.push({ ...doc.data(), id: doc.id })
-    });
-    userList = filterDataList(propKnd, userList, prop)
-    userList = modiDataList(type, userList)
-    userList = sortDataList(type, userList)
-    return userList
-  }
+  //1. 유저 리스트 출력(20250127 삭제)
 
-  //1-4. 데이터 정렬
-  const sortDataList = (type, userList) => { //학번 정렬
-    if (type === "student") {
-      userList.sort(function (a, b) {
-        if (a.studentNumber.toUpperCase() > b.studentNumber.toUpperCase()) {
-          return 1;
-        }
-        if (a.studentNumber.toUpperCase() < b.studentNumber.toUpperCase()) {
-          return -1;
-        }
-        return 0;
-      })
-    }
-    return userList;
-  }
+  //1-4. 데이터 정렬(20250127 삭제)
 
-  //1-3. 데이터 2차 가공(유저 레벨 산정)
-  const modiDataList = (type, userList) => {
-    let modiList = userList
-    if (type === "student") {
-      modiList = userList.map(student => {
-        let userLevel = 0 //유저레벨 구하기
-        let petList = student.myPetList //펫이 등록되어 있다면
-        let petImgList = []
-        if (petList) {
-          petImgList = petList.map((pet) => {
-            let actList = pet.actList
-            let expAndLevel = { exp: 0, level: 0 }; //기본값
-            if (actList) { expAndLevel = getExpAndLevelByActList(actList); } //있다면 펫마다 각각 레벨 계산하기
-            userLevel = + expAndLevel.level //펫 레벨 유저레벨에 합산
-            return <PetImg subject={pet.subject} level={expAndLevel.level} onClick={() => { }} />
-          })
-        }
-        return { userLevel, petImgList, ...student }
-      })
-    }
-    return modiList
-  }
+  //1-3. 데이터 2차 가공(유저 레벨 산정)(20250127 삭제)
 
-  //1-2. DB 데이터 1차 필터링
-  const filterDataList = (propKnd, DBdata, prop) => {
-    let result = DBdata
-    if (propKnd === "schoolName") {
-      result = DBdata.filter((user) => {
-        return user.school.schoolName.includes(prop)
-      })
-    }
-    return result;
-  }
+  //1-2. DB 데이터 1차 필터링(20250127 삭제)
 
-  //1-1. DB에서 검색
-  const userQSetter = (type, propKnd, prop) => {
-    let q
-    if (propKnd === "schoolName") { //전체 학교 검색
-      if (type === "teacher") { //전체 교사 검색
-        q = query(userColRef, where("isTeacher", "==", true))
-      } else if (type === "student") { //전체 학생 검색
-        q = query(userColRef, where("isTeacher", "==", false))
-      }
-    } else { //이름 검색, 값이 완전히 같아야 함.
-      if (type === "teacher") { //교사 이름 검색
-        q = query(userColRef, where("isTeacher", "==", true), where(`${propKnd}`, "==", `${prop}`))
-      } else if (type === "student") { //학생 이름 검색
-        q = query(userColRef, where("isTeacher", "==", false), where(`${propKnd}`, "==", `${prop}`))
-      }
-    }
-    return q
-  }
-  return ({ db, fetchDoc, fetchSubDoc, fetchUserList, fetchTeacherList, fetchAlActiiBySubjList, fetchCopiedActiList })
+  //1-1. DB에서 검색(20250127 삭제)
+
+  return ({ db, fetchDoc, fetchSubDoc, fetchTeacherList, fetchAlActiiBySubjList, fetchCopiedActiList })
 }
 
 export default useFetchFireData

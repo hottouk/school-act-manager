@@ -14,7 +14,7 @@ const QuizMonListItem = ({ item, onClick }) => {
       {monImg && <MonsterImg src={monImg || question_icon} onClick={() => { onClick(item) }} />}
       <TextWrapper>
         <StyledTitle>{item.title}</StyledTitle>
-        <StyledText style={{ fontSize: "17px" }}>{`Lv${item.level} ${step[0].name}`}</StyledText>
+        <StyledText style={{ fontSize: "17px" }}>{`${step[0].name}`}</StyledText>
         <StyledText>{item.content}</StyledText>
       </TextWrapper>
     </Container>

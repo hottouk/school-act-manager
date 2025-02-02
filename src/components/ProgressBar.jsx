@@ -1,11 +1,8 @@
 import ProgressBar from 'react-bootstrap/ProgressBar';
-import useGetLevel from '../hooks/useGetLevel';
 
-function AnimatedProgressBar({ exp, level }) {
-  const { getMaxExpByLevel } = useGetLevel();
-  const progress = exp / getMaxExpByLevel(level) * 100
-  
-  return <ProgressBar animated now={progress} />;
+const AnimatedProgressBar = ({ levelInfo }) => {
+  let { exp, nextLvXp } = levelInfo
+  return <ProgressBar now={(exp / nextLvXp) * 100} label={`${exp} / ${nextLvXp}`} style={{ height: "22px", flexGrow: "1", fontSize: "16px" }} />;
 }
 
 export default AnimatedProgressBar;

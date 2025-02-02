@@ -1,6 +1,7 @@
 //라이브러리
 import React from 'react'
 import styled from 'styled-components'
+//이미지
 import iconImg from '../../../image/icon/like_icon.png'
 import unknonIcon from '../../../image/icon/unkown_icon.png'
 //25.01.18 생성
@@ -83,7 +84,6 @@ const Container = styled.li`
   &: hover {
     background-color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
   }
-  
 `
 const StyledImg = styled.img`
   width: 45px;

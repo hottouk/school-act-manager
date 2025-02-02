@@ -3,19 +3,14 @@ import React from 'react'
 import styled from 'styled-components'
 //컴포넌트
 import PetImg from '../../PetImg'
-//hooks
-import useGetLevel from '../../../hooks/useGetLevel'
 
 //250126(리펙토링)
 const MonListItem = ({ item, onClick, type }) => {
-  const { getExpAndLevelByActList } = useGetLevel();
-  const actList = item.actList
-  const expAndLevel = actList ? getExpAndLevelByActList(actList) : { exp: 0, level: 0 };
   return (
     <Container>
       {type === "student" && <>
         <ImgWrapper>
-          <PetImg subject={item.subject} level={expAndLevel.level} onClick={() => { onClick(item) }} styles={{ width: "80px" }} />
+          <PetImg subject={item.subject} level={1} onClick={() => { onClick(item) }} styles={{ width: "80px" }} />
         </ImgWrapper>
         <TextWrapper>
           <p style={{ marginBottom: "0px", fontWeight: "bold" }}>{item.studentNumber}</p>

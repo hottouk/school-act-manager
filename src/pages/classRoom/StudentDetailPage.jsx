@@ -3,23 +3,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Select from 'react-select';
 import { useSelector } from 'react-redux';
-//Hooks
-import useGetLevel from '../../hooks/useGetLevel';
-import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
-import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetData';
 //컴포넌트
 import SubNav from '../../components/Bar/SubNav';
-import RadarChart from '../../components/RadarChart';
-import AnimatedProgressBar from '../../components/ProgressBar';
 import SmallBtn from '../../components/Btn/SmallBtn';
 import ArrowBtn from '../../components/Btn/ArrowBtn';
 import TransparentBtn from '../../components/Btn/TransparentBtn';
 import ByteCalculator from '../../components/Etc/ByteCalculator';
 import PetImg from '../../components/PetImg';
 import GptModal from '../../components/Modal/gptModal/GptModal';
-// import useGetMyUserInfo from '../../hooks/useGetMyUserInfo';(학생 회원)
-// const { fetchMyPetInfo } = useGetMyUserInfo() (학생 회원)
-// useEffect(() => { if (!user.isTeacher) { if (user.uid === master) { fetchMyPetInfo(state) } } }, []) //학생만 실행, 펫정보 업데이트
+//hooks
+import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
+import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetData';
 //이미지
 import x_btn from "../../image/icon/x_btn.png"
 import arrows_icon from "../../image/icon/arrows_icon.png"
@@ -38,7 +32,6 @@ const StudentDetailPage = () => {
   const user = useSelector((state) => state.user);
   const allStudentList = useSelector((state) => state.allStudents);
   const allActivityList = useSelector((state) => state.allActivities);
-  console.log(allStudentList)
   //개별 학생 정보
   const { pet } = useFetchRtPetDoc(params.id, params.studentId)
   const { studentNumber, actList, writtenName, master, subject } = pet || {}
@@ -51,7 +44,6 @@ const StudentDetailPage = () => {
     setNthStudent(allStudentList.findIndex(({ id }) => { return id === params.studentId })) //전체 학생에서 몇 번째인지 index 찾기기
   }, [pet])
   //hooks
-  const { getAbilityScores, getExpAndLevelByActList } = useGetLevel()
   //편집 모드 
   const [isModifiying, setIsModifying] = useState(false)
   const { deleteStudent, updateStudent } = useAddUpdFireData("classRooms")
@@ -62,12 +54,6 @@ const StudentDetailPage = () => {
   const [_actiList, setActiList] = useState(null)
   const [_isMaster, setIsMaster] = useState(false)
   const [_subject, setSubject] = useState('')
-  let expAndLevel = { exp: 0, level: 0 }
-  let abilityScores = {}
-  if (actList) { //기록된 활동이 있다면
-    expAndLevel = getExpAndLevelByActList(actList)
-    abilityScores = getAbilityScores(actList)
-  }
   //객체 접근
   const textAreaRef = useRef({})
   const selectRef = useRef({})
@@ -98,6 +84,7 @@ const StudentDetailPage = () => {
       setIsAnimating(false);
     }, 500); // 애니메이션 시간과 동일하게 설정
   }
+
   //활동 순서 변경(24.12.24)
   const moveActiItem = (index, direction) => {
     setActiList((prevActiList) => {
@@ -209,7 +196,7 @@ const StudentDetailPage = () => {
         <AnimRotation isAnimating={isAnimating}>
           <StyledBackgroundPannel>
             <StyledTopPannel>
-              <PetImg subject={_subject} level={expAndLevel.level} onClick={() => { }} />
+              <PetImg subject={_subject} level={1} onClick={() => { }} />
               <StyledTopRightInfo>
                 <p>학번: {_studentNumber}</p>
                 <p>이름: {!isModifiying
@@ -218,11 +205,10 @@ const StudentDetailPage = () => {
                     setWrittenName(event.target.value)
                   }} />
                 }</p>
-                <p>레벨: {expAndLevel.level}</p>
-                <StyledProgressDiv>경험치: {expAndLevel.exp}<AnimatedProgressBar exp={expAndLevel.exp} level={expAndLevel.level} /></StyledProgressDiv>
+                <p>레벨: {1}</p>
               </StyledTopRightInfo>
               <StyeldChartDiv>
-                <RadarChart abilityScores={abilityScores} />
+                {/* <RadarChart abilityScores={abilityScores} /> */}
               </StyeldChartDiv>
             </StyledTopPannel>
             <StyledBotPannel>

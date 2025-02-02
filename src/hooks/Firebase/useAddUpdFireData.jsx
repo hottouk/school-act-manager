@@ -6,25 +6,7 @@ const useAddUpdFireData = (collectionName) => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const colRef = collection(db, collectionName)
-  //10. 이거 어디에 쓰는지 보고 없으면 제거
-  const getInfo = async (id, type) => {
-    let info = null
-    switch (type) {
-      case "student":
-        let studentRef = doc(db, "user", id)
-        let studentSnapshot = await getDoc(studentRef)
-        studentSnapshot.then((studentSnap) => {
-          info = studentSnap.data()
-        })
-        break;
-      case "acti":
-        let actiRef = doc(db, "activities", id)
-        info = await getDoc(actiRef);
-        break;
-      default: return
-    }
-    return info
-  }
+  
 
   //10. 공지사항(24.07.16)
   const addNotice = async (noticeList) => {
@@ -120,7 +102,7 @@ const useAddUpdFireData = (collectionName) => {
   }
 
   return (
-    { getInfo, addNotice, addActi, updateActi, updateStudent, deleteStudent, addClassroom, addStudent, updateClassListInfo }
+    { addNotice, addActi, updateActi, updateStudent, deleteStudent, addClassroom, addStudent, updateClassListInfo }
   )
 }
 

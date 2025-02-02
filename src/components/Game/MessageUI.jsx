@@ -20,7 +20,7 @@ const MessageUI = ({ x, y, width, height, msg, msg2, msg3 }) => {
   }
   return (
     <Container>
-      {!msg3 && <Graphics draw={drawRoundRect} />}
+      <Graphics draw={drawRoundRect} />
       {msg && <Text
         text={msg}
         x={x + padding}
@@ -29,12 +29,6 @@ const MessageUI = ({ x, y, width, height, msg, msg2, msg3 }) => {
       />}
       {msg2 && <Text
         text={msg2}
-        x={x + padding}
-        y={y + padding}
-        style={textStyle}
-      />}
-      {msg3 && <Text
-        text={msg3}
         x={x + padding}
         y={y + padding}
         style={textStyle}

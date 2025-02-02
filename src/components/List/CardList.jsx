@@ -1,13 +1,9 @@
 //라이브러리
-import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { setSelectClass } from '../../store/classSelectedSlice'
-import { setAppliedClassList, setJoinedClassList } from '../../store/userSlice'
-//hooks
-import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData'
-//css
 import styled from 'styled-components'
+//컴포넌트
 import CardListItem from './ListItem/CardListItem'
 import EmptyResult from '../EmptyResult'
 
@@ -16,37 +12,6 @@ const CardList = ({ dataList, type, onClick, selected }) => {//todo 데이터 �
   //----1.변수부--------------------------------
   const navigate = useNavigate()
   const user = useSelector(({ user }) => user)
-  const [studentUser, setStudentUser] = useState(null);
-  const { updateClassListInfo } = useAddUpdFireData("user")
-  //전역변수
-
-  useEffect(() => { //공용
-    if (user.isTeacher) { } //todo
-    else { setStudentUser({ email: user.email, name: user.name, studentNumber: user.studentNumber, uid: user.uid }) }
-  }, [user])
-
-  //----2.함수부--------------------------------
-  // const handleOnClick = (item) => {
-  //   switch (type) {
-  //     case "classroom":
-  //       if (item.subject) {
-  //       } else { //교사가 클래스 삭제 -> 가입 교실 갱신. 
-  //         let newList = user.joinedClassList.filter((joinedClass) => { return joinedClass.id !== item.id })
-  //         updateClassListInfo(newList, "joinedClassList")
-  //         dispatcher(setJoinedClassList(newList))
-  //       } break;
-  //     case "appliedClassList":
-  //       if (item.subject) {
-  //         dispatcher(setSelectClass(item))   //선택한 교실 비휘발성 전역변수화
-  //         navigate(`/classrooms/${item.id}`) //url 이동
-  //       } else { //교사가 클래스 삭제 -> 가입 신청 중 교실 갱신
-  //         let newList = user.appliedClassList.filter((appliedClassList) => { return appliedClassList.id !== item.id })
-  //         updateClassListInfo(newList, "appliedClassList")
-  //         dispatcher(setAppliedClassList(newList))
-  //       } break;
-  //     default: return;
-  //   }
-  // }
 
   return (
     <Container>

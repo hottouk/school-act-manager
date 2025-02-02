@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 //2024.07.26 샘플
-const SmallBtn = ({ id, btnColor, hoverBtnColor, margin, btnOnClick, btnName, fontColor, children }) => {
+const SmallBtn = ({ id, btnColor, hoverBtnColor, margin, btnOnClick, onClick, btnName, fontColor, children }) => {
   //SearchBar에 사용
   return (
     <StyledBtn
@@ -13,7 +13,7 @@ const SmallBtn = ({ id, btnColor, hoverBtnColor, margin, btnOnClick, btnName, fo
       $fontColor={fontColor || "#fff"}
       $hoverBackgroundColor={hoverBtnColor || "#1366d6"}
       $margin={margin || "auto"}
-      onClick={btnOnClick}
+      onClick={btnOnClick || onClick}
     >{btnName || children || "샘플"}
     </StyledBtn>
   )

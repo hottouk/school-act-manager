@@ -13,7 +13,7 @@ import useFireClassData from "../../hooks/Firebase/useFireClassData"
 import SearchBar from "../../components/Bar/SearchBar"
 import ClassMemberModal from "../../components/Modal/ApplyClassModal"
 import useFirePetData from "../../hooks/Firebase/useFirePetData"
-//25.01.21 생성
+//25.01.21 생성(250201까지는 학생 전용)
 const UserMainPage = () => {
   //준비
   const dispatcher = useDispatch();

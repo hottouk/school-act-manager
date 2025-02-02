@@ -7,16 +7,19 @@ import { appFireStore } from '../../firebase/config'
 const useFetchRtMyUserData = () => {
   const user = useSelector(({ user }) => user)
   const db = appFireStore;
-  const userDocRef = doc(db, "user", user.uid)
   const [myUserData, setMyUserData] = useState(null);
 
   useEffect(() => {
+    if (Object.keys(user).length === 0) return;
+    const userDocRef = doc(db, "user", user.uid)
     const unsubscribe = onSnapshot(userDocRef,
-      (snapshot) => { setMyUserData(snapshot.data(), snapshot.id) }
+      (snapshot) => {
+        setMyUserData(snapshot.data(), snapshot.id)
+      }
       , (error) => { console.log(error) }
     )
     return unsubscribe
-  }, [])
+  }, [user])
 
   return ({ myUserData })
 }

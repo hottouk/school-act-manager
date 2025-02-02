@@ -39,10 +39,8 @@ const ClassroomDetailsPage = () => {
   const user = useSelector(({ user }) => user)
   const allSubjClassList = useSelector(({ allClasses }) => allClasses)
   const { id: thisKlassId } = useParams();
-  const location = useLocation();
   //학생 회원 검증
-  const { state: studentKlassInfo } = location;
-  const { isApproved: isMember, uid: masterId } = studentKlassInfo
+  const { state: studentKlassData } = useLocation();
   //hooks
   const { deleteClassWithStudents } = useDeleteFireData();
   const { getSubjKlassActiList } = useFireActiData();
@@ -50,23 +48,23 @@ const ClassroomDetailsPage = () => {
   const { myUserData } = useFetchRtMyUserData();
   const { klassData } = useFetchRtClassroomData(thisKlassId)                                                  //클래스
   const { studentDataList } = useFetchRtMyStudentData("classRooms", thisKlassId, "students", "studentNumber") //학생
-  useEffect(() => {                                           //애니메이션 처리 및 데이터 바인딩
+  useEffect(() => {                                              //애니메이션 처리 및 데이터 바인딩
     setIsVisible(false)
     setTimeout(() => setIsVisible(true), 200)
     renderData();
   }, [thisKlassId, klassData, studentDataList])
-  useEffect(() => { fetchPetData(); }, [myUserData])          //마이 펫 바인딩
+  useEffect(() => { fetchPetData(); }, [myUserData, thisKlassId])//마이 펫 바인딩
   const [actiList, setActiList] = useState([]);
   const [quizList, setQuizList] = useState([]);
   const [studentList, setStudentList] = useState([]);
   const [quizId, setQuizId] = useState([])
   // 게임 구동 정보
-  const [monsterDetails, setMonsterDetails] = useState()
+  const [gameDetails, setGameDetails] = useState(null);
   const [myPetDetails, setMyPetDetails] = useState(null)
   //모달
-  const [isAddStuModal, setIsAddStuModal] = useState(false)   //교사 학생 추가
-  const [isPerfModal, setIsPerfModal] = useState(false)       //수행 관리
-  const [isGameModal, setIsGameModal] = useState(false)       //게임 
+  const [isAddStuModal, setIsAddStuModal] = useState(false)     //교사 학생 추가
+  const [isPerfModal, setIsPerfModal] = useState(false)         //수행 관리
+  const [isGameModal, setIsGameModal] = useState(false)         //게임 
   //에니메이션
   const [isVisible, setIsVisible] = useState(false)
   //모바일
@@ -76,8 +74,8 @@ const ClassroomDetailsPage = () => {
   //초기화
   const renderData = () => {
     if (!klassData || !studentDataList) return;
-    const classMasterId = user.isTeacher ? user.uid : masterId
-    getSubjKlassActiList(classMasterId, klassData?.subject).then((list) => { //활동 data
+    const classTeacherId = user.isTeacher ? user.uid : studentKlassData.uid
+    getSubjKlassActiList(classTeacherId, klassData?.subject).then((list) => { //활동 data
       dispatcher(setAllActivities(list.subjActiList));
       setActiList(list.subjActiList);
       setQuizList(list.quizActiList);
@@ -87,7 +85,9 @@ const ClassroomDetailsPage = () => {
   }
 
   //클래스 이동
-  const moveKlass = (event) => { navigate(`/classrooms/${event.value}`) }
+  const moveKlass = (event) => {
+    navigate(`/classrooms/${event.value.id}`, { state: { ...event.value } })
+  }
 
   //펫 정보 불러오기(학생 전용)
   const fetchPetData = () => {
@@ -100,10 +100,11 @@ const ClassroomDetailsPage = () => {
   //유저 상호작용
   //몬스터 클릭
   const handleMonsterOnClick = (item) => {
-    let { monster, quizInfo } = item
+    let { quizInfo, ...rest } = item
+    console.log(item)
     setIsGameModal(true)
     setQuizId(quizInfo.id)
-    setMonsterDetails({ ...monster.step[0], level: item.level })
+    setGameDetails(rest)
   }
 
   //삭제 클릭
@@ -119,7 +120,7 @@ const ClassroomDetailsPage = () => {
 
   return (<>
     <SubNav styles={{ padding: "10px" }}>
-      <Select options={allSubjClassList.map((klass) => { return { label: klass.classTitle, value: klass.id } })} placeholder="반 바로 이동"
+      <Select options={allSubjClassList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
         onChange={moveKlass} />
     </SubNav>
 
@@ -182,7 +183,7 @@ const ClassroomDetailsPage = () => {
         </BtnWrapper>}
 
         {/* 퀘스트 목록(학생) */}
-        {(!user.isTeacher && isMember) && <MainPanel>
+        {(!user.isTeacher && studentKlassData.isApproved) && <MainPanel>
           <h5>퀘스트 목록</h5>
           {(!actiList || actiList.length === 0)
             ? <EmptyResult comment="등록된 활동이 없습니다." />
@@ -210,7 +211,7 @@ const ClassroomDetailsPage = () => {
       onHide={() => setIsGameModal(false)}
       quizSetId={quizId}
       myPetDetails={myPetDetails}
-      monsterDetails={monsterDetails}
+      gameDetails={gameDetails}
     />}
   </>)
 }

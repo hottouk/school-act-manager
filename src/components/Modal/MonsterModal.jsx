@@ -33,7 +33,7 @@ const MonsterModal = ({ show, onHide, monster, setMonster, setMonImg }) => {
   const handleImgOnClick = (event, index) => {
     switch (event.target.id) {
       case "mon": //상단부
-        setMonster(monsterEvilList[index])    
+        setMonster(monsterEvilList[index])
         setMonImg(imgUrlList[index])          //modal 외부 이미지 설정
         break;
       case "details": //하단부
@@ -93,10 +93,10 @@ const MonsterModal = ({ show, onHide, monster, setMonster, setMonImg }) => {
         <MonsterInfoWrapper>
           {monsterDetails && <>
             <Row style={{ color: "#3454d1", fontWeight: "bold" }}><h4> {monsterDetails.name}</h4></Row>
-            <h6>체력: {monsterDetails.hp || "??"}</h6>
-            <h6>공격력: {monsterDetails.atk || "??"}</h6>
-            <h6>방어력: {monsterDetails.def || "??"}</h6>
-            <h6>스피드: {monsterDetails.spd || "??"}</h6>
+            <h6>체력: {monsterDetails.spec?.hp ?? "??"}</h6>
+            <h6>공격력: {monsterDetails.spec?.atk ?? "??"}</h6>
+            <h6>방어력: {monsterDetails.spec?.def ?? "??"}</h6>
+            <h6>스피드: {monsterDetails.spec?.spd ?? "??"}</h6>
           </>}
           <StyledText>{monsterDetails?.desc || "각 몬스터를 클릭하세요"}</StyledText>
         </MonsterInfoWrapper>

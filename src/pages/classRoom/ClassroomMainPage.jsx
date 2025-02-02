@@ -53,7 +53,6 @@ const ClassRoomMainPage = () => {
 
   //교과반 클릭(공용)
   const handleSubjClassOnClick = (item) => {
-    // dispatcher(setSelectClass(item))   //선택한 교실 비휘발성 전역변수화
     navigate(`/classrooms/${item.id}`, { state: { ...item } }) //url 이동
   }
 

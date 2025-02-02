@@ -18,12 +18,11 @@ import TwoRadios from '../../components/Radio/TwoRadios'
 //hooks
 import useTeacherAuth from '../../hooks/useTeacherAuth'
 import useFireBasic from '../../hooks/Firebase/useFireBasic'
-import useAdjustStat from '../../hooks/Game/useAdjustStat'
 import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg'
 //이미지
 import temp_icon from '../../image/icon/question.png'
 import { useSelector } from 'react-redux'
-//25.01.19
+//250119 생성 -> 0202 recordList로 갱신
 const QuizActiFormPage = () => {
   //준비
   const { log } = useTeacherAuth();
@@ -32,37 +31,33 @@ const QuizActiFormPage = () => {
   const navigate = useNavigate();
   const { fetchData } = useFireBasic("quiz");
   const { addData, setData, deleteData } = useFireBasic("activities");
-  const { getStatUp } = useAdjustStat();
   const { fetchImgUrl } = useFetchStorageImg();
   useEffect(() => { fetchData("uid").then(quizSetList => { quizSetList.map((item) => setQuizOptionList(prev => [...prev, { label: item.title, value: item }])) }) }, []) //퀴즈 세트 불러오기
   const { state: quizActiInfo } = useLocation();
-  useEffect(() => { renderState(); }, [quizActiInfo])
+  useEffect(() => { bindInfo(); }, [quizActiInfo])
   //랜더링 변수
   const [_title, setTitle] = useState('');
   const [_content, setContent] = useState('');
-  const [_record, setRecord] = useState('');
+  const [_highCount, setHighCount] = useState(3);
+  useEffect(() => { autoFilRecord("high"); }, [_highCount])
+  const [_midCount, setMidCount] = useState(2);
+  useEffect(() => { autoFilRecord("mid"); }, [_midCount])
+  const [_basicCount, setBasicCount] = useState(1);
+  useEffect(() => { autoFilRecord("basic"); }, [_basicCount])
+  const [_highRec, setHighRec] = useState('');
+  const [_midRec, setMidRec] = useState('');
+  const [_basicRec, setBasicRec] = useState('');
   const [_isPrivate, setIsPrivate] = useState(false);
   const [subjGroup, setSubjGroup] = useState('');
   const [subjDetail, setSubjDetail] = useState('');
   //퀴즈 세트 선택
   const [quizOptionList, setQuizOptionList] = useState([]);
   const [_quizSelected, setQuizSelected] = useState(null);
-  useEffect(() => {
-    if (!_quizSelected) return;
-    autoFill();
-  }, [_quizSelected])
-  //레벨
-  const levelOptionList = [{ label: 1, value: 1 }, { label: 2, value: 2 }, { label: 3, value: 3 }, { label: 4, value: 4 }, { label: 5, value: 5 }]
-  const [_level, setLevel] = useState(1)
-  useEffect(() => { setStatUp(getStatUp(_level)); }, [_level])
-  const [_statUp, setStatUp] = useState({ hp: 0, atk: 0, def: 0, spd: 0 })  //레벨 보정 수치
+  useEffect(() => { autoFill(); }, [_quizSelected])
   //몬스터
   const [monImg, setMonImg] = useState(null);     //이미지
   const [_monster, setMonster] = useState(null);  //몬스터 정보
-  useEffect(() => {
-    if (_monster) { setMonsterDetails(_monster.step[0]) }
-    else { setMonsterDetails(null) }
-  }, [_monster])
+  useEffect(() => { if (_monster) setMonsterDetails(_monster.step[0]) }, [_monster])
   const [monsterDetails, setMonsterDetails] = useState(null);
   //모드
   const [isModifying, setIsModifying] = useState(!quizActiInfo);
@@ -72,45 +67,86 @@ const QuizActiFormPage = () => {
 
   //------함수부------------------------------------------------ 
   //기존 state 렌더링
-  const renderState = () => {
+  const bindInfo = () => {
     if (!quizActiInfo) return;
-    const { title, content, quizInfo, monster, isPrivate, level } = quizActiInfo
+    const { title, content, quizInfo, monster, isPrivate, recordList } = quizActiInfo
+    setHighCount(recordList[0].count);
+    setHighRec(recordList[0].record)
+    setMidCount(recordList[1].count);
+    setMidRec(recordList[1].record);
+    setBasicCount(recordList[2].count);
+    setBasicRec(recordList[2].record);
     setTitle(title);
-    setContent(content)
+    setContent(content);
     setIsPrivate(isPrivate);
-    setQuizSelected(quizInfo)
-    setMonster(monster)
-    setLevel(level)
+    setQuizSelected(quizInfo);
+    setMonster(monster);
     fetchImgUrl(monster.path, setMonImg);
   }
 
   //자동 완성
   const autoFill = () => {
-    setRecord(`${_quizSelected.subjDetail}과목 ${_quizSelected.title}을(를) {/*n*/}회 반복 학습하여 시험을 통과함.`)
+    if (!_quizSelected) return;
     setContent(`${_quizSelected.subjDetail}과목 학습 퀴즈${_quizSelected.quizList.length}개`)
     setSubjGroup(_quizSelected.subject)
     setSubjDetail(_quizSelected.subjDetail)
     setTitle(_quizSelected.title)
   }
 
+  //자동 채우기
+  const autoFilRecord = (level) => {
+    if (!_quizSelected) return;
+    if (level === "high") {
+      const highRecord = `${_quizSelected.subjDetail}과목 ${_quizSelected.title}을(를) ${_highCount}회 반복 학습한 후, 자기주도적으로 테스트를 진행하여 우수한 성적을 거둠. 반복적인 학습에도 지치지 않고 끝까지 해내는 끈기와 인내심, 의지가 돋보이는 학생임.`
+      setHighRec(highRecord)
+    } else if (level === "mid") {
+      const midRecord = `${_quizSelected.subjDetail}과목 ${_quizSelected.title}을(를) ${_midCount}회 반복 학습한 후, 자기주도적으로 테스트를 진행하여 우수한 성적으로 기준 점수를 통과함.`
+      setMidRec(midRecord)
+    } else {
+      const basicRecord = `${_quizSelected.subjDetail}과목 ${_quizSelected.title}을(를) ${_basicCount}회 반복 학습함.`
+      setBasicRec(basicRecord)
+    }
+  }
+
   //입력 확인
   const check = () => {
-    if (_quizSelected && monsterDetails) { return true };
-    window.alert("몬스터 생성이나 단어 세트 선택이 되지 않았습니다.");
-    return false;
+    // 조건 1: 선택했는가?
+    if (!_quizSelected || !_monster) {
+      return { valid: false, message: "몬스터 생성이나 단어 세트 선택이 되지 않았습니다." }
+    };
+    // 조건 2: 순서 조건을 만족하는지 확인
+    if (_highCount < _midCount || _midCount < _basicCount) {
+      return { valid: false, message: "성취도 값은 상 >= 중 >= 하 순으로 입력해야 합니다." };
+    }
+    // 조건 3: 중복된 값이 있는지 확인
+    const values = [_highCount, _midCount, _basicCount];
+    const uniqueValues = new Set(values);
+    if (uniqueValues.size !== values.length) {
+      return { valid: false, message: "상급, 중급, 기본 값은 서로 다른 값을 가져야 합니다." };
+    }
+    // 조건 4: 각 rec는 반드시 ''문구가 있어야 함.
+    if (_basicRec === '' || _midRec === '' || _highRec === '') {
+      return { valid: false, message: "수준별 문구가 존재해야 합니다." };
+    }
+    // 모든 조건 통과
+    return { valid: true, message: "유효한 성취도 입력입니다!" };
   }
-  //사용자 클릭
+
+  //몬스터 클릭
   const handleMonImgOnClick = () => {
     if (!isModifying) return
     setIsMonsterModal(true)
   }
-
   //저장
   const handleSaveOnClick = () => {
-    if (check()) {
+    let isValid = check();
+    if (isValid.valid) {
+      console.log(isValid.message)
       let confirm = window.confirm(`${quizActiInfo ? "이렇게 변경 저장할까요?" : "이 퀴즈 게임 활동을 생성할까요?"}`)
       if (confirm) {
-        let data = { title: _title, record: _record, content: _content, subject: subjGroup, subjDetail, quizInfo: _quizSelected, monster: _monster, level: _level, isPrivate: _isPrivate, madeBy: user.name }
+        const recordList = [{ count: _highCount, record: _highRec }, { count: _midCount, record: _midRec }, { count: _basicCount, record: _basicRec }]
+        const data = { title: _title, recordList, content: _content, subject: subjGroup, subjDetail, quizInfo: _quizSelected, monster: _monster, isPrivate: _isPrivate, madeBy: user.name }
+        console.log(data)
         if (!quizActiInfo) {
           addData(data);
           navigate("/activities");
@@ -119,7 +155,7 @@ const QuizActiFormPage = () => {
           setIsModifying(false);
         }
       }
-    }
+    } else { window.alert(isValid.message) }
   }
 
   //테스트 게임
@@ -134,7 +170,7 @@ const QuizActiFormPage = () => {
 
   //수정 취소
   const hadleCancelOnClick = () => {
-    renderState();
+    bindInfo();
     setIsModifying(false);
   }
 
@@ -171,11 +207,7 @@ const QuizActiFormPage = () => {
           <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
           {_quizSelected && <StyledText>{subjGroup}교과 {subjDetail}</StyledText>}
         </Row>
-        <Row style={{ marginBottom: "10px", justifyContent: "space-between" }}>
-          <DotTitle title={"난이도(레벨)"} styles={{ dotColor: "#3454d1;" }} />
-          {(monsterDetails && isModifying) && <Select options={levelOptionList} onChange={(e) => { setLevel(e.value) }} />}
-          {!isModifying && <StyledText>{_level}</StyledText>}
-        </Row>
+
         {/* 공개/비공개 */}
         <Row style={{ justifyContent: "space-between", marginBottom: "10px" }}>
           <DotTitle title={"공개 여부"} styles={{ dotColor: "#3454d1;" }} />
@@ -186,18 +218,30 @@ const QuizActiFormPage = () => {
             disabled={!isModifying}
           />
         </Row>
-        {monsterDetails && <StatusWrapper>
-          <p>이름: {monsterDetails.name}</p>
-          <p>체력: {monsterDetails.hp}+(<HighLight>{_statUp.hp}</HighLight>)</p><span></span>
-          <p>공격력: {monsterDetails.atk}+(<HighLight>{_statUp.atk}</HighLight>)</p>
-          <p>방어력: {monsterDetails.def}+(<HighLight>{_statUp.def}</HighLight>)</p>
-          <p>스피드: {monsterDetails.spd}+(<HighLight>{_statUp.spd}</HighLight>)</p>
-        </StatusWrapper>}
+        {/* 몇번 이겨야? */}
+        <DotTitle title={"성취도별 문구"} styles={{ dotColor: "#3454d1;" }} />
+        <LevelWrapper>
+          <Row style={{ gap: "10px", alignItems: "center" }}>
+            <LevelText>상급</LevelText>
+            <NumberInput type="number" value={_highCount} min={3} max={50} onChange={(event) => { setHighCount(event.target.value) }} disabled={!isModifying} />
+            <RecordTextArea value={_highRec} onChange={(event) => { setHighRec(event.target.value) }} disabled={!isModifying}></RecordTextArea>
+          </Row>
+          <Row style={{ gap: "10px", alignItems: "center" }}>
+            <LevelText>중급</LevelText>
+            <NumberInput type="number" value={_midCount} min={2} max={49} onChange={(event) => { setMidCount(event.target.value) }} disabled={!isModifying} />
+            <RecordTextArea value={_midRec} onChange={(event) => { setMidRec(event.target.value) }} disabled={!isModifying}></RecordTextArea>
+          </Row>
+          <Row style={{ gap: "10px", alignItems: "center" }}>
+            <LevelText>기본</LevelText>
+            <NumberInput type="number" value={_basicCount} min={1} max={48} onChange={(event) => { setBasicCount(event.target.value) }} disabled={!isModifying} />
+            <RecordTextArea value={_basicRec} onChange={(event) => { setBasicRec(event.target.value) }} disabled={!isModifying}></RecordTextArea>
+          </Row>
+        </LevelWrapper>
+
         {/* 설명 */}
         <CommonTextarea title="활동 설명" onChange={(e) => { setContent(e.target.value) }} value={_content}
           placeholder={"단어세트를 선택하세요"} disabled={!isModifying} />
-        <CommonTextarea title="생기부 문구" onChange={(e) => { setRecord(e.target.value) }} value={_record}
-          placeholder={"단어세트를 선택하세요"} disabled={!isModifying} />
+
         {!quizActiInfo && <BtnWrapper>
           <LongW100Btn btnName="생성" btnOnClick={handleSaveOnClick} />
           <LongW100Btn btnName="테스트" btnOnClick={handleTestOnClick} />
@@ -222,7 +266,8 @@ const QuizActiFormPage = () => {
       show={isGameModal}
       onHide={() => setIsGameModal(false)}
       quizSetId={_quizSelected.id}
-      monsterDetails={{ ...monsterDetails, level: _level }} //게임엔 레벨까지 제공
+      myPetDetails={{ petName: "교사의 화신", path: "images/pet/pet_water_001_3.png", spec: { atk: 15, def: 15, hp: 200, spd: 20 } }}
+      monsterDetails={{ ...monsterDetails }} //게임엔 레벨까지 제공
     />}
   </>
   )
@@ -235,7 +280,7 @@ const Row = styled.div`
   display: flex;
 `
 const StyledBox = styled.div`
-  border: 1px solid black;
+  border: none;
   height: 100px;
   border-radius: 8px;
   padding: 5px;
@@ -245,26 +290,37 @@ const StyledBox = styled.div`
 const StyledText = styled.p`
   margin: 0;
 `
-const StatusWrapper = styled.div`
-  width: 200px;
-  border: 1px solid gray;
-  border-radius: 8px;
-  margin: 15px auto;
-  padding: 5px;
-  text-align: center;
-  p { margin-bottom: 5px;}
-`
-const HighLight = styled.span`
-  color: #3454d1;
-  font-weight: bold;
-`
 const StyledInput = styled.input`
   height: 35px;
   border-radius: 7px;
+  border: none;
   padding-left: 5px;
   &:disabled {             /* 해당 input disabled 되었을 때 */
     color: gray;           /* 글자 색을 white로 설정 */
   }
+`
+const LevelWrapper = styled.div`
+  margin: 15px auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 12px;
+`
+const LevelText = styled(StyledText)`
+  text-align: center;
+`
+const NumberInput = styled.input`
+  width: 60px;
+  height: 60px;
+  border: none;
+  border-radius: 3px;
+  text-align: center;
+`
+const RecordTextArea = styled.textarea`
+  flex-grow: 1;
+  height: 60px;
+  border: none;
+  border-radius: 5px;
 `
 const BtnWrapper = styled.div`
   width: 90%;

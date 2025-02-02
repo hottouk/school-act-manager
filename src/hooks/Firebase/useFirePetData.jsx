@@ -27,17 +27,6 @@ const useFirePetData = () => {
     }
   }
 
-  //4. pet update 함수(2024.1.6) 
-  const updatePet = async (data, classId, petId) => {
-    let petRef = doc(db, "classRooms", classId, "students", petId);
-    try {
-      updateDoc(petRef, { ...data }) //업데이트 로직; 만든 날짜와 doc을 받아 업데이트
-    } catch (err) {
-      window.alert(err.message)
-      console.log(err)
-    }
-  }
-
   return ({ addPet, fetchPets })
 }
 
