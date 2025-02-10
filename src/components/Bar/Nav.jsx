@@ -28,7 +28,7 @@ const Nav = () => {
   //------함수부------------------------------------------------ 
   const bindData = () => {
     setProfileImg(user.profileImg)//프로필 사진
-    if (myUserData?.onSubmitList?.length !== 0) { setIsNew(true) } else { setIsNew(false) }
+    if (myUserData?.onSubmitList?.length) { setIsNew(true) } else { setIsNew(false) }
   }
   const handleBtnClick = (event) => {
     switch (event.target.id) {
@@ -66,14 +66,16 @@ const Nav = () => {
               { href: "activities", label: "나의 활동" },
               { href: "activities_all", label: "전체 활동", itemState: "acti_all" }]} />
         </li>
-        <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>
+        <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-chalkboard"></i>
           <span className="pcOnly">클래스 관리</span></Link></li>
-        <li id="class_btn" ><Link to="/quiz"><i className="fa-solid fa-school"></i>
-          <span className="pcOnly">단어 관리</span></Link></li>
-        {user.isMaster && <li id="lab_btn" ><Link to="/lab"><i className="fa-solid fa-khanda"></i>
+        <li id="class_btn" ><Link to="/quiz"><i className="fa-solid fa-database"></i>
+          <span className="pcOnly">퀴즈 관리</span></Link></li>
+        <li id="class_btn" ><Link to="/school"><i className="fa-solid fa-school"></i>
+          <span className="pcOnly">학교</span></Link></li>
+        {/* {user.isMaster && <li id="lab_btn" ><Link to="/lab"><i className="fa-solid fa-khanda"></i>
           <span className="pcOnly">실험실</span></Link></li>}
         {user.isMaster && <li id="master_btn" ><Link to="/master"><i className="fa-solid fa-key"></i>
-          <span className="pcOnly">마스터</span></Link></li>}
+          <span className="pcOnly">마스터</span></Link></li>} */}
         <li className="news_btn" >
           {isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news"><i className="fa-solid fa-bell"></i></Link></li>

@@ -160,7 +160,7 @@ const WhatsNewPage = () => {
           <Header>내용</Header>
           <Header>확인</Header>
         </TableHeaderWrapper>
-        {onSubmitList.length === 0 && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
+        {(onSubmitList?.length === 0 || !onSubmitList) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
         {onSubmitList?.map((item, index) => {
           if (item.type === "evolution") { return <StudentEvolutionRow key={item.petId} index={index} item={item} /> }
           else { return <StudentResultRow key={`${index}${item.reason}${item.petLabel}`} index={index} item={item} /> }
@@ -185,7 +185,7 @@ const GridRow = styled.div`
   grid-column: 1/-1;
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
-  background-color: #ddd;
+  background-color: #efefef;
 `
 const GridContainer = styled.div`
   width: 90%;

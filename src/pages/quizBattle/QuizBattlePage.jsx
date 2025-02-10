@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Text } from '@pixi/react';
 import { Spinner } from 'react-bootstrap';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 //컴포넌트
 import ActionBallUI from '../../components/Game/ActionBallUI';
@@ -18,16 +19,16 @@ import BattleReport from '../../components/Game/BattleReport';
 import MarkingUI from '../../components/Game/MarkingUI';
 import TransparentBtn from '../../components/Btn/TransparentBtn';
 import AnimatedProgressBar from '../../components/ProgressBar';
+import ReviewSection from './ReviewSection';
 //hooks
 import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg';
 import useFireBasic from '../../hooks/Firebase/useFireBasic';
-//img
-import qustion_icon from '../../image/icon/question.png'
-import useLevel from '../../hooks/useLevel';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
-import { useSelector } from 'react-redux';
-import ReviewSection from './ReviewSection';
+import useLevel from '../../hooks/useLevel';
+//img
+import qustion_icon from '../../image/icon/question.png'
+
 //250111 생성
 const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame }) => {
   //준비
@@ -104,7 +105,8 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   useEffect(() => { bindRewardData(); }, [myWinCount])
   const [rewardPoint, setRewardPoint] = useState(null);      //승리 횟수에 따른 보상 시점
   const [reward, setReward] = useState('');                  //승리 횟수에 따른 보상 문구
-  console.log("승리:", myWinCount, "기준:", rewardPoint, reward, myWinCount === rewardPoint)
+  // console.log("승리:", myWinCount, "기준:", rewardPoint, reward, myWinCount === rewardPoint)
+  const teacherPet = { spec: { atk: 80, def: 10, hp: 400, mat: 180, mdf: 55, spd: 55 }, path: "images/pet/pet_water_001_4.png", path_back: "images/pet/pet_water_001_4_back.png", level: { exp: 999, level: 100, nextLvXp: 1000, nextStepLv: 500 } }
   useEffect(() => { setMyWinCount(countWinRecord()) }, [myRecordList])
 
   //게임 종료
@@ -165,7 +167,9 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     if (!gameDetails || !quizSetId || !myUserData) return;
     let { monster } = gameDetails
     //실시간 데이터
-    let myPet = myUserData.myPetList.find((pet) => pet.petId === myPetDetails.petId)
+    let myPet
+    if (!user.isTeacher) { myPet = myUserData.myPetList.find((pet) => pet.petId === myPetDetails.petId) }
+    else { myPet = teacherPet }
     setMyPetInfo(myPet)
     setMonsterInfo(gameDetails.monster.step[0])
     fetchImgUrl(monster.path, setEnmImg)
@@ -176,7 +180,6 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
       setQuizList(quizSetInfo.quizList)
     });
   }
-
   //퀴즈 데이터 바인딩
   const bindQuizData = () => {
     if (quizList.length === 0) return;
@@ -207,12 +210,9 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     setRewardPoint(goalPoint);
     setReward(record);
   }
-
   //게임 초기화
   const initGameInfo = () => {
     let { monster } = gameDetails
-
-
     qNumRef.current = 0;
     setBattleTurn(0)
     setCurQuiz('');
@@ -224,7 +224,6 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     quizListRef.current = (quizList?.map((voca) => voca.split("#")[0]));
     answerListRef.current = (quizList?.map((voca) => voca.split("#")[1]));
   }
-
   //내 spec 바인딩
   const bindMyPetData = () => {
     if (!myPetInfo) return;
@@ -247,6 +246,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
       bindEnmData(1);
     }
   }
+
   //적 spec 바인딩 -enmLevel
   const bindEnmData = (level) => {
     const enmSpec = getMonsterStat(monsterInfo.spec, level);
@@ -476,7 +476,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
 
   //점수 계산 -result에 종속
   const finalizeGame = () => {
-    if (!result) return;
+    if (!result || user.isTeacher) return;
     let gameResult = { result, correct: correctNumber, enmLevel, name: user.name, uid: user.uid, actiId: gameDetails.id };
     switch (result) {
       case "Win":
@@ -530,7 +530,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
         <Wrapper><StyledImg src={myPetImg || qustion_icon} alt="상태창" /></Wrapper>
         <Wrapper style={{ width: "140px" }}>
           <p>{myPetInfo?.name || "??"}</p>
-          <p style={{ margin: "0" }}>레벨: {myPetInfo?.level.level || "??"}</p>
+          <p style={{ margin: "0" }}>레벨: {myPetInfo?.level?.level || "??"}</p>
         </Wrapper>
         <Wrapper style={{ width: "240px" }}>
           <Row>
@@ -559,7 +559,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
         {(phase === "ready") && <>
           <PetSprite src={myPetImg || qustion_icon} x={350} y={200} width={150} height={150} trigger={isEnmAttack} />
           <MessageUI x={200} y={300} width={300} height={275}
-            msg2={`이름: ${myPetInfo?.name || "??"}\n레벨: ${myPetInfo?.level.level || 1}\n체력: ${myPetInfo?.spec.hp || "??"}\n공격력: ${myPetInfo?.spec.atk || "??"}\n방어력: ${myPetInfo?.spec.def ?? "??"}\n스피드: ${myPetInfo?.spec.spd || "??"}`} />
+            msg2={`이름: ${myPetInfo?.name || "??"}\n레벨: ${myPetInfo?.level?.level || 1}\n체력: ${myPetInfo?.spec.hp || "??"}\n공격력: ${myPetInfo?.spec.atk || "??"}\n방어력: ${myPetInfo?.spec.def ?? "??"}\n스피드: ${myPetInfo?.spec.spd || "??"}`} />
           <Text text='vs' x={600} y={450} anchor={0.5} style={{ fontSize: 60, fontWeight: 'bold', }} ></Text>
           <PetSprite src={enmImg || qustion_icon} x={850} y={200} width={150} height={150} trigger={isEnmAttack} />
           <MessageUI x={700} y={300} width={300} height={275}
@@ -609,12 +609,10 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
         </React.Fragment>)
       })}</>}
       {phase === "end" && <>
-        <TransparentBtn onClick={() => { setPhase("ready") }}>다시하기</TransparentBtn>
         <TransparentBtn onClick={() => { setPhase("review") }}>틀린 문제 점검하기</TransparentBtn>
         <TransparentBtn onClick={() => { exitGame() }}>종료하기</TransparentBtn>
       </>}
       {phase === "review" && <>
-        <TransparentBtn onClick={() => { setPhase("ready") }}>다시하기</TransparentBtn>
         <TransparentBtn onClick={() => { exitGame() }}>종료하기</TransparentBtn>
       </>}
     </StyledCommandUI >

@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet"
 import styled from "styled-components"
 
 //24.01.09
-const ScoreWrapper = (props) => {
+const ScoreWrapper = ({ leadershipScore, careerScore, sincerityScore, coopScore, attitudeScore, coin, handleChange, disabled }) => {
   return (
     <Container>
       <Helmet>
@@ -16,34 +16,34 @@ const ScoreWrapper = (props) => {
       <FlexWrapper>
         <div>
           <label htmlFor="act_leadership">리더십 <i className="fa-solid fa-hand-fist"></i></label>
-          <input id="act_leadership" type="number" min="0" max="8" disabled={props.disabled}
-            value={props.leadershipScore} onChange={props.handleChange}></input>
+          <input id="act_leadership" type="number" min="0" max="8" disabled={disabled}
+            value={leadershipScore} onChange={handleChange}></input>
         </div>
         <div>
           <label htmlFor="act_career">진로 <i className="fa-solid fa-gears"></i></label>
-          <input id="act_career" type="number" min="0" max="8" disabled={props.disabled}
-            value={props.careerScore} onChange={props.handleChange}></input>
+          <input id="act_career" type="number" min="0" max="8" disabled={disabled}
+            value={careerScore} onChange={handleChange}></input>
         </div>
         <div>
           <label htmlFor="act_sincerity">학업 <i className="fa-solid fa-bolt"></i></label>
-          <input id="act_sincerity" type="number" min="1" max="8" disabled={props.disabled}
-            value={props.sincerityScore} onChange={props.handleChange}></input>
+          <input id="act_sincerity" type="number" min="1" max="8" disabled={disabled}
+            value={sincerityScore} onChange={handleChange}></input>
         </div>
         <div>
           <label htmlFor="act_coop">협동성 <i className="fa-solid fa-hat-wizard"></i></label>
-          <input id="act_coop" type="number" min="0" max="8" disabled={props.disabled}
-            value={props.coopScore} onChange={props.handleChange}></input>
+          <input id="act_coop" type="number" min="0" max="8" disabled={disabled}
+            value={coopScore} onChange={handleChange}></input>
         </div>
         <div>
           <label htmlFor="act_attitude">태도 <i className="fa-solid fa-shield-halved"></i></label>
-          <input id="act_attitude" type="number" min="0" max="8" disabled={props.disabled}
-            value={props.attitudeScore} onChange={props.handleChange}></input>
+          <input id="act_attitude" type="number" min="0" max="8" disabled={disabled}
+            value={attitudeScore} onChange={handleChange}></input>
         </div>
       </FlexWrapper>
       <div className="money">
         <label htmlFor="act_coin">리아 <i className="fa-solid fa-coins"></i></label>
-        <input id="act_coin" type="number" min="0" max="100" disabled={props.disabled}
-          value={props.coin} onChange={props.handleChange}></input>
+        <input id="act_coin" type="number" min="0" max="100" disabled={disabled}
+          value={coin || 0} onChange={handleChange}></input>
       </div>
     </Container>
   )
@@ -53,7 +53,6 @@ const Container = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
-  margin: 20px auto;
   text-align: center;
   color: black;
   input {

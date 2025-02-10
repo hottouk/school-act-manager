@@ -13,10 +13,10 @@ import ActivityMain from './pages/activity/ActivityMain';
 import ActivityFormPage from './pages/activity/ActivitityFormPage';
 import ActivitySortPage from './pages/activity/ActivitySortPage';
 //교과반
-import ClassroomMainPage from './pages/classRoom/ClassroomMainPage';
-import ClassroomDetailsPage from './pages/classRoom/ClassroomDetailsPage';
-import StudentDetailPage from './pages/classRoom/StudentDetailPage';
-import ClassAllStudentsPage from './pages/classRoom/ClassAllStudentsPage';
+import ClassroomMainPage from './pages/classroom/ClassroomMainPage';
+import ClassroomDetailsPage from './pages/classroom/ClassroomDetailsPage';
+import StudentDetailPage from './pages/classroom/StudentDetailPage';
+import ClassAllStudentsPage from './pages/classroom/ClassAllStudentsPage';
 //담임반
 import HomeroomDetailsPage from './pages/homeroom/HomeroomDetailsPage';
 import HomeStudentDetailsPage from './pages/homeroom/HomeStudentDetailsPage';
@@ -36,6 +36,7 @@ import Lab from './pages/lab/Lab';
 import HomeSeatChange from './pages/homeroom/HomeSeatChangePage';
 import QuizMainPage from './pages/quizBattle/QuizMainPage';
 import QuizActiFormPage from './pages/quizBattle/QuizActiFormPage';
+import SchoolMainPage from './pages/school/SchoolMainPage';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -84,6 +85,8 @@ function App() {
           <Route path="/quiz" element={uid ? <QuizMainPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/quiz_setting" element={uid ? <QuizFormPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
+          {/* 학교 */}
+          <Route path="/school" element={uid ? <SchoolMainPage /> : <Navigate replace={true} to='/login' />} />
           {/* 새소식 관리 */}
           <Route path="/news" element={uid ? <WhatsNewPage /> : <Navigate replace={true} to='/' />} />
           {/* 로그인/회원가입 */}

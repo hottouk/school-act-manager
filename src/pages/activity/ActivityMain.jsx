@@ -17,6 +17,7 @@ import useFetchRtActiData from '../../hooks/RealTimeData/useFetchRtActiData'
 import { subjectGroupList } from '../../data/subjectGroupList'
 //css
 import styled from 'styled-components'
+import useFireUserData from '../../hooks/Firebase/useFireUserData'
 //todo 영어 퀴즈 활동 실시간 구독 시 초기화 안되어서 하나씩 추가됨.
 //24.09.37 subjList update -> 24.12.18 코드 정리 및 담임반 섹션 추가
 const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 나의 활동, 활동 관리 - 전체 활동)
@@ -32,12 +33,13 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   const [subjectList, setSubjectList] = useState(null);
   useEffect(() => { extractSubjFromData() }, [subjectGroupList])
   //모든 활동, 업어온 활동, 내 활동
-  const { fetchAlActiiBySubjList, fetchCopiedActiList } = useFetchFireData();
-  const [_allActiList, setAllActiList] = useState(null)
-  const [_mySubjActiList, setMySubjActiList] = useState(null)
-  const [_myHomeActiList, setMyHomeActiList] = useState(null)
-  const [_myQuizActiList, setMyQuizActiList] = useState(null);
-  const [copiedList, setCopiedList] = useState(null)
+  const { fetchAlActiiBySubjList } = useFetchFireData();
+  const { fetchCopiesData } = useFireUserData();
+  const [_allActiList, setAllActiList] = useState([]);
+  const [_mySubjActiList, setMySubjActiList] = useState([]);
+  const [_myHomeActiList, setMyHomeActiList] = useState([]);
+  const [_myQuizActiList, setMyQuizActiList] = useState([]);
+  const [copiedList, setCopiedList] = useState([]);
   //실시간 활동 정보
   const { subjActiList, homeActiList, quizActiList } = useFetchRtActiData(user.uid);
   useEffect(() => {
@@ -64,7 +66,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   //진입 경로에 따라 다른 데이터 가져오기
   const fetchDataByLocation = () => {
     if (!location.state) { //활동관리-나의활동
-      fetchCopiedActiList().then((copiedList) => { setCopiedList(copiedList) })
+      fetchCopiesData().then((copiedList) => { setCopiedList(copiedList) })
       setIsLoading(false)
     } else { //활동관리-전체 활동-과목 선택
       fetchAlActiiBySubjList(selectedSubj).then((subjActiList) => {
@@ -103,7 +105,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
         </TabBtnContainer>
         <SearchBar title={isLoading ? "데이터를 서버에서 불러오는 중 입니다." : `서버에 총 ${_allActiList ? _allActiList.length : 0}개의 활동이 등록되어 있습니다.`}
           type="allActi" list={_allActiList} setList={setAllActiList} />
-        <CardList dataList={_allActiList} type="activity" comment="아직 활동이 없습니다. 활동을 생성해주세요" />
+        <CardList dataList={_allActiList} type="activity" comment="아직 활동이 없습니다. 활동을 생성해주세요" onClick={handleActiOnClick} />
         <HorizontalBannerAd />
       </>}
     </Container>

@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux'
-import { collection, doc, getDoc, runTransaction, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore'
+import { collection, doc, getDoc, runTransaction, updateDoc, arrayUnion, arrayRemove, getDocFromCache, getDocFromServer } from 'firebase/firestore'
 import { appFireStore } from '../../firebase/config'
 
 //user collection 함수 모음
@@ -68,19 +68,37 @@ const useFireUserData = () => {
         //2. 수정
         const updatedPetList = userDoc.data().myPetList.map((pet) => {
           if (pet.petId === pId) {
-            const { monId, petId, classId, quizRecord } = pet
-            console.log(pet)
-            const newPetInfo = { ...info, classId, monId, petId, quizRecord }
-            return { ...newPetInfo }
+            const newPetInfo = { ...info, ...pet }
+            return newPetInfo
           };
           return pet;
         })
-        console.log(updatedPetList)
         transaction.update(userDocRef, { myPetList: updatedPetList });
       });
     } catch (error) {
       console.log(error)
       window.alert(error)
+    }
+  }
+
+  //퍼온 Acti 리스트 - 활동관리(250210) 이동
+  const fetchCopiesData = async () => {
+    const userRef = doc(db, "user", String(user.uid))
+    try {
+      const userDoc = await getDocFromCache(userRef);
+      if (!userDoc.exists()) { throw new Error("유저 정보 캐시에서 찾지 못했습니다."); }
+      if (!userDoc.data().copiedList) { throw new Error("업어온 활동 캐시에서 찾지 못함."); }
+      return userDoc.data().copiedList;
+    } catch (error) {
+      console.log("서버에서 불러옵니다.")
+      try {
+        const userDoc = await getDocFromServer(userRef);
+        if (!userDoc.exists()) { throw new Error("해당 유저를 찾지 못했습니다."); }
+        return userDoc.data().copiedActiList || []
+      } catch (err) {
+        window.alert(err.message)
+        console.log(err)
+      }
     }
   }
 
@@ -96,7 +114,7 @@ const useFireUserData = () => {
     }
   }
 
-  return ({ fetchUserData, updateUser: updateUserArrayInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo })
+  return ({ fetchUserData, updateUser: updateUserArrayInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData })
 }
 
 export default useFireUserData

@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import Select from 'react-select';
 import { Spinner } from 'react-bootstrap';
+import { setEditHomeroomStudent } from '../../store/allStudentsSlice'
+import styled from 'styled-components'
 //페이지
 import TitledChkBoxList from './TitledChkBoxList'
 //컴포넌트
@@ -14,27 +16,24 @@ import SmallTitle from '../../components/Title/SmallTitle'
 import PetImg from '../../components/PetImg'
 import EmptyResult from '../../components/EmptyResult';
 import ByteCalculator from '../../components/Etc/ByteCalculator';
+import TransparentBtn from '../../components/Btn/TransparentBtn';
+import UpperTab from '../../components/UpperTab';
+import SubNav from '../../components/Bar/SubNav';
 //hooks
 import useChatGpt from '../../hooks/useChatGpt'
 import useClassAuth from '../../hooks/useClassAuth';
 import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData'
-//전역변수
-import { setEditHomeroomStudent } from '../../store/allStudentsSlice'
+import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetData';
 //css
-import styled from 'styled-components'
 import AnimOpacity from '../../anim/AnimOpacity'
 import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity';
+import AnimRotation from '../../anim/AnimRotation';
 //이미지
 import arrows_icon from '../../image/icon/arrows_icon.png';
-import AnimRotation from '../../anim/AnimRotation';
-import TransparentBtn from '../../components/Btn/TransparentBtn';
-import UpperTab from '../../components/UpperTab';
-import SubNav from '../../components/Bar/SubNav';
-import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetData';
+import PetInfoSection from '../classroom/PetInfoSection';
 
 //2024.10.16 생성-> 회전효과 추가(24.12.01) -> 정보 통신 일원화(25.01.04)
 const HomeStudentDetailPage = () => {
-  //----1.변수부--------------------------------
   //유저 인증
   const { log } = useClassAuth();
   if (log) { window.alert(log) }
@@ -95,7 +94,7 @@ const HomeStudentDetailPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  //----2.함수부--------------------------------
+  //------함수부------------------------------------------------  
   //학생 이동 버튼 클릭(24.12.1)
   const handleMoveOnClick = (direction) => {
     let student
@@ -182,10 +181,17 @@ const HomeStudentDetailPage = () => {
     } else { window.alert("gpt 생성 결과가 없습니다.") }
   }
   //선택 초기화
-  const handleInitBtnOnClick = () => {
+  const handleInitOnClick = () => {
     setSelectedSpec('')
     setDesiredMajor('')
   }
+
+  //마지막 다음 버튼
+  const handleLastNextOnClick = () => {
+    let check = Object.values(_selectedSpec)?.filter((arrItem) => { return arrItem.length > 0 }).length > 0
+    if (check) { setStep("last") } else { window.alert("특성이 하나도 선택되지 않았습니다.") }
+  };
+  //학생 삭제
   const handleDelBtnOnClick = () => {
     if (window.confirm('학생을 삭제하시겠습니까? 삭제한 학생은 복구할 수 없습니다.')) {
       deleteStudent(id, studentId) //데이터 통신
@@ -197,13 +203,12 @@ const HomeStudentDetailPage = () => {
     <SubNav styles={{ padding: "10px" }}>
       <Select placeholder="학생 바로 이동"
         options={allStudentList.map((student) => { return { label: `${student.studentNumber} ${student.writtenName || '미등록'}`, value: student.id, key: student.id } })}
-        onChange={(event) => { moveStudent(allStudentList.find((student) => student.id === event.value)) }}
-      />
+        onChange={(event) => { moveStudent(allStudentList.find((student) => student.id === event.value)) }} />
     </SubNav>
     {/* 컨테이너 */}
     <Container $isVisible={isVisible}>
-      <CenterWrapper><ArrowBtn deg={225} onClick={handleBackOnClick} /></CenterWrapper>
-      <FlexWrapper>
+      <Row style={{marginBottom:"25px"}}><ArrowBtn deg={225} onClick={handleBackOnClick} /></Row>
+      <Row style={{ gap: "10px" }}>
         {(user.isTeacher && nthStudent !== 0 && (step === ''))
           && <ArrowWrapper><ArrowBtn deg={135} onClick={() => { handleMoveOnClick("prev") }} /></ArrowWrapper>}
         <AnimRotation isAnimating={isAnimating}>
@@ -213,19 +218,8 @@ const HomeStudentDetailPage = () => {
               <UpperTab className="tab2" value={tab} left="94px" onClick={() => { handleTabOnClick(2) }}>자율</UpperTab>
               <UpperTab className="tab3" value={tab} left="156px" onClick={() => { handleTabOnClick(3) }}>진로</UpperTab>
             </TabWrapper>
-            <StyledGrayPannel>
-              <FlexWrapper>
-                <ImgWrapper>
-                  <PetImg level={expAndLevel.level} onClick={() => { }} />
-                  <p>레벨: {expAndLevel.level}</p>
-                </ImgWrapper>
-                <InfoWrapper>
-                  <p>학번: {studentNumber}</p>
-                  <p>이름: {writtenName || '미등록'}</p>
-                  <p>직업: 미정</p>
-                </InfoWrapper>
-              </FlexWrapper>
-            </StyledGrayPannel>
+            {/* 펫 정보 */}
+            <PetInfoSection subject={""} studentNumber={studentNumber} isModifiying={false} writtenName={writtenName} />
             <StyledGrayPannel>
               {/* 개요 */}
               {(step === '') && <IntroWrapper>
@@ -238,40 +232,40 @@ const HomeStudentDetailPage = () => {
                   placeholder='내용이 없습니다.'
                   disabled={!isEditable} />
                 <ByteWrapper>
-                  <FlexWrapper $marginTop="0">
+                  <Row $marginTop="0">
                     {isEditable && <SmallBtn btnName="저장" btnOnClick={handleSaveOnClick} />}
                     {isEditable && <SmallBtn btnName="취소" btnOnClick={handleCancelOnClick} />}
                     {!isEditable && <SmallBtn btnName="작성" btnOnClick={() => { setIsEditable(!isEditable) }} />}
-                  </FlexWrapper>
+                  </Row>
                   <ByteCalculator str={record} styles={{ width: "70px" }} />
                 </ByteWrapper>
-                {tab === 1 && <MainBtn btnName="행동종합 의견 작성 도우미" btnOnClick={() => { setStep("first") }}></MainBtn>}
+                {tab === 1 && <Row style={{ justifyContent: "center" }}><MainBtn onClick={() => { setStep("first") }}>행동종합 의견 작성 도우미</MainBtn></Row>}
               </IntroWrapper>}
               {/* 1단계 */}
               <AnimOpacity isVisible={step === "first"} content={
                 <><p>1/3단계: 학생의 학업역량에 해당되는 것에 체크해주세요.</p>
                   <TitledChkBoxList step={step} selectedSpec={_selectedSpec} setSelectedSpec={setSelectedSpec} />
-                  <FlexWrapper>
-                    <MainBtn btnName="이전" btnOnClick={() => { setStep('') }}></MainBtn>
-                    <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
-                    <MainBtn btnName="선택 초기화" btnOnClick={handleInitBtnOnClick}></MainBtn>
-                    <MainBtn btnName="다음" btnOnClick={() => { setStep("second") }}></MainBtn>
-                  </FlexWrapper></>} />
+                  <BtnWrapper>
+                    <MainBtn onClick={() => { setStep('') }}>이전</MainBtn>
+                    <MainBtn onClick={handleCurSaveOnClick}>현재 특성 저장</MainBtn>
+                    <MainBtn onClick={handleInitOnClick}>선택 초기화</MainBtn>
+                    <MainBtn onClick={() => { setStep("second") }}>다음</MainBtn>
+                  </BtnWrapper></>} />
               {/* 2단계 */}
               <AnimOpacity isVisible={step === "second"} content={
                 <><p>2/3단계: 학생의 공동체 역량에 해당되는 것에 체크해주세요.</p>
                   <TitledChkBoxList step={step} selectedSpec={_selectedSpec} setSelectedSpec={setSelectedSpec} />
-                  <FlexWrapper>
-                    <MainBtn btnName="이전" btnOnClick={() => { setStep("first") }}></MainBtn>
-                    <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
-                    <MainBtn btnName="선택 초기화" btnOnClick={handleInitBtnOnClick}></MainBtn>
-                    <MainBtn btnName="다음" btnOnClick={() => { setStep("third") }}></MainBtn>
-                  </FlexWrapper></>} />
+                  <BtnWrapper>
+                    <MainBtn onClick={() => { setStep("first") }}>이전</MainBtn>
+                    <MainBtn onClick={handleCurSaveOnClick}>현재 특성 저장</MainBtn>
+                    <MainBtn onClick={handleInitOnClick}>선택 초기화</MainBtn>
+                    <MainBtn onClick={() => { setStep("third") }}>다음</MainBtn>
+                  </BtnWrapper></>} />
               {/* 3단계 */}
               <AnimOpacity isVisible={step === "third"} content={<>
                 <p>3/3단계: 학생의 진로 역량에 해당되는 것에 체크해주세요.</p>
                 <TitledChkBoxList step={step} selectedSpec={_selectedSpec} setSelectedSpec={setSelectedSpec} />
-                <FlexWrapper>
+                <Row style={{ gap: "10px", margin: "10px auto" }}>
                   <SmallTitle title={"희망 진로"} />
                   <input type="text" value={desiredMajor} onChange={(event) => { setDesiredMajor(event.target.value) }} style={{ borderRadius: "5px", height: "28px", flexGrow: "1" }} disabled={isFreeze} />
                   {!isFreeze && <button
@@ -286,20 +280,13 @@ const HomeStudentDetailPage = () => {
                     }}>저장</button>}
                   {isFreeze && <button
                     onClick={() => { setIsFreeze(false); }}>수정</button>}
-                </FlexWrapper>
-                <FlexWrapper>
-                  <MainBtn btnName="이전" btnOnClick={() => { setStep("second") }}></MainBtn>
-                  <MainBtn btnName="현재 특성 저장" btnOnClick={() => { handleCurSaveOnClick() }}></MainBtn>
-                  <MainBtn btnName="선택 초기화" btnOnClick={handleInitBtnOnClick}></MainBtn>
-                  <MainBtn
-                    btnName="다음"
-                    btnOnClick={() => {
-                      let check = Object.values(_selectedSpec)?.filter((arrItem) => { return arrItem.length > 0 }).length > 0
-                      if (check) { setStep("last") } else {
-                        window.alert("특성이 하나도 선택되지 않았습니다.")
-                      }
-                    }}></MainBtn>
-                </FlexWrapper>
+                </Row>
+                <BtnWrapper>
+                  <MainBtn onClick={() => { setStep("second") }}>이전</MainBtn>
+                  <MainBtn onClick={handleCurSaveOnClick}>현재 특성 저장</MainBtn>
+                  <MainBtn onClick={handleInitOnClick}>선택 초기화</MainBtn>
+                  <MainBtn onClick={handleLastNextOnClick}>다음</MainBtn>
+                </BtnWrapper>
               </>} />
               {/* 최종 생성단계 */}
               <AnimOpacity isVisible={step === "last"} content={<>
@@ -319,33 +306,32 @@ const HomeStudentDetailPage = () => {
                     return null
                   })}
                 </SelectedSpecWrapper>}
-                <FlexWrapper $marginTop="20px" $marginBottom="20px"><img src={arrows_icon} alt="아래 화살표" /></FlexWrapper>
+                <Row $marginTop="20px" $marginBottom="20px"><img src={arrows_icon} alt="아래 화살표" /></Row>
                 <HeadTitle>GPT 생성 의견</HeadTitle>
-                {gptTempRes === null && <EmptyResult comment="gpt 생성 결과가 없습니다." styles={{ border: "1px solid #949192;", maxWidth: "100%" }} />}
-                {gptTempRes === "loading" && <FlexWrapper><Spinner /></FlexWrapper>}
+                {gptTempRes === null && <EmptyResult comment="gpt 생성 결과가 없습니다." styles={{ border: "1px solid rgba(120,120,120,0.5);", maxWidth: "100%" }} />}
+                {gptTempRes === "loading" && <Row><Spinner /></Row>}
                 <AnimMaxHightOpacity isVisible={gptTempRes === "complete"} content={<StyledTextarea value={gptTempAnswer} disabled />} />
                 <ByteWrapper>
                   <SmallBtn btnName="반영" btnOnClick={handleJoinBtnOnClick} />
                   <ByteCalculator str={gptTempAnswer} styles={{ width: "70px" }} />
                 </ByteWrapper>
-                <FlexWrapper $marginTop="20px" $marginBottom="15px"><img src={arrows_icon} alt="아래 화살표" /></FlexWrapper>
+                <Row $marginTop="20px" $marginBottom="15px"><img src={arrows_icon} alt="아래 화살표" /></Row>
                 <HeadTitle>최종 행동특성 및 종합 의견</HeadTitle>
                 <StyledTextarea value={record} onChange={handleTextAreaOnChange} />
                 <ByteCalculator str={record} styles={{ width: "70px" }} />
-                <FlexWrapper>
-                  <MainBtn btnName="이전 단계로" btnOnClick={() => { setStep("third") }}></MainBtn>
-                  <MainBtn btnName="gpt 생성하기" btnOnClick={handleGptOnClick}></MainBtn>
-                  <MainBtn btnName="행발 저장하기" btnOnClick={handleSaveOnClick}></MainBtn>
-                </FlexWrapper>
+                <BtnWrapper>
+                  <MainBtn onClick={() => { setStep("third") }}>이전 단계로</MainBtn>
+                  <MainBtn onClick={handleGptOnClick}>gpt 생성</MainBtn>
+                  <MainBtn onClick={handleSaveOnClick}>행발 저장</MainBtn>
+                </BtnWrapper>
               </>} />
             </StyledGrayPannel>
           </StyledBackgroundPannel>
         </AnimRotation>
         {(user.isTeacher && nthStudent !== allStudentList.length - 1 && (step === ''))
           && <ArrowWrapper><ArrowBtn deg={315} onClick={() => { handleMoveOnClick("next") }} /></ArrowWrapper>}
-      </FlexWrapper>
-      <FlexWrapper><TransparentBtn id="delete_btn" btnOnClick={handleDelBtnOnClick} btnName="삭제" />
-      </FlexWrapper>
+      </Row>
+      <BtnWrapper><TransparentBtn id="delete_btn" onClick={handleDelBtnOnClick} >삭제</TransparentBtn>      </BtnWrapper>
     </Container ></>
   )
 }
@@ -360,25 +346,20 @@ const Container = styled.div`
   @media screen and (max-width: 767px){
   }
 `
-const CenterWrapper = styled.div`
+const Row = styled.div`
   display: flex;
   justify-content: center;
 `
-const FlexWrapper = styled.div`
-  position: relative;
-  margin-top: ${(props) => props.$marginTop || "30px"};
-  margin-bottom: ${(props) => props.$marginBottom || "0"};
-  display: flex;
-  gap: 10px;
-  justify-content: center;
+const BtnWrapper = styled(Row)`
+  margin-top: 20px;
+  gap: 100px;
 `
 const TabWrapper = styled.div`
   position: relative;
   top: -48px;
   left: -15px;
 `
-const ArrowWrapper = styled.div`
-  display: flex;
+const ArrowWrapper = styled(Row)`
   align-items: center;
 `
 const StyledBackgroundPannel = styled.div`
@@ -426,7 +407,7 @@ const ImgWrapper = styled.div`
     width: 120px;
     height: 120px;
     padding: 7px;
-    border: 1px solid black;
+    border: 1px solid rgba(120, 120, 120, 0.5);
     border-radius: 60px;
     background-color: white;
   }
@@ -448,8 +429,9 @@ const HeadTitle = styled.h5`
   font-weight: bold;
 `
 const SelectedSpecWrapper = styled.div`
+  margin: 10px 0;
   padding: 5px;
-  border: 1px solid gray;
+  border: 1px solid rgba(120, 120, 120, 0.5);
   border-radius: 5px;
 `
 const StyledSpec = styled.div`

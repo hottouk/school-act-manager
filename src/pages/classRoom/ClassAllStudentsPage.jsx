@@ -1,22 +1,21 @@
 import React, { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useReactToPrint } from "react-to-print"
+import styled from "styled-components"
 //컴포넌트
 import ExportAsExcel from "../../components/ExportAsExcel"
 import SmallBtn from "../../components/Btn/SmallBtn"
 import SubNav from "../../components/Bar/SubNav"
+import BackBtn from "../../components/Btn/BackBtn"
+import PrintBtn from "../../components/Btn/PrintBtn"
 //hooks
 import useClassAuth from "../../hooks/useClassAuth"
 import useGetByte from "../../hooks/useGetByte"
 import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData"
 import useClientHeight from "../../hooks/useClientHeight"
 import useFetchRtMyStudentData from "../../hooks/RealTimeData/useFetchRtMyStudentListData"
-//css
-import styled from "styled-components"
 //이미지
 import recycleIcon from "../../image/icon/recycle_icon.png"
-import BackBtn from "../../components/Btn/BackBtn"
-import PrintBtn from "../../components/Btn/PrintBtn"
 
 //2024.10.27(실시간 학생 데이터로 변경, writtenName, accRecord useState로 관리, transition 추가)
 const ClassAllStudents = () => {
@@ -114,7 +113,6 @@ const ClassAllStudents = () => {
           <Header>수정</Header>
         </TableHeaderWrapper>
         {(studentDataList && studentDataList.length > 0) && studentDataList.map((student, index) => {
-          console.log(student)
           let key = student.id
           let isModifying = (thisModifying === key)
           let studentNumber = student.studentNumber

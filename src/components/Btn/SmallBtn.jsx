@@ -2,23 +2,22 @@ import React from 'react'
 import styled from 'styled-components'
 
 //2024.07.26 샘플
-const SmallBtn = ({ id, btnColor, hoverBtnColor, margin, btnOnClick, onClick, btnName, fontColor, children }) => {
+const SmallBtn = ({ id, btnColor, hoverBtnColor, btnOnClick, onClick, btnName, fontColor, children }) => {
   //SearchBar에 사용
   return (
-    <StyledBtn
+    <StyledButton
       type="button"
       id={id}
       tabIndex={-1}
       $backgroundColor={btnColor || "#3454d1"}
       $fontColor={fontColor || "#fff"}
       $hoverBackgroundColor={hoverBtnColor || "#1366d6"}
-      $margin={margin || "auto"}
       onClick={btnOnClick || onClick}
     >{btnName || children || "샘플"}
-    </StyledBtn>
+    </StyledButton>
   )
 }
-const StyledBtn = styled.button`
+const StyledButton = styled.button`
   appearance: none;
   backface-visibility: hidden;
   background-color: ${(props) => props.$backgroundColor};
@@ -26,7 +25,6 @@ const StyledBtn = styled.button`
   border-style: none;
   box-shadow: none;
   box-sizing: border-box;
-  margin: ${(props) => props.$margin};
   color:  ${(props) => props.$fontColor};
   display: flex;
   justify-content: center;

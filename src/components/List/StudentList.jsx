@@ -3,27 +3,37 @@ import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import styled from "styled-components"
 //컴포넌트
-import MonListItem from './ListItem/MonListItem'
+import MonListItem from './ListItem/SquareListItem'
 //이미지
 import plus from "../../image/icon/plus.png"
 
-//2024.09.23(2차 수정: 모달 창, 제목 상위 page 이동) -> 250126(리펙토링)
-const StudentList = ({ petList, plusBtnOnClick, classType }) => {
+//2024.09.23(2차 수정: 모달 창, 제목 상위 page 이동) -> 250126(리펙토링) -> 학생 클릭 분기(250207)
+const StudentList = ({ petList, plusBtnOnClick, classType, setIsPetInfoModal, setPetInfo }) => {
   const user = useSelector(({ user }) => { return user });
   //반 id
   const classId = useParams();
   const navigate = useNavigate();
 
   //유저 상호작용
-  const handleImgOnClick = (pet) => {
-    if (classType === "subject") { navigate(`/classrooms/${classId.id}/${pet.id}`) }
-    else { navigate(`/homeroom/${classId.id}/${pet.id}`) }
+  const handleOnClick = (pet) => {
+    const petId = pet.id
+    const masterId = pet.master?.studentId
+    if (user.isTeacher) { // 교사
+      if (classType === "subject") { navigate(`/classrooms/${classId.id}/${petId}`) }
+      else { navigate(`/homeroom/${classId.id}/${pet.id}`) }
+    } else {              // 학생
+      if (user.uid === masterId) { navigate(`/classrooms/${classId.id}/${petId}`) }
+      else {
+        setPetInfo(pet)
+        setIsPetInfoModal(true)
+      }
+    }
   }
 
   return (
     <Container>
-      {petList.map((pet) => {
-        return (<MonListItem key={pet.id} item={pet} onClick={handleImgOnClick} type="student" />)
+      {petList.map((pet, index) => {
+        return (<MonListItem key={pet.id} item={pet} index={index} onClick={handleOnClick} type="student" />)
       })}
       {/* 학생 추가 버튼 */}
       {user.isTeacher && <StyledPlusImg src={plus} onClick={() => { plusBtnOnClick() }} />}

@@ -1,11 +1,22 @@
 import { appFireStore } from '../../firebase/config'
 import { addDoc, collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 
-//25.01.22 생성
+//250122 생성
 const useFirePetData = () => {
   const db = appFireStore;
 
-  //5. fetch 클래스 petList 
+  //3. Pet 업데이트(250207)
+  const updatePetInfo = async (klassId, petId, info) => {
+    const petRef = doc(db, "classRooms", klassId, "students", petId);
+    try {
+      await updateDoc(petRef, { ...info })
+    } catch (error) {
+      console.log(error)
+      window.alert(error)
+    }
+  }
+
+  //2. fetch 클래스 petList 
   const fetchPets = async (klassId) => {
     let petColRef = collection(db, "classRooms", klassId, "students");
     try {
@@ -27,7 +38,7 @@ const useFirePetData = () => {
     }
   }
 
-  return ({ addPet, fetchPets })
+  return ({ addPet, fetchPets, updatePetInfo })
 }
 
 export default useFirePetData

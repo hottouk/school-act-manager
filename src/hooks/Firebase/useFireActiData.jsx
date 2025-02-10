@@ -12,8 +12,10 @@ const useFireActiData = () => {
   const colRef = collection(db, "activities")
 
   //모든 활동(250125) Read //todo 캐시처리
-  const fetchAllActis = async (field, value) => {
-    const q = query(colRef, value, where(field, "==", value))
+  const fetchAllActis = async (field, value, field2 = null, value2 = null) => {
+    let q = query(colRef, value, where(field, "==", value))
+    if (field2 && value2) { q = query(q, where(field2, "==", value2)); }
+    
     try {
       const querySnapshot = await getDocs(q);
       return querySnapshot.docs.map(
@@ -44,25 +46,25 @@ const useFireActiData = () => {
 
   //과목 클라스 활동 조합(250125)
   const getSubjKlassActiList = async (id, subject) => {
-    const allActiList = await fetchAllActis("uid", id);       //교과 + 담임 + 퀴즈
-    const myData = await fetchUserData(user.uid);
-    const copied = myData.copiedActiList || [];               //업어온 활동
-    const combined = allActiList.concat(copied)
+    const allActiListSnap = await fetchAllActis("uid", id);       //교과 + 담임 + 퀴즈
+    const myDataSnap = await fetchUserData(user.uid);
+    const copied = myDataSnap.copiedActiList || [];               //업어온 활동
+    const combined = allActiListSnap.concat(copied)
     const filtered = filterActiBySubject(combined, subject)   //같은 과목만
     return sortActiType(filtered)
   }
 
-  //todo actiForm에서만 사용됨, 수정할것
+  //todo actiForm에서만 사용됨, 수정요함
   const deleteActi = async (actId) => {
     const actiDocRef = doc(db, "activities", actId)
     const teacherDocRef = doc(db, "user", user.uid)
     let homeworkList;
     await runTransaction(db, async (transaction) => {
-      let actiDoc = await transaction.get(actiDocRef)
-      let teacherDoc = await transaction.get(teacherDocRef)
-      if (!actiDoc.exists()) { throw new Error("활동 읽기 에러") }
-      if (!teacherDoc.exists()) { throw new Error("교사 읽기 에러") }
-      homeworkList = teacherDoc.data().homeworkList //없으면 undefined
+      let actiDocSnap = await transaction.get(actiDocRef)
+      let teacherDocSnap = await transaction.get(teacherDocRef)
+      if (!actiDocSnap.exists()) { throw new Error("활동 읽기 에러") }
+      if (!teacherDocSnap.exists()) { throw new Error("교사 읽기 에러") }
+      homeworkList = teacherDocSnap.data().homeworkList //없으면 undefined
       if (homeworkList) {
         homeworkList = homeworkList.filter((item) => {
           let itemId = item.id.split("/")[1]

@@ -16,16 +16,18 @@ import normal003 from "../image/myPet/normal/pet_normal_003.png"
 import normalEgg from "../image/myPet/normal/normalEgg.png"
 import questionMark from "../image/icon/question.png"
 import styled from 'styled-components'
+//영어
 import { monsterWaterList } from "../data/monsterList"
 import useFetchStorageImg from "../hooks/Game/useFetchStorageImg"
 import { useEffect, useState } from "react"
 //25.01.25 변경 중..
-const PetImg = ({ subject, level, onClick, styles }) => {
+const PetImg = ({ subject, level, onClick, path, styles }) => {
   const width = styles?.width || "134px"
+  const height = styles?.height || "134px"
   const margin = styles?.margin || "0"
+  const { getPathList, fetchImgUrl } = useFetchStorageImg();
 
   useEffect(() => { getImage(); }, [subject, level])
-  const { getPathList, fetchImgUrl } = useFetchStorageImg();
   const [imgSrc, setImgSrc] = useState(null);
   const imageMap = {
     국어: {
@@ -50,20 +52,27 @@ const PetImg = ({ subject, level, onClick, styles }) => {
 
   const getImage = () => {
     if (level === undefined || !subject) return;
-    if (subject === "영어") {
-      const pathList = getPathList(monsterWaterList[0].step)
-      fetchImgUrl(pathList[level], setImgSrc)
+    if (path) {
+      fetchImgUrl(path, setImgSrc)
     } else {
-      return setImgSrc(imageMap[subject][level] || imageMap["기본"][level]);
+      switch (subject) {
+        case "영어":
+          const pathList = getPathList(monsterWaterList[0].step)
+          fetchImgUrl(pathList[level], setImgSrc)
+          break;
+        default:
+          return setImgSrc(imageMap[subject][0] || imageMap["기본"][level]);
+      }
     }
   };
 
   return (
-    imgSrc ? (<img src={imgSrc} alt="펫이미지" onClick={() => { onClick() }} style={{ width: width, margin: margin }} />) : <LoadingImg src={questionMark} alt="로딩중" style={{ width: width, margin: margin }} />
+    subject ? (<img src={imgSrc} alt="펫이미지" onClick={() => { onClick() }} style={{ width: width, height: height, margin: margin }} />)
+      : <UnknownImg src={questionMark} alt="물음표" onClick={() => { onClick() }} style={{ width: width, height: height, margin: margin }} />
   )
 }
 
-const LoadingImg = styled.img`
+const UnknownImg = styled.img`
   width: 134px;
   padding: 20px;
 `

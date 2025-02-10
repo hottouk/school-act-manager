@@ -9,6 +9,7 @@ const useFireTransaction = () => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const userColRef = collection(db, "user")
+  const userDocRef = doc(userColRef, user.uid)
   const { makeUniqueArrWithEle, replaceItem } = useGetRidOverlap()
   const { makeAccRec } = useAcc();
 
@@ -16,7 +17,7 @@ const useFireTransaction = () => {
   const confirmDenialTransaction = async (info) => {
     const userRef = doc(db, "user", user.uid);
     await runTransaction(db, async (transaction) => {
-      const userDoc = await transaction.get(userRef);
+      const userDoc = await transaction.get(userDocRef);
       //1. 읽기
       if (!userDoc.exists()) { throw new Error("유저 정보 없음"); }
       const myKlassList = userDoc.data().myClassList || [];

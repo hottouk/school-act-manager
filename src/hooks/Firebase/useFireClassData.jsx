@@ -1,14 +1,43 @@
 import { appFireStore, timeStamp } from '../../firebase/config'
 import { useSelector } from 'react-redux'
-import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
-import { useState } from 'react'
+import { addDoc, collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 
 const useFireClassData = () => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const colRef = collection(db, "classRooms")
 
-  //좌석배치도 저장하기(241210)
+  //클래스 추가(250205 이동)
+  const addClassroom = async (klassInfo, studentPetList) => {
+    const { type, subject } = klassInfo
+    try {
+      const createdTime = timeStamp.fromDate(new Date());
+      const classRef = await addDoc(colRef, { ...klassInfo, createdTime });
+      const petColRef = collection(classRef, "students");
+      const promises = studentPetList.map(studentPet => {
+        let studentPetInfo
+        if (type === "subject") { studentPetInfo = { ...studentPet, subject: subject } }
+        else if (type === "homeroom") { studentPetInfo = { ...studentPet, type } }
+        return addDoc(petColRef, studentPetInfo);
+      })
+      await Promise.all(promises);
+    } catch (error) {
+      window.alert("클래스 생성 에러: ", error)
+    }
+  }
+
+  //클래스 수정(250205 생성)
+  const updateClassroom = async (klassInfo, id) => {
+    const klassDocRef = doc(colRef, id);
+    const { title, intro, notice } = klassInfo;
+    try {
+      updateDoc(klassDocRef, { classTitle: title, intro, notice })
+    } catch (error) {
+      window.alert("정보 업데이트 에러: ", error);
+    }
+  }
+
+  //좌석배치도 저장(241210)
   const addSeatMap = async (id, info) => {
     let { seatMapsList, positionList, objPositionList, studentList, objInfoList } = info
     let docRef = doc(colRef, id)
@@ -18,16 +47,16 @@ const useFireClassData = () => {
         seatInfo: [...seatMapsList, { studentList, positionList, objPositionList, objInfoList, createdTime }]
       })
     } catch (error) {
-      window.alert("Error updating document: ", error);
+      window.alert("정보 업데이트 에러: ", error);
     }
   }
 
-  //좌석배치도 삭제하기(241210)
+  //좌석배치도 삭제(241210)
   const deleteSeatMap = async (id, list, index) => {
     let deleted = list.filter((_, i) => i !== index)
     let docRef = doc(colRef, id)
     try { await updateDoc(docRef, { seatInfo: [...deleted] }) }
-    catch (error) { window.alert("Error updating document: ", error); }
+    catch (error) { window.alert("정보 업데이트 에러: ", error); }
   }
 
   //클래스 불러오기(250122)
@@ -53,7 +82,7 @@ const useFireClassData = () => {
     return { subjClassList, homeroomClassList }
   }
 
-  return ({ addSeatMap, deleteSeatMap, fetchClassrooms, sortClassrooms })
+  return ({ addClassroom, updateClassroom, addSeatMap, deleteSeatMap, fetchClassrooms, sortClassrooms })
 }
 
 export default useFireClassData

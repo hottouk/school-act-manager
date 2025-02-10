@@ -348,6 +348,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
               attitudeScore={attitudeScore}
               coin={coin}
               disabled={!isModified} />
+
             {/*교사 버튼 영역 */}
             <BtnWrapper>
               {!state ? <> {/*활동 첫 생성 */}
@@ -376,6 +377,8 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
           </fieldset>
         </StyledForm>}
     </Container>
+
+    {/* 모달  */}
     <Wait3SecondsModal
       show={timerModalShow} />
     {(state && isExtraRecModalShown) &&
@@ -461,7 +464,7 @@ const LevelWrapper = styled.div`
 `
 const BtnWrapper = styled.div`
   width: 90%;
-  margin: 0 auto;
+  margin: 15px auto;
   display: flex;
   flex-direction: column;
   align-items: center;

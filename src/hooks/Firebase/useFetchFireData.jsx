@@ -33,27 +33,6 @@ const useFetchFireData = () => {
     }
   }
 
-  //7. 퍼온 Acti 리스트 - 활동관리
-  const fetchCopiedActiList = async () => {
-    let userDocRef = doc(db, "user", String(user.uid))
-    try {
-      let userDoc = await getDocFromCache(userDocRef);
-      if (!userDoc.exists()) { throw new Error("유저 정보 캐시에서 찾지 못했습니다."); }
-      if (!userDoc.data().copiedList) { throw new Error("업어온 활동 캐시에서 찾지 못함."); }
-      return userDoc.data().copiedList;
-    } catch (error) {
-      console.log("서버에서 불러옵니다.")
-      try {
-        let userDoc = await getDocFromServer(userDocRef);
-        if (!userDoc.exists()) { throw new Error("해당 유저를 찾지 못했습니다."); }
-        return userDoc.data().copiedActiList || []
-      } catch (err) {
-        window.alert(err.message)
-        console.log(err)
-      }
-    }
-  }
-
   //6. 과목 전체 Acti 리스트 - 활동관리
   const fetchAlActiiBySubjList = async (sbuj) => {
     try {
@@ -99,7 +78,7 @@ const useFetchFireData = () => {
 
   //1-1. DB에서 검색(20250127 삭제)
 
-  return ({ db, fetchDoc, fetchSubDoc, fetchTeacherList, fetchAlActiiBySubjList, fetchCopiedActiList })
+  return ({ db, fetchDoc, fetchSubDoc, fetchTeacherList, fetchAlActiiBySubjList })
 }
 
 export default useFetchFireData

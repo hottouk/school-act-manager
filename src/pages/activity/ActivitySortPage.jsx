@@ -32,8 +32,7 @@ const ActivitySortPage = () => {
   const actiSortList = [
     { id: "subjectActi", legend: "교과용 활동", subTitle: "과세특 기록용", imgNumber: 1 },
     { id: "homeroomActi", legend: "담임반 활동", subTitle: "자율, 진로, 봉사활동", imgNumber: 2 },
-    { id: "quizGameActi", legend: "게임 활동", subTitle: "단어, 퀴즈, 교과 관련", imgNumber: 2 },
-    { id: "clubActi", legend: "동아리 활동", subTitle: "동아리 활동 기록용", imgNumber: 3, ban: true }
+    { id: "quizGameActi", legend: "게임 활동", subTitle: "단어, 퀴즈, 교과 관련", imgNumber: 3 },
   ]
 
   return (
@@ -64,10 +63,6 @@ const Container = styled.div`
 const Row = styled.div`
   display: flex;
   justify-content: center;
-`
-const StyledTitle = styled.h3`
-  text-align: center;
-  margin-bottom: 5%;
 `
 const BtnWrapper = styled.div`
   margin-top: 5%;

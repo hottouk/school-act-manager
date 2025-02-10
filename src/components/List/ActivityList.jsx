@@ -1,43 +1,33 @@
 //라이브러리
-import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 //컴포넌트
-import MonListItem from './ListItem/MonListItem'
+import MonListItem from './ListItem/SquareListItem'
 
-//학생 전용 250126(리펙토링 중..)
-const ActivityList = ({ actiList, classInfo }) => {
-  const navigate = useNavigate();
+//리펙토링(250126)
+const ActivityList = ({ actiList, setIsActiInfoModal, setActiInfo }) => {
 
   const handleOnClick = (acti) => {
-    navigate(`/activities/${acti.id}`)
+    setActiInfo(acti)
+    setIsActiInfoModal(true)
   }
 
   return (
     <Container>
-      <StyledListContainer>
-        {actiList.map((acti) => {
-          return (<MonListItem key={acti.id} item={acti} onClick={() => { }} type="acti" />)
-        })}
-      </StyledListContainer>
+      {actiList.map((acti) => {
+        return (<MonListItem key={acti.id} item={acti} onClick={() => { handleOnClick(acti) }} type="acti" />)
+      })}
     </Container >
   )
 }
-const Container = styled.div`
-  box-sizing: border-box;  
-  width: 100%;
-  padding: 5px;
-  h4 {
-    display: flex;
-    justify-content: center;
-    margin: 10px auto;
-  }
-`
-const StyledListContainer = styled.ul`
+const Container = styled.ul`
   display: flex;
   flex-wrap: wrap;
+  margin: 0;
+  padding: 5px 16px;
   list-style: none;
   @media screen and (max-width: 767px){
     padding: 0;
   }
 `
+
 export default ActivityList
