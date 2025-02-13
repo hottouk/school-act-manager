@@ -1,22 +1,9 @@
 //라이브러리
 import React, { useEffect, useRef, useState } from 'react';
-import { Stage, Text } from '@pixi/react';
 import { Spinner } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 //컴포넌트
-import ActionBallUI from '../../components/Game/ActionBallUI';
-import BasicAttack from '../../components/Game/Skills/BasicAttack';
-import BasicDefense from '../../components/Game/Skills/BasicDefense';
-import BasicRest from '../../components/Game/Skills/BasicRest';
-import Background from '../../components/Game/Background';
-import HPBarUI from '../../components/Game/HPBarUI';
-import PetSprite from '../../components/Game/PetSprite';
-import MessageUI from '../../components/Game/MessageUI';
-import QuizUI from '../../components/Game/QuizUI';
-import Countdown from '../../components/Game/Countdown';
-import BattleReport from '../../components/Game/BattleReport';
-import MarkingUI from '../../components/Game/MarkingUI';
 import TransparentBtn from '../../components/Btn/TransparentBtn';
 import AnimatedProgressBar from '../../components/ProgressBar';
 import ReviewSection from './ReviewSection';

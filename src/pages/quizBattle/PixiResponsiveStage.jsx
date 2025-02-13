@@ -1,6 +1,4 @@
-//라이브러리
 import { Stage, Text } from '@pixi/react';
-//컴포넌트
 import Background from '../../components/Game/Background';
 import MessageUI from '../../components/Game/MessageUI';
 import qustion_icon from '../../image/icon/question.png'
@@ -15,7 +13,6 @@ import BasicRest from '../../components/Game/Skills/BasicRest';
 import MarkingUI from '../../components/Game/MarkingUI';
 import BattleReport from '../../components/Game/BattleReport';
 
-//250213 생성
 const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef, curQuiz, marking, score, actionBall,
 	myPetImg, myPetInfo, myHP, myCurHP, isMyAttack, isMyDefense, isMyRest, myPetBackImg,
 	enmImg, monsterInfo, enmLevel, enemyHP, enemyCurHP, enemyAttck, enemyDef, enmSpd, isEnmAttack, isEnmDefense, isEnmRest,
@@ -103,7 +100,7 @@ const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef
 				<ActionBallUI x={0} y={window.innerHeight * 0.69} width={window.innerWidth} height={60} correctAnswer={actionBall} />
 				{/* 상대 펫몬 */}
 				<HPBarUI x={window.innerWidth * 0.32} y={window.innerHeight * 0.1} width={150} height={12} curHp={enemyCurHP} maxHp={enemyHP} />
-				<PetSprite src={enmImg || qustion_icon} x={window.innerWidth * 0.5} y={window.innerHeight * 0.2} width={175} height={175} trigger={isEnmAttack} movingPoint={-35} />
+				<PetSprite src={enmImg || qustion_icon} x={window.innerWidth * 0.5} y={window.innerHeight * 0.2} width={230} height={230} trigger={isEnmAttack} movingPoint={-35} />
 			</>}
 			{/* 상대 이펙트 중 공격 */}
 			<BasicAttack x={window.innerWidth * 0.5} y={window.innerHeight * 0.69} trigger={isEnmAttack} />
