@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 //컴포넌트
 import MidBtn from '../../components/Btn/MidBtn.jsx';
 import MainBtn from '../../components/Btn/MainBtn.jsx'
-import MultiSelector from '../../components/MultiSelector';
+import MultiSelector from '../../components/MultiSelector.jsx';
 import SelectedDialogModal from '../../components/Modal/SelectedDialogModal.jsx';
 //hooks
 import useAcc from '../../hooks/useAcc.jsx';
@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 import styled from "styled-components"
 
 const MainSelector = ({ type, studentList, actiList, classId, setIsPerfModalShow }) => {
-  //----1.변수부--------------------------------
   //전역 변수
   const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })
   useEffect(() => {
@@ -104,8 +103,9 @@ const MainSelector = ({ type, studentList, actiList, classId, setIsPerfModalShow
           </div>
         </StyledAccContainer>
         <BtnWrapper>
-          <MainBtn btnOnClick={() => { setIsCompleteModalShow(true) }} btnName="선택 완료" />
-          {setIsPerfModalShow && <MainBtn btnOnClick={() => { setIsPerfModalShow(true) }} btnName="수행 평가 관리" />}
+          <MainBtn onClick={() => { setIsCompleteModalShow(true) }}>선택 완료</MainBtn>
+          {setIsPerfModalShow && <MainBtn onClick={() => { setIsPerfModalShow(true) }}>수행 평가 관리</MainBtn>}
+          <MainBtn onClick={() => { navigate('allStudents') }} >반 전체 세특 보기</MainBtn>
         </BtnWrapper>
       </Container>
       {/* 선택 완료 모달 */}

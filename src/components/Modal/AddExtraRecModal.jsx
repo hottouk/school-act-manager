@@ -15,9 +15,8 @@ import xImage from '../../image/icon/x_btn.png'
 import styled from 'styled-components';
 import ByteCalculator from '../Etc/ByteCalculator';
 
-//2024.07.19 --> 11.23 6개로 수정
+//2024.07.19 --> 11.23 6개로 수정 --> 디자인정리(250210)
 const AddExtraRecModal = (props) => {
-  //----1.변수부--------------------------------
   //ex record
   const [extraRecList, setExtraRecList] = useState(['']); // 초기 입력 필드 하나를 설정; 얘가 늘어나면 input text개수 알아서 늘어남.
   //데이터 통신
@@ -40,7 +39,7 @@ const AddExtraRecModal = (props) => {
     setExtraRecList(gptAnswerList);
   }, [gptAnswer]) //문구 textarea에 넣기
 
-  //----2.함수부--------------------------------
+  //------함수부------------------------------------------------  
   const handleKeyDown = (index, event) => { //textarea 내 tab 키
     if (event.key === 'Tab' && index === extraRecList.length - 1) {
       event.preventDefault();
@@ -97,13 +96,12 @@ const AddExtraRecModal = (props) => {
       backdrop="static"
       keyboard={false}
     >
-      <Modal.Header closeButton>
-        <Modal.Title>돌려쓰기 문구 추가</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <p>현재 문구</p>
-        <StyledCurRec>{props.acti.record}</StyledCurRec>
-        <p>돌려 쓸 문구를 추가해주세요. 최대 6개까지 추가 가능합니다.</p>
+      <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>돌려쓰기 문구 추가</Modal.Header>
+      <Modal.Body style={{ backgroundColor: "#efefef" }}>
+        <CurWrapper>
+          <AchivTap $top={-28}>현재 문구</AchivTap>
+          <StyledCurRec>{props.acti.record}</StyledCurRec>
+        </CurWrapper>
         <GridContainer>
           <TableHeaderWrapper>
             <StyledHeader>순번</StyledHeader>
@@ -112,6 +110,7 @@ const AddExtraRecModal = (props) => {
             <StyledHeader>삭제</StyledHeader>
           </TableHeaderWrapper>
           {extraRecList.map((record, index) => {
+
             return <GridRowWrapper key={index} >
               <GridItem $columns={"1/2"}><span>{index + 1}</span></GridItem>
               <GridItem $columns={"2/3"}>
@@ -131,13 +130,13 @@ const AddExtraRecModal = (props) => {
             <Spinner animation="border" role="status">
               <span className="sr-only">Loading...</span>
             </Spinner></div> :
-          <MainBtn btnName="GPT 요청하기" btnOnClick={handleGptClick} />}
+          <Row style={{ justifyContent: "center", marginTop: "20px" }}><MainBtn btnName="chat GPT" btnOnClick={handleGptClick} /></Row>}
       </Modal.Body>
-      <Modal.Footer>
-        <ModalBtn btnName="저장" btnColor="#3454d1" hoverColor="blue" onClick={handleConfirm} />
-        <ModalBtn btnName="취소" btnColor="#9b0c24" hoverColor="red" onClick={() => { props.onHide(); }} />
+      <Modal.Footer >
+        <ModalBtn onClick={() => { props.onHide() }}>취소</ModalBtn>
+        <ModalBtn styles={{ btnColor: "rgba(52, 84, 209, 0.8)", hoverColor: "#3454d1" }} onClick={handleConfirm}>저장</ModalBtn>
       </Modal.Footer>
-    </Modal>
+    </Modal >
   )
 }
 const GridContainer = styled.div`
@@ -146,6 +145,9 @@ const GridContainer = styled.div`
   grid-template-rows: 40px;
   margin: 0 auto;
   padding: 0;
+`
+const Row = styled.div`
+  display: flex;
 `
 // lastChild의 범위를 명확하게 하기 위함.
 const TableHeaderWrapper = styled.div` 
@@ -156,7 +158,6 @@ const StyledHeader = styled.div`
   background-color: #3454d1;
   color: white;
   padding: 10px;
-  font-weight: bold;
   justify-content: center;
   &: first-child {
     border-top-left-radius: 5px;
@@ -170,9 +171,9 @@ const GridRowWrapper = styled.div`
 `
 const GridItem = styled.div`
   grid-column: ${(props) => props.$columns};
-  background-color: #efefef;
+  background-color: #ddd;
   color: black;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(120, 120, 120, 0.3);
   border-radius: 5px;
   text-align: center;
   display: flex;
@@ -193,8 +194,22 @@ const GridItem = styled.div`
 const StyledCurRec = styled.div`
   border: 1px solid black;
   border-radius: 10px;
+  border-top-left-radius: 0;
   padding: 10px;
   margin-bottom: 10px;
+`
+const CurWrapper = styled.div`
+  position: relative;
+  margin: 25px 0;
+`
+const AchivTap = styled.div`
+  border-bottom: none;
+  background-color: #3454d1;
+  color: white;
+  position: absolute;
+  top: ${({ $top }) => $top}px;
+  padding: 2px 15px;
+  border-radius: 10px 10px 0 0;
 `
 
 export default AddExtraRecModal

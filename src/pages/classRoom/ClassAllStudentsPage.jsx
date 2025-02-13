@@ -1,22 +1,21 @@
 import React, { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useReactToPrint } from "react-to-print"
+import styled from "styled-components"
 //컴포넌트
 import ExportAsExcel from "../../components/ExportAsExcel"
 import SmallBtn from "../../components/Btn/SmallBtn"
 import SubNav from "../../components/Bar/SubNav"
+import BackBtn from "../../components/Btn/BackBtn"
+import PrintBtn from "../../components/Btn/PrintBtn"
 //hooks
 import useClassAuth from "../../hooks/useClassAuth"
 import useGetByte from "../../hooks/useGetByte"
 import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData"
 import useClientHeight from "../../hooks/useClientHeight"
 import useFetchRtMyStudentData from "../../hooks/RealTimeData/useFetchRtMyStudentListData"
-//css
-import styled from "styled-components"
 //이미지
 import recycleIcon from "../../image/icon/recycle_icon.png"
-import BackBtn from "../../components/Btn/BackBtn"
-import PrintBtn from "../../components/Btn/PrintBtn"
 
 //2024.10.27(실시간 학생 데이터로 변경, writtenName, accRecord useState로 관리, transition 추가)
 const ClassAllStudents = () => {
@@ -30,7 +29,7 @@ const ClassAllStudents = () => {
   const navigate = useNavigate();
   const classId = params.id
   //학생 정보 데이터 통신
-  const { studentList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber")
+  const { studentDataList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber")
   //학생 속성
   const { updateStudent } = useAddUpdFireData("classRooms")
   const { getByteLengthOfString } = useGetByte();
@@ -64,7 +63,7 @@ const ClassAllStudents = () => {
   }
   //활동 순서 랜덤 섞기
   const handleShuffleBtnOnClick = (id) => {
-    let _student = studentList.find(student => student.id === id)
+    let _student = studentDataList.find(student => student.id === id)
     let _actiList = _student.actList
     let newAccRec = (_actiList && _actiList.length > 0)
       ? shuffleOrder(_actiList).map(acti => { return acti.record }).join(" ")
@@ -84,7 +83,7 @@ const ClassAllStudents = () => {
   //활동 순서 전원 섞기
   const handleShuffleAllBtnOnClick = () => {
     if (window.confirm("이 단계에서 추가로 작성한 기록은 모두 사라집니다. 진행하시겠습니까?")) {
-      studentList.map((student) => {
+      studentDataList.map((student) => {
         let _actiList = student.actList
         let accRecord = (_actiList && _actiList.length > 0)
           ? shuffleOrder(_actiList).map(acti => { return acti.record }).join(" ")
@@ -104,17 +103,16 @@ const ClassAllStudents = () => {
         <ExportAsExcel />
         <PrintBtn onClick={() => { handlePrint() }} />
       </SubNav>
-      <StyledGirdContainer ref={printRef}>
+      <GirdContainer ref={printRef}>
         <TableHeaderWrapper>
-          <StyledHeader>연번</StyledHeader>
-          <StyledHeader>학번</StyledHeader>
-          <StyledHeader>이름</StyledHeader>
-          <StyledHeader>생기부</StyledHeader>
-          <StyledHeader>Byte</StyledHeader>
-          <StyledHeader>수정</StyledHeader>
+          <Header>연번</Header>
+          <Header>학번</Header>
+          <Header>이름</Header>
+          <Header>생기부</Header>
+          <Header>Byte</Header>
+          <Header>수정</Header>
         </TableHeaderWrapper>
-        {(studentList && studentList.length > 0) && studentList.map((student, index) => {
-          console.log(student)
+        {(studentDataList && studentDataList.length > 0) && studentDataList.map((student, index) => {
           let key = student.id
           let isModifying = (thisModifying === key)
           let studentNumber = student.studentNumber
@@ -146,7 +144,7 @@ const ClassAllStudents = () => {
             </StyledGridItem>
           </React.Fragment>
         })}
-      </StyledGirdContainer >
+      </GirdContainer >
     </Container>
   )
 }
@@ -176,7 +174,7 @@ const StyledShfBtn = styled.img`
     transition: background-color 0.5s ease-in-out;
   }
 `
-const StyledGirdContainer = styled.div`
+const GirdContainer = styled.div`
   margin: 50px auto;
   display: grid;
   justify-content: center;
@@ -192,7 +190,7 @@ const StyledGirdContainer = styled.div`
 const TableHeaderWrapper = styled.div` 
   display: contents;
 `
-const StyledHeader = styled.div`
+const Header = styled.div`
   display: flex;
   background-color: #3454d1;
   color: white;

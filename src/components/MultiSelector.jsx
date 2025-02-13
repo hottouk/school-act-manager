@@ -53,9 +53,8 @@ let MultiSelector = (
   let options = []
   if (studentList) {
     studentList.map((student) => {
-      let name = '미등록'
-      let number = student.studentNumber
-      if (student.writtenName) { name = student.writtenName }
+      const name = student.writtenName || '미등록'
+      const number = student.studentNumber
       return (options.push({ value: student.id, label: `${number} ${name}` }))
     })
   }

@@ -13,27 +13,30 @@ import ActivityMain from './pages/activity/ActivityMain';
 import ActivityFormPage from './pages/activity/ActivitityFormPage';
 import ActivitySortPage from './pages/activity/ActivitySortPage';
 //교과반
-import ClassroomMainPage from './pages/classRoom/ClassroomMainPage';
-import ClassroomDetailsPage from './pages/classRoom/ClassroomDetailsPage';
-import StudentDetailPage from './pages/classRoom/StudentDetailPage';
-import ClassAllStudentsPage from './pages/classRoom/ClassAllStudentsPage';
+import ClassroomMainPage from './pages/classroom/ClassroomMainPage';
+import ClassroomDetailsPage from './pages/classroom/ClassroomDetailsPage';
+import StudentDetailPage from './pages/classroom/StudentDetailPage';
+import ClassAllStudentsPage from './pages/classroom/ClassAllStudentsPage';
 //담임반
 import HomeroomDetailsPage from './pages/homeroom/HomeroomDetailsPage';
 import HomeStudentDetailsPage from './pages/homeroom/HomeStudentDetailsPage';
 import HomeClassAllStudentsPage from './pages/homeroom/HomeClassAllStudentsPage';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassroomMakePage from './pages/classSetting/ClassroomMakePage';
-import News from './pages/main/News';
+import WhatsNewPage from './pages/main/WhatsNewPage';
 import Homework from './components/Homework';
-import UserMain from './pages/student/UserMain';
+import UserMainPage from './pages/user/UserMainPage';
 import { useSelector } from 'react-redux';
 import { Helmet } from "react-helmet";
 //단어 배틀
-import WordForm from './pages/wordBattle/WordForm';
+import QuizFormPage from './pages/quizBattle/QuizFormPage';
 //관리자
 import MasterPage from './pages/main/MasterPage';
 import Lab from './pages/lab/Lab';
 import HomeSeatChange from './pages/homeroom/HomeSeatChangePage';
+import QuizMainPage from './pages/quizBattle/QuizMainPage';
+import QuizActiFormPage from './pages/quizBattle/QuizActiFormPage';
+import SchoolMainPage from './pages/school/SchoolMainPage';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -76,12 +79,16 @@ function App() {
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
           <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomMakePage /> : <Navigate replace={true} to='/' />} />
           {/* 학생 관리 */}
-          <Route path="/users" element={uid ? <UserMain /> : <Navigate replace={true} to='/login' />} />
-          {/* 단어장 관리 */}
+          <Route path="/users" element={uid ? <UserMainPage /> : <Navigate replace={true} to='/login' />} />
+          {/* 퀴즈 관리 */}
           <Route path="/lab" element={uid ? <Lab /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/words_setting" element={uid ? <WordForm /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/quiz" element={uid ? <QuizMainPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/quiz_setting" element={uid ? <QuizFormPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
+          {/* 학교 */}
+          <Route path="/school" element={uid ? <SchoolMainPage /> : <Navigate replace={true} to='/login' />} />
           {/* 새소식 관리 */}
-          <Route path="/news" element={uid ? <News /> : <Navigate replace={true} to='/' />} />
+          <Route path="/news" element={uid ? <WhatsNewPage /> : <Navigate replace={true} to='/' />} />
           {/* 로그인/회원가입 */}
           <Route path="/login" element={!uid ? <LoginPage /> : <Navigate replace={true} to='/' />} />
           <Route path="/login/email" element={!uid ? <EmailSignupPage /> : <Navigate replace={true} to='/' />} />

@@ -16,7 +16,6 @@ import useSetUser from '../../hooks/useSetUser';
 //이미지
 import unknown from '../../image/icon/unkown_icon.png'
 import FindSchoolSelect from '../FindSchoolSelect';
-import SmallBtn from '../Btn/SmallBtn';
 
 //241124 1차 수정(코드 정리)
 const MyInfoModal = (props) => {
@@ -130,15 +129,16 @@ const MyInfoModal = (props) => {
       case "delete_img_btn":
         setProfileImg(null)
         break;
-      case "logout_btn":
-        props.onHide()
-        logout()
-        break;
       case "leave_btn":
         window.alert("25년 초에 구현 예정입니다.")
         break;
       default: return;
     }
+  }
+  //로그아웃
+  const handleLogoutOnClick = () => {
+    props.onHide()
+    logout()
   }
 
   return (
@@ -146,7 +146,7 @@ const MyInfoModal = (props) => {
       show={props.show}
       onHide={props.onHide}
       backdrop="static"
-      keyboard={false}>
+    >
       <Modal.Header>
         <Modal.Title>{user.name}님의 정보</Modal.Title>
       </Modal.Header>
@@ -209,7 +209,7 @@ const MyInfoModal = (props) => {
           {!isModifying && <LongW100Btn id="ok_btn" btnName="닫기" btnOnClick={handleOnClick} styles={{ btnColor: "#3454d1", border: "none", color: "white" }} />}
           {isModifying && <LongW100Btn id="save_btn" btnName="저장" btnOnClick={handleOnClick} styles={{ btnColor: "#3454d1", border: "none", color: "white" }} />}
           {isModifying && <LongW100Btn id="cancel_btn" btnName="취소" btnOnClick={handleOnClick} styles={{ btnColor: "#3454d1", border: "none", color: "white" }} />}
-          <LongW100Btn type="logout_btn" btnName="로그아웃" onClick={handleOnClick} styles={{ btnColor: "#3454d1", border: "none", color: "white" }} />
+          <LongW100Btn id="logout_btn" btnName="로그아웃" btnOnClick={handleLogoutOnClick} styles={{ btnColor: "#3454d1", border: "none", color: "white" }} />
         </FlexWrapper>
       </Modal.Footer>
     </Modal>

@@ -1,9 +1,12 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const ModalBtn = (props) => {
+const ModalBtn = ({ onClick, children, styles }) => {
+  const btnColor = styles?.btnColor || "#6c757d"
+  const hoverColor = styles?.hoverColor || "#5c636a"
+
   return (
-    <StyledBtn $btnColor={props.btnColor} $hoverColor={props.hoverColor} onClick={props.onClick}>{props.btnName || "샘플"}</StyledBtn>
+    <StyledBtn $btnColor={btnColor} $hoverColor={hoverColor} onClick={onClick}>{children || "샘플"}</StyledBtn>
   )
 }
 export default ModalBtn
@@ -11,13 +14,14 @@ export default ModalBtn
 const StyledBtn = styled.button`
   appearance: button;
   background-color: ${(props) => { return props.$btnColor || "#1652F0" }};
-  border: 1px solid ${(props) => { return props.$btnColor || "#1652F0" }};;
-  border-radius: 4px;
+  border: none;
+  border-radius: 6px;
   box-sizing: border-box;
   color: #FFFFFF;
   cursor: pointer;
   font-family: Graphik,-apple-system,system-ui,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Fira Sans","Droid Sans","Helvetica Neue",sans-serif;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 500;
   line-height: 1.15;
   overflow: visible;
   padding: 12px 16px;
@@ -38,9 +42,5 @@ const StyledBtn = styled.button`
   &:hover {
     background-color: ${(props) => { return props.$hoverColor || "#0A46E4" }};
     border-color: ${(props) => { return props.$btnColor || "#1652F0" }};
-  }
-  &:active {
-    background-color: #0039D7;
-    border-color: #0039D7;
   }
 `

@@ -6,25 +6,7 @@ const useAddUpdFireData = (collectionName) => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const colRef = collection(db, collectionName)
-  //10. 이거 어디에 쓰는지 보고 없으면 제거
-  const getInfo = async (id, type) => {
-    let info = null
-    switch (type) {
-      case "student":
-        let studentRef = doc(db, "user", id)
-        let studentSnapshot = await getDoc(studentRef)
-        studentSnapshot.then((studentSnap) => {
-          info = studentSnap.data()
-        })
-        break;
-      case "acti":
-        let actiRef = doc(db, "activities", id)
-        info = await getDoc(actiRef);
-        break;
-      default: return
-    }
-    return info
-  }
+  
 
   //10. 공지사항(24.07.16)
   const addNotice = async (noticeList) => {
@@ -55,20 +37,6 @@ const useAddUpdFireData = (collectionName) => {
       console.error(err)
     }
   }
-  //8. 워드set 추가 함수(24.6.22)
-  const addWordSet = async (wordInfo) => {
-    try {
-      let createdTime = timeStamp.fromDate(new Date());
-      let setTitle = wordInfo.title
-      let wordSet = wordInfo.wordSet
-      let result = await addDoc(colRef, { setTitle, wordSet, createdTime, madeBy: user.uid });
-      return result;
-    } catch (err) {
-      window.alert(err.message)
-      console.error(err)
-    }
-  }
-
   //7. 활동 추가 함수
   const addActi = async (activity) => {
     try {
@@ -134,7 +102,7 @@ const useAddUpdFireData = (collectionName) => {
   }
 
   return (
-    { getInfo, addNotice, addActi, updateActi, updateStudent, deleteStudent, addClassroom, addStudent, addWordSet, updateClassListInfo }
+    { addNotice, addActi, updateActi, updateStudent, deleteStudent, addClassroom, addStudent, updateClassListInfo }
   )
 }
 

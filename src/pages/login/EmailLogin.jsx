@@ -7,7 +7,7 @@ const EmailLogin = (props) => {
   const [password, setPassword] = useState('')
   const handleSignIn = () => { }
   return (
-    <StyledForm onSubmit={handleSignIn}>
+    <Container onSubmit={handleSignIn}>
       <LoginWrapper>
         <InputWrapper>
           <StyledInput
@@ -25,17 +25,17 @@ const EmailLogin = (props) => {
             required
           />
         </InputWrapper>
-        <MainBtn type="submit" btnName="로그인" btnOnClick={() => { props.login(email, password) }} />
+        <MainBtn type="submit" onClick={() => { props.login(email, password) }} >로그인</MainBtn>
       </LoginWrapper>
       <TextWrapper>
         <p className="errMsg">{props.emailMsg || null}</p>
         <p onClick={() => { props.openEmailModal(true) }}>쫑일이가 처음이세요? 회원가입</p>
       </TextWrapper>
-    </StyledForm>
+    </Container>
   )
 }
 
-const StyledForm = styled.div`
+const Container = styled.div`
   display: flex;
   flex-direction: column;
 `
@@ -43,6 +43,7 @@ const LoginWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
+  align-items: center;
   padding-top: 20px;
   gap: 20px;
 `
@@ -50,8 +51,10 @@ const InputWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+  gap: 10px;
 `
 const TextWrapper = styled.div`
+  margin-top: 5px;
   p {
     text-align: left;
     color: black;

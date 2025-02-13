@@ -40,6 +40,11 @@ const SearchBar = ({ title, type, list, setList }) => {
           <input type="text" value={keyword} placeholder="반 이름으로 검색" onChange={(e) => { setKeyword(e.target.value) }} />
           <button onClick={() => searchData("classTitle", keyword)}>검색</button>
         </Wrapper>}
+      {type === "school" &&
+        <Wrapper>
+          <input type="text" value={keyword} placeholder="학교 이름" onChange={(e) => { setKeyword(e.target.value) }} />
+          <button onClick={() => searchData("classTitle", keyword)}>검색</button>
+        </Wrapper>}
       <BtnWrapper>
         {type === "acti" && <>
           <SmallBtn btnColor="#3454d1" btnName="과목" btnOnClick={() => { sortDataList("subject") }} />

@@ -1,17 +1,16 @@
 //라이브러리
 import { useEffect, useState } from 'react';
-import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+//컴포넌트
+import ModalBtn from '../Btn/ModalBtn';
 
-//2024.12.19 코드 정리리
+//2024.12.19 코드 정리 -> 250212 디자인 수정
 const SelectedDialogModal = (props) => {
-  //----1.변수부--------------------------------
   //redux 전역변수
   const studentSelected = useSelector(({ studentSelected }) => { return studentSelected })
   const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })
-  //지역 변수
   const [studentList, setStudentList] = useState(null)
   const [actList, setActList] = useState(null)
 
@@ -34,18 +33,17 @@ const SelectedDialogModal = (props) => {
     }
   }, [studentSelected, activitySelected])
 
-  //----2.함수부--------------------------------
-  const handleConfirm = () => {
-    props.onHide()
-    props.writeAccDataOnDB().then(
-      window.alert("입력 되었습니다.")
-    )
-    props.onClearSelect()
+  //------함수부------------------------------------------------  
+  //확인인
+  const handleConfirmOnClick = () => {
+    props.onHide();
+    props.writeAccDataOnDB().then(window.alert("입력 되었습니다."));
+    props.onClearSelect();
   }
 
-  const handleCancel = () => {
-    props.onHide()
-    props.onClearSelect()
+  const handleCancelOnClick = () => {
+    props.onHide();
+    props.onClearSelect();
   }
 
   return (
@@ -53,23 +51,21 @@ const SelectedDialogModal = (props) => {
       show={props.show}
       onHide={props.onHide}
       backdrop="static"
-      keyboard={false}
     >
-      <Modal.Header closeButton>
-        <Modal.Title>학생 생기부 입력 확인</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+      <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>학생 생기부 입력 확인</Modal.Header>
+      <Modal.Body style={{ backgroundColor: "#efefef" }}>
         {(!(studentSelected.length === 0) && !(activitySelected.length === 0))
           ? `${studentList}학생에게 ${actList}활동을 입력하시겠습니까?`
           : '학생이나 활동이 선택되지 않았습니다.'}
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer style={{ backgroundColor: "#efefef" }}>
         {(!(studentSelected.length === 0) && !(activitySelected.length === 0))
           ? <BtnWrapper>
-            <Button variant="secondary" onClick={handleCancel}>취소</Button>
-            <Button variant="primary" onClick={handleConfirm}>확인</Button>
+            <ModalBtn onClick={handleCancelOnClick}>취소</ModalBtn>
+            <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirmOnClick}>확인</ModalBtn>
           </BtnWrapper>
-          : <Button variant="secondary" onClick={handleCancel}>확인</Button>}
+          : <ModalBtn onClick={handleCancelOnClick}>확인</ModalBtn>
+        }
       </Modal.Footer>
     </Modal>
   );
@@ -78,5 +74,5 @@ const SelectedDialogModal = (props) => {
 const BtnWrapper = styled.div`
   display: flex;
   gap: 10px;
-` 
+`
 export default SelectedDialogModal;

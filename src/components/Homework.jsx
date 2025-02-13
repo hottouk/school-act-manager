@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import useStorage from '../hooks/useStorage';
 import styled from 'styled-components';
-import useDoActivity from '../hooks/useDoActivity';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import EmptyResult from './EmptyResult';
@@ -25,7 +24,6 @@ const Homework = ({ activity, homeworkSubmit }) => {
   const [_studentInfo, setStudentInfo] = useState(null)
   const [_actInfo, setActInfo] = useState(null)
   const { submitHomeworkStorage, modifyHomeworkStorage, cancelHomeworkStorage, getImgUrl, getDownloadHomeworkFile } = useStorage()
-  const { submitHomework, cancelSubmission, approveHomework, denyHomework } = useDoActivity()
   const { state } = useLocation() //state는 교사 전용 속성
 
   //2.useEffect
@@ -116,17 +114,6 @@ const Homework = ({ activity, homeworkSubmit }) => {
 
   const handleBtnClick = (event) => {
     switch (event.target.id) {
-      case "confirm_btn":
-        if (window.confirm("과제를 승인하시겠습니까?")) {
-          approveHomework(_studentInfo, _actInfo, _fromWhere)
-        }
-        break;
-      case "deny_btn":
-        let feedback = window.prompt("과제를 반려하시겠습니까? 피드백을 간단히 적어주세요", "완성도 부족")
-        if (feedback) {
-          denyHomework(_thisHomework, feedback)
-        }
-        break;
       case "download_btn":
         if (window.confirm("과제파일을 다운로드 하시겠습니까?")) {
           getDownloadHomeworkFile(_fileName, state.acti.id, state.student.uid)
@@ -138,7 +125,7 @@ const Homework = ({ activity, homeworkSubmit }) => {
         } else {
           if (window.confirm("과제를 제출 하시겠습니까?")) {
             submitHomeworkStorage(_file, activityInfo) //storage에 파일 저장
-            submitHomework(_file, activityInfo, false) //db에 파일 정보 저장
+
             homeworkSubmit(true)
           }
         }
@@ -149,7 +136,7 @@ const Homework = ({ activity, homeworkSubmit }) => {
         } else {
           if (window.confirm("과제를 수정 제출 하시겠습니까?")) {
             modifyHomeworkStorage(_file, _fileName, activityInfo) //storage에 파일 수정
-            submitHomework(_file, activityInfo, true) //db에 파일 정보 수정
+
             homeworkSubmit(true)
           }
         }
@@ -159,7 +146,6 @@ const Homework = ({ activity, homeworkSubmit }) => {
           setPrevImgSrc(null); //화면변경
           setIsHomeworkDone(false);
           cancelHomeworkStorage(_fileName, activityInfo); //Storage에서 삭제
-          cancelSubmission(activityInfo); //DB통신
           setFile(null)
           setFileName(null)
           setNewFileName(null)

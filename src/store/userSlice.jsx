@@ -9,28 +9,8 @@ let user = createSlice({
   reducers: {
     setUser(state, action) {
       return {
-        ...state, //현재 상태
-        uid: action.payload.uid,
-        name: action.payload.name,
-        email: action.payload.email,
-        isTeacher: action.payload.isTeacher,
-        isMaster: action.payload.isMaster,
-        phoneNumber: action.payload.phoneNumber,
-        profileImg: action.payload.profileImg,
-        school: action.payload.school,
-        //학생 전용
-        studentNumber: action.payload.studentNumber,
-        //교실 가입        
-        appliedClassList: action.payload.appliedClassList,
-        joinedClassList: action.payload.joinedClassList,
-        myPetList: action.payload.myPetList,
-        //과제
-        myHomeworkList: action.payload.myHomeworkList,
-        myDoneActList: action.payload.myDoneActList,
-        classNewsList: action.payload.classNewsList,
-        //교사 전용
-        appliedStudentClassList: action.payload.appliedStudentClassList,
-        homeworkList: action.payload.homeworkList
+        ...state,           //현재 상태
+        ...action.payload   //받아온 정보
       };
     },
 

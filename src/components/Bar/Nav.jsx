@@ -4,39 +4,32 @@ import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet'
 import { Badge } from 'react-bootstrap';
+import styled from 'styled-components'
 //컴포넌트
+import DropDownBtn from '../Btn/DropDownBtn';
 import MyInfoModal from '../Modal/MyInfoModal'
 //hooks
-import DropDownBtn from '../Btn/DropDownBtn';
+import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
 //이미지
 import brandLogo from "../../image/icon/h-logo.png";
 import unknown from '../../image/icon/unkown_icon.png'
-//css
-import styled from 'styled-components'
 
-//24.02.22
+//240222(생성) -> 250202(갱신) todo 스타일 최적화
 const Nav = () => {
-  //1. 변수
+  //준비
   const user = useSelector(({ user }) => { return user })
+  const { myUserData } = useFetchRtMyUserData();
   const [_profileImg, setProfileImg] = useState(null)
   //모달
   const [isMyInfoShow, setIsMyInfoShow] = useState(false)
-  const [_isNew, setIsNew] = useState(false) //새소식 아이콘
+  const [isNew, setIsNew] = useState(false) //새소식 아이콘
+  useEffect(() => { bindData(); }, [myUserData])
 
-  useEffect(() => {
+  //------함수부------------------------------------------------ 
+  const bindData = () => {
     setProfileImg(user.profileImg)//프로필 사진
-    if (user.isTeacher) { //교사
-      if ((user.appliedStudentClassList && user.appliedStudentClassList.length > 0) || ((user.homeworkList && user.homeworkList.length > 0))) {
-        setIsNew(true)
-      } else { setIsNew(false) }
-    } else if (!user.isTeacher) { //학생
-      if (user.classNewsList && user.classNewsList.length > 0) {
-        setIsNew(true)
-      } else { setIsNew(false) }
-    }
-  }, [user])
-
-  //2. 함수
+    if (myUserData?.onSubmitList?.length) { setIsNew(true) } else { setIsNew(false) }
+  }
   const handleBtnClick = (event) => {
     switch (event.target.id) {
       case "my_info_btn":
@@ -73,16 +66,18 @@ const Nav = () => {
               { href: "activities", label: "나의 활동" },
               { href: "activities_all", label: "전체 활동", itemState: "acti_all" }]} />
         </li>
-        <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-school"></i>
+        <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-chalkboard"></i>
           <span className="pcOnly">클래스 관리</span></Link></li>
-        {/*todo <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>
-          <span className="pcOnly">사람 찾기</span></Link></li> */}
-        {user.isMaster && <li id="word_btn" ><Link to="/lab"><i className="fa-solid fa-khanda"></i>
+        <li id="class_btn" ><Link to="/quiz"><i className="fa-solid fa-database"></i>
+          <span className="pcOnly">퀴즈 관리</span></Link></li>
+        <li id="class_btn" ><Link to="/school"><i className="fa-solid fa-school"></i>
+          <span className="pcOnly">학교</span></Link></li>
+        {/* {user.isMaster && <li id="lab_btn" ><Link to="/lab"><i className="fa-solid fa-khanda"></i>
           <span className="pcOnly">실험실</span></Link></li>}
         {user.isMaster && <li id="master_btn" ><Link to="/master"><i className="fa-solid fa-key"></i>
-          <span className="pcOnly">마스터</span></Link></li>}
+          <span className="pcOnly">마스터</span></Link></li>} */}
         <li className="news_btn" >
-          {_isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
+          {isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news"><i className="fa-solid fa-bell"></i></Link></li>
         {/* 모바일 전용 */}
         <li className="mobileOnly"><i id="my_info_btn" className="fa-solid fa-user" onClick={handleBtnClick}></i></li>
@@ -96,14 +91,15 @@ const Nav = () => {
       <ul className="menu_container">
         <li id="home_btn"><Link to="/"><i className="fa-solid fa-house"></i>
           <span className="pcOnly">Home</span></Link></li>
-        <li id="acti_btn"><Link to="/activities"><i className="fa-solid fa-scroll"></i>
-          <span className="pcOnly">참여 활동</span></Link></li>
         <li id="class_btn"><Link to="/classRooms"><i className="fa-solid fa-school"></i>
           <span className="pcOnly">참여 클래스</span></Link></li>
+        <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>
+          <span className="pcOnly">교사 찾기</span></Link></li>
         <li className="news_btn">
-          {_isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
+          {isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
           <Link to="/news" ><i className="fa-solid fa-bell" /></Link>
         </li>
+
         {/* 모바일 전용 */}
         <li className="mobileOnly"><i id="my_info_btn" className="fa-solid fa-user" onClick={handleBtnClick}></i></li>
       </ul>

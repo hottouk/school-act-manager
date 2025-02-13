@@ -1,28 +1,27 @@
+//라이브러리
 import { useEffect } from 'react';
 import kakaoBtn from '../../image/login/kakao_login_btn.png'
 import { useLocation } from 'react-router-dom';
-import useLogin from '../../hooks/useLogin';
 import styled from 'styled-components';
+//hooks
+import useLogin from '../../hooks/useLogin';
 
-//2024.07.24
+
+//2024.07.24 생성
 const KakaoSocialLogin = (props) => {
   //1. 변수
   const kakaoClientId = process.env.REACT_APP_KAKAO_JAVASCRIPT_KEY; //id
-  useEffect(() => {                 //1) 초기화
-    if (!window.Kakao.isInitialized()) { window.Kakao.init(kakaoClientId); }
-  }, [])
+  useEffect(() => { if (!window.Kakao.isInitialized()) { window.Kakao.init(kakaoClientId); } }, []) //1) 초기화
   const location = useLocation();
   useEffect(() => {                 //2) 인가 코드
     let searchParams = new URLSearchParams(location.search);
     let code = searchParams.get('code');
-    if (code) fetchTokenAndUserInfo(code).then((userInfo) => {
-      kakaoLogin(userInfo, props.openModal)
-    })
+    if (code) fetchTokenAndUserInfo(code).then((userInfo) => { kakaoLogin(userInfo, props.openModal) })
   }, [location]);
 
   const { kakaoLogin } = useLogin() //3) 최종 처리
 
-  //2. 함수
+  //------함수부------------------------------------------------  
   //1) 토큰 
   const getKakaoToken = async (code) => {//
     let response = await fetch('https://kauth.kakao.com/oauth/token', {
@@ -74,6 +73,7 @@ const KakaoSocialLogin = (props) => {
       console.error('오류 발생', err);
     }
   }
+
   //4) 버튼 클릭
   const handleLogin = () => {
     window.Kakao.Auth.authorize({
@@ -81,9 +81,7 @@ const KakaoSocialLogin = (props) => {
     });
   };
 
-  return (
-    <KakaoLoginBtn src={kakaoBtn} alt="카카오 버튼" onClick={handleLogin}></KakaoLoginBtn>
-  )
+  return (<KakaoLoginBtn src={kakaoBtn} alt="카카오 버튼" onClick={handleLogin}></KakaoLoginBtn>)
 }
 
 const KakaoLoginBtn = styled.img`

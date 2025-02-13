@@ -65,9 +65,9 @@ const ClassSortSelection = () => {
     <Container $clientheight={clientHeight}>
       {(step === "first") && <CardSortForm itemList={classSortList} handleCardBtnClick={handleCardBtnClick} />}
       {(step === "second") && <CardSortForm itemList={howtoMakeList} handleCardBtnClick={handleCardBtnClick} />}
-      <BtnWrapper>
-        <MainBtn btnName="뒤로가기" btnOnClick={() => { navigate('/classrooms') }} />
-      </BtnWrapper>
+      <Row>
+        <MainBtn onClick={() => { navigate('/classrooms') }}>뒤로가기</MainBtn>
+      </Row>
     </Container>
   )
 }
@@ -84,7 +84,9 @@ const Container = styled.div`
     overflow-y: scroll;
   }
 `
-const BtnWrapper = styled.div`
+const Row = styled.div`
+  display: flex;
+  justify-content: center;
   margin-top: 5%;
 `
 export default ClassSortSelection

@@ -12,19 +12,19 @@ import SearchBar from '../../components/Bar/SearchBar'
 import useTeacherAuth from '../../hooks/useTeacherAuth'
 import useClientHeight from '../../hooks/useClientHeight'
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
-import useFetchRtMyActiData from '../../hooks/RealTimeData/useFetchRtMyActiData'
+import useFetchRtActiData from '../../hooks/RealTimeData/useFetchRtActiData'
 //데이터
 import { subjectGroupList } from '../../data/subjectGroupList'
 //css
 import styled from 'styled-components'
-
+import useFireUserData from '../../hooks/Firebase/useFireUserData'
+//todo 영어 퀴즈 활동 실시간 구독 시 초기화 안되어서 하나씩 추가됨.
 //24.09.37 subjList update -> 24.12.18 코드 정리 및 담임반 섹션 추가
 const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 나의 활동, 활동 관리 - 전체 활동)
-  //----1.변수부--------------------------------
   //교사 인증
   const { log } = useTeacherAuth();
   if (log) { window.alert(log) }
-  const user = useSelector(({ user }) => { return user })
+  const user = useSelector(({ user }) => user)
   const navigate = useNavigate()
   //활동관리-전체 활동 선택된 과목
   const [selectedSubj, setSelectedSubj] = useState(null);
@@ -33,17 +33,20 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   const [subjectList, setSubjectList] = useState(null);
   useEffect(() => { extractSubjFromData() }, [subjectGroupList])
   //모든 활동, 업어온 활동, 내 활동
-  const { fetchAlActiiBySubjList, fetchCopiedActiList } = useFetchFireData()
-  const [_allActiList, setAllActiList] = useState(null)
-  const [_mySubjActiList, setMySubjActiList] = useState(null)
-  const [_myHomeActiList, setMyHomeActiList] = useState(null)
-  const [copiedList, setCopiedList] = useState(null)
+  const { fetchAlActiiBySubjList } = useFetchFireData();
+  const { fetchCopiesData } = useFireUserData();
+  const [_allActiList, setAllActiList] = useState([]);
+  const [_mySubjActiList, setMySubjActiList] = useState([]);
+  const [_myHomeActiList, setMyHomeActiList] = useState([]);
+  const [_myQuizActiList, setMyQuizActiList] = useState([]);
+  const [copiedList, setCopiedList] = useState([]);
   //실시간 활동 정보
-  const { subjActiList, homeActiList } = useFetchRtMyActiData()
+  const { subjActiList, homeActiList, quizActiList } = useFetchRtActiData(user.uid);
   useEffect(() => {
     setMySubjActiList(subjActiList)
     setMyHomeActiList(homeActiList)
-  }, [subjActiList, homeActiList])
+    setMyQuizActiList(quizActiList)
+  }, [subjActiList, homeActiList, quizActiList])
   //진입 경로
   const location = useLocation();
   useEffect(() => { fetchDataByLocation() }, [location, selectedSubj])
@@ -63,7 +66,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   //진입 경로에 따라 다른 데이터 가져오기
   const fetchDataByLocation = () => {
     if (!location.state) { //활동관리-나의활동
-      fetchCopiedActiList().then((copiedList) => { setCopiedList(copiedList) })
+      fetchCopiesData().then((copiedList) => { setCopiedList(copiedList) })
       setIsLoading(false)
     } else { //활동관리-전체 활동-과목 선택
       fetchAlActiiBySubjList(selectedSubj).then((subjActiList) => {
@@ -73,18 +76,27 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
     }
   }
 
+  //활동 클릭
+  const handleActiOnClick = (item) => {
+    if (item.subject === "담임") { navigate(`/activities/${item.id}?sort=homeroom`, { state: { acti: item } }) }  //담임
+    else if (item.monster) { navigate(`/activities_setting_quiz`, { state: { ...item } }) }                       //퀴즈
+    else { navigate(`/activities/${item.id}?sort=subject`, { state: { acti: item } }) }                           //교과
+  }
+
   return (
     <Container $clientheight={clientHeight}>
       {/* 교사: 활동관리 - 나의활동 */}
       {(user.isTeacher && !location.state) && <>
-        <SearchBar title="나의 활동" type="acti" list={_mySubjActiList} setList={setMySubjActiList} />
-        <CardList dataList={_mySubjActiList} type="activity" comment="교과 활동이 없습니다. 활동을 생성해주세요" />
+        <SearchBar title="교과 활동" type="acti" list={_mySubjActiList} setList={setMySubjActiList} />
+        <CardList dataList={_mySubjActiList} type="activity" onClick={handleActiOnClick} />
         <HorizontalBannerAd />
         <SearchBar title="담임반 활동" />
-        <CardList dataList={_myHomeActiList} type="activity" comment="담임반 활동이 없습니다. 활동을 생성해주세요" />
+        <CardList dataList={_myHomeActiList} type="activity" onClick={handleActiOnClick} />
         <SearchBar title="업어온 활동" />
-        <CardList dataList={copiedList} type="copiedActi" comment="업어온 활동이 없습니다." />
-        <MainBtn btnOnClick={() => { navigate("/activities_setting") }} btnName="활동 만들기" />
+        <CardList dataList={copiedList} type="copiedActi" />
+        <SearchBar title="퀴즈 활동" />
+        <CardList dataList={_myQuizActiList} type="quizActi" onClick={handleActiOnClick} />
+        <Row><MainBtn onClick={() => { navigate("/activities_setting") }} >활동 만들기</MainBtn></Row>
       </>}
       {/* 교사: 활동관리-전체 활동 */}
       {(user.isTeacher && location.state === "acti_all") && <>
@@ -93,7 +105,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
         </TabBtnContainer>
         <SearchBar title={isLoading ? "데이터를 서버에서 불러오는 중 입니다." : `서버에 총 ${_allActiList ? _allActiList.length : 0}개의 활동이 등록되어 있습니다.`}
           type="allActi" list={_allActiList} setList={setAllActiList} />
-        <CardList dataList={_allActiList} type="activity" comment="아직 활동이 없습니다. 활동을 생성해주세요" />
+        <CardList dataList={_allActiList} type="activity" comment="아직 활동이 없습니다. 활동을 생성해주세요" onClick={handleActiOnClick} />
         <HorizontalBannerAd />
       </>}
     </Container>
@@ -110,6 +122,11 @@ const Container = styled.div`
     padding-bottom: 20px;
     overflow-y: scroll;
   }
+`
+const Row = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
 `
 const TabBtnContainer = styled.div`
   display: flex;

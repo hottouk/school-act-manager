@@ -1,6 +1,6 @@
 const useGetRidOverlap = () => {
 
-  //중복 제거(배열 구성이 obj일때)
+  //중복 제거(배열 구성이 obj일때 - 기존 유지)
   const makeUniqueArrWithEle = (curList, newEle, idName) => {
     let newArr = [...curList, newEle]
     let uArr

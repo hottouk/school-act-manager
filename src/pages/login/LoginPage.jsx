@@ -8,7 +8,6 @@ import SignUpWithEmailModal from '../../components/Modal/SignUpWithEmailModal'
 import useLogin from '../../hooks/useLogin';
 //이미지
 import googleIcon from '../../image/icon/g-logo.png'
-import mainLogo from '../../image/logo.png'
 //css
 import styled from 'styled-components';
 import KakaoSocialLogin from './KakaoLogin';
@@ -16,49 +15,46 @@ import EmailLogin from './EmailLogin';
 
 //24.2.21
 const LoginPage = () => {
-  //1. 변수
   const { err, isPending, emailMsg, googleLogin, emailLogin } = useLogin();
   //모달
-  const [isSnsModalShow, setIsSnsModalShow] = useState(false)
+  const [isSnsModal, setIsSnsModal] = useState(false)
   const [isEmailModalShow, setIsEmailModalShow] = useState(false)
 
   return (
-    <StyledContainer>
-      <StyledSnsLoginDiv>
-        <h3>생기부 쫑알이</h3>
-        <StyledLogo src={mainLogo} alt="메인 로고" />
+    <Container>
+      <Wrapper>
+        <Title>생기부 쫑알이</Title>
         <EmailLogin openEmailModal={setIsEmailModalShow} login={emailLogin} emailMsg={emailMsg} />
-      </StyledSnsLoginDiv>
-      <StyledSnsLoginDiv>
+      </Wrapper>
+      <Wrapper>
         <div className="sns_centered">
           {/* 구글 로그인 */}
-          <StyledGoogleLoginBtn onClick={() => { googleLogin((open) => { setIsSnsModalShow(open) }) }}>
+          <StyledGoogleLoginBtn onClick={() => { googleLogin((open) => { setIsSnsModal(open) }) }}>
             <img src={googleIcon} alt="구글 로고" />구글 로그인
           </StyledGoogleLoginBtn>
           {/* 카카오 */}
-          <KakaoSocialLogin openModal={setIsSnsModalShow} />
+          <KakaoSocialLogin openModal={setIsSnsModal} />
         </div>
         {isPending && <strong>로그인 중 입니다.</strong>}
         {err && <strong>{err}</strong>}
-      </StyledSnsLoginDiv>
+      </Wrapper>
       <p>본 App은 PC 크롬에 최적화 되어 있습니다.</p>
       {/* 모달창 */}
-      {isSnsModalShow && <SignUpWithSnsModal
-        show={isSnsModalShow}
+      {isSnsModal && <SignUpWithSnsModal
+        show={isSnsModal}
         backdrop="static"
-        onHide={() => setIsSnsModalShow(false)}
+        onHide={() => setIsSnsModal(false)}
       />}
       {isEmailModalShow && <SignUpWithEmailModal
         show={isEmailModalShow}
         backdrop="static"
         onHide={() => setIsEmailModalShow(false)}
       />}
-    </StyledContainer >
+    </Container >
   )
 }
-const StyledContainer = styled.div`
+const Container = styled.div`
   box-sizing: border-box;
-  width: 80%;
   margin: 0 auto 50px;
   @media screen and (max-width: 767px){
     width: 100%;
@@ -70,8 +66,7 @@ const StyledContainer = styled.div`
     margin-top: 10px;
   }
 `
-
-const StyledSnsLoginDiv = styled.div`
+const Wrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -91,12 +86,6 @@ const StyledSnsLoginDiv = styled.div`
     gap: 20px;
     width: 70%;
     margin-bottom: 0;
-  }
-  h3 {
-    color: #3454d1;
-    font-weight: bold;
-    text-align: center;
-    width: 100%;
   }
   p {
     margin-top: 12px;
@@ -119,12 +108,11 @@ const StyledSnsLoginDiv = styled.div`
     }
   }
 `
-
-const StyledLogo = styled.img`
-  position: absolute;
-  width: 80px;
-  top: 0;
-  right: 4px;
+const Title = styled.h3`
+  color: #3454d1;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
 `
 const StyledGoogleLoginBtn = styled.button`
   background: white;

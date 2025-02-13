@@ -31,7 +31,7 @@ const HomeClassAllStudentsPage = () => {
   const classId = params.id
   const thisClass = useSelector(({ classSelected }) => { return classSelected }) //반 전역변수
   //학생 정보 데이터 통신
-  const { studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
+  const { studentDataList: studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
   //선택 탭
   const [tab, setTab] = useState(1)
   //현재 행 수정
@@ -91,13 +91,13 @@ const HomeClassAllStudentsPage = () => {
         <ExportAsExcel type="home" />
         <PrintBtn onClick={() => { handlePrint() }} />
       </SubNav>
-      
+
       <StyledGirdContainer ref={printRef}>
-      <TabWrapper >
-        <UpperTab className="tab1" value={tab} onClick={() => { setTab(1) }}>행동특성</UpperTab>
-        <UpperTab className="tab2" value={tab} left="94px" onClick={() => { setTab(2) }}>자율</UpperTab>
-        <UpperTab className="tab3" value={tab}  left="156px" onClick={() => { setTab(3) }}>진로</UpperTab>
-      </TabWrapper>
+        <TabWrapper >
+          <UpperTab className="tab1" value={tab} onClick={() => { setTab(1) }}>행동특성</UpperTab>
+          <UpperTab className="tab2" value={tab} left="94px" onClick={() => { setTab(2) }}>자율</UpperTab>
+          <UpperTab className="tab3" value={tab} left="156px" onClick={() => { setTab(3) }}>진로</UpperTab>
+        </TabWrapper>
         <HeaderWrapper>
           <StyledHeader>연번</StyledHeader>
           <StyledHeader>학번</StyledHeader>

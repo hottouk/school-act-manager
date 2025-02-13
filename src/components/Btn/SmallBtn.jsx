@@ -2,22 +2,22 @@ import React from 'react'
 import styled from 'styled-components'
 
 //2024.07.26 샘플
-const SmallBtn = (props) => {
+const SmallBtn = ({ id, btnColor, hoverBtnColor, btnOnClick, onClick, btnName, fontColor, children }) => {
   //SearchBar에 사용
   return (
-    <StyledBtn
+    <StyledButton
       type="button"
-      id={props.id}
-      $backgroundColor={props.btnColor || "#3454d1"}
-      $fontColor={props.fontColor || "#fff"}
-      $hoverBackgroundColor={props.hoverBtnColor || "#1366d6"}
-      $margin={props.margin || "auto"}
-      onClick={props.btnOnClick}
-    >{props.btnName || "샘플"}
-    </StyledBtn>
+      id={id}
+      tabIndex={-1}
+      $backgroundColor={btnColor || "#3454d1"}
+      $fontColor={fontColor || "#fff"}
+      $hoverBackgroundColor={hoverBtnColor || "#1366d6"}
+      onClick={btnOnClick || onClick}
+    >{btnName || children || "샘플"}
+    </StyledButton>
   )
 }
-const StyledBtn = styled.button`
+const StyledButton = styled.button`
   appearance: none;
   backface-visibility: hidden;
   background-color: ${(props) => props.$backgroundColor};
@@ -25,7 +25,6 @@ const StyledBtn = styled.button`
   border-style: none;
   box-shadow: none;
   box-sizing: border-box;
-  margin: ${(props) => props.$margin};
   color:  ${(props) => props.$fontColor};
   display: flex;
   justify-content: center;

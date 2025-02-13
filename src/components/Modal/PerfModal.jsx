@@ -167,9 +167,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       keyboard={false}
       fullscreen={true}
     >
-      <Modal.Header closeButton>
-        <Modal.Title>수행 평가 관리</Modal.Title>
-      </Modal.Header>
+      <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>수행 평가 관리</Modal.Header>
       <Modal.Body>
         <SelectWrapper>
           <Select
@@ -241,8 +239,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       </Modal.Body>
       <Modal.Footer>
         <BtnWrapper>
-          <ModalBtn btnName="취소" btnColor="#9b0c24" hoverColor="red" onClick={() => { cancelBtnOnClick(); }} />
-          <ModalBtn btnName="저장" btnColor="#3454d1" hoverColor="blue" onClick={() => { saveBtnOnClick(); }} />
+          <ModalBtn onClick={() => { cancelBtnOnClick(); }}>취소</ModalBtn>
+          <ModalBtn onClick={() => { saveBtnOnClick() }} styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} >저장</ModalBtn>
         </BtnWrapper>
       </Modal.Footer>
     </Modal>

@@ -3,21 +3,22 @@ import styled from 'styled-components'
 const LongW100Btn = ({ id, btnName, type, btnOnClick, styles }) => {
   //기본값
   let btnColor = styles?.btnColor || "transparent";
-  let border = styles?.border || "3px solid #949192";
+  let border = styles?.border || "2px solid rgba(120, 120, 120, 0.5)";
   let color = styles?.color || "black";
   let hoverBtnColor = styles?.hoverBtnColor || "rgba(52, 84, 209, 0.5)";
+
   return (
-    <StyledLongW100Btn id={id} type={type || "button"} onClick={btnOnClick}
+    <StyledButton id={id} type={type || "button"} onClick={btnOnClick}
       $backgroundColor={btnColor}
       $border={border}
       $color={color}
       $hoverBtnColor={hoverBtnColor}
     >
-      {btnName || "샘플"}</StyledLongW100Btn>
+      {btnName || "샘플"}</StyledButton>
   )
 }
 
-const StyledLongW100Btn = styled.button`
+const StyledButton = styled.button`
   display: inline;
   width: 100%;
   padding: 10px 15px;
