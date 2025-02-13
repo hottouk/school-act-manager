@@ -34,6 +34,12 @@ const Container = styled.ul`
   border-left: 1px solid rgba(120,120,120,0.5);
   border-right: 1px solid rgba(120,120,120,0.5);
   background-color: white;
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: ${window.innerWidth}px;
+  }
 `
 const CardWrapper = styled.div`
   perspective: 1000px; /* 3D 효과를 위한 원근법 */

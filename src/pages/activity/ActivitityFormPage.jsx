@@ -10,7 +10,6 @@ import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData";
 import useFireActiData from "../../hooks/Firebase/useFireActiData";
 import useFireTransaction from "../../hooks/useFireTransaction";
 //모달
-import GraphicDialogModal from "../../components/Modal/MonsterModal";
 import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
 import AddExtraRecModal from "../../components/Modal/AddExtraRecModal";
 import AddPerfRecModal from "../../components/Modal/AddPerfRecModal";
@@ -437,23 +436,22 @@ const Row = styled.div`
 `
 const StyledInput = styled.input`
   height: 35px;
+  border: 1px solid rgba(120, 120, 120, 0.5);
   border-radius: 7px;
   padding-left: 5px;
   &:disabled { color: gray; } /* 해당 input disabled 되었을 때 */
 `
-const HiddenWrapper = styled.div`
-  display: flex;
+const HiddenWrapper = styled(Row)`
   flex-direction: column;
   border: 2px solid #919294;
   margin-bottom: 15px;
   padding: 15px;
   border-radius: 5px;
 `
-const LevelWrapper = styled.div`
+const LevelWrapper = styled(Row)`
+  flex-direction: column;
   margin-top: 15px;
   width: 40px;
-  display: flex;
-  flex-direction: column;
   gap: 5px;
   p { 
     height: 35px;
@@ -462,11 +460,10 @@ const LevelWrapper = styled.div`
     text-align: center;
   }
 `
-const BtnWrapper = styled.div`
+const BtnWrapper = styled(Row)`
   width: 90%;
-  margin: 15px auto;
-  display: flex;
   flex-direction: column;
+  margin: 15px auto;
   align-items: center;
   gap: 20px;
 `

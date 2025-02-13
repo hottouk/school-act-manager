@@ -23,7 +23,7 @@ const ClassBoardSection = ({ isModifying, klassData, title, intro, notice, stude
         <Board>
           <InfoText>Notice</InfoText>
           {(noticeList.length !== 0 && !isModifying) && noticeList.map((item, index) => {
-            return <p>{index + 1}. {item}</p>
+            return <p key={item}>{index + 1}. {item}</p>
           })}
           {isModifying && <ModifyingTextarea value={notice} onChange={(event) => { setNotice(event.target.value) }}
             placeholder='공지를 작성해주세요. ^(눈웃음 기호)를 사용하여 줄바꿈할 수 있습니다.'></ModifyingTextarea>}

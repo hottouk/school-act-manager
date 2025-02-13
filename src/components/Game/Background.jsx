@@ -27,7 +27,7 @@ const Background = ({ src, x, y, width, height }) => {
   return (<>
     <Sprite image={src} x={x} y={y} width={width} height={height} />
     <Graphics draw={drawFilter} />
-    {/* <Graphics draw={drawGrid} /> */}
+    <Graphics draw={drawGrid} />
 
   </>)
 }

@@ -1,13 +1,15 @@
 import { Container, Graphics, Text } from '@pixi/react'
 import React from 'react'
 
-const MessageUI = ({ x, y, width, height, msg, msg2, msg3 }) => {
-  const padding = 15;
+const MessageUI = ({ x, y, width, height, msg, msg2, msg3, styles }) => {
+  const fontSize = styles?.fontSize || 24;
+  const padding = styles?.padding || 15;
+  const lineHeight = styles?.lineHeight || 40;
   const textStyle = {
     fill: 'black',
-    fontSize: 24,
+    fontSize: fontSize,
     fontWeight: 'bold',
-    lineHeight: 40,
+    lineHeight: lineHeight,
     wordWrap: true,
     wordWrapWidth: width - 20, // 텍스트가 Graphics를 넘지 않도록 제한
   }

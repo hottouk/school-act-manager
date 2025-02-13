@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 import styled from "styled-components"
 
 const MainSelector = ({ type, studentList, actiList, classId, setIsPerfModalShow }) => {
-  //----1.변수부--------------------------------
   //전역 변수
   const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })
   useEffect(() => {

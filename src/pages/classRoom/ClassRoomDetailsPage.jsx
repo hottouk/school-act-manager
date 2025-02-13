@@ -7,14 +7,18 @@ import { setAllActivities } from '../../store/allActivitiesSlice.jsx';
 import { setSelectClass } from '../../store/classSelectedSlice.jsx';
 import Select from 'react-select';
 import styled from 'styled-components';
-//컴포넌트
+//페이지
 import MainSelector from './MainSelector.jsx';
-import StudentList from '../../components/List/StudentList.jsx';
 import KlassQuizSection from './KlassQuizSection.jsx';
+import ClassBoardSection from './ClassBoardSection.jsx';
+//컴포넌트
+import StudentList from '../../components/List/StudentList.jsx';
 import ActivityList from '../../components/List/ActivityList.jsx';
 import EmptyResult from '../../components/EmptyResult.jsx';
 import MidBtn from '../../components/Btn/MidBtn.jsx';
 import SubNav from '../../components/Bar/SubNav.jsx';
+import ActiInfoModal from '../../components/Modal/ActiInfoModal.jsx';
+import MainPanel from '../../components/MainPanel.jsx';
 //모달
 import PerfModal from '../../components/Modal/PerfModal.jsx';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
@@ -28,9 +32,7 @@ import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData.jsx';
 import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
-import ActiInfoModal from '../../components/Modal/ActiInfoModal.jsx';
-import ClassBoardSection from './ClassBoardSection.jsx';
-import MainPanel from '../../components/MainPanel.jsx';
+import useMediaQuery from '../../hooks/useMediaQuery.jsx';
 
 //240801(클래스 헤더 수정) -> 1113(애니메이션 추가) -> 250122(게임 추가, 가입 제거) -> 0125(학생 페이지 정비)
 const ClassroomDetailsPage = () => {
@@ -82,6 +84,7 @@ const ClassroomDetailsPage = () => {
   const [isVisible, setIsVisible] = useState(false)
   //모바일
   const clientHeight = useClientHeight(document.documentElement)
+  const isMobile = useMediaQuery("(max-width: 768px)")
 
   //------함수부------------------------------------------------  
   //변경 가능 데이터 바인딩
@@ -180,19 +183,19 @@ const ClassroomDetailsPage = () => {
           <MainSelector type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
         </MainPanel>}
         {/* 퀴즈 게임부 */}
-        <KlassQuizSection quizList={quizList} klassData={klassData} onClick={handleMonsterOnClick} />
+        <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} myPetDetails={myPetDetails} onClick={handleMonsterOnClick} />
 
         {/* 학생 상세 보기*/}
-        <MainPanel>
+        {!isMobile && <MainPanel>
           <TitleText>학생 상세히 보기</TitleText>
           {studentList && <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModal(true) }} classType={"subject"} setIsPetInfoModal={setIsPetInfoModal} setPetInfo={setPetInfo} />}
           {(!studentList || studentList.length === 0) && <>
             <EmptyResult comment="등록된 학생이 없습니다." />
             {user.isTeacher && <MidBtn onClick={() => { setIsAddStuModal(true) }}>학생 추가</MidBtn>}
           </>}
-        </MainPanel>
+        </MainPanel>}
         {/* 퀘스트 목록(학생) */}
-        {(!user.isTeacher && studentKlassData?.isApproved) && <MainPanel>
+        {(!user.isTeacher && studentKlassData?.isApproved && !isMobile) && <MainPanel>
           <TitleText>퀘스트 목록</TitleText>
           {(!actiList || actiList.length === 0)
             ? <EmptyResult comment="등록된 활동이 없습니다." />

@@ -1,6 +1,6 @@
 import { appFireStore, timeStamp } from '../../firebase/config'
 import { useSelector } from 'react-redux'
-import { addDoc, collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 
 const useFireClassData = () => {
   const user = useSelector(({ user }) => { return user })

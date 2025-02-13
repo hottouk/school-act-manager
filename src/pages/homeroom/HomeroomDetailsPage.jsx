@@ -4,10 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setAllStudents } from '../../store/allStudentsSlice';
 import styled from 'styled-components';
+//페이지
+import ClassBoardSection from '../classroom/ClassBoardSection';
+import MainSelector from '../classroom/MainSelector';
 //컴포넌트
 import MidBtn from '../../components/Btn/MidBtn';
-import MainBtn from '../../components/Btn/MainBtn';
-import TransparentBtn from '../../components/Btn/TransparentBtn';
 import EmptyResult from '../../components/EmptyResult';
 import StudentList from '../../components/List/StudentList';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal';
@@ -17,59 +18,62 @@ import UpperTab from '../../components/UpperTab';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData';
 import useClassAuth from '../../hooks/useClassAuth';
+import useFireActiData from '../../hooks/Firebase/useFireActiData';
+import useFireClassData from '../../hooks/Firebase/useFireClassData';
+import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData';
 //img
 import deskIcon from '../../image/icon/desk_icon.png'
-import MainSelector from '../classroom/MainSelector';
-import useFireActiData from '../../hooks/Firebase/useFireActiData';
-import ClassBoardSection from '../classroom/ClassBoardSection';
 
 //2024.10.22 생성 -> 250211 게시판 추가
 const HomeroomDetailsPage = () => {
   //교사 인증
   const { log } = useClassAuth();
-  if (log) { window.alert(log) }
+  if (log) { window.alert(log) };
   const user = useSelector(({ user }) => user);
   //라이브러리
   const navigate = useNavigate();
-  const dispatcher = useDispatch()
+  const dispatcher = useDispatch();
   //시작
   useEffect(() => {
-    setIsVisible(true)
-    fetchAllActis("uid", user.uid, "subject", "담임").then((actiList) => { setActiList(actiList) })
+    setIsVisible(true);
+    fetchAllActis("uid", user.uid, "subject", "담임").then((actiList) => { setActiList(actiList) });
   }, [])
-  //반 전역변수 가져오기
-  const thisClass = useSelector(({ classSelected }) => { return classSelected })
-  useEffect(() => { bindData() }, [thisClass])
+  const { updateClassroom } = useFireClassData();
+  //반 전역변수
+  const thisClass = useSelector(({ classSelected }) => { return classSelected });
   const [_title, setTitle] = useState('');
   const [_intro, setIntro] = useState('');
   const [_notice, setNotice] = useState('');
   const [noticeList, setNoticeList] = useState([]);
-  //실시간 학생 List
-  const { studentDataList: studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber")
-  useEffect(() => { dispatcher(setAllStudents(studentList)) }, [studentList]) //전역변수
-  const { fetchAllActis } = useFireActiData()
+  //실시간 data
+  const { klassData } = useFetchRtClassroomData(thisClass.id);
+  useEffect(() => { bindData() }, [klassData]);
+  const { studentDataList: studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber");
+  useEffect(() => { dispatcher(setAllStudents(studentList)) }, [studentList]);
+  const { fetchAllActis } = useFireActiData();
   //담임반 활동 List
-  const [actiList, setActiList] = useState([])
+  const [actiList, setActiList] = useState([]);
   useEffect(() => {
-    setSelfActiList(actiList.filter(acti => acti.subjDetail === "자율"))
-    setCareerActiList(actiList.filter(acti => acti.subjDetail === "진로"))
+    setSelfActiList(actiList.filter(acti => acti.subjDetail === "자율"));
+    setCareerActiList(actiList.filter(acti => acti.subjDetail === "진로"));
   }, [actiList])
   const [selfActiList, setSelfActiList] = useState([]);
   const [careerActiList, setCareerActiList] = useState([]);
-  const { deleteClassWithStudents } = useDeleteFireData()
+  const { deleteClassWithStudents } = useDeleteFireData();
   //tab
-  const [tab, setTab] = useState(1)
-  //교사 학생 추가 모달
-  const [isAddStuModalShown, setIsAddStuModalShown] = useState(false)
+  const [tab, setTab] = useState(1);
+  //학생 추가 모달
+  const [isAddStuModalShown, setIsAddStuModalShown] = useState(false);
   //모드
   const [isModifying, setIsModifying] = useState(false);
   //에니메이션
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
 
-  //------함수부------------------------------------------------  
+  //------함수부------------------------------------------------
+  //초기화  
   const bindData = () => {
-    if (!thisClass) return;
-    const { classTitle, intro, notice } = thisClass;
+    if (!klassData) return;
+    const { classTitle, intro, notice } = klassData;
     setTitle(classTitle || '정보 없음');
     setIntro(intro || '정보 없음');
     setNotice(notice || '')
@@ -83,9 +87,23 @@ const HomeroomDetailsPage = () => {
     setNoticeList(arr)
   }
 
-  //todo
-  const handleSaveOnClick = () => { };
-  const handleCancelOnClick = () => { };
+  //저장
+  const handleSaveOnClick = () => {
+    const confirm = window.confirm("이대로 클래스 정보를 변경하시겠습니까?");
+    if (confirm) {
+      const classInfo = { title: _title, intro: _intro, notice: _notice };
+      updateClassroom(classInfo, thisClass.id);
+      setIsModifying(false);
+    }
+  };
+
+  //취소 
+  const handleCancelOnClick = () => {
+    bindData();
+    setIsModifying(false);
+  };
+
+  //반 삭제
   const handleDeleteOnClick = () => {
     let deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
     if (deleteConfirm === "삭제합니다") {

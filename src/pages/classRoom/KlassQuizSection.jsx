@@ -8,21 +8,23 @@ import ArrowBtn from '../../components/Btn/ArrowBtn'
 import Container from '../../components/MainPanel'
 import PetImg from '../../components/PetImg'
 
-//로직 분리(250204)
-const KlassQuizSection = ({ quizList, klassData, onClick }) => {
+//로직 분리(250204) -> 모바일(250213)
+const KlassQuizSection = ({ isMobile, quizList, klassData, myPetDetails, onClick }) => {
+  console.log(myPetDetails?.path)
   return (
     <Container>
       <TitleText>퀴즈 게임</TitleText>
-      <InfoText>학생들이 얻을 수 있는 펫</InfoText>
-      <PetImgWrapper>
-        <PetImg subject={klassData.subject} level={0} onClick={() => { }} />
+      {!isMobile && <InfoText>학생들이 얻을 수 있는 펫</InfoText>}
+      {!isMobile && <PetImgWrapper>
+        <PetImg subject={klassData.subject} step={0} onClick={() => { }} />
         <Row><ArrowBtn direction="right" /></Row>
-        <PetImg subject={klassData.subject} level={1} onClick={() => { }} />
+        <PetImg subject={klassData.subject} step={1} onClick={() => { }} />
         <Row><ArrowBtn direction="right" /></Row>
-        <PetImg subject={klassData.subject} level={2} onClick={() => { }} />
+        <PetImg subject={klassData.subject} step={2} onClick={() => { }} />
         <Row><ArrowBtn direction="right" /></Row>
-        <PetImg subject={klassData.subject} level={3} onClick={() => { }} />
-      </PetImgWrapper>
+        <PetImg subject={klassData.subject} step={3} onClick={() => { }} />
+      </PetImgWrapper>}
+      {isMobile && <PetImgWrapper><PetImg subject={klassData.subject} path={myPetDetails?.path} /></PetImgWrapper>}
       <BoldText style={{ marginTop: "10px" }}>vs</BoldText>
       {/* 단어 게임부 */}
       <GameMonListWrapper>
@@ -72,5 +74,9 @@ const GameMonListWrapper = styled.ul`
   gap: 15px;
   border-top: 1px solid rgb(120, 120, 120, 0.5);
   border-bottom: 1px solid rgb(120, 120, 120, 0.5);
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0;
+  }
 `
 export default KlassQuizSection

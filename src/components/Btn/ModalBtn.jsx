@@ -21,7 +21,7 @@ const StyledBtn = styled.button`
   cursor: pointer;
   font-family: Graphik,-apple-system,system-ui,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Fira Sans","Droid Sans","Helvetica Neue",sans-serif;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.15;
   overflow: visible;
   padding: 12px 16px;

@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import styled from "styled-components"
 //컴포넌트
-import MonListItem from './ListItem/SquareListItem'
+import SquareListItem from './ListItem/SquareListItem'
 //이미지
 import plus from "../../image/icon/plus.png"
 
@@ -33,7 +33,7 @@ const StudentList = ({ petList, plusBtnOnClick, classType, setIsPetInfoModal, se
   return (
     <Container>
       {petList.map((pet, index) => {
-        return (<MonListItem key={pet.id} item={pet} index={index} onClick={handleOnClick} type="student" />)
+        return (<SquareListItem key={pet.id} item={pet} index={index} onClick={handleOnClick} type="student" />)
       })}
       {/* 학생 추가 버튼 */}
       {user.isTeacher && <StyledPlusImg src={plus} onClick={() => { plusBtnOnClick() }} />}

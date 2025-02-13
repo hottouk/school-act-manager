@@ -2,11 +2,14 @@ import React from 'react'
 import { Text, Container, Graphics } from '@pixi/react'
 import PetSprite from './PetSprite';
 
-//250112 생성
-const BattleReport = ({ result, correct, src, x, y, score, winCount }) => {
+//250112 생성 -> 모바일(250213)
+const BattleReport = ({ isMobile, result, correct, src, x, y, score, winCount }) => {
+  const titleFontSize = isMobile ? 35 : 55;
+  const width = isMobile ? window.innerWidth : 500;
+  const height = isMobile ? window.innerHeight * 0.65 : 550;
   const headerStyle = {
     fill: ['#3454d1', '#4a77e2'], // 그라데이션 색상 (시작, 끝)
-    fontSize: 55, // 크기 증가
+    fontSize: titleFontSize, // 크기 증가
     fontWeight: 'bold',
     fontFamily: 'Arial, Helvetica, sans-serif',
     stroke: '#1e3a8a', // 외곽선 색상
@@ -35,7 +38,7 @@ const BattleReport = ({ result, correct, src, x, y, score, winCount }) => {
     g.clear();
     g.lineStyle(4, 0x000000, 1);
     g.beginFill(0xffffff);
-    g.drawRoundedRect(x - 550, y + 600, 175, 175, 10);
+    g.drawRoundedRect(x - 290, y + 600, 175, 175, 10);
     g.endFill();
   }
   //결과 보고
@@ -43,62 +46,62 @@ const BattleReport = ({ result, correct, src, x, y, score, winCount }) => {
     g.clear();
     g.lineStyle(4, 0x000000, 1);
     g.beginFill(0xffffff);
-    g.drawRoundedRect(x - 550, y, 1100, 550, 10);
+    g.drawRoundedRect(x, y, width, height, 10);
     g.endFill();
   }
 
   return (<Container>
-    <Graphics draw={drawReportRect} />
+    <Graphics draw={drawReportRect} anchor={0.5} />
     <Text
-      x={x}
+      x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 50}
       text="Battle Result"
       anchor={0.5}
       style={headerStyle} />
     <Text
       text={result}
-      x={x}
+      x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 200}
       anchor={0.5}
       style={resultStyles[result]} />
     <Text
       text={`맞춘 개수: ${correct}개 x 100점`}
-      x={x}
+      x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 300}
       anchor={0.5}
       style={textStyle} />
     {result === "Win" && <Text
       text={`승리: 현재 점수 x 2`}
-      x={x}
+      x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 344}
       anchor={0.5}
       style={textStyle} />}
     {result === "Lose" && <Text
       text={`패배: 현재 점수 / 2`}
-      x={x}
+      x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 344}
       anchor={0.5}
       style={textStyle} />}
     <Text
       text={`총점: ${score}점`}
-      x={x}
+      x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 388}
       anchor={0.5}
       style={textStyle} />
     <Text
       text={`얻은 경험치: +5 exp`}
-      x={x}
+      x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 432}
       anchor={0.5}
       style={textStyle} />
     <Text
-      text={`생기부 문구 획득까지 ${winCount}번 더 승리하세요 `}
-      x={x}
+      text={`생기부 문구 획득까지 ${winCount}번!`}
+      x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 476}
       anchor={0.5}
       style={textStyle} />
     <Graphics draw={drawRoundedRect} />
-    <PetSprite src={src} x={x - 460} y={y + 685} width={175} height={175} />
+    {!isMobile && <PetSprite src={src} x={x - 200} y={y + 685} width={175} height={175} />}
   </Container>
   )
 }

@@ -16,8 +16,9 @@ const Container = styled.div`
   padding: 25px;
   border-left: 12px #3454d1 double;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px;
-   @media screen and (max-width: 767px){
+   @media screen and (max-width: 768px){
     margin-top: 0;
+    margin-bottom: 15px;
     border-top: 12px #3454d1 double;
     border-left: none;
     box-shadow: none;

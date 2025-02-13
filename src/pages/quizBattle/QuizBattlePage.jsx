@@ -28,6 +28,7 @@ import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData'
 import useLevel from '../../hooks/useLevel';
 //img
 import qustion_icon from '../../image/icon/question.png'
+import PixiResponsiveStage from './PixiResponsiveStage';
 
 //250111 생성
 const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame }) => {
@@ -108,7 +109,6 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   // console.log("승리:", myWinCount, "기준:", rewardPoint, reward, myWinCount === rewardPoint)
   const teacherPet = { spec: { atk: 80, def: 10, hp: 400, mat: 180, mdf: 55, spd: 55 }, path: "images/pet/pet_water_001_4.png", path_back: "images/pet/pet_water_001_4_back.png", level: { exp: 999, level: 100, nextLvXp: 1000, nextStepLv: 500 } }
   useEffect(() => { setMyWinCount(countWinRecord()) }, [myRecordList])
-
   //게임 종료
   useEffect(() => {
     if (enemyCurHP <= 0 || myCurHP <= 0) {
@@ -117,6 +117,14 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   }, [enemyCurHP, myCurHP]) //종료 조건
   const [result, setResult] = useState(null);
   useEffect(() => { finalizeGame(); }, [result])
+  //모드
+  const [isMobile, setIsMobile] = useState((window.innerWidth <= 768))
+  useEffect(() => {
+    const handleResize = () => { setIsMobile(window.innerWidth <= 768) }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [])
+
   //페이즈★
   useEffect(() => {
     switch (phase) {
@@ -528,10 +536,10 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     <StyledStatusUI>
       <Row>
         <Wrapper><StyledImg src={myPetImg || qustion_icon} alt="상태창" /></Wrapper>
-        <Wrapper style={{ width: "140px" }}>
+        {!isMobile && <Wrapper style={{ width: "140px" }}>
           <p>{myPetInfo?.name || "??"}</p>
           <p style={{ margin: "0" }}>레벨: {myPetInfo?.level?.level || "??"}</p>
-        </Wrapper>
+        </Wrapper>}
         <Wrapper style={{ width: "240px" }}>
           <Row>
             <p>공격: {myPetInfo?.spec.atk || "??"}</p>
@@ -542,60 +550,19 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
             <p style={{ margin: "0" }}>민첩: {myPetInfo?.spec.spd || "??"}</p>
           </Row>
         </Wrapper>
-        <Wrapper style={{ flexGrow: "1" }}><p style={{ margin: "0" }}>{myPetInfo?.desc || "??"}</p></Wrapper>
+        {!isMobile && <Wrapper style={{ flexGrow: "1" }}><p style={{ margin: "0" }}>{myPetInfo?.desc || "??"}</p></Wrapper>}
       </Row>
       <Row><AnimatedProgressBar levelInfo={myPetInfo?.level || "??"} /></Row>
     </StyledStatusUI >
     {!background && <Spinner variant="primary" />}
     {(background && phase !== "review") &&
-      <Stage width={1200} height={900} options={{ background: "#3454d1" }} >
-        {/* 배경화면 */}
-        <Background src={background || qustion_icon} x={0} y={0} width={1200} height={900} />
-        {/* 기본 UI */}
-        <MessageUI msg={message} x={350} y={700} width={800} height={175} />
-        <Text text={`남은 문제: ${quizListRef.current.length}개`} x={150} y={50} anchor={0.5} style={{ fontSize: 24, fontWeight: 'bold', }} ></Text>
-        <Text text={`현재 점수: ${score}점`} x={1050} y={50} anchor={0.5} style={{ fontSize: 24, fontWeight: 'bold', }} ></Text>
-        {/* 준비창 phase */}
-        {(phase === "ready") && <>
-          <PetSprite src={myPetImg || qustion_icon} x={350} y={200} width={150} height={150} trigger={isEnmAttack} />
-          <MessageUI x={200} y={300} width={300} height={275}
-            msg2={`이름: ${myPetInfo?.name || "??"}\n레벨: ${myPetInfo?.level?.level || 1}\n체력: ${myPetInfo?.spec.hp || "??"}\n공격력: ${myPetInfo?.spec.atk || "??"}\n방어력: ${myPetInfo?.spec.def ?? "??"}\n스피드: ${myPetInfo?.spec.spd || "??"}`} />
-          <Text text='vs' x={600} y={450} anchor={0.5} style={{ fontSize: 60, fontWeight: 'bold', }} ></Text>
-          <PetSprite src={enmImg || qustion_icon} x={850} y={200} width={150} height={150} trigger={isEnmAttack} />
-          <MessageUI x={700} y={300} width={300} height={275}
-            msg2={`이름: ${monsterInfo.name}\n레벨: ${enmLevel}\n체력: ${enemyHP}\n공격력: ${enemyAttck}\n방어력: ${enemyDef}\n스피드: ${enmSpd}`} />
-        </>}
-        {/* 카운트다운 phase*/}
-        {(phase === "countdown") && <Countdown isCountdown={isCountdown} setIsCountdown={setIsCountdown} setPhase={setPhase} x={600} y={450} />}
-
-        {/* 퀴즈 phase */}
-        {(phase !== "ready" && phase !== "end") && <>
-          {/* 내 펫몬 */}
-          {<HPBarUI x={75} y={575} width={150} height={12} curHp={myCurHP} maxHp={myHP} />}
-          <PetSprite src={myPetBackImg || qustion_icon} x={150} y={750} width={400} height={400} trigger={isMyAttack} movingPoint={35} />
-          {/* 상대 펫몬 */}
-          <HPBarUI x={925} y={120} width={150} height={12} curHp={enemyCurHP} maxHp={enemyHP} />
-          <PetSprite src={enmImg || qustion_icon} x={1000} y={230} width={230} height={230} trigger={isEnmAttack} movingPoint={-35} />
-          <ActionBallUI x={350} y={600} width={400} height={60} correctAnswer={actionBall} />
-        </>}
-        {/* 퀴즈 phase*/}
-        {(curQuiz && phase !== "end") && <QuizUI quiz={curQuiz} x={600} y={350} width={250} height={80} pivotX={125} pivotY={40} />}
-        {marking === true && <MarkingUI x={600} y={350} radius={75} correct={marking} />}
-        {marking === false && <MarkingUI x={600} y={350} crossSize={125} correct={marking} />}
-
-        {/* 배틀 phase */}
-        {/* 내 이펙트 */}
-        <BasicAttack x={950} y={175} trigger={isMyAttack} />
-        <BasicDefense x={100} y={750} radius={200} trigger={isMyDefense} />
-        <BasicRest x={150} y={750} size={50} thick={15} movingPoint={900} trigger={isMyRest} />
-        {/* 상대 이펙트 */}
-        <BasicAttack x={200} y={750} trigger={isEnmAttack} />
-        <BasicDefense x={1000} y={200} radius={100} trigger={isEnmDefense} />
-        <BasicRest x={1000} y={255} size={35} thick={10} movingPoint={300} trigger={isEnmRest} />
-
-        {/* 종료 phase */}
-        {phase === "end" && <BattleReport x={600} y={100} result={result} correct={correctNumber} src={enmImg} score={score} winCount={rewardPoint - countWinRecord()} />}
-      </Stage>}
+      <PixiResponsiveStage isMobile={isMobile} phase={phase} background={background} message={message} quizListRef={quizListRef} curQuiz={curQuiz} marking={marking} score={score} actionBall={actionBall}
+        myPetImg={myPetImg} myPetInfo={myPetInfo} myHP={myHP} myCurHP={myCurHP} isMyAttack={isMyAttack} isMyDefense={isMyDefense} isMyRest={isMyRest} myPetBackImg={myPetBackImg}
+        enmImg={enmImg} monsterInfo={monsterInfo} enmLevel={enmLevel} enemyHP={enemyHP} enemyCurHP={enemyCurHP} enemyAttck={enemyAttck} enemyDef={enemyDef} enmSpd={enmSpd} isEnmAttack={isEnmAttack} isEnmDefense={isEnmDefense} isEnmRest={isEnmRest}
+        isCountdown={isCountdown} setIsCountdown={setIsCountdown} setPhase={setPhase}
+        result={result} correctNumber={correctNumber} rewardPoint={rewardPoint} countWinRecord={countWinRecord}
+      />
+    }
     {/* 리뷰 phase */}
     {phase === "review" && <ReviewSection incorrectList={incorrectList} />}
     {/* 컨트롤러 */}
@@ -634,6 +601,10 @@ const StyledStatusUI = styled.div`
   padding: 16px;
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
+  @media (max-width: 768px) {
+    width: ${window.innerWidth}px;
+  }
+
 `
 const Wrapper = styled.div`
   box-sizing: border-box;
@@ -655,6 +626,13 @@ const StyledCommandUI = styled.div`
   padding: 16px;
   border-bottom-right-radius: 10px;
   border-bottom-left-radius: 10px;
+
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: ${window.innerWidth}px;
+  }
 }
 `
 export default QuizBattlePage

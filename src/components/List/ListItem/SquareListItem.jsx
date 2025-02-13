@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import PetImg from '../../PetImg'
 
 // 리펙토링(250126) -> 등록, 미등록자 구분(250205)
-const MonListItem = ({ item, onClick, type }) => {
+const SquareListItem = ({ item, onClick, type }) => {
   const { master, subject, title, writtenName, level, path, studentNumber } = item;
   let name = writtenName || "미등록"
   if (master) { name = master.studentName }
@@ -13,7 +13,7 @@ const MonListItem = ({ item, onClick, type }) => {
     <Container>
       {type === "student" && <>
         <ImgWrapper>
-          <PetImg subject={subject} level={level || 0} onClick={() => { onClick(item) }} path={path} styles={{ width: "80px", height: "80px" }} />
+          <PetImg subject={subject || "담임"} level={level || 0} onClick={() => { onClick(item) }} path={path} styles={{ width: "80px", height: "80px" }} />
         </ImgWrapper>
         <TextWrapper>
           {master && <p style={{ marginBottom: "0px", fontWeight: "bold", color: "#3454d1" }}>{studentNumber}</p>}
@@ -72,4 +72,4 @@ const ActiTitle = styled.p`
   -webkit-box-orient:   vertical;
   overflow: hidden;         /* 넘치는 텍스트 숨기기 */
 `
-export default MonListItem
+export default SquareListItem
