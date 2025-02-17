@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useSelector } from 'react-redux'
 import useFireSchoolData from '../../hooks/Firebase/useFireSchoolData'
+import CardList from '../../components/List/CardList'
 
 const SchoolMainPage = () => {
 	const user = useSelector(({ user }) => user);
@@ -41,13 +42,10 @@ const SchoolMainPage = () => {
 				<TitleText>{schoolInfo?.schoolName}</TitleText>
 				<p>{schoolInfo?.eduOfficeName}</p>
 				<p>{schoolInfo?.schoolTel}</p>
-				<p>추후 활용 예정입니다.</p>
 			</StyledMain>
 			<StyledMain>
-				<TitleText>등록 교사 명단</TitleText>
-				{teacherList.map((item) => {
-					return item.name
-				})}
+				<TitleText>{schoolInfo?.schoolName} 등록 교사 명단</TitleText>
+				<CardList dataList={teacherList} type="teacher" />
 			</StyledMain>
 
 		</Container>

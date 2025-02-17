@@ -1,18 +1,13 @@
 //라이브러리
-import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { setSelectClass } from '../../store/classSelectedSlice'
 import styled from 'styled-components'
 //컴포넌트
 import CardListItem from './ListItem/CardListItem'
 import EmptyResult from '../EmptyResult'
 
-//2024.01.09 -> 25.01.22(onClick 로직 분리)
-const CardList = ({ dataList, type, onClick, selected }) => {//todo 데이터 리스트, 타입으로 정리하기
-  //----1.변수부--------------------------------
+//2024.01.09 -> onClick 로직 분리(250122)
+const CardList = ({ dataList, type, onClick, selected }) => {
   const navigate = useNavigate()
-  const user = useSelector(({ user }) => user)
-
   return (
     <Container>
       {/* 데이터 없음 */}

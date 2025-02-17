@@ -6,7 +6,7 @@ import PetSprite from './PetSprite';
 const BattleReport = ({ isMobile, result, correct, src, x, y, score, winCount }) => {
   const titleFontSize = isMobile ? 35 : 55;
   const width = isMobile ? window.innerWidth : 500;
-  const height = isMobile ? window.innerHeight * 0.65 : 550;
+  const height = isMobile ? 600 : 550;
   const headerStyle = {
     fill: ['#3454d1', '#4a77e2'], // 그라데이션 색상 (시작, 끝)
     fontSize: titleFontSize, // 크기 증가

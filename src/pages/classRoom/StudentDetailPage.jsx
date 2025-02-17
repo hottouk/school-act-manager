@@ -98,12 +98,12 @@ const StudentDetailPage = () => {
 
   //실시간 acc
   const getAccRec = () => { return _actiList?.reduce((acc, cur) => acc + cur.record, '') }
-  
+
   //실시간 score
   const getAccScores = () => {
     const initScores = { attitudeScore: 0, careerScore: 0, coopScore: 0, leadership: 0, sincerityScore: 1 }
     _actiList?.reduce((acc, cur) => {
-      return { attitudeScore: cur.attitudeScore + acc.attitudeScore,  }
+      return { attitudeScore: cur.attitudeScore + acc.attitudeScore, }
     }, initScores)
   }
 
@@ -317,10 +317,10 @@ const StudentDetailPage = () => {
       </FlexWrapper>
       {/* 교사전용 */}
       {user.isTeacher && <BtnWrapper>
-        {!isModifiying && <TransparentBtn id="edit_btn" onClick={() => { setIsModifying(!isModifiying) }}>수정</TransparentBtn>}
-        {isModifiying && <TransparentBtn id="save_btn" onClick={handleSaveBtnOnClick}>저장</TransparentBtn>}
-        {isModifiying && <TransparentBtn id="cancel_btn" onClick={handleCancelOnClick}>취소</TransparentBtn>}
-        <TransparentBtn id="delete_btn" onClick={handleBtnClick}>삭제</TransparentBtn>
+        {!isModifiying && <TransparentBtn id="edit_btn" onClick={() => { setIsModifying(!isModifiying) }} styles={{ width: "200px" }}>수정</TransparentBtn>}
+        {isModifiying && <TransparentBtn id="save_btn" onClick={handleSaveBtnOnClick} styles={{ width: "200px" }}>저장</TransparentBtn>}
+        {isModifiying && <TransparentBtn id="cancel_btn" onClick={handleCancelOnClick} styles={{ width: "200px" }}>취소</TransparentBtn>}
+        <TransparentBtn id="delete_btn" onClick={handleBtnClick} styles={{ width: "200px" }}>삭제</TransparentBtn>
       </BtnWrapper>}
     </Container >
     {/* 모달 */}

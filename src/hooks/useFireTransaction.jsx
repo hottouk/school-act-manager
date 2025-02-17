@@ -1,4 +1,4 @@
-import { arrayRemove, arrayUnion, collection, doc, runTransaction } from 'firebase/firestore'
+import { arrayRemove, arrayUnion, collection, deleteDoc, deleteField, doc, getDocs, query, runTransaction, where, writeBatch } from 'firebase/firestore'
 import { useSelector } from 'react-redux'
 import { appFireStore } from '../firebase/config'
 import useGetRidOverlap from './useGetRidOverlap'
@@ -13,19 +13,66 @@ const useFireTransaction = () => {
   const { makeUniqueArrWithEle, replaceItem } = useGetRidOverlap()
   const { makeAccRec } = useAcc();
 
+  //8. 학교 탈퇴하기(250217)
+  const leaveSchoolTransaction = async (schoolCode) => {
+    const userRef = doc(db, "user", user.uid);
+    const schoolRef = doc(db, "school", schoolCode);
+    const classroomsRef = collection(db, "classRooms");
+    try {
+      await runTransaction(db, async (transaction) => {
+        //1. read
+        const userSnapshot = await transaction.get(userDocRef);
+        const schoolSnapshot = await transaction.get(schoolRef);
+        if (!userSnapshot.exists()) { throw new Error("유저 정보 없음"); };
+        if (!schoolSnapshot.exists()) { throw new Error("학교 정보 없음"); };
+        //2. write
+        const memberList = schoolSnapshot.data().memberList;
+        const deleted = memberList.filter((item) => { return item.uid !== user.uid });
+        transaction.update(userRef, { school: deleteField() });
+        transaction.update(schoolRef, { memberList: deleted });
+      })
+      //3. classroom 컬렉션에서 특정 uid를 가진 문서들 삭제
+      const q = query(classroomsRef, where("uid", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+      for (const klassSnapshot of querySnapshot.docs) {
+        const klassId = klassSnapshot.id;
+        const petsRef = collection(db, "classRooms", klassId, "students");
+        while (true) { //무한 반복                                                                         
+          const petSnapshots = await getDocs(petsRef);
+          const innerBatch = writeBatch(db);
+          if (petSnapshots.empty) break;
+          petSnapshots.forEach((petSnapshot) => {
+            innerBatch.delete(doc(db, "classRooms", klassSnapshot.id, "students", petSnapshot.id)); //subCollection 하위 문서 삭제
+          })
+          await innerBatch.commit(); // 🔥 subCollection 문서 반복 삭제
+        }
+        deleteDoc(doc(db, "classRooms", klassSnapshot.id));
+      }
+    } catch (err) {
+      window.alert(err)
+      console.log(err)
+    }
+  }
+
   //7. 학생 거절 확인
   const confirmDenialTransaction = async (info) => {
     const userRef = doc(db, "user", user.uid);
-    await runTransaction(db, async (transaction) => {
-      const userDoc = await transaction.get(userDocRef);
-      //1. 읽기
-      if (!userDoc.exists()) { throw new Error("유저 정보 없음"); }
-      const myKlassList = userDoc.data().myClassList || [];
-      //2. 편집
-      const deleted = myKlassList.filter((item) => { return item.id !== info.classId })
-      //3. 수정
-      transaction.update(userRef, { onSubmitList: arrayRemove(info), myClassList: deleted })
-    })
+    try {
+      await runTransaction(db, async (transaction) => {
+        const userDoc = await transaction.get(userDocRef);
+        //1. 읽기
+        if (!userDoc.exists()) { throw new Error("유저 정보 없음"); }
+        const myKlassList = userDoc.data().myClassList || [];
+        //2. 편집
+        const deleted = myKlassList.filter((item) => { return item.id !== info.classId })
+        //3. 수정
+        transaction.update(userRef, { onSubmitList: arrayRemove(info), myClassList: deleted })
+      })
+    } catch (err) {
+      window.alert(err)
+      console.log(err)
+    }
+
   }
 
   //6. 교사 거절
@@ -209,7 +256,7 @@ const useFireTransaction = () => {
       console.log(err);
     })
   }
-  return { copyActiTransaction, delCopiedActiTransaction, applyKlassTransaction, approveKlassTransaction, approvWinTransaction, denyTransaction, confirmDenialTransaction }
+  return { copyActiTransaction, delCopiedActiTransaction, applyKlassTransaction, approveKlassTransaction, approvWinTransaction, denyTransaction, confirmDenialTransaction, leaveSchoolTransaction }
 }
 
 

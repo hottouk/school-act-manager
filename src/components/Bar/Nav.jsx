@@ -1,45 +1,40 @@
 //라이브러리
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { Helmet } from 'react-helmet'
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { Helmet } from 'react-helmet';
 import { Badge } from 'react-bootstrap';
-import styled from 'styled-components'
+import styled from 'styled-components';
 //컴포넌트
 import DropDownBtn from '../Btn/DropDownBtn';
-import MyInfoModal from '../Modal/MyInfoModal'
+import MyInfoModal from '../Modal/MyInfoModal';
 //hooks
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
+import useMediaQuery from '../../hooks/useMediaQuery';
 //이미지
 import brandLogo from "../../image/icon/h-logo.png";
-import unknown from '../../image/icon/unkown_icon.png'
+import unknown from '../../image/icon/unkown_icon.png';
 
-//240222(생성) -> 250202(갱신) todo 스타일 최적화
+//240222(생성) -> 250202(갱신) -> 250215(모바일 수정)
 const Nav = () => {
   //준비
-  const user = useSelector(({ user }) => { return user })
+  const user = useSelector(({ user }) => { return user });
   const { myUserData } = useFetchRtMyUserData();
-  const [_profileImg, setProfileImg] = useState(null)
+  const [_profileImg, setProfileImg] = useState(null);
+  //모드
+  const isMobile = useMediaQuery("(max-width: 768px)");
   //모달
-  const [isMyInfoShow, setIsMyInfoShow] = useState(false)
-  const [isNew, setIsNew] = useState(false) //새소식 아이콘
-  useEffect(() => { bindData(); }, [myUserData])
+  const [isMyInfoShow, setIsMyInfoShow] = useState(false);
+  const [isNew, setIsNew] = useState(false); //새소식 아이콘
+  useEffect(() => { bindData(); }, [myUserData]);
 
   //------함수부------------------------------------------------ 
   const bindData = () => {
     setProfileImg(user.profileImg)//프로필 사진
     if (myUserData?.onSubmitList?.length) { setIsNew(true) } else { setIsNew(false) }
   }
-  const handleBtnClick = (event) => {
-    switch (event.target.id) {
-      case "my_info_btn":
-        setIsMyInfoShow(true)
-        break;
-      default: return;
-    }
-  }
 
-  return (<StyledNav>
+  return (<Container>
     <Helmet>
       {/*폰트어썸 라이브러리*/}
       <link rel="stylesheet"
@@ -48,130 +43,108 @@ const Nav = () => {
         crossorigin="anonymous"
         referrerpolicy="no-referrer" />
     </Helmet>
-    <img className="logo" src={brandLogo} alt="로고" />
-    <h3>생기부 쫑알이</h3>
     {!user.uid && <>
-      <ul className='menu_container'>
-        <li><i className="fa-solid fa-key"></i><Link to='/login'>로그인</Link></li>
-      </ul></>}
-    {(user.uid && user.isTeacher) && <>
-      {/* 교사 */}
-      <div className='welcome'><p>{user.name} 선생님 사랑합니다.</p></div>
-      <ul className='menu_container'>
-        <li id="home_btn" ><Link to="/"><i className="fa-solid fa-house"></i>
-          <span className="pcOnly">Home</span></Link></li>
-        <li id="acti_btn" ><i className="fa-solid fa-scroll"></i>
+      <MenuWrapper>
+        <li><Link to='/login'><Icon className="fa-solid fa-key"></Icon> <span>로그인</span></Link></li>
+      </MenuWrapper></>}
+    {(user.isTeacher && !isMobile) && <>
+      {/* PC 교사 */}
+      <LogoImg src={brandLogo} alt="로고" />
+      <BrandTitle>생기부 쫑알이</BrandTitle>
+      <Row style={{ alignItems: "center" }}><p style={{ margin: "0 20px" }}>{user.name} 선생님 사랑합니다.</p></Row>
+      <MenuWrapper>
+        <li><Link to="/"><Icon className="fa-solid fa-house"></Icon>
+          <span>Home</span></Link></li>
+        {!isMobile && <li id="acti_btn" ><Icon className="fa-solid fa-scroll"></Icon>
           <DropDownBtn btnName={"활동 관리"}
             dropDownItems={[
               { href: "activities", label: "나의 활동" },
               { href: "activities_all", label: "전체 활동", itemState: "acti_all" }]} />
-        </li>
-        <li id="class_btn" ><Link to="/classRooms"><i className="fa-solid fa-chalkboard"></i>
-          <span className="pcOnly">클래스 관리</span></Link></li>
-        <li id="class_btn" ><Link to="/quiz"><i className="fa-solid fa-database"></i>
-          <span className="pcOnly">퀴즈 관리</span></Link></li>
-        <li id="class_btn" ><Link to="/school"><i className="fa-solid fa-school"></i>
-          <span className="pcOnly">학교</span></Link></li>
+        </li>}
+        <li><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon>
+          <span>클래스 관리</span></Link></li>
+        <li><Link to="/quiz"><Icon className="fa-solid fa-database"></Icon>
+          <span>퀴즈 관리</span></Link></li>
+        <li><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon>
+          <span>나의 학교</span></Link></li>
         {/* {user.isMaster && <li id="lab_btn" ><Link to="/lab"><i className="fa-solid fa-khanda"></i>
-          <span className="pcOnly">실험실</span></Link></li>}
+          <span>실험실</span></Link></li>}
         {user.isMaster && <li id="master_btn" ><Link to="/master"><i className="fa-solid fa-key"></i>
-          <span className="pcOnly">마스터</span></Link></li>} */}
-        <li className="news_btn" >
-          {isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
-          <Link to="/news"><i className="fa-solid fa-bell"></i></Link></li>
-        {/* 모바일 전용 */}
-        <li className="mobileOnly"><i id="my_info_btn" className="fa-solid fa-user" onClick={handleBtnClick}></i></li>
-      </ul>
-      {_profileImg && <img className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
-      {!_profileImg && <img className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
+          <span>마스터</span></Link></li>} */}
+        <NewsWrapper >
+          {isNew && <NewIcon><Badge bg="danger">new</Badge></NewIcon>}
+          <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
+        </NewsWrapper>
+      </MenuWrapper>
+      {_profileImg && <ProfileImg className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
+      {!_profileImg && <ProfileImg className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
     </>}
-    {/* 학생 */}
-    {(user.uid && !user.isTeacher) && <>
-      <div className='welcome'><p>{user.name} 학생 사랑합니다.</p></div>
-      <ul className="menu_container">
-        <li id="home_btn"><Link to="/"><i className="fa-solid fa-house"></i>
-          <span className="pcOnly">Home</span></Link></li>
-        <li id="class_btn"><Link to="/classRooms"><i className="fa-solid fa-school"></i>
-          <span className="pcOnly">참여 클래스</span></Link></li>
-        <li id="student_btn" ><Link to="/users"><i className="fa-solid fa-user-group"></i>
-          <span className="pcOnly">교사 찾기</span></Link></li>
-        <li className="news_btn">
-          {isNew && <StyledNewIcon><Badge bg="danger">new</Badge></StyledNewIcon>}
-          <Link to="/news" ><i className="fa-solid fa-bell" /></Link>
+    {/* PC 학생 */}
+    {(user.uid && !user.isTeacher && !isMobile) && <>
+      <LogoImg src={brandLogo} alt="로고" />
+      <BrandTitle>생기부 쫑알이</BrandTitle>
+      <Row style={{ alignItems: "center" }}><p style={{ margin: "0 20px" }}>{user.name} 학생 사랑합니다.</p></Row>
+      <MenuWrapper>
+        <li><Link to="/"><Icon className="fa-solid fa-house"></Icon>
+          <span>Home</span></Link></li>
+        <li><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon>
+          <span>참여 클래스</span></Link></li>
+        <li><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon>
+          <span>나의 학교</span></Link></li>
+        <li>
+          {isNew && <NewIcon><Badge bg="danger">new</Badge></NewIcon>}
+          <Link to="/news" ><Icon className="fa-solid fa-bell" /></Link>
         </li>
+      </MenuWrapper>
+      {_profileImg && <ProfileImg className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
+      {!_profileImg && <ProfileImg className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
 
-        {/* 모바일 전용 */}
-        <li className="mobileOnly"><i id="my_info_btn" className="fa-solid fa-user" onClick={handleBtnClick}></i></li>
-      </ul>
-      {_profileImg && <img className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
-      {!_profileImg && <img className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
-
+    </>}
+    {/* 모바일 교사*/}
+    {(user.isTeacher && isMobile) && <>
+      <MenuWrapper>
+        <MoebileLi><Link to="/"><Icon className="fa-solid fa-house"></Icon></Link></MoebileLi>
+        <MoebileLi><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon></Link></MoebileLi>
+        <NewsWrapper >
+          {isNew && <NewDot>.</NewDot>}
+          <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
+        </NewsWrapper>
+        <MoebileLi><Icon className="fa-solid fa-user" onClick={() => setIsMyInfoShow(true)}></Icon></MoebileLi>
+      </MenuWrapper>
+    </>}
+    {/* 모바일 학생 */}
+    {(user.uid && !user.isTeacher && isMobile) && <>
+      <MenuWrapper>
+        <MoebileLi><Link to="/"><Icon className="fa-solid fa-house"></Icon></Link></MoebileLi>
+        <MoebileLi><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon></Link></MoebileLi>
+        <MoebileLi><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon></Link></MoebileLi>
+        <MoebileLi><Icon className="fa-solid fa-user" onClick={() => setIsMyInfoShow(true)}></Icon></MoebileLi>
+        <NewsWrapper >
+          {isNew && <NewDot>.</NewDot>}
+          <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
+        </NewsWrapper>
+      </MenuWrapper>
     </>}
     {/*개인 정보 수정 Modal 창 */}
     <MyInfoModal
-      user={user}
       show={isMyInfoShow}
       onHide={() => setIsMyInfoShow(false)}
+      isMobile={isMobile}
     />
-  </StyledNav >
+  </Container >
   )
 }
-
-const StyledNav = styled.nav`
+const Container = styled.nav`
   width: 100%;
   display: flex;
   background-color: #3454d1;
   align-items: center;
   padding: 20px 30px;
   color: #efefef;
-  h3 {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    color: #efefef;
-    font-weight: bold;   
-  }
-  .welcome {
-    display: flex;
-    align-items: center;
-    margin-left: 20px;
-    p{
-      margin: 0
-    }
-  }
-  .mobileOnly {
-    display: none;
-  }
-  ul.menu_container{
-    margin-bottom: 0;
-    padding: 0 30px;
-    flex-grow: 2;
-    display: flex;
-    justify-content: right;
-    align-items: center;
-    gap: 30px;
-  }
-  li.news_btn {
-    position: relative;
-  }
-  i {
-    margin-right: 5px;
-  }
   a {
     color: #efefef;
     text-decoration: none;
   }
-  img.profileImg {
-    width: 50px;
-    height: 50px;
-    border-radius: 25px;
-  }
-  img.logo {
-    width: 30px;
-    height: 30px;
-    margin-right: 10px;
-  }
-
   @media screen and (max-width: 767px){
     display: flex;
     position: fixed; 
@@ -180,54 +153,76 @@ const StyledNav = styled.nav`
     background-color: #efefef;
     padding: 5px;
     z-index: 999;
-    h3 {
-      display: none;
-    }
-    .welcome {
-      display: none;
-    }
-    .logo {
-      display: none;
-    }
-    .pcOnly {
-      display: none;
-    }
-    ul.menu_container {
-      width: 100%;
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      padding: 0;
-      gap: 0;
-    }
-    .mobileOnly {
-      display: flex;
-      font-size: 12px;
-    }
-    li {      
-      flex-grow: 1;
-      color: #3454d1;
-      display: flex;
-      flex-direction: column;
-      text-align: center; 
-    }
-    i {
-      font-size: 25px;
-      margin: 0;
-    }
     a {
       color: #3454d1;
       font-size: 12px;
     }
-    img.profileImg {
-      display: none;
-      cursor: pointer;
-    }
+`
+const Row = styled.div`
+  display: flex;
+`
+const NewsWrapper = styled.li`
+  position: relative;
+`
+const LogoImg = styled.img`
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+`
+const BrandTitle = styled.h3`
+  margin: 0;
+  display: flex;
+  align-items: center;
+  color: #efefef;
+  font-weight: bold;   
+`
+const MenuWrapper = styled.ul`
+  margin-bottom: 0;
+  padding: 0 30px;
+  flex-grow: 2;
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  gap: 30px;
+  @media (max-width: 768px) {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    padding: 0;
+    gap: 0;
   }
 `
-const StyledNewIcon = styled.div`
+const Icon = styled.i`
+  margin-right: 5px;
+  @media (max-width: 768px) {
+    font-size: 25px;
+    margin: 0;
+  }
+`
+const NewIcon = styled.div`
   position: absolute;
   top: -25px;
   right: -8px;
+`
+const ProfileImg = styled.img`
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  cursor: pointer;
+`
+const MoebileLi = styled.li`
+  color: #3454d1;
+  display: flex;
+`
+const NewDot = styled.div`
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  background-color: red;
+  width: 10px;
+  height: 10px;
+  border-radius: 10px;
+  color: #efefef;
 `
 export default Nav

@@ -3,11 +3,12 @@ import React, { useEffect, useState } from 'react'
 import Modal from 'react-bootstrap/Modal';
 import useLogout from '../../hooks/useLogout';
 import { Badge } from 'react-bootstrap';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 //컴포넌트
-import TeacherRadio from '../Radio/TeacherRadio';
 import CSInfoSelect from '../Select/CSInfoSelect';
-import LongW100Btn from '../Btn/LongW100Btn';
+import ModalBtn from '../Btn/ModalBtn';
+import FindSchoolSelect from '../FindSchoolSelect';
 //hooks
 import useStudent from '../../hooks/useStudent';
 import useFileCheck from '../../hooks/useFileCheck';
@@ -15,12 +16,10 @@ import useStorage from '../../hooks/useStorage';
 import useSetUser from '../../hooks/useSetUser';
 //이미지
 import unknown from '../../image/icon/unkown_icon.png'
-import FindSchoolSelect from '../FindSchoolSelect';
 
 //241124 1차 수정(코드 정리)
-const MyInfoModal = (props) => {
-  //----1.변수부--------------------------------
-  const user = props.user
+const MyInfoModal = ({ show, onHide, isMobile }) => {
+  const user = useSelector(({ user }) => user)
   useEffect(() => { //유저 
     setIsTeacher(user.isTeacher)
     setSchool(user.school)
@@ -58,7 +57,7 @@ const MyInfoModal = (props) => {
   const { updateUserInfo } = useSetUser();
   const { logout } = useLogout();
 
-  //----2.함수부--------------------------------
+  //------함수부------------------------------------------------ 
   //학번
   const handleOnChange = (event) => { //input text
     switch (event.target.id) {
@@ -75,82 +74,79 @@ const MyInfoModal = (props) => {
     }
   }
 
-  //라디오 버튼
-  const handleRadioBtnOnChange = (event) => {
-    switch (event.target.value) {
-      case "teacher":
-        setIsTeacher(true)
-        break;
-      case "student":
-        setIsTeacher(false)
-        break;
-      default: return
-    }
-  }
   //프로필 사진 변경
   const handleInputFielOnChange = (event) => {
     let file = event.target.files[0];
     setProfileFile(file) //유저가 파일 변경
   }
+
   //버튼
   const handleOnClick = (event) => {
     switch (event.target.id) {
-      case "ok_btn":
-        props.onHide()
-        setIsModifying(false)
-        break;
       case "cancel_btn":
-        setIsModifying(false)
-        setIsSearchSchool(false)
-        setProfileFile(null)
-        setProfileImg(user.profileImg)
-        setEmail(user.email ? user.email : '')
-        setPhoneNumber(user.phoneNumber ? user.phoneNumber : '')
-        break;
-      case "save_btn":
-        if (window.confirm("이대로 회원정보를 저장하시겠습니까?")) {
-          let studentNumber = createStudentNumber(_number - 1, _grade, _classNumber)
-          let userInfo
-          if (_profileFile) {//이미지 변경 시
-            saveProfileImgStorage(_profileFile).then(() => { //스토리지에 저장
-              getProfileImgUrl().then((profileUrl) => { //스토리지 저장 주소 받아서 userInfo 저장
-                userInfo = { email: _email, phoneNumber: _phoneNumber, studentNumber, profileImg: profileUrl, isTeacher: _isTeacher, school: _school }
-                updateUserInfo(userInfo)
-              })
-              setProfileFile(null)
-            })
-          } else {
-            userInfo = { email: _email, phoneNumber: _phoneNumber, studentNumber, profileImg: _profileImg, isTeacher: _isTeacher, school: _school }
-            updateUserInfo(userInfo)
-          }//이미지 변경 x
-          setIsModifying(false)
-        }
+
         break;
       case "delete_img_btn":
         setProfileImg(null)
         break;
-      case "leave_btn":
-        window.alert("25년 초에 구현 예정입니다.")
-        break;
       default: return;
     }
   }
+
+  //확인
+  const handleConfirmOnClick = () => {
+    onHide();
+    setIsModifying(false)
+  }
+
+  //저장
+  const handleSaveOnClick = () => {
+    if (window.confirm("이대로 회원정보를 저장하시겠습니까?")) {
+      let studentNumber = createStudentNumber(_number - 1, _grade, _classNumber)
+      let userInfo
+      if (_profileFile) {//이미지 변경 시
+        saveProfileImgStorage(_profileFile).then(() => { //스토리지에 저장
+          getProfileImgUrl().then((profileUrl) => { //스토리지 저장 주소 받아서 userInfo 저장
+            userInfo = { email: _email, phoneNumber: _phoneNumber, studentNumber, profileImg: profileUrl, isTeacher: _isTeacher, school: _school }
+            updateUserInfo(userInfo)
+          })
+          setProfileFile(null)
+        })
+      } else {
+        userInfo = { email: _email, phoneNumber: _phoneNumber, studentNumber, profileImg: _profileImg, isTeacher: _isTeacher, school: _school }
+        updateUserInfo(userInfo)
+      }//이미지 변경 x
+      setIsModifying(false)
+    }
+  }
+
+  //취소
+  const handleCancelOnClick = () => {
+    setIsModifying(false)
+    setIsSearchSchool(false)
+    setProfileFile(null)
+    setProfileImg(user.profileImg)
+    setEmail(user.email ? user.email : '')
+    setPhoneNumber(user.phoneNumber ? user.phoneNumber : '')
+  }
+
+  //회원 탈퇴
+  const handleLeaveOnClick = () => { window.alert("25년 초에 구현 예정입니다.") }
+
   //로그아웃
   const handleLogoutOnClick = () => {
-    props.onHide()
-    logout()
+    onHide();
+    logout();
   }
 
   return (
     <Modal
-      show={props.show}
-      onHide={props.onHide}
+      show={show}
+      onHide={onHide}
       backdrop="static"
     >
-      <Modal.Header>
-        <Modal.Title>{user.name}님의 정보</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+      <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>{user.name}님의 정보</Modal.Header>
+      <Modal.Body style={{ backgroundColor: "#efefef" }}>
         {/* 일반 */}
         {!isModifying && <Container>
           <div>
@@ -160,10 +156,10 @@ const MyInfoModal = (props) => {
             <p>연락처: {user.phoneNumber ? user.phoneNumber : "없음"}</p>
             <p>회원구분: {user.isTeacher ? "교사 회원" : "학생 회원"}</p>
           </div>
-          <ProfileImgWrapper>
+          {!isMobile && <ProfileImgWrapper>
             {_profileImg && <img src={_profileImg} alt="프로필 이미지" />}
             {!_profileImg && <img src={unknown} alt="프로필 이미지" />}
-          </ProfileImgWrapper>
+          </ProfileImgWrapper>}
         </Container>}
         {/* 수정 */}
         {isModifying && <fieldset>
@@ -179,38 +175,37 @@ const MyInfoModal = (props) => {
                 <input className="phoneNumber_input" type="text" value={_phoneNumber} onChange={(event) => { setPhoneNumber(event.target.value) }} />
               </InputWrapper>
             </div>
-            <ProfileImgWrapper>
+            {!isMobile && <ProfileImgWrapper>
               <label htmlFor="profile_img_btn" style={{ cursor: "pointer" }} >
                 {_profileImg && <img src={_profileImg} alt="프로필 이미지" onClick={handleOnClick} />}
                 {!_profileImg && <img src={unknown} alt="프로필 이미지" onClick={handleOnClick} />}
               </label>
               <input id="profile_img_btn" type="file" onChange={handleInputFielOnChange} accept={"image/*"} style={{ display: "none" }} />
               <Badge bg="primary" id="delete_img_btn" onClick={handleOnClick}>사진 삭제</Badge>
-            </ProfileImgWrapper>
+            </ProfileImgWrapper>}
           </UpperSection>
-          <LowerSection>
-            <TeacherRadio isTeacher={_isTeacher} onChange={handleRadioBtnOnChange} />
+          <div>
             {!_isTeacher && <CSInfoSelect grade={_grade} classNumber={_classNumber} number={_number} handleOnChange={handleOnChange} />}
             <InputWrapper>
               <label>학교명:&nbsp;&nbsp;</label>
               <input type="text" value={_school?.schoolName ?? ''} readOnly onClick={() => { setIsSearchSchool(true) }} />
             </InputWrapper>
             {_isSearchSchool && <FindSchoolSelect setSchool={setSchool} />}
-          </LowerSection>
+          </div>
         </fieldset>
         }
-        <LongW100Btn id="leave_btn" btnName="회원 탈퇴" btnOnClick={handleOnClick}
-          styles={{ btnColor: "#9b0c24", border: "none", color: "white", hoverBtnColor: "rgb(155,12,36,0.5)" }} />
+        {!isModifying && <Row style={{ justifyContent: "flex-end", gap: "10px" }}>
+          <ClickableText onClick={handleLeaveOnClick} >회원 탈퇴</ClickableText>
+          <ClickableText onClick={() => { setIsModifying(true) }}>정보 수정</ClickableText>
+        </Row>}
+        {isModifying && <Row style={{ justifyContent: "flex-end", gap: "10px" }}>
+          <ClickableText onClick={handleSaveOnClick} >저장</ClickableText>
+          <ClickableText onClick={handleCancelOnClick} >취소</ClickableText>
+        </Row>}
       </Modal.Body>
-      <Modal.Footer>
-        <FlexWrapper>
-          {!isModifying && <LongW100Btn id="ok_btn" btnName="정보 수정" btnOnClick={() => { setIsModifying(!isModifying) }}
-            styles={{ btnColor: "#3454d1", border: "none", color: "white" }} />}
-          {!isModifying && <LongW100Btn id="ok_btn" btnName="닫기" btnOnClick={handleOnClick} styles={{ btnColor: "#3454d1", border: "none", color: "white" }} />}
-          {isModifying && <LongW100Btn id="save_btn" btnName="저장" btnOnClick={handleOnClick} styles={{ btnColor: "#3454d1", border: "none", color: "white" }} />}
-          {isModifying && <LongW100Btn id="cancel_btn" btnName="취소" btnOnClick={handleOnClick} styles={{ btnColor: "#3454d1", border: "none", color: "white" }} />}
-          <LongW100Btn id="logout_btn" btnName="로그아웃" btnOnClick={handleLogoutOnClick} styles={{ btnColor: "#3454d1", border: "none", color: "white" }} />
-        </FlexWrapper>
+      <Modal.Footer style={{ backgroundColor: "#efefef" }}>
+        <ModalBtn onClick={handleLogoutOnClick} >로그아웃</ModalBtn>
+        <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirmOnClick}>확인</ModalBtn>
       </Modal.Footer>
     </Modal>
   )
@@ -219,6 +214,9 @@ const MyInfoModal = (props) => {
 const Container = styled.div`
   display: flex;
   padding: 0.35em 0.75em 0.625em;
+`
+const Row = styled.div`
+  display: flex;
 `
 const UpperSection = styled.div`
   display: flex;
@@ -232,18 +230,20 @@ const ProfileImgWrapper = styled.div`
     height: 110px;
   }
 `
-const LowerSection = styled.div`
-`
-const FlexWrapper = styled.div`
-  display: flex;
-  flex-grow: 1;
-  gap: 10px;
+const ClickableText = styled.p`
+  margin: 0;
+  text-decoration: underLine;
+  cursor: pointer;
+  &:hover {
+    color: #3454d1;
+  }
 `
 const InputWrapper = styled.div`
   margin: 15px 0; 
-  input { 
+  input {
     height: 35px;
     border-radius: 7px;
+    border: 1px solid rgba(120, 120, 120, 0.5)
   }
 `
 

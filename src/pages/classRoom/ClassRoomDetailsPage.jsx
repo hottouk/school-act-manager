@@ -180,7 +180,7 @@ const ClassroomDetailsPage = () => {
         {/* 쫑알이(교사)*/}
         {user.isTeacher && <MainPanel>
           <TitleText>세특 쫑알이</TitleText>
-          <MainSelector type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
+          <MainSelector isMobile={isMobile} type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
         </MainPanel>}
         {/* 퀴즈 게임부 */}
         <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} myPetDetails={myPetDetails} onClick={handleMonsterOnClick} />
@@ -246,7 +246,7 @@ const Container = styled.main`
   margin: 0 auto 50px;
   opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
   transition: opacity 0.7s ease;
-  @media screen and (max-width: 767px){
+  @media screen and (max-width: 768px){
     position: fixed;
     width: 100%;
     height: ${(props) => props.$clientheight}px;

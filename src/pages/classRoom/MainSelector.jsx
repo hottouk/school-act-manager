@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 //css
 import styled from "styled-components"
 
-const MainSelector = ({ type, studentList, actiList, classId, setIsPerfModalShow }) => {
+const MainSelector = ({ isMobile, type, studentList, actiList, classId, setIsPerfModalShow }) => {
   //전역 변수
   const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })
   useEffect(() => {
@@ -92,11 +92,11 @@ const MainSelector = ({ type, studentList, actiList, classId, setIsPerfModalShow
           />
         </StyledSelector>}
         {(!actiList || actiList.length === 0) &&
-          <StyledSelector>활동이 없습니다. 활동을 추가해주세요.
-            <MidBtn onClick={() => { navigate("/activities_setting") }}>활동 추가</MidBtn>
+          <StyledSelector>활동이 없습니다. PC 버젼에서 활동을 추가해주세요.
+            {!isMobile && <MidBtn onClick={() => { navigate("/activities_setting") }}>활동 추가</MidBtn>}
           </StyledSelector>}
         <StyledAccContainer>
-          <textarea type="text" value={_accRecord} disabled={true} />
+          <AccTextArea type="text" value={_accRecord} disabled={true} />
           <div className="byt_con">
             <input type="text" disabled={true} value={_byte} />
             <p style={{ display: "inline" }}> /1500 Byte</p>
@@ -104,8 +104,8 @@ const MainSelector = ({ type, studentList, actiList, classId, setIsPerfModalShow
         </StyledAccContainer>
         <BtnWrapper>
           <MainBtn onClick={() => { setIsCompleteModalShow(true) }}>선택 완료</MainBtn>
-          {setIsPerfModalShow && <MainBtn onClick={() => { setIsPerfModalShow(true) }}>수행 평가 관리</MainBtn>}
-          <MainBtn onClick={() => { navigate('allStudents') }} >반 전체 세특 보기</MainBtn>
+          {(setIsPerfModalShow && !isMobile) && <MainBtn onClick={() => { setIsPerfModalShow(true) }}>수행 평가 관리</MainBtn>}
+          {!isMobile && <MainBtn onClick={() => { navigate('allStudents') }} >반 전체 세특 보기</MainBtn>}
         </BtnWrapper>
       </Container>
       {/* 선택 완료 모달 */}
@@ -125,7 +125,7 @@ const Container = styled.div`
   min-height: 350px;
   margin: 0 auto;
   padding: 5px;
-  @media screen and (max-width: 767px){
+  @media (max-width: 767px){
     width: 100%;
     margin: 0;
   }
@@ -139,7 +139,7 @@ const StyledSelector = styled.div`
   width: 50%;
   margin: 0 auto;
   margin-top: 35px;
-  @media screen and (max-width: 767px){
+  @media(max-width: 768px){
     width: 80%;
     margin-top: 35px;
   }
@@ -150,12 +150,6 @@ const StyledAccContainer = styled.div`
   align-items: flex-end;
   margin: 10px auto;
   width: 70%;
-  textarea {
-    width: 80%;
-    height: 100px;
-    margin: 10px auto;
-    border-radius: 7px;
-  }
   input {
     height: 35px;
     width: 85px;
@@ -163,6 +157,15 @@ const StyledAccContainer = styled.div`
   }
   .byt_con {
     margin-right: 10%;
+  }
+`
+const AccTextArea = styled.textarea`
+  width: 80%;
+  height: 100px;
+  margin: 10px auto;
+  border-radius: 7px;
+  @media(max-width: 768px) {
+    width: 100%;
   }
 `
 export default MainSelector

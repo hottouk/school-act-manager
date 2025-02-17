@@ -1,28 +1,31 @@
 //라이브러리
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { useSelector } from 'react-redux'
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { useSelector } from 'react-redux';
 //컴포넌트
-import EmptyResult from '../../components/EmptyResult'
-import EvolutionModal from '../../components/Modal/EvolutionModal'
-import SmallBtn from '../../components/Btn/SmallBtn'
+import EmptyResult from '../../components/EmptyResult';
+import EvolutionModal from '../../components/Modal/EvolutionModal';
+import SmallBtn from '../../components/Btn/SmallBtn';
 //hooks
-import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData'
-import useFireUserData from '../../hooks/Firebase/useFireUserData'
-import useFireTransaction from '../../hooks/useFireTransaction'
-import usePet from '../../hooks/usePet'
+import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
+import useFireUserData from '../../hooks/Firebase/useFireUserData';
+import useFireTransaction from '../../hooks/useFireTransaction';
+import usePet from '../../hooks/usePet';
+import useMediaQuery from '../../hooks/useMediaQuery';
 
-//240201 갱신
+//240201 갱신 -> 모바일(250215)
 const WhatsNewPage = () => {
   //준비
   const user = useSelector(({ user }) => { return user })
-  const { myUserData } = useFetchRtMyUserData();                   //실시간 유저 정보 구독
-  useEffect(() => { bindData(); }, [myUserData])
+  const isMobile = useMediaQuery("(max-width: 767px)")
+  const { myUserData } = useFetchRtMyUserData();          //실시간 유저 정보 구독
+  useEffect(() => { bindData(); }, [myUserData]);
+  //새소식
   const [onSubmitList, setOnSubmitList] = useState([]);
   const [reward, setReward] = useState(null);
-  const [isRewardModal, setIsRewardModal] = useState(false)
+  const [isRewardModal, setIsRewardModal] = useState(false);
   const { approveKlassTransaction } = useFireTransaction();
-  const { getInitialPet } = usePet()
+  const { getInitialPet } = usePet();
   const { approvWinTransaction, denyTransaction, confirmDenialTransaction } = useFireTransaction();
   const { deleteUserArrayInfo } = useFireUserData();
 
@@ -32,19 +35,16 @@ const WhatsNewPage = () => {
     if (!myUserData) return;
     setOnSubmitList(myUserData.onSubmitList);
   }
-
   //가입 승인
   const handleApproveJoinOnClick = (item) => {
     const { classId, petId } = item
     const pet = { ...getInitialPet(item.classSubj), classId, petId }
     approveKlassTransaction(item, pet)
   }
-
   //생기부 기록 승인
   const handleApproveWinOnClick = (item) => {
     approvWinTransaction(item)
   }
-
   //반려
   const handleDenyOnClick = (item) => {
     const reason = window.prompt("거부 사유를 입력하세요")
@@ -54,15 +54,14 @@ const WhatsNewPage = () => {
   }
 
   //------교사용----------------------------------------------- 
-  //학생 가입 여부 알림
+  //학생 가입 여부
   const TeacherKlassJoinRow = ({ index, item }) => {
-    const { studentNumber, studentName, classTitle, classSubj, school, petLabel, applyDate } = item
-    return <>
-      <GridItem>{index + 1}</GridItem>
+    const { studentNumber, studentName, classTitle, classSubj, petLabel, applyDate } = item
+    return <><GridItem>{index + 1}</GridItem>
       <GridItem>{studentName || "에러"}</GridItem>
       <GridItem>{classTitle || "에러"}</GridItem>
       <GridItem><p style={{ margin: "0" }}>
-        <Highlight>{school} {studentNumber} {studentName}</Highlight> 학생이 <Highlight>{classTitle}</Highlight>반
+        <Highlight>{studentNumber} {studentName}</Highlight> 학생이 <Highlight>{classTitle}</Highlight>반
         <Highlight> {classSubj}</Highlight> 과목
         <Highlight> {petLabel}</Highlight>을 구독 신청하셨습니다. 학번과 이름이 맞으면 수락을 눌러주세요
       </p></GridItem>
@@ -71,8 +70,7 @@ const WhatsNewPage = () => {
       <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }} >X</SmallBtn></GridItem>
     </>
   }
-
-  //학생 생기부 기록 알림
+  //학생 생기부 기록
   const TeacherWinRow = ({ index, item }) => {
     const { actiRecord, name, studentNumber, title, date } = item
     return <>
@@ -89,6 +87,21 @@ const WhatsNewPage = () => {
       <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }}>X</SmallBtn></GridItem>
     </>
   }
+  //코티칭칭
+  const CoTeachingRow = ({ index, item }) => {
+    const { klass, teacher, applyDate } = item
+    return <><GridItem>{index + 1}</GridItem>
+      <GridItem>{teacher.name || "에러"}</GridItem>
+      <GridItem>{klass.classTitle || "에러"}</GridItem>
+      <GridItem><p style={{ margin: "0" }}>
+        <Highlight>{teacher.name}</Highlight> 선생님께서 <Highlight>{klass.classTitle}</Highlight>반에
+        <Highlight> 공동 교사</Highlight>로 신청하셨습니다.
+      </p></GridItem>
+      <GridItem>{applyDate}</GridItem>
+      <GridItem><SmallBtn btnOnClick={() => { handleApproveJoinOnClick(item) }}>O</SmallBtn></GridItem>
+      <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }} >X</SmallBtn></GridItem>
+    </>
+  }
 
   //------학생용----------------------------------------------- 
   //진화 알림
@@ -101,7 +114,6 @@ const WhatsNewPage = () => {
       <GridItem><SmallBtn onClick={() => { handleEvolutionOnClick({ monId, petId, name, type, userData: myUserData }) }}>진화</SmallBtn></GridItem>
     </>
   }
-
   //결과 알림
   const StudentResultRow = (({ index, item }) => {
     const { classTitle, petLabel, reason, school, title } = item
@@ -119,6 +131,52 @@ const WhatsNewPage = () => {
     </React.Fragment>
   })
 
+  //------교사용 모바일-----------------------------------------
+  const TeacherKlassJoinBubble = ({ index, item }) => {
+    const { studentNumber, studentName, classTitle, classSubj, petLabel, applyDate } = item
+    return <BubbleWrapper>
+      <p style={{ margin: "0" }}>
+        <Highlight>{studentNumber} {studentName}</Highlight> 학생이 <Highlight>{classTitle}</Highlight>반
+        <Highlight> {classSubj}</Highlight> 과목
+        <Highlight> {petLabel}</Highlight>을 구독 신청하셨습니다. 학번과 이름이 맞으면 수락을 눌러주세요
+        <Row style={{ justifyContent: "flex-end" }}>{applyDate}</Row>
+      </p>
+      <Row style={{ justifyContent: "space-evenly", marginTop: "20px" }}>
+        <SmallBtn btnOnClick={() => { handleApproveJoinOnClick(item) }}>O</SmallBtn>
+        <SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }} >X</SmallBtn>
+      </Row>
+    </BubbleWrapper>
+  }
+  const TeacherWinBubble = ({ index, item }) => {
+    const { actiRecord, name, studentNumber, title, date } = item
+    return <BubbleWrapper>
+      <p style={{ margin: "0", whiteSpace: 'pre-wrap' }}>
+        <Highlight>{studentNumber} {name}</Highlight> 학생이 <Highlight>{title}</Highlight>활동에서
+        기준을 충족하여 다음과 같은 생기부 문구를 획득합니다.{'\n'}
+        "{actiRecord}"
+      </p>
+      <Row style={{ justifyContent: "flex-end" }}>{date || "날짜 정보 없음"}</Row>
+      <Row style={{ justifyContent: "space-evenly", marginTop: "20px" }}>
+        <SmallBtn btnOnClick={() => { handleApproveWinOnClick(item) }}>O</SmallBtn>
+        <SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }} >X</SmallBtn>
+      </Row>
+    </BubbleWrapper>
+  }
+  const CoteachingBubble = ({ index, item }) => {
+    const { klass, teacher, applyDate } = item
+    return <BubbleWrapper>
+      <p style={{ margin: "0", whiteSpace: 'pre-wrap' }}>
+        <Highlight>{teacher.name}</Highlight> 선생님께서 <Highlight>{klass.classTitle}</Highlight> 클래스에
+        <Highlight> 공동 교사</Highlight>로 신청하셨습니다.
+      </p>
+      <Row style={{ justifyContent: "flex-end" }}>{applyDate || "날짜 정보 없음"}</Row>
+      <Row style={{ justifyContent: "space-evenly", marginTop: "20px" }}>
+        <SmallBtn btnOnClick={() => { handleApproveWinOnClick(item) }}>O</SmallBtn>
+        <SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }} >X</SmallBtn>
+      </Row>
+    </BubbleWrapper>
+  }
+
   //진화 확인
   const handleEvolutionOnClick = (info) => {
     setIsRewardModal(true)
@@ -132,27 +190,28 @@ const WhatsNewPage = () => {
 
   return (<><Container>
     {/* 교사용 */}
-    {user.isTeacher && <>
+    {(user.isTeacher && !isMobile) && <>
       <TeacherGridContainer>
         <TableHeaderWrapper>
           <Header>연번</Header>
-          <Header>학생</Header>
-          <Header>대상</Header>
+          <Header>누가</Header>
+          <Header>무엇</Header>
           <Header>내용</Header>
           <Header>일시</Header>
           <Header>승인</Header>
           <Header>반려</Header>
         </TableHeaderWrapper>
-        {onSubmitList.length === 0 && <GridRow><EmptyResult comment={"신청 내역이 없어요"} /></GridRow>}
+        {(!onSubmitList || onSubmitList?.length === 0) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
         {onSubmitList?.map((item, index) => {
           if (item.type === "join") { return <TeacherKlassJoinRow key={`${item.studentId}${item.petId}`} index={index} item={item} /> }
+          else if (item.type === "co-teacher") { return <CoTeachingRow key={`${index}`} index={index} item={item} /> }
           else { return <TeacherWinRow key={`${item.actiId}${item.sId}${index}`} index={index} item={item} /> }
         })}
       </TeacherGridContainer>
     </>}
 
     {/* 학생용 */}
-    {!user.isTeacher && <>
+    {(!user.isTeacher && !isMobile) && <>
       <StudentGridContainer>
         <TableHeaderWrapper>
           <Header>연번</Header>
@@ -168,6 +227,16 @@ const WhatsNewPage = () => {
         )}
       </StudentGridContainer>
     </>}
+
+    {/* 교사용 모바일 */}
+    {isMobile && <>
+      {(onSubmitList?.length === 0 || !onSubmitList) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
+      {onSubmitList?.map((item, index) => {
+        if (item.type === "join") { return <TeacherKlassJoinBubble key={`${item.studentId}${item.petId}`} index={index} item={item} /> }
+        else if (item.type === "co-teacher") { return <CoteachingBubble key={index} index={index} item={item} /> }
+        else { return <TeacherWinBubble key={`${item.actiId}${item.sId}${index}`} index={index} item={item} /> }
+      })}
+    </>}
   </Container >
     <EvolutionModal show={isRewardModal} onHide={() => { setIsRewardModal(false) }} info={reward} />
   </>)
@@ -180,6 +249,9 @@ const Container = styled.main`
     width: 100%;
     height: ${(props) => props.$clientheight}px;
   }
+`
+const Row = styled.div`
+  display: flex;
 `
 const GridRow = styled.div`
   grid-column: 1/-1;
@@ -221,15 +293,21 @@ const Header = styled.div`
 const GridItem = styled.div`
   background-color: #efefef;
   padding: 10px;
-  color: black;
+  color: 3a3a3a;
   border: 1px solid #ddd;
   border-radius: 5px;
   text-align: center;
-  display: felx;
   &.left-align { text-align: left; }
 `
 const Highlight = styled.span`
   font-weight: bold;
   color: #3454d1;
+`
+const BubbleWrapper = styled.div`
+  background-color: #efefef;
+  padding: 10px;
+  color: 3a3a3a;
+  border: 1px solid #ddd;
+  border-radius: 15px;
 `
 export default WhatsNewPage

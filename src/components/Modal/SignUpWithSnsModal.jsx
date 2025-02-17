@@ -25,10 +25,7 @@ const SignUpWithSnsModal = (props) => {
   const [_classNumber, setClassNumber] = useState("default");
   const [_number, setNumber] = useState(1);
   const [_isPublic, setIsPublic] = useState(true);
-  useEffect(() => {
-    setSchool(null);
-    if (!_isPublic) { setSchool({ schoolName: "대안, 위탁, 사설 단체" }); }
-  }, [_isPublic])
+  useEffect(() => { setSchool(null); }, [_isPublic])
   const [_school, setSchool] = useState(null);
   const [_isSearchSchool, setIsSearchSchool] = useState(false) //학교 검색창 보이기
   console.log(_school)
@@ -46,20 +43,21 @@ const SignUpWithSnsModal = (props) => {
 
   //유효성 검사
   const check = () => {
-    // 조건 1: 학교를 선택했는가?
-    if (!_school) {
-      return { valid: false, message: "학교를 입력하지 않았습니다!" };
-    }
-    // 조건 2: 학생이 학번을 입력헀는가?
+    // 조건 1: 학생이 학번을 입력헀는가?
     if (!_isTeacher) {
       if (_grade === "default" || _classNumber === "default" || !_number) { return { valid: false, message: "학생의 학년, 반, 번호를 입력하지 않았습니다!" }; }
+    }
+    // 조건 2: 학교를 선택했는가?
+    if (!_school) {
+      if (!_isPublic) { return { valid: true, message: "위탁, 대안학교" } }
+      else { return { valid: false, message: "학교를 입력하지 않았습니다!" }; }
     }
     // 모든 조건 통과
     return { valid: true, message: "유효 입력!" };
   }
 
   //제출
-  const handleSubmit = async (event) => {
+  const handleOnSubmit = async (event) => {
     event.preventDefault(); //새로고침 방지
     const isValid = check();
     if (isValid.valid) {
@@ -68,9 +66,11 @@ const SignUpWithSnsModal = (props) => {
       if (!userInfo) return;
       addUser(userInfo);
       dispatcher(setUser(userInfo));
-      if (userInfo.school.schoolCode) { signUpSchool(userInfo.school.schoolCode, userInfo) };
+      //회원 가입 시 학교 자동 가입
+      if (_school?.schoolCode) { signUpSchool(_school, userInfo) };
     } else {
       window.alert(isValid.message);
+      console.log(isValid.message);
     }
   }
 
@@ -97,7 +97,7 @@ const SignUpWithSnsModal = (props) => {
       onHide={props.onHide}>
       <Modal.Header closeButton />
       <Modal.Body style={{ backgroundColor: "#efefef" }}>
-        <StyledForm onSubmit={handleSubmit}>
+        <StyledForm onSubmit={handleOnSubmit}>
           <fieldset>
             <Row>
               <DotTitle title="이름" styles={{ fontWeight: "400", dotColor: "#3454d1" }} />

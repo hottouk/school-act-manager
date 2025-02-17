@@ -1,8 +1,9 @@
-import React, { useRef, useState } from 'react'
-import SmallBtn from '../Btn/SmallBtn'
-import styled from 'styled-components'
+import React, { useRef, useState } from 'react';
+import SmallBtn from '../Btn/SmallBtn';
+import styled from 'styled-components';
+import SearchSection from './SearchSection';
 //24.12.15(생성)
-const SearchBar = ({ title, type, list, setList }) => {
+const SearchBar = ({ title, type, list, setList, isMobile }) => {
   const [keyword, setKeyword] = useState('');
   const originalListRef = useRef([]); //상태 변경에도 값을 유지하기 위해서 ref로 받음.
   // 초기 값 저장 (컴포넌트가 처음 렌더링될 때 한 번만 실행)
@@ -30,21 +31,12 @@ const SearchBar = ({ title, type, list, setList }) => {
   return (
     <Container>
       <p>{title}</p>
-      {type === "acti" &&
-        <Wrapper>
-          <input type="text" value={keyword} placeholder="제목으로 검색" onChange={(e) => { setKeyword(e.target.value) }} />
-          <button onClick={() => searchData("title", keyword)}>검색</button>
-        </Wrapper>}
-      {type === "classroom" &&
-        <Wrapper>
-          <input type="text" value={keyword} placeholder="반 이름으로 검색" onChange={(e) => { setKeyword(e.target.value) }} />
-          <button onClick={() => searchData("classTitle", keyword)}>검색</button>
-        </Wrapper>}
+      {(type === "acti" && !isMobile) &&
+        <SearchSection keyword={keyword} placeholder="제목 검색" onChange={(e) => { setKeyword(e.target.value) }} onClick={() => searchData("title", keyword)} />}
+      {(type === "classroom" && !isMobile) &&
+        <SearchSection keyword={keyword} placeholder="반 이름 검색" onChange={(e) => { setKeyword(e.target.value) }} onClick={() => searchData("classTitle", keyword)} />}
       {type === "school" &&
-        <Wrapper>
-          <input type="text" value={keyword} placeholder="학교 이름" onChange={(e) => { setKeyword(e.target.value) }} />
-          <button onClick={() => searchData("classTitle", keyword)}>검색</button>
-        </Wrapper>}
+        <SearchSection keyword={keyword} placeholder="학교명 검색" onChange={(e) => { setKeyword(e.target.value) }} onClick={() => searchData("classTitle", keyword)} />}
       <BtnWrapper>
         {type === "acti" && <>
           <SmallBtn btnColor="#3454d1" btnName="과목" btnOnClick={() => { sortDataList("subject") }} />
@@ -54,7 +46,7 @@ const SearchBar = ({ title, type, list, setList }) => {
           <SmallBtn btnColor="#3454d1" btnName="제목" btnOnClick={() => { sortDataList("title") }} />
           <SmallBtn btnColor="#3454d1" btnName="교사" btnOnClick={() => { sortDataList("madeBy") }} />
         </>}
-        {type === "classroom" && <>
+        {(type === "classroom" && !isMobile) && <>
           <SmallBtn btnColor="#3454d1" btnName="과목" btnOnClick={() => { sortDataList("subject") }} />
           <SmallBtn btnColor="#3454d1" btnName="반이름" btnOnClick={() => { sortDataList("classNumber") }} />
         </>}
@@ -82,8 +74,6 @@ const Wrapper = styled.div`
 const BtnWrapper = styled.div`
   display: inline-flex;
   align-items: center;
-  button { 
-    margin: 0 10px;
-  }
+  button { margin: 0 10px; }
 `
 export default SearchBar
