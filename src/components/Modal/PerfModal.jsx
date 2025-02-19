@@ -3,32 +3,20 @@ import Modal from 'react-bootstrap/Modal';
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux';
 import Select from 'react-select'
+import styled from 'styled-components';
 //컴포넌트
 import ModalBtn from '../Btn/ModalBtn';
 import MidBtn from '../Btn/MidBtn';
 //hooks
 import useGetByte from '../../hooks/useGetByte';
 import useAcc from '../../hooks/useAcc';
-//css
-import styled from 'styled-components';
 
 //2024.11.13 생성
 const PerfModal = ({ show, onHide, studentList, classId }) => {
-  //----1.변수부--------------------------------
   useEffect(() => { initData() }, [studentList])
   const actiList = useSelector(({ allActivities }) => allActivities)
   //acti중에서 수행평가를 찾는다.
-  useEffect(() => {
-    let options = []
-    let perfList = actiList.filter(acti => acti.perfRecordList && acti.perfRecordList.length > 0)
-    perfList.map(perf => {
-      return options.push({ //찾아서 필요한 속성들만 재구성
-        label: perf.title, value: perf.record, title: perf.title, perfRecordList: perf.perfRecordList, id: perf.id,
-        uid: perf.uid, record: perf.record, subject: perf.subject, scores: perf.scores, money: perf.money, monImg: perf.monImg
-      })
-    })
-    setOptionList([...options])
-  }, [actiList])
+  useEffect(() => { renderOptions(); }, [actiList])
   const [selectedPerf, setSelectedPerf] = useState(null)
   useEffect(() => {
     let perfId = selectedPerf?.id ?? null;
@@ -65,13 +53,25 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   //개별화 대체
   const [replaceList, setReplaceList] = useState({})
 
-  //----2.함수부--------------------------------
+  //------함수부------------------------------------------------  
   //초기화
   const initData = () => {
     setPerfRecord(createMatrix(studentList, ''))
     setPerfTempRecord(createMatrix(studentList, ''))
     setExtractResult(createMatrix(studentList, []))
     setSelectedPerf(null)
+  }
+  //옵션 랜더링
+  const renderOptions = () => {
+    const options = []
+    const perfList = actiList.filter(acti => acti.perfRecordList && acti.perfRecordList.length > 0)
+    perfList.forEach(perf => {
+      options.push({
+        label: perf.title, value: perf.record, title: perf.title, perfRecordList: perf.perfRecordList, id: perf.id,
+        uid: perf.uid, record: perf.record, subject: perf.subject, scores: perf.scores, money: perf.money,
+      }) //필요 속성들 재구성
+    })
+    setOptionList([...options])
   }
   //이중 객체 생성
   const createMatrix = (list, initVal) => {
@@ -186,15 +186,15 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
             <StyledHeader>연번</StyledHeader>
             <StyledHeader>학번</StyledHeader>
             <StyledHeader>이름</StyledHeader>
-            <StyledHeader>수행 성취도</StyledHeader>
+            <StyledHeader>성취도</StyledHeader>
             <StyledHeader>개별화 부분</StyledHeader>
-            <StyledHeader>수행 문구</StyledHeader>
+            <StyledHeader>문구</StyledHeader>
             <StyledHeader>바이트</StyledHeader>
           </TableHeaderWrapper>
           {(studentList?.length > 0) && studentList.map((student, index) => {
-            let key = student.id
-            let studentNumber = student.studentNumber
-            let name = (student.writtenName || "미등록")
+            const key = student.id
+            const studentNumber = student.studentNumber
+            const name = (student.writtenName || "미등록")
             return <React.Fragment key={key}>
               <StyledGridItem>{index + 1}</StyledGridItem>     {/* 연번 */}
               <StyledGridItem>{studentNumber}</StyledGridItem> {/* 학번 */}

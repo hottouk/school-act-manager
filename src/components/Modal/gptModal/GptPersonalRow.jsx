@@ -3,7 +3,7 @@ import Select from 'react-select'
 //css
 import styled from 'styled-components'
 
-//2024.09.10(생성)
+//생성(240910)-> 디자인 수정(250220)
 const GptPersonalRow = ({ itemObj, onInputChange, }) => {
   const inputRef = useRef('')
   const propTitle = itemObj.prop
@@ -12,15 +12,15 @@ const GptPersonalRow = ({ itemObj, onInputChange, }) => {
     optionList.push({ label: keyword, value: keyword, id: propTitle })
     return null
   })
-  
+
   return (
     <Container>
-      {propTitle !== "희망 직군[학과]" ? <Select
+      {propTitle !== "희망 직군[학과]" ? <Select 
         styles={{
           control: (baseStyles, state) => (
             {
               ...baseStyles,
-              width: "200px",
+              width: "250px",
               height: "50px"
             }),
         }}
@@ -31,7 +31,7 @@ const GptPersonalRow = ({ itemObj, onInputChange, }) => {
         options={optionList}
         placeholder={propTitle} /> : <p>희망 직군[학과]</p>}
 
-      <input type="text" ref={inputRef} onChange={(event) => { onInputChange(event, "input") }} id={propTitle} />
+      <StyledInput type="text" ref={inputRef} onChange={(event) => { onInputChange(event, "input") }} id={propTitle} />
     </Container>
   )
 }
@@ -48,10 +48,12 @@ const Container = styled.div`
     border: 1px solid black;
     border-radius: 5px;
   }
-  input {
-    width: 55%;
-    height: 35px;
-    border-radius: 10px;
-  }
+ 
+`
+const StyledInput = styled.input`
+  width: 70%;
+  height: 35px;
+  border: 1px solid rgba(120, 120, 120, 0.5);
+  border-radius: 10px;
 `
 export default GptPersonalRow

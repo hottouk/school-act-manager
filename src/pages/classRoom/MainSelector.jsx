@@ -14,35 +14,30 @@ import { useNavigate } from 'react-router-dom';
 import styled from "styled-components"
 
 const MainSelector = ({ isMobile, type, studentList, actiList, classId, setIsPerfModalShow }) => {
-  //전역 변수
-  const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })
+  const navigate = useNavigate();
+  const activitySelected = useSelector(({ activitySelected }) => { return activitySelected });
   useEffect(() => {
-    let acc = activitySelected.reduce((acc, cur) => { return acc.concat(' ' + cur.record) }, '')
-    let byte = getByteLengthOfString(acc)
+    const acc = activitySelected.reduce((acc, cur) => { return acc.concat(' ' + cur.record) }, '')
+    const byte = getByteLengthOfString(acc)
     setByte(byte)
     setAccRecords(acc)
-  }, [activitySelected])
-  //UseState
-  const [isAllStudentChecked, setIsAllStudentChecked] = useState(false) //모든학생 선택 유무
-  const [isAllActivityChecked, setIsAllActivityChecked] = useState(false) //모든활동 선택 유무
+  }, [activitySelected]);
+  const [isAllStudentChecked, setIsAllStudentChecked] = useState(false); //모든학생 선택 유무
+  const [isAllActiChecked, setIsAllActiChecked] = useState(false);       //모든활동 선택 유무
   //주요 정보
   const [_accRecord, setAccRecords] = useState();
-  const [_byte, setByte] = useState(0)
-  //1-2 핵심로직
-  const { writeAccDataOnDB, writeHomeAccOnDB } = useAcc()
-  const { getByteLengthOfString } = useGetByte()
-  //1-3. 라이브러리
-  const navigate = useNavigate();
+  const [_byte, setByte] = useState(0);
+  const { writeAccDataOnDB, writeHomeAccOnDB } = useAcc();
+  const { getByteLengthOfString } = useGetByte();
   //MultiSelector 내부 변수
-  const selectStudentRef = useRef(null); //학생 선택 셀렉터 객체, 재랜더링 X 
-  const selectActRef = useRef(null); //활동 선택 셀렉터 객체, 재랜더링 X
-  const studentCheckBoxRef = useRef(null); //모든 학생 체크박스, 재랜더링 X
-  const actCheckBoxRef = useRef(null); //모든 활동 체크박스, 재랜더링 X
+  const selectStudentRef = useRef(null);  //학생 선택 셀렉터 객체, 재랜더링 X 
+  const selectActRef = useRef(null);      //활동 선택 셀렉터 객체, 재랜더링 X
+  const studentCheckBoxRef = useRef(null);//모든 학생 체크박스, 재랜더링 X
+  const actCheckBoxRef = useRef(null);    //모든 활동 체크박스, 재랜더링 X
   //모달창
   const [isCompleteModalShow, setIsCompleteModalShow] = useState(false)
 
-
-  //----2.함수부--------------------------------
+  //------함수부------------------------------------------------  
   //셀렉터에서 선택된 값 해제하기
   const onClearSelect = () => {
     if (selectStudentRef.current) {
@@ -53,9 +48,10 @@ const MainSelector = ({ isMobile, type, studentList, actiList, classId, setIsPer
     if (selectActRef.current) {
       selectActRef.current.clearValue();
       actCheckBoxRef.current.checked = false;
-      setIsAllActivityChecked(false)
+      setIsAllActiChecked(false)
     }
   }
+
   //type에 따른 prop 전달 함수
   const functionMap = {
     subject: () => writeAccDataOnDB(classId),
@@ -69,39 +65,39 @@ const MainSelector = ({ isMobile, type, studentList, actiList, classId, setIsPer
     <>
       {/* 학생 셀렉터, 활동 셀렉터 */}
       <Container>
-        <StyledSelector>
+        <SelectorWrapper>
           <MultiSelector
             studentList={studentList}
             selectStudentRef={selectStudentRef}
             studentCheckBoxRef={studentCheckBoxRef}
             isAllStudentChecked={isAllStudentChecked}
-            isAllActivitySelected={isAllActivityChecked}
+            isAllActivitySelected={isAllActiChecked}
             setIsAllStudentChecked={setIsAllStudentChecked}
-            setIsAllActivitySelected={setIsAllActivityChecked}
+            setIsAllActivitySelected={setIsAllActiChecked}
           />
-        </StyledSelector>
-        {(actiList && actiList.length !== 0) && <StyledSelector>
+        </SelectorWrapper>
+        {(actiList && actiList.length !== 0) && <SelectorWrapper>
           <MultiSelector
             activitiyList={actiList}
             selectActRef={selectActRef}
             actCheckBoxRef={actCheckBoxRef}
             isAllStudentChecked={isAllStudentChecked}
-            isAllActivitySelected={isAllActivityChecked}
+            isAllActivitySelected={isAllActiChecked}
             setIsAllStudentChecked={setIsAllStudentChecked}
-            setIsAllActivitySelected={setIsAllActivityChecked}
+            setIsAllActivitySelected={setIsAllActiChecked}
           />
-        </StyledSelector>}
+        </SelectorWrapper>}
         {(!actiList || actiList.length === 0) &&
-          <StyledSelector>활동이 없습니다. PC 버젼에서 활동을 추가해주세요.
+          <SelectorWrapper>활동이 없습니다. PC 버젼에서 활동을 추가해주세요.
             {!isMobile && <MidBtn onClick={() => { navigate("/activities_setting") }}>활동 추가</MidBtn>}
-          </StyledSelector>}
-        <StyledAccContainer>
+          </SelectorWrapper>}
+        <AccWrapper>
           <AccTextArea type="text" value={_accRecord} disabled={true} />
-          <div className="byt_con">
+          <ByteWrapper>
             <input type="text" disabled={true} value={_byte} />
             <p style={{ display: "inline" }}> /1500 Byte</p>
-          </div>
-        </StyledAccContainer>
+          </ByteWrapper>
+        </AccWrapper>
         <BtnWrapper>
           <MainBtn onClick={() => { setIsCompleteModalShow(true) }}>선택 완료</MainBtn>
           {(setIsPerfModalShow && !isMobile) && <MainBtn onClick={() => { setIsPerfModalShow(true) }}>수행 평가 관리</MainBtn>}
@@ -135,7 +131,7 @@ const BtnWrapper = styled.div`
   margin: 20px auto;
   gap: 40px;
 `
-const StyledSelector = styled.div`
+const SelectorWrapper = styled.div`
   width: 50%;
   margin: 0 auto;
   margin-top: 35px;
@@ -144,19 +140,19 @@ const StyledSelector = styled.div`
     margin-top: 35px;
   }
 `
-const StyledAccContainer = styled.div`
+const AccWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   margin: 10px auto;
   width: 70%;
+`
+const ByteWrapper = styled.div`
+  margin-right: 10%;
   input {
     height: 35px;
     width: 85px;
     border-radius: 7px;
-  }
-  .byt_con {
-    margin-right: 10%;
   }
 `
 const AccTextArea = styled.textarea`

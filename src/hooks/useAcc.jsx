@@ -13,19 +13,19 @@ const useAcc = () => {
     let newActiList = []
     await Promise.all(                                             //모든 Promise가 반환될 때까지 기다린다.
       activitySelectedList.map(async ({ value: actiId }) => {      //선택된 활동에서 아래 반복
-        let actiRef = doc(db, "activities", actiId);               //id로 활동 acti 참조
-        let actiSnap = await getDoc(actiRef);                      //데이터 통신
-        let acti = actiSnap.data();
-        let assignedDate = new Date().toISOString().split("T")[0];
-        let { byte, monImg, uid, studentDoneList, subjDetail, subject, perfRecordList, extraRecordList, monster, quizInfo,
-          particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, record, ...rest } = acti   //불필요 속성 제거
-        if (acti.extraRecordList && acti.extraRecordList.length > 1) {                                            //extra가 있으면 랜덤문구
-          let randomIndex = Math.floor(Math.random() * acti.extraRecordList.length);
-          record = acti.extraRecordList[randomIndex]
-        }
-        newActiList.push({ id: actiSnap.id, record, ...rest, assignedDate });
-      }))
-    return { newActiList }
+        const actiRef = doc(db, "activities", actiId);               //id로 활동 acti 참조
+        const actiSnapshot = await getDoc(actiRef);                      //데이터 통신
+        const acti = actiSnapshot.data();
+        const assignedDate = new Date().toISOString().split("T")[0];
+        let { byte, monImg, studentDoneList, subjDetail, subject, monster, quizInfo,
+          particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, record, ...rest } = acti;   //불필요 속성 제거
+        if (acti.extraRecordList && acti.extraRecordList.length > 1) {                                             //extra가 있으면 랜덤문구
+          const randomIndex = Math.floor(Math.random() * acti.extraRecordList.length);
+          record = acti.extraRecordList[randomIndex];
+        };
+        newActiList.push({ id: actiSnapshot.id, record, ...rest, assignedDate });
+      }));
+    return { newActiList };
   }
 
   //★★ 활동 기록 누가
@@ -90,18 +90,19 @@ const useAcc = () => {
 
   //★★★★ 수행 관리 입력하기
   const writePerfRecDataOnDB = async (studentList, classId, selectedPerf, perfRecord) => {
+    console.log(studentList, classId, selectedPerf, perfRecord)
     studentList.forEach((student, index) => {
-      let curActiList = student.actList || [];                                                                        //기존 list 없으면 []
+      const curActiList = student.actList || [];                                                                      //기존 list 없으면 []
       let newActiList = [...curActiList]                                                                              //기존 활동에 추가
       if (perfRecord[index] !== '') {
         newActiList = newActiList.filter(({ id }) => { return id !== selectedPerf.id })                               //기존에 같은 수행평가를 입력했다면 제거
         selectedPerf.record = perfRecord[index]                                                                       //성취도에 맞게 문구 변경    
         newActiList.push(selectedPerf)
       }
-      let newAcc = makeAccRec(newActiList)                                                                            //누가 기록 생성하기    
-      let updatedStudent = { ...student, actList: newActiList, accRecord: newAcc }                                    //학생 업데이트    
+      const newAcc = makeAccRec(newActiList)                                                                          //누가 기록 생성하기    
+      const updatedStudent = { ...student, actList: newActiList, accRecord: newAcc }                                  //학생 업데이트
       //DB 통신
-      let petRef = doc(appFireStore, "classRooms", classId, "students", student.id);                                  //학생 DB ref
+      const petRef = doc(appFireStore, "classRooms", classId, "students", student.id);                                //학생 DB ref
       try {
         setDoc(petRef, updatedStudent, { merge: true })
       } catch (error) {

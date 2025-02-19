@@ -33,6 +33,7 @@ import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData.jsx';
 import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
 import useMediaQuery from '../../hooks/useMediaQuery.jsx';
+import { setUser } from '../../store/userSlice.jsx';
 
 //240801(클래스 헤더 수정) -> 1113(애니메이션 추가) -> 250122(게임 추가, 가입 제거) -> 0125(학생 페이지 정비)
 const ClassroomDetailsPage = () => {
@@ -42,7 +43,7 @@ const ClassroomDetailsPage = () => {
   const user = useSelector(({ user }) => user)
   const allSubjClassList = useSelector(({ allClasses }) => allClasses)
   const { id: thisKlassId } = useParams();
-  //학생 회원 검증
+  //회원 검증
   const { state: studentKlassData } = useLocation();
   //hooks
   const { deleteClassWithStudents } = useDeleteFireData();
@@ -50,13 +51,14 @@ const ClassroomDetailsPage = () => {
   const { getSubjKlassActiList } = useFireActiData();
   //실시간 데이터
   const { myUserData } = useFetchRtMyUserData();
-  const { klassData } = useFetchRtClassroomData(thisKlassId)                                 //클래스 기본 data
+  const { klassData } = useFetchRtClassroomData(thisKlassId);                                                 //클래스 기본 data
   const { studentDataList } = useFetchRtMyStudentData("classRooms", thisKlassId, "students", "studentNumber") //학생 data
-  useEffect(() => {                                              //애니메이션 처리 및 데이터 바인딩
+  useEffect(() => {                                                                                           //애니메이션 처리 및 데이터 바인딩
     setIsVisible(false)
+    verifyUser();
     setTimeout(() => setIsVisible(true), 200)
-    renderData();
-    bindData();
+    bindActiData();
+    bindKlassData();
   }, [thisKlassId, klassData, studentDataList])
   useEffect(() => { fetchPetData(); }, [myUserData, thisKlassId])//마이 펫 바인딩
   const [_title, setTitle] = useState('');
@@ -66,7 +68,7 @@ const ClassroomDetailsPage = () => {
   const [actiList, setActiList] = useState([]);
   const [quizList, setQuizList] = useState([]);
   const [studentList, setStudentList] = useState([]);
-  const [quizId, setQuizId] = useState([])
+  const [quizId, setQuizId] = useState([]);
   const [petInfo, setPetInfo] = useState(null);
   const [actiInfo, setActiInfo] = useState(null);
   // 게임 구동 정보
@@ -85,28 +87,31 @@ const ClassroomDetailsPage = () => {
   //모바일
   const clientHeight = useClientHeight(document.documentElement)
   const isMobile = useMediaQuery("(max-width: 768px)")
+  //회원 검증
+  const [userStatus, setUserStatus] = useState(null);
+  useEffect(() => { dispatcher(setUser({ userStatus: userStatus })) }, [userStatus])
 
   //------함수부------------------------------------------------  
+  //회원 검증
+  const verifyUser = () => {
+    if (!klassData) return;
+    const isCoteacher = klassData.coTeacher?.find((item) => { return item === user.uid });
+    if (user.uid === klassData.uid) { setUserStatus("master") }
+    else if (isCoteacher) { setUserStatus("coTeacher") }
+    else { setUserStatus("student") };
+  }
   //변경 가능 데이터 바인딩
-  const bindData = () => {
+  const bindKlassData = () => {
     if (!klassData) return;
     const { classTitle, intro, notice } = klassData;
     dispatcher(setSelectClass(klassData));
     setTitle(classTitle || '정보 없음');
     setIntro(intro || '정보 없음');
-    setNotice(notice || '')
-    if (!notice) return;
+    setNotice(notice || '공지 없음');
     splitNotice(notice || []);
   }
-
-  //공지사항 list 변환
-  const splitNotice = (notice) => {
-    const arr = notice.split("^").map((item) => item.trim()).slice(0, 3);
-    setNoticeList(arr)
-  }
-
-  //고정 데이터 바인딩 todo 위 bind와 합쳐도 됨.
-  const renderData = () => {
+  //데이터 바인딩
+  const bindActiData = () => {
     if (!klassData || !studentDataList) return;
     const classTeacherId = user.isTeacher ? user.uid : studentKlassData?.uid
     getSubjKlassActiList(classTeacherId, klassData?.subject).then((list) => { //활동 data
@@ -116,6 +121,15 @@ const ClassroomDetailsPage = () => {
     });
     dispatcher(setAllStudents(studentDataList))                              //학생 data
     setStudentList(studentDataList);
+  }
+
+  //공지사항 list 변환
+  const splitNotice = (notice) => {
+    if (notice.length === 0) { setNoticeList([]) }
+    else {
+      const arr = notice.split("^").map((item) => item.trim()).slice(0, 3);
+      setNoticeList(arr)
+    }
   }
 
   //클래스 이동
@@ -150,8 +164,8 @@ const ClassroomDetailsPage = () => {
   }
   //변경 취소
   const handleCancelOnClick = () => {
-    bindData();
-    setIsModifying(false)
+    bindKlassData();
+    setIsModifying(false);
   }
 
   //삭제 클릭
@@ -167,8 +181,10 @@ const ClassroomDetailsPage = () => {
 
   return (<>
     <SubNav styles={{ padding: "10px" }}>
-      <Select options={allSubjClassList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
-        onChange={moveKlass} />
+      {(user.uid === klassData?.uid) && <Select options={allSubjClassList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
+        onChange={moveKlass} />}
+      {(user.uid === klassData?.coTeacher) && <Select options={user.coTeachingList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
+        onChange={moveKlass} />}
     </SubNav>
 
     {!klassData && <EmptyResult comment={"Error: 반 정보를 불러올 수 없습니다."} />}
@@ -183,7 +199,7 @@ const ClassroomDetailsPage = () => {
           <MainSelector isMobile={isMobile} type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
         </MainPanel>}
         {/* 퀴즈 게임부 */}
-        <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} myPetDetails={myPetDetails} onClick={handleMonsterOnClick} />
+        {(user.uid === klassData?.uid) && <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} myPetDetails={myPetDetails} onClick={handleMonsterOnClick} />}
 
         {/* 학생 상세 보기*/}
         {!isMobile && <MainPanel>

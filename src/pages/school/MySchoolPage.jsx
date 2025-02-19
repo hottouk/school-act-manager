@@ -80,14 +80,15 @@ const MySchoolPage = () => {
   //멤버 분류하기
   const sortMember = () => {
     if (memberList.length === 0) return;
-    let teacherList = []
-    let studentList = []
+    let teacherList = [];
+    let studentList = [];
     memberList.forEach((member) => {
       const isTeacher = member.isTeacher
       if (isTeacher === true) { teacherList.push(member) }
       else { studentList.push(member) }
-    })
-    setTeacherList(teacherList);
+    });
+    const filtered = teacherList.filter((item) => item.uid !== user.uid); //본인 제외
+    setTeacherList(filtered);
   }
   //선택 교사 클래스 가져오기 + 분류
   const fetchClassroomList = () => {
@@ -104,12 +105,25 @@ const MySchoolPage = () => {
       dispatcher(setAllStudents(list))
     })
   }
+  //코티칭 체크
+  const coTeachingCheck = (klassId) => {
+    const coTeachingList = user.coTeachingList || [];
+    //이미 신청 확인
+    const isApplied = coTeachingList?.find((item) => item.id === klassId)
+    if (isApplied) return { isValid: false, msg: "이미 신청한 클래스입니다." }
+    return { isValid: true, msg: "유효성 검사 통과" }
+  }
+
   //공동 교사 신청
   const joinAsCoTeacher = (item, teacher) => {
     const madeBy = item.uid
     const today = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD' 형식
-    const promises = [updateUserArrayInfo(madeBy, "onSubmitList", { klass: item, teacher, type: "co-teacher", applyDate: today }), updateUserArrayInfo(user.uid, "coTeachingList", { ...item, isApproved: false })]
-    Promise.all(promises).then(() => { window.alert("신청 되었습니다.") })
+    const result = coTeachingCheck(item.id);
+    if (!result.isValid) { window.alert(result.msg); }
+    else {
+      const promises = [updateUserArrayInfo(madeBy, "onSubmitList", { klass: item, teacher, type: "co-teacher", applyDate: today }), updateUserArrayInfo(user.uid, "coTeachingList", { ...item, isApproved: false })]
+      Promise.all(promises).then(() => { window.alert("신청되었습니다.") })
+    }
   }
   //멤버 클릭
   const handleMemberOnClick = (item) => {

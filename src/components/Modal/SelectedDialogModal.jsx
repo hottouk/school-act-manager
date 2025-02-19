@@ -8,33 +8,32 @@ import ModalBtn from '../Btn/ModalBtn';
 
 //2024.12.19 코드 정리 -> 250212 디자인 수정
 const SelectedDialogModal = (props) => {
-  //redux 전역변수
-  const studentSelected = useSelector(({ studentSelected }) => { return studentSelected })
-  const activitySelected = useSelector(({ activitySelected }) => { return activitySelected })
-  const [studentList, setStudentList] = useState(null)
-  const [actList, setActList] = useState(null)
+  const studentSelectedList = useSelector(({ studentSelected }) => { return studentSelected });
+  const actiSelectedList = useSelector(({ activitySelected }) => { return activitySelected });
+  const [studentList, setStudentList] = useState(null);
+  const [actiList, setActiList] = useState(null);
 
   useEffect(() => { //대화창에 선택한 학번과 활동 이름 띄운다.
-    const selectedActList = []
-    const selectedStudentList = []
+    const selectedActList = [];
+    const selectedStudentList = [];
 
-    studentSelected.map(({ label }) => {
+    studentSelectedList.map(({ label }) => {
       return selectedStudentList.push(` ${label}`)
     })
-    activitySelected.map(({ label }) => {
+    actiSelectedList.map(({ label }) => {
       return selectedActList.push(` ${label}`)
     })
     setStudentList(selectedStudentList)
-    setActList(selectedActList)
+    setActiList(selectedActList)
     //위 코드 실행 하기 전에 실행, unMount시 실행, 첫 마운트에선 실행X unMount 될 때 실행
     return () => {
       setStudentList(null)
-      setActList(null)
+      setActiList(null)
     }
-  }, [studentSelected, activitySelected])
+  }, [studentSelectedList, actiSelectedList])
 
   //------함수부------------------------------------------------  
-  //확인인
+  //확인
   const handleConfirmOnClick = () => {
     props.onHide();
     props.writeAccDataOnDB().then(window.alert("입력 되었습니다."));
@@ -54,12 +53,12 @@ const SelectedDialogModal = (props) => {
     >
       <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>학생 생기부 입력 확인</Modal.Header>
       <Modal.Body style={{ backgroundColor: "#efefef" }}>
-        {(!(studentSelected.length === 0) && !(activitySelected.length === 0))
-          ? `${studentList}학생에게 ${actList}활동을 입력하시겠습니까?`
+        {(!(studentSelectedList.length === 0) && !(actiSelectedList.length === 0))
+          ? `${studentList}학생에게 ${actiList}활동을 입력하시겠습니까?`
           : '학생이나 활동이 선택되지 않았습니다.'}
       </Modal.Body>
       <Modal.Footer style={{ backgroundColor: "#efefef" }}>
-        {(!(studentSelected.length === 0) && !(activitySelected.length === 0))
+        {(!(studentSelectedList.length === 0) && !(actiSelectedList.length === 0))
           ? <BtnWrapper>
             <ModalBtn onClick={handleCancelOnClick}>취소</ModalBtn>
             <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirmOnClick}>확인</ModalBtn>

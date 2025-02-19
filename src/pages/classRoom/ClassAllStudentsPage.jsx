@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useReactToPrint } from "react-to-print"
+import { useSelector } from "react-redux"
 import styled from "styled-components"
 //컴포넌트
 import ExportAsExcel from "../../components/ExportAsExcel"
@@ -9,7 +10,6 @@ import SubNav from "../../components/Bar/SubNav"
 import BackBtn from "../../components/Btn/BackBtn"
 import PrintBtn from "../../components/Btn/PrintBtn"
 //hooks
-import useClassAuth from "../../hooks/useClassAuth"
 import useGetByte from "../../hooks/useGetByte"
 import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData"
 import useClientHeight from "../../hooks/useClientHeight"
@@ -19,10 +19,8 @@ import recycleIcon from "../../image/icon/recycle_icon.png"
 
 //2024.10.27(실시간 학생 데이터로 변경, writtenName, accRecord useState로 관리, transition 추가)
 const ClassAllStudents = () => {
-  //----1.변수부--------------------------------
   //교사 인증
-  const { log } = useClassAuth();
-  if (log) { window.alert(log) }
+  const user = useSelector(({ user }) => user);
   useEffect(() => { setIsVisible(true) }, [])
   //준비
   const params = useParams(); //id와 param의 key-value(id:'id') 오브젝트로 반환
@@ -47,14 +45,14 @@ const ClassAllStudents = () => {
   const printRef = useRef({});
   const handlePrint = useReactToPrint({ contentRef: printRef });
 
-  //----2.함수부--------------------------------
-  //수정버튼
+  //------함수부------------------------------------------------  
+  //수정
   const handleModifyingBtn = (key, name, record) => {
     setThisModifying(key)
     setNewName(name)
     setNewAccRecord(record)
   }
-  //저장 버튼
+  //저장
   const handleSaveBtn = (key) => {
     updateStudent({ accRecord: newAccRecord, writtenName: newName }, classId, key); //데이터 통신       
     setThisModifying('');
@@ -99,7 +97,7 @@ const ClassAllStudents = () => {
       <SubNav>
         <p>※수정은 PC에서 가능함</p>
         <BackBtn />
-        <StyledShfBtn $wid="45" src={recycleIcon} alt="섞기 버튼" onClick={() => { handleShuffleAllBtnOnClick() }} />
+        {user.userStatus === "master" && <StyledShfBtn $wid="45" src={recycleIcon} alt="섞기 버튼" onClick={() => { handleShuffleAllBtnOnClick() }} />}
         <ExportAsExcel />
         <PrintBtn onClick={() => { handlePrint() }} />
       </SubNav>
@@ -123,10 +121,11 @@ const ClassAllStudents = () => {
           return <React.Fragment key={key}>
             <StyledGridItem>{index + 1}</StyledGridItem>     {/* 연번 */}
             <StyledGridItem>{studentNumber}</StyledGridItem> {/* 학번 */}
+            {/* 3열 */}
             <StyledGridItem>
-              <p onClick={() => { navigate(`/classrooms/${classId}/${key}`) }} style={{ cursor: "pointer", fontWeight: "bold" }}>{name}</p>
+              <p onClick={() => { navigate(`/classrooms/${classId}/${key}`) }} style={{ cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}>{name}</p>
             </StyledGridItem>
-            <StyledGridItem className="left-align">
+            <StyledGridItem style={{ justifyContent: "flex-start" }}>
               {!isModifying
                 ? record
                 : <StyledTextArea defaultValue={record}
@@ -135,11 +134,10 @@ const ClassAllStudents = () => {
             </StyledGridItem>
             <StyledGridItem>{bytes}</StyledGridItem>
             <StyledGridItem>
-              {!isModifying
-                ? <SmallBtn id="modi_btn" btnOnClick={() => { handleModifyingBtn(key, name, record) }} btnName="수정" btnColor="#3454d1" hoverBtnColor="blue" />
-                : <BtnWrapper> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(key) }} btnName="저장" btnColor="#3454d1" />
-                  <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(key) }} btnName="섞기" btnColor="#9b0c24" hoverBtnColor="red" />
-                </BtnWrapper>
+              {(!isModifying && user.userStatus === "master") && <SmallBtn id="modi_btn" btnOnClick={() => { handleModifyingBtn(key, name, record) }} btnName="수정" btnColor="#3454d1" hoverBtnColor="blue" />}
+              {isModifying && <BtnWrapper> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(key) }} btnName="저장" btnColor="#3454d1" />
+                <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(key) }} btnName="섞기" btnColor="#9b0c24" hoverBtnColor="red" />
+              </BtnWrapper>
               }
             </StyledGridItem>
           </React.Fragment>
@@ -159,6 +157,9 @@ const Container = styled.main`
     padding-bottom: 20px;
     overflow-y: scroll;
   }
+`
+const Row = styled.div`
+  display: flex;
 `
 const StyledShfBtn = styled.img`
   display: flex;
@@ -204,13 +205,15 @@ const Header = styled.div`
     border-top-right-radius: 5px;
   }
 `
-const StyledGridItem = styled.div`
+const StyledGridItem = styled(Row)`
   background-color: #efefef;
   padding: 10px;
   color: black;
   border: 1px solid #ddd;
   border-radius: 5px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   &.left-align { 
     text-align: left;
   }

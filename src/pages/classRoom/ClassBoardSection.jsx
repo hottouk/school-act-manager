@@ -7,7 +7,6 @@ import Container from '../../components/MainPanel';
 const ClassBoardSection = ({ isModifying, klassData, title, intro, notice, studentList, noticeList,
   setIsModifying, setTitle, setIntro, setNotice, handleSaveOnClick, handleCancelOnClick, handleDeleteOnClick, Row }) => {
   const user = useSelector(({ user }) => user);
-
   return (
     <Container>
       {!isModifying && <BoldText>{title}</BoldText>}
@@ -29,12 +28,13 @@ const ClassBoardSection = ({ isModifying, klassData, title, intro, notice, stude
             placeholder='공지를 작성해주세요. ^(눈웃음 기호)를 사용하여 줄바꿈할 수 있습니다.'></ModifyingTextarea>}
         </Board>
       </Row>
-      {user.isTeacher && <Row style={{ justifyContent: "flex-end", marginTop: "20px", gap: "20px" }}>
-        {!isModifying && <MarginalText onClick={() => { setIsModifying((prev) => !prev) }}>정보 수정</MarginalText>}
-        {!isModifying && <MarginalText onClick={handleDeleteOnClick}>클래스 삭제</MarginalText>}
-        {isModifying && <MarginalText onClick={handleSaveOnClick}>변경 저장</MarginalText>}
-        {isModifying && <MarginalText onClick={handleCancelOnClick}>취소</MarginalText>}
-      </Row>}
+      {(user.uid === klassData.uid) &&
+        <Row style={{ justifyContent: "flex-end", marginTop: "20px", gap: "20px" }}>
+          {!isModifying && <MarginalText onClick={() => { setIsModifying((prev) => !prev) }}>정보 수정</MarginalText>}
+          {!isModifying && <MarginalText onClick={handleDeleteOnClick}>클래스 삭제</MarginalText>}
+          {isModifying && <MarginalText onClick={handleSaveOnClick}>변경 저장</MarginalText>}
+          {isModifying && <MarginalText onClick={handleCancelOnClick}>취소</MarginalText>}
+        </Row>}
     </Container>
   )
 }

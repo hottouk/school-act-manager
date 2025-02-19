@@ -12,6 +12,7 @@ import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useFireTransaction from '../../hooks/useFireTransaction';
 import usePet from '../../hooks/usePet';
 import useMediaQuery from '../../hooks/useMediaQuery';
+import useFireClassData from '../../hooks/Firebase/useFireClassData';
 
 //240201 갱신 -> 모바일(250215)
 const WhatsNewPage = () => {
@@ -24,9 +25,9 @@ const WhatsNewPage = () => {
   const [onSubmitList, setOnSubmitList] = useState([]);
   const [reward, setReward] = useState(null);
   const [isRewardModal, setIsRewardModal] = useState(false);
-  const { approveKlassTransaction } = useFireTransaction();
   const { getInitialPet } = usePet();
-  const { approvWinTransaction, denyTransaction, confirmDenialTransaction } = useFireTransaction();
+  const { updateKlassroomArrayInfo } = useFireClassData();
+  const { approvWinTransaction, denyTransaction, confirmDenialTransaction, approveKlassTransaction, approveCoteahingTransaction } = useFireTransaction();
   const { deleteUserArrayInfo } = useFireUserData();
 
   //------함수부------------------------------------------------ 
@@ -45,6 +46,16 @@ const WhatsNewPage = () => {
   const handleApproveWinOnClick = (item) => {
     approvWinTransaction(item)
   }
+  //공동 교사 승인
+  const handleApproveCoteachingOnClick = async (item) => {
+    const { teacher, klass } = item
+    const promises = [
+      deleteUserArrayInfo(user.uid, "onSubmitList", item),
+      approveCoteahingTransaction(teacher.uid, klass.id),
+      updateKlassroomArrayInfo(klass.id, "coTeacher", teacher.uid)
+    ];
+    await Promise.all(promises).then(() => { window.alert("승인되었습니다.") });
+  }
   //반려
   const handleDenyOnClick = (item) => {
     const reason = window.prompt("거부 사유를 입력하세요")
@@ -53,7 +64,7 @@ const WhatsNewPage = () => {
     }
   }
 
-  //------교사용----------------------------------------------- 
+  //------교사용 랜더링----------------------------------------------- 
   //학생 가입 여부
   const TeacherKlassJoinRow = ({ index, item }) => {
     const { studentNumber, studentName, classTitle, classSubj, petLabel, applyDate } = item
@@ -87,7 +98,7 @@ const WhatsNewPage = () => {
       <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }}>X</SmallBtn></GridItem>
     </>
   }
-  //코티칭칭
+  //코티칭
   const CoTeachingRow = ({ index, item }) => {
     const { klass, teacher, applyDate } = item
     return <><GridItem>{index + 1}</GridItem>
@@ -98,12 +109,27 @@ const WhatsNewPage = () => {
         <Highlight> 공동 교사</Highlight>로 신청하셨습니다.
       </p></GridItem>
       <GridItem>{applyDate}</GridItem>
-      <GridItem><SmallBtn btnOnClick={() => { handleApproveJoinOnClick(item) }}>O</SmallBtn></GridItem>
+      <GridItem><SmallBtn btnOnClick={() => { handleApproveCoteachingOnClick(item) }}>O</SmallBtn></GridItem>
       <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }} >X</SmallBtn></GridItem>
     </>
   }
+  //결과
+  const TeacherDenialRow = ({ index, item }) => {
+    console.log(item)
+    const { klassTitle, subject, name, reason, applyDate } = item
+    return <><GridItem>{index + 1}</GridItem>
+      <GridItem>{name || "에러"}</GridItem>
+      <GridItem>{klassTitle || "에러"}</GridItem>
+      <GridItem style={{ justifyContent: "flex-start" }}><p style={{ margin: "0", whiteSpace: 'pre-wrap' }}>
+        <Highlight>{subject} {klassTitle}</Highlight> 공동 교사 등록이 거부되었습니다.{`\n`}사유: {reason}
+      </p></GridItem>
+      <GridItem>{applyDate}</GridItem>
+      <GridItem style={{ gridColumn: "6/8", justifyContent: "center" }}><SmallBtn btnOnClick={() => { handleDeniedOnClick(item) }}>O</SmallBtn></GridItem>
+    </>
+  }
 
-  //------학생용----------------------------------------------- 
+
+  //------학생용 랜더링----------------------------------------------- 
   //진화 알림
   const StudentEvolutionRow = ({ index, item }) => {
     const { level, monId, petId, name, type } = item
@@ -139,8 +165,8 @@ const WhatsNewPage = () => {
         <Highlight>{studentNumber} {studentName}</Highlight> 학생이 <Highlight>{classTitle}</Highlight>반
         <Highlight> {classSubj}</Highlight> 과목
         <Highlight> {petLabel}</Highlight>을 구독 신청하셨습니다. 학번과 이름이 맞으면 수락을 눌러주세요
-        <Row style={{ justifyContent: "flex-end" }}>{applyDate}</Row>
       </p>
+      <Row style={{ justifyContent: "flex-end" }}>{applyDate}</Row>
       <Row style={{ justifyContent: "space-evenly", marginTop: "20px" }}>
         <SmallBtn btnOnClick={() => { handleApproveJoinOnClick(item) }}>O</SmallBtn>
         <SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }} >X</SmallBtn>
@@ -171,7 +197,7 @@ const WhatsNewPage = () => {
       </p>
       <Row style={{ justifyContent: "flex-end" }}>{applyDate || "날짜 정보 없음"}</Row>
       <Row style={{ justifyContent: "space-evenly", marginTop: "20px" }}>
-        <SmallBtn btnOnClick={() => { handleApproveWinOnClick(item) }}>O</SmallBtn>
+        <SmallBtn btnOnClick={() => { handleApproveCoteachingOnClick(item) }}>O</SmallBtn>
         <SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }} >X</SmallBtn>
       </Row>
     </BubbleWrapper>
@@ -195,9 +221,9 @@ const WhatsNewPage = () => {
         <TableHeaderWrapper>
           <Header>연번</Header>
           <Header>누가</Header>
-          <Header>무엇</Header>
-          <Header>내용</Header>
-          <Header>일시</Header>
+          <Header>무엇을</Header>
+          <Header>어떻게</Header>
+          <Header>언제</Header>
           <Header>승인</Header>
           <Header>반려</Header>
         </TableHeaderWrapper>
@@ -205,6 +231,7 @@ const WhatsNewPage = () => {
         {onSubmitList?.map((item, index) => {
           if (item.type === "join") { return <TeacherKlassJoinRow key={`${item.studentId}${item.petId}`} index={index} item={item} /> }
           else if (item.type === "co-teacher") { return <CoTeachingRow key={`${index}`} index={index} item={item} /> }
+          else if (item.type === "denial") { return <TeacherDenialRow key={`${index}`} index={index} item={item} /> }
           else { return <TeacherWinRow key={`${item.actiId}${item.sId}${index}`} index={index} item={item} /> }
         })}
       </TeacherGridContainer>
@@ -296,7 +323,9 @@ const GridItem = styled.div`
   color: 3a3a3a;
   border: 1px solid #ddd;
   border-radius: 5px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   &.left-align { text-align: left; }
 `
 const Highlight = styled.span`

@@ -1,11 +1,31 @@
 import { appFireStore, timeStamp } from '../../firebase/config'
-import { useSelector } from 'react-redux'
-import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { addDoc, arrayUnion, collection, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore'
 
 const useFireClassData = () => {
-  const user = useSelector(({ user }) => { return user })
   const db = appFireStore
   const colRef = collection(db, "classRooms")
+
+  //클래스 기본 정보 수정(250219)
+  const updateKlassroomInfo = async (klassId, field, info) => {
+    const klassDocRef = doc(colRef, klassId);
+    try {
+      setDoc(klassDocRef, { [field]: info }, { merge: true });
+    } catch (error) {
+      console.log(error);
+      window.alert(error);
+    }
+  }
+
+  //클래스 배열형 정보 수정(250220)
+  const updateKlassroomArrayInfo = async (klassId, field, info) => {
+    const klassDocRef = doc(colRef, klassId);
+    try {
+      setDoc(klassDocRef, { [field]: arrayUnion(info) }, { merge: true });
+    } catch (error) {
+      console.log(error);
+      window.alert(error);
+    }
+  }
 
   //클래스 추가(250205 이동)
   const addClassroom = async (klassInfo, studentPetList) => {
@@ -82,7 +102,7 @@ const useFireClassData = () => {
     return { subjClassList, homeroomClassList }
   }
 
-  return ({ addClassroom, updateClassroom, addSeatMap, deleteSeatMap, fetchClassrooms, sortClassrooms })
+  return ({ updateKlassroomInfo, updateKlassroomArrayInfo, addClassroom, updateClassroom, addSeatMap, deleteSeatMap, fetchClassrooms, sortClassrooms })
 }
 
 export default useFireClassData

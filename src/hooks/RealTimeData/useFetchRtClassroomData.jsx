@@ -10,7 +10,7 @@ const useFetchRtClassroomData = (klassId) => {
   const klassDocRef = doc(col, klassId)
 
   useEffect(() => {
-    let unsubscribe = onSnapshot(klassDocRef, (snapshot) => {
+    const unsubscribe = onSnapshot(klassDocRef, (snapshot) => {
       if (snapshot.exists()) {
         setKlassData({ ...snapshot.data(), id: snapshot.id })
       } else {

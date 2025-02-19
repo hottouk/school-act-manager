@@ -13,6 +13,29 @@ const useFireTransaction = () => {
   const { makeUniqueArrWithEle, replaceItem } = useGetRidOverlap()
   const { makeAccRec } = useAcc();
 
+  //9. 코티칭 교사 가입 승인 
+  const approveCoteahingTransaction = async (teacherId, klassId) => {
+    const coTeacherRef = doc(userColRef, teacherId);
+    try {
+      await runTransaction(db, async (transaction) => {
+        //1. read
+        const coTeacherSnapshot = await transaction.get(coTeacherRef);
+        if (!coTeacherSnapshot.exists()) { throw new Error("교사 정보 없음") };
+        const coTeachingList = coTeacherSnapshot.data().coTeachingList;
+        if (!coTeachingList) { throw new Error("코티칭 신청 정보 없음") };
+        //2. edit
+        const newList = coTeachingList.map((item) => {
+          if (item.id === klassId) { return { ...item, isApproved: true } }
+          return item
+        });
+        transaction.update(coTeacherRef, { coTeachingList: newList });
+      })
+    } catch (error) {
+      console.log(error);
+      window.alert(error);
+    };
+  }
+
   //8. 학교 탈퇴하기(250217)
   const leaveSchoolTransaction = async (schoolCode) => {
     const userRef = doc(db, "user", user.uid);
@@ -54,51 +77,61 @@ const useFireTransaction = () => {
     }
   }
 
-  //7. 학생 거절 확인
+  //7. 거절 확인
   const confirmDenialTransaction = async (info) => {
     const userRef = doc(db, "user", user.uid);
     try {
       await runTransaction(db, async (transaction) => {
         const userDoc = await transaction.get(userDocRef);
-        //1. 읽기
+        //1. read
         if (!userDoc.exists()) { throw new Error("유저 정보 없음"); }
-        const myKlassList = userDoc.data().myClassList || [];
-        //2. 편집
-        const deleted = myKlassList.filter((item) => { return item.id !== info.classId })
-        //3. 수정
-        transaction.update(userRef, { onSubmitList: arrayRemove(info), myClassList: deleted })
+        //2. update
+        let deleted
+        if (user.isTeacher) {
+          const coTeachingList = userDoc.data().coTeachingList || [];
+          deleted = coTeachingList.filter((item) => { return item.id !== info.id });
+          transaction.update(userRef, { onSubmitList: arrayRemove(info), coTeachingList: deleted })
+        } else {
+          const myKlassList = userDoc.data().myClassList || [];
+          deleted = myKlassList.filter((item) => { return item.id !== info.classId })
+          transaction.update(userRef, { onSubmitList: arrayRemove(info), myClassList: deleted })
+        }
       })
     } catch (err) {
       window.alert(err)
       console.log(err)
     }
-
   }
 
   //6. 교사 거절
   const denyTransaction = async (info, reason) => {
     const teacherRef = doc(db, "user", user.uid);
+    const today = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD' 형식
     let denialInfo
-    let studentRef
+    let otherRef
     if (info.type === "join") {
       const { school, classId, classTitle, petLabel, studentId } = info
       denialInfo = { school, classId, classTitle, petLabel, reason, type: "denial" }
-      studentRef = doc(db, "user", studentId);
+      otherRef = doc(db, "user", studentId);
     } else if (info.type === "win") {
       const { sId, title } = info
       denialInfo = { title, reason, type: "denial" }
-      studentRef = doc(db, "user", sId);
+      otherRef = doc(db, "user", sId);
+    } else if (info.type === "co-teacher") {
+      const { klass, teacher } = info
+      denialInfo = { id: klass.id, klassTitle: klass.classTitle, subject: klass.subject, name: teacher.name, reason, applyDate: today, type: "denial" }
+      otherRef = doc(db, "user", teacher.uid);
     }
 
     await runTransaction(db, async (transaction) => {
       const teacherDoc = await transaction.get(teacherRef);
-      const studentDoc = await transaction.get(studentRef);
+      const studentDoc = await transaction.get(otherRef);
       //1. 읽기
       if (!teacherDoc.exists()) { throw new Error("교사 정보 없음"); }
       if (!studentDoc.exists()) { throw new Error("학생 정보 없음"); }
       //2. 수정
       transaction.update(teacherRef, { onSubmitList: arrayRemove(info) })      //교사: 상신 목록 삭제
-      transaction.update(studentRef, { onSubmitList: arrayUnion(denialInfo) }) //학생: 거절 목록 추가
+      transaction.update(otherRef, { onSubmitList: arrayUnion(denialInfo) })   //학생: 거절 목록 추가
     }).then(() => {
       window.alert("거절 사유가 해당 학생에게 전달되었습니다.")
     }).catch(err => {
@@ -137,7 +170,7 @@ const useFireTransaction = () => {
     })
   }
 
-  //4. 교사 가입 승인
+  //4. 학생 가입 승인
   const approveKlassTransaction = async (info, pet) => {
     const { classId, petId, studentId, studentName } = info
     const teacherRef = doc(db, "user", user.uid);
@@ -197,7 +230,6 @@ const useFireTransaction = () => {
       if (isApplied) throw new Error("이미 가입되었거나 가입 신청한 클래스입니다.")
 
       //학생 신청 정보 업데이트, 교사 상신
-      console.log({ ...klassInfo })
       transaction.update(studentDocRef, { "myClassList": arrayUnion(klassInfo) })
       transaction.update(teacherDocRef, { "onSubmitList": arrayUnion(submitInfo) })
     }).then(() => {
@@ -256,7 +288,7 @@ const useFireTransaction = () => {
       console.log(err);
     })
   }
-  return { copyActiTransaction, delCopiedActiTransaction, applyKlassTransaction, approveKlassTransaction, approvWinTransaction, denyTransaction, confirmDenialTransaction, leaveSchoolTransaction }
+  return { copyActiTransaction, delCopiedActiTransaction, applyKlassTransaction, approveKlassTransaction, approvWinTransaction, denyTransaction, confirmDenialTransaction, leaveSchoolTransaction, approveCoteahingTransaction }
 }
 
 
