@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap';
-import { Graphics } from '@pixi/react';
+import { Sprite } from '@pixi/react';
+import basic_attack from '../../../image/effect/basic_attack.png'
 
-const BasicAttack = ({ x, y, trigger }) => {
+const BasicAttack = ({ x, y, width, height, trigger }) => {
   const basicRef = useRef();
 
   useEffect(() => {
@@ -15,14 +16,8 @@ const BasicAttack = ({ x, y, trigger }) => {
     return () => { if (animation) { animation.kill(); } };// 애니메이션 종료
   }, [trigger])
 
-  const drawPunch = (g) => {
-    g.beginFill(0xff0000); // 빨간색 펀치
-    g.drawCircle(0, 0, 20);  // 크기 조절 가능
-    g.endFill();
-  };
-
   return (
-    <Graphics x={x} y={y} draw={drawPunch} ref={basicRef} />
+    <Sprite x={x} y={y} image={basic_attack} width={width} height={height} anchor={{ x: 0.5, y: 0.5 }} ref={basicRef} />
   )
 }
 

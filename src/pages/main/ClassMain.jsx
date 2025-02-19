@@ -8,9 +8,9 @@ import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
 //hooks
 import useFetchRtAllUserData from '../../hooks/RealTimeData/useFetchRtAllUserData'
 import useClientHeight from '../../hooks/useClientHeight'
+import useMediaQuery from '../../hooks/useMediaQuery'
 //이미지
 import main from '../../image/main.png'
-import useMediaQuery from '../../hooks/useMediaQuery'
 
 //24.07.20 -> 모바일감지(250213)
 const ClassMain = () => {
@@ -50,24 +50,23 @@ const ClassMain = () => {
   return (
     <Container $clientheight={clientHeight}>
       <LandingBackground>
-        <StyledWrapper>
+        <Wrapper>
           <h1>App For the Teacher, by the Teacher, of the Teacher</h1>
-          <p>체계적 세특 관리를 돕는 툴입니다.</p>
-          <img className='landing_img' src={main} alt="랜딩이미지" />
-        </StyledWrapper>
+          <p>체계적 세특 관리, 쫑알이로 시작하자!</p>
+          <LandingImage className='landing_img' src={main} alt="랜딩이미지" />
+        </Wrapper>
       </LandingBackground>
       <StyledWhiteBackground>
         {!isMobile && <InfluencerList dataList={influList || []} />}
-        <StyledWrapper>
-          <h3>{teacherList.length}명의 선생님, {studentList.length}명의 학생이 이용중!!</h3>
-          <span>GPT로 세특쓰기, 이제는 나도 할 수 있다!!! 절찬리 판매중!!</span>
-        </StyledWrapper>
+        <Wrapper>
+          <SubTitleText>{teacherList.length}명의 선생님, {studentList.length}명의 학생이 이용중!!</SubTitleText>
+        </Wrapper>
       </StyledWhiteBackground>
-      <StyledBlueBackground>
-        <StyledWrapper>
-          <p className='bible'>네 길을 여호와께 맡기라 그를 의지하면 그가 이루시고 네 의를 빛 같이 나타내시며 네 공의를 정오의 빛 같이 하시리로다. 시편 37:5-6</p>
-        </StyledWrapper>
-      </StyledBlueBackground>
+      <BottomBlueBackground>
+        <Wrapper>
+          <BibleText className='bible'>네 길을 여호와께 맡기라 그를 의지하면 그가 이루시고 네 의를 빛 같이 나타내시며 네 공의를 정오의 빛 같이 하시리로다. 시편 37:5-6</BibleText>
+        </Wrapper>
+      </BottomBlueBackground>
       <Row><HorizontalBannerAd /></Row>
       {/* 공지사항팝업 */}
       <NoticeModal
@@ -90,102 +89,81 @@ const Container = styled.div`
     overflow-y: scroll;
   }
 `
-const StyledWrapper = styled.div`
-  max-width: 1200px;
-  margin: auto;
-  @media (max-width: 767px) {
-    width: 100%;
-  }
-`
 const Row = styled.div`
   display: flex;
+  justify-content: center;
   @media (max-width: 768px) {
     width: 100%;
     overflow-x: auto;
   }
 `
+const Wrapper = styled.div`
+  margin: 0 auto;
+  @media (max-width: 768px) { width: 100%; }
+`
 const LandingBackground = styled.div`
   width: 100%;
+  display: flex;
   height: 550px;
   padding: 20px;
   color: #efefef;
   background-image: linear-gradient(to top, #499add, #3454d1);
-  h1 {
-    display: inline-block;
-  }
-  .landing_img {
-    float: right;
-    width: 400px;
-    position: relative;
-    right: 20px;
-    bottom: -12px;
-  }
-  @media screen and (max-width: 768px) {
+  @media(max-width: 768px) {
     position: relative;
     p { display: none; }
-    .landing_img{
-      position: absolute;
-      width: 300px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      margin: 0 auto;
-    }
+  }
+`
+const LandingImage = styled.img`
+  float: right;
+  width: 400px;
+  position: relative;
+  right: 20px;
+  bottom: -12px;
+  @media(max-width: 768px) {
+    position: absolute;
+    width: 300px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
   }
 `
 const StyledWhiteBackground = styled.div`
   background-color: #efefef;
   height: 360px;
-  h3, span {
-    position: relative;
-    top: 100px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-  @media screen and (max-width: 767px) {
+  @media (max-width: 767px) {
     height: 130px;
     display: flex;
     align-items: center;
-    span {
-      display: none;
-    }
-    h3 {
-      font-size: 20px;
-      top: 0;
-      display: block;
-      margin: 3px;
-      text-align: center;
-    }
   }
 `
-const StyledBlueBackground = styled.div`
+const BottomBlueBackground = styled.div`
   height: 100px;
   background-color: #499add;
   color: #efefef;
   padding: 20px;
-  p.bible {
-    width: 400px;
-    margin: auto;
+`
+const SubTitleText = styled.h3`
+  position: relative;
+  top: 100px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  @media (max-width: 767px) {
+    font-size: 20px;
+    top: 0;
+    display: block;
+    margin: 3px;
     text-align: center;
   }
-  h3{
-    width: 800px;
-    margin: 10px auto;
-    text-align: center;
-  }
-  p {
-    margin-top: 10px;
-  }
-  
-  @media screen and (max-width: 767px) {
-    p.bible{
-      width: 100%;
-      font-size: 14px;
-    }
-    h3 {
-      width: 100%;
-    }
+`
+const BibleText = styled.p`
+  width: 400px;
+  margin: auto;
+  text-align: center;
+  @media (max-width: 768px) {
+    width: 100%;
+    font-size: 14px;
   }
 `
 export default ClassMain

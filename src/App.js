@@ -24,8 +24,7 @@ import HomeClassAllStudentsPage from './pages/homeroom/HomeClassAllStudentsPage'
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassroomMakePage from './pages/classSetting/ClassroomMakePage';
 import WhatsNewPage from './pages/main/WhatsNewPage';
-import Homework from './components/Homework';
-import UserMainPage from './pages/user/UserMainPage';
+import MySchoolPage from './pages/school/MySchoolPage';
 import { useSelector } from 'react-redux';
 import { Helmet } from "react-helmet";
 //단어 배틀
@@ -60,7 +59,6 @@ function App() {
           <Route path="/activities" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities_all" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/:activityId" element={uid ? <ActivityFormPage /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/activities/:activityId/:studentId" element={uid ? <Homework /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities/others" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
           {/* 활동 만들기, 교사 회원만 가능 */}
           <Route path="/activities_setting" element={uid ? <ActivitySortPage /> : <Navigate replace={true} to='/login' />} />
@@ -79,7 +77,7 @@ function App() {
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
           <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomMakePage /> : <Navigate replace={true} to='/' />} />
           {/* 학생 관리 */}
-          <Route path="/users" element={uid ? <UserMainPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/myschool" element={uid ? <MySchoolPage /> : <Navigate replace={true} to='/login' />} />
           {/* 퀴즈 관리 */}
           <Route path="/lab" element={uid ? <Lab /> : <Navigate replace={true} to='/login' />} />
           <Route path="/quiz" element={uid ? <QuizMainPage /> : <Navigate replace={true} to='/login' />} />

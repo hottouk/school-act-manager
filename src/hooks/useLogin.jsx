@@ -153,7 +153,6 @@ const useLogin = () => {
         phoneNumber: null
       }
     }
-    console.log(user)
     dispatcher(setTempUser(user))
     findUser(userInfo, "kakao").then(({ isUserExist, userInfofromServer }) => { //기존 유저 체크
       if (isUserExist !== true) { openModal(true) }                             //신규
@@ -197,7 +196,7 @@ const useLogin = () => {
     } else { //학생
       const studentNumber = createStudentNumber(number - 1, grade, classNumber)
       const studentUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, studentNumber, password }
-      if (window.confirm(`${school.schoolName} 학번 ${studentNumber}로 회원가입 하시겠습니까?`)) {
+      if (window.confirm(`${school?.schoolName ?? "그외 학교"} 학번 ${studentNumber}로 회원가입 하시겠습니까?`)) {
         return studentUserInfo
       } else { return null; }
     }

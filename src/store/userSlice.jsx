@@ -2,7 +2,6 @@ import { createSlice } from "@reduxjs/toolkit";
 import { PURGE } from "redux-persist";
 
 const initialState = {}
-
 let user = createSlice({
   name: "user",
   initialState,
@@ -24,55 +23,18 @@ let user = createSlice({
         profileImg: action.payload.profileImg,
       }
     },
-
-    setAppliedClassList(state, action) {
-      return {
-        ...state,
-        appliedClassList: action.payload
-      }
-    },
-
-    setJoinedClassList(state, action) {
-      return {
-        ...state,
-        joinedClassList: action.payload
-      }
-    },
-
     setClassNewsList(state, action) {
       return {
         ...state,
         classNewsList: action.payload
       }
     },
-
-    setNewsBoxList(state, action) {
-      return {
-        ...state,
-        appliedStudentClassList: action.payload
-      }
-    },
-
     setmyPetList(state, action) {
       return {
         ...state,
         myPetList: action.payload
       }
     },
-
-    setMyHomeworkList(state, action) { //학생용
-      return {
-        ...state,
-        myHomeworkList: action.payload
-      }
-    },
-
-    setHomeworkList(state, action) {
-      return {
-        ...state,
-        homeworkList: action.payload
-      }
-    }
   },
   extraReducers: builder => { //로그아웃 시에 state를 초기화한다.
     builder.addCase(PURGE, () => initialState);

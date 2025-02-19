@@ -3,10 +3,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+//Section
+import PixiResponsiveStage from './PixiResponsiveStage';
+import ReviewSection from './ReviewSection';
 //컴포넌트
 import TransparentBtn from '../../components/Btn/TransparentBtn';
 import AnimatedProgressBar from '../../components/ProgressBar';
-import ReviewSection from './ReviewSection';
 //hooks
 import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg';
 import useFireBasic from '../../hooks/Firebase/useFireBasic';
@@ -15,7 +17,6 @@ import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData'
 import useLevel from '../../hooks/useLevel';
 //img
 import qustion_icon from '../../image/icon/question.png'
-import PixiResponsiveStage from './PixiResponsiveStage';
 
 //250111 생성
 const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame }) => {
@@ -478,19 +479,21 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
         const winScore = score * 2;
         gameResult = { score: winScore, ...gameResult };
         setScore(winScore);
+        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo.level, 5, myPetInfo), gameResult);  //결과 기록
         break;
       case "Draw":
         gameResult = { score, ...gameResult };
+        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo.level, 3, myPetInfo), gameResult);  //결과 기록
         break;
       case "Lose":
         const loseScore = score / 2;
         gameResult = { score: loseScore, ...gameResult };
         setScore(loseScore);
+        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo.level, 1, myPetInfo), gameResult);  //결과 기록
         break;
       default:
         break;
     }
-    updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo.level, 5, myPetInfo), gameResult);  //게임 결과 기록
   }
 
   //승리 기록 세기
@@ -591,7 +594,6 @@ const StyledStatusUI = styled.div`
   @media (max-width: 768px) {
     width: ${window.innerWidth}px;
   }
-
 `
 const Wrapper = styled.div`
   box-sizing: border-box;

@@ -10,7 +10,6 @@ import PetImg from '../../components/PetImg'
 
 //로직 분리(250204) -> 모바일(250213)
 const KlassQuizSection = ({ isMobile, quizList, klassData, myPetDetails, onClick }) => {
-  console.log(myPetDetails?.path)
   return (
     <Container>
       <TitleText>퀴즈 게임</TitleText>
@@ -24,7 +23,7 @@ const KlassQuizSection = ({ isMobile, quizList, klassData, myPetDetails, onClick
         <Row><ArrowBtn direction="right" /></Row>
         <PetImg subject={klassData.subject} step={3} onClick={() => { }} />
       </PetImgWrapper>}
-      {isMobile && <PetImgWrapper><PetImg subject={klassData.subject} path={myPetDetails?.path} /></PetImgWrapper>}
+      {isMobile && <PetImgWrapper><PetImg subject={klassData.subject} path={myPetDetails?.path} onClick={() => { }} /></PetImgWrapper>}
       <BoldText style={{ marginTop: "10px" }}>vs</BoldText>
       {/* 단어 게임부 */}
       <GameMonListWrapper>

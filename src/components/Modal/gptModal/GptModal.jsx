@@ -17,9 +17,10 @@ import styled from 'styled-components';
 //img
 import plusIcon from '../../../image/icon/plus.png'
 import arrowsIcon from '../../../image/icon/arrows_icon.png'
+import ModalBtn from '../../Btn/ModalBtn';
+import ByteCalculator from '../../Etc/ByteCalculator';
 //2024.09.04(수정) => 12.03(보고서 탭 추가)
-const GptModal = (props) => {
-  //----1.변수부--------------------------------
+const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   //역량
   const [acadList, setAcadList] = useState([])      //학업
   const [careerList, setCareerList] = useState([])  //진로
@@ -62,6 +63,7 @@ const GptModal = (props) => {
       }
     })
   }
+
   //input 변경
   const handleInputChange = (event, type) => {
     if (type === "input") {
@@ -77,14 +79,14 @@ const GptModal = (props) => {
     event.preventDefault();
     //탭1: 특성 기반 개별화
     if (tab === 1) {
-      let resultArray = convertObjectToArray(inputValues)
-      askGptPersonalize(props.acti, resultArray)
+      const resultArray = convertObjectToArray(inputValues)
+      askGptPersonalize(acti, resultArray)
     }
     //탭2: 보고서 기반 개별화
     else if (tab === 2) {
-      let check = report !== ""
+      const check = report !== ""
       if (check) {
-        askPersonalizeOnReport(props.acti.record, report)
+        askPersonalizeOnReport(acti?.record, report)
       } else {
         window.alert("학생 활동 보고서를 입력해주세요.")
       }
@@ -97,24 +99,25 @@ const GptModal = (props) => {
       .map(([key, value]) => ({ [key]: value }));
   };
 
+  const handleConfirmOnClick = () => {
+    setPersonalRecord(gptAnswer);
+    onHide();
+  }
+
   return (
     <Modal size="lg"
-      show={props.show}
-      onHide={props.onHide}
+      show={show}
+      onHide={onHide}
       backdrop="static"
-      keyboard={false}
     >
-      <Modal.Header closeButton>
-        <Modal.Title>GPT 개별화</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+      <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>GPT 개별화</Modal.Header>
+      <Modal.Body style={{ backgroundColor: "#efefef" }}>
         {(gptRes === "loading")
           ? <div className="text-center">
             <Spinner animation="border" role="status"><span className="sr-only">Loading...</span></Spinner>
           </div>
           : <StyledForm onSubmit={handleSubmit}>
-            <StyledSpan>현재 문구</StyledSpan>
-            <StyledP>{props.acti.record}</StyledP>
+            <StyledText>{acti?.record}</StyledText>
             <StyledImg src={plusIcon} alt="plus_icon" />
             <DotTitleWrapper>
               <StyledTab $tab={tab} onClick={() => { setTab(1) }}>특성</StyledTab>
@@ -152,26 +155,20 @@ const GptModal = (props) => {
               </>}
             </DotTitleWrapper>
             <StyledImg src={arrowsIcon} alt="arrows_icon" />
-            <StyledSpan>생성 결과</StyledSpan>
             <textarea
               defaultValue={gptAnswer || ''}
               placeholder="모든 역량을 다 눌러쓰시기보다 2~3개만 채우시는게 바람직합니다...from gpt"
               disabled
             >
             </textarea>
-            <StyledByteP className="byte">{gptBytes || 0}Byte</StyledByteP>
-            <MainBtn type="submit" btnName="GPT 요청하기" ></MainBtn>
+            <Row style={{ margin: "10px 0", justifyContent: "flex-end" }}><ByteCalculator str={gptBytes} styles={{ isTotalByteHide: true }} /></Row>
+            <MainBtn type="submit">Chat GPT </MainBtn>
           </StyledForm>
         }
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={() => {
-          props.onHide()
-        }}>취소</Button>
-        <Button variant="primary" onClick={() => {
-          props.setPersonalRecord(gptAnswer)
-          props.onHide()
-        }}>확인</Button>
+      </Modal.Body >
+      <Modal.Footer style={{ backgroundColor: "#efefef" }}>
+        <ModalBtn onClick={() => { onHide() }}>취소</ModalBtn>
+        <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirmOnClick}>확인</ModalBtn>
       </Modal.Footer>
     </Modal>)
 }
@@ -179,8 +176,10 @@ const GptModal = (props) => {
 const StyledForm = styled.form`
   display: flex;
   flex-direction: column;
-  margin-top: -15px;
+  margin-top: 10px;
+  padding: 10px;
   textarea {
+    border: 1px solid rgba(120, 120, 120, 0.5);
     border-radius: 10px;
     padding: 5px;
     height: 100px;
@@ -190,7 +189,10 @@ const StyledForm = styled.form`
     align-self: flex-end;
   }
 `
-const StyledP = styled.p`
+const Row = styled.div`
+  display: flex;
+`
+const StyledText = styled.p`
   width: 100%;
   border: 1px solid black;
   border-radius: 10px;
@@ -198,7 +200,7 @@ const StyledP = styled.p`
 `
 const StyledImg = styled.img`
   width: 27px;
-  margin: 0 auto;
+  margin: 10px auto;
 `
 const StyledSpan = styled.span`
   margin: 7px;
@@ -235,12 +237,4 @@ const RowWrapper = styled.ul`
   margin-top: 5px;
   margin-bottom: 5px;
 `
-const StyledByteP = styled.p`
- p { 
-    display: inline-block;
-    width: 100px;
-    margin: 0;
-  }
-`
-
 export default GptModal

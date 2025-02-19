@@ -1,31 +1,33 @@
 //라이브러리
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
+import { setAllSubjClasses } from '../../store/allClassesSlice';
+import { setSelectClass } from '../../store/classSelectedSlice';
+import styled from 'styled-components';
 //컴포넌트
 import CardList from '../../components/List/CardList';
 import MainBtn from '../../components/Btn/MainBtn';
+import SearchBar from '../../components/Bar/SearchBar';
 //hooks
 import useFetchRtMyClassData from '../../hooks/RealTimeData/useFetchRtMyClassData';
 import useClientHeight from '../../hooks/useClientHeight';
-//css
-import styled from 'styled-components';
-import SearchBar from '../../components/Bar/SearchBar';
-import { setAllSubjClasses } from '../../store/allClassesSlice';
-import { setSelectClass } from '../../store/classSelectedSlice';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
+import useMediaQuery from '../../hooks/useMediaQuery';
 
-//24.09.18(1차 수정) -> 25.01.21(학생 파트 제거)
+//24.09.18(1차 수정) -> 학생 파트 수정(25.01.21) -> 코티칭(250218)
 const ClassRoomMainPage = () => {
   //준비
   const user = useSelector(({ user }) => user)
   const navigate = useNavigate()
   const dispatcher = useDispatch()
+  const isMobile = useMediaQuery("(max-width: 767px)")
 
   //교사
   const { classList } = useFetchRtMyClassData();
   const [subjClassList, setSubjClassList] = useState(null);
   const [homeroomClassList, setHomerooomClassList] = useState(null);
+  const [coTeachingList, setCoTeachingList] = useState(null);
   useEffect(() => { sortTeacherKlass() }, [classList]);
 
   //학생
@@ -36,6 +38,17 @@ const ClassRoomMainPage = () => {
 
   //모니터 높이
   const clientHeight = useClientHeight(document.documentElement)
+
+  //------공용-------------------------------------------------- 
+  //클래스 데이터 가져오기
+  const fetchMyData = () => {
+    if (user.isTeacher) { fetchUserData(user.uid).then((data) => { setCoTeachingList(data?.coTeachingList || []) }) }
+    else { fetchUserData(user.uid).then((data) => { sortStudentKlass(data?.myClassList || []) }) }
+  }
+  //교과반 클릭(공용)
+  const handleSubjClassOnClick = (item) => {
+    navigate(`/classrooms/${item.id}`, { state: { ...item } }) //url 이동
+  }
 
   //------교사용------------------------------------------------  
   //교과, 담임반 분류
@@ -50,12 +63,11 @@ const ClassRoomMainPage = () => {
     dispatcher(setAllSubjClasses(subjClassList)) //교과반 전역 변수화
     setHomerooomClassList(homeroomClassList)
   }
-
-  //교과반 클릭(공용)
-  const handleSubjClassOnClick = (item) => {
-    navigate(`/classrooms/${item.id}`, { state: { ...item } }) //url 이동
+  //코티칭 클릭
+  const handleCoTeachingOnClick = (item) => {
+    if (item.isApproved) { navigate(`/classrooms/${item.id}`, { state: { ...item } }) }
+    else { window.alert("승인 대기중 입니다.") }
   }
-
   //담임반 클릭
   const handleHomeroomOnClick = (item) => {
     dispatcher(setSelectClass(item)) //선택한 교실 비휘발성 전역변수화
@@ -63,14 +75,6 @@ const ClassRoomMainPage = () => {
   }
 
   //------학생용------------------------------------------------  
-  //클래스 데이터 가져오기
-  const fetchMyData = () => {
-    if (user.isTeacher) return;
-    fetchUserData(user.uid).then((data) => {
-      sortStudentKlass(data?.myClassList || [])
-    })
-  }
-
   //가입 신청, 승인 클래스 분류
   const sortStudentKlass = (list) => {
     const approved = []
@@ -88,12 +92,13 @@ const ClassRoomMainPage = () => {
     <Container $clientheight={clientHeight}>
       {/* 교사 */}
       {user.isTeacher && <>
-        <SearchBar title="교과 클래스 목록" type="classroom" list={subjClassList} setList={setSubjClassList} />
+        <SearchBar title="교과 클래스" type="classroom" list={subjClassList} setList={setSubjClassList} isMobile={isMobile} />
         <CardList dataList={subjClassList} type="classroom" onClick={handleSubjClassOnClick} />
-
-        <SearchBar title="담임 클래스 목록" />
-        <CardList dataList={homeroomClassList} type="homeroom" onClick={handleHomeroomOnClick} />
-        <Row><MainBtn onClick={() => navigate('/classrooms_setting', { state: { step: "first" } })}>클래스 만들기</MainBtn></Row>
+        <SearchBar title="코티칭 클래스" />
+        <CardList dataList={coTeachingList} type="classroom" onClick={handleCoTeachingOnClick} />
+        {!isMobile && <SearchBar title="담임 클래스" />}
+        {!isMobile && <CardList dataList={homeroomClassList} type="homeroom" onClick={handleHomeroomOnClick} />}
+        {!isMobile && <Row><MainBtn onClick={() => navigate('/classrooms_setting', { state: { step: "first" } })}>클래스 만들기</MainBtn></Row>}
       </>}
 
       {/* 학생 */}

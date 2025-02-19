@@ -43,7 +43,6 @@ const AddPerfRecModal = ({ show, onHide, acti, setPerfRecList }) => {
   }
   //gpt 요청 버튼
   const handleGptClick = async () => {
-    let acti = acti
     await askPerfRecord(acti.subject, acti.title, acti.record)
   }
   //각 input 필드의 변경 사항을 처리하는 함수

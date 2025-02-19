@@ -56,11 +56,11 @@ const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef
 
 			{/* 배틀 phase */}
 			{/* 내 이펙트 */}
-			<BasicAttack x={950} y={175} trigger={isMyAttack} />
+			<BasicAttack x={950} y={175} width={75} height={75} trigger={isMyAttack} />
 			<BasicDefense x={100} y={750} radius={200} trigger={isMyDefense} />
 			<BasicRest x={150} y={750} size={50} thick={15} movingPoint={900} trigger={isMyRest} />
 			{/* 상대 이펙트 */}
-			<BasicAttack x={200} y={750} trigger={isEnmAttack} />
+			<BasicAttack x={200} y={750} width={150} height={150} trigger={isEnmAttack} />
 			<BasicDefense x={1000} y={200} radius={100} trigger={isEnmDefense} />
 			<BasicRest x={1000} y={255} size={35} thick={10} movingPoint={300} trigger={isEnmRest} />
 
@@ -76,7 +76,7 @@ const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef
 			{/* 준비창 phase */}
 			{(phase === "ready") && <>
 				<PetSprite src={enmImg || qustion_icon} x={window.innerWidth * 0.5} y={window.innerHeight * 0.2} width={window.innerHeight * 0.2} height={window.innerHeight * 0.2} trigger={isEnmAttack} />
-				<MessageUI x={window.innerWidth * 0.25} y={window.innerHeight * 0.32} width={200} height={window.innerHeight * 0.25} styles={{ fontSize: 16, lineHeight: 30 }}
+				<MessageUI x={window.innerWidth * 0.25} y={window.innerHeight * 0.32} width={200} height={215} styles={{ fontSize: 16, lineHeight: 30 }}
 					msg2={`이름: ${monsterInfo.name}\n레벨: ${enmLevel}\n체력: ${enemyHP}\n공격력: ${enemyAttck}\n방어력: ${enemyDef}\n스피드: ${enmSpd}`} />
 			</>}
 			{/* 카운트다운 phase*/}
@@ -90,8 +90,8 @@ const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef
 			{/* 내 이펙트 */}
 			<BasicDefense x={window.innerWidth * 0.5} y={window.innerHeight * 0.69} radius={200} trigger={isMyDefense} />
 			{/* 상대 이펙트 */}
-			<BasicDefense x={window.innerWidth * 0.5} y={window.innerHeight * 0.2} radius={100} trigger={isEnmDefense} />
-			<BasicRest x={window.innerWidth * 0.5} y={window.innerHeight * 0.2} size={35} thick={10} movingPoint={300} trigger={isEnmRest} />
+			<BasicDefense x={window.innerWidth * 0.5} y={window.innerHeight * 0.35} radius={100} trigger={isEnmDefense} />
+			<BasicRest x={window.innerWidth * 0.5} y={window.innerHeight * 0.35} size={35} thick={10} movingPoint={300} trigger={isEnmRest} />
 			{/* 기본 UI */}
 			<MessageUI msg={message} x={0} y={window.innerHeight * 0.78} width={window.innerWidth} height={175} styles={{ fontSize: 16 }} />
 			{/* 퀴즈 phase */}
@@ -99,13 +99,13 @@ const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef
 				{<HPBarUI x={0} y={window.innerHeight * 0.65} width={window.innerWidth} height={12} curHp={myCurHP} maxHp={myHP} />}
 				<ActionBallUI x={0} y={window.innerHeight * 0.69} width={window.innerWidth} height={60} correctAnswer={actionBall} />
 				{/* 상대 펫몬 */}
-				<HPBarUI x={window.innerWidth * 0.32} y={window.innerHeight * 0.1} width={150} height={12} curHp={enemyCurHP} maxHp={enemyHP} />
-				<PetSprite src={enmImg || qustion_icon} x={window.innerWidth * 0.5} y={window.innerHeight * 0.2} width={230} height={230} trigger={isEnmAttack} movingPoint={-35} />
+				<HPBarUI x={window.innerWidth * 0.32} y={window.innerHeight * 0.25} width={150} height={12} curHp={enemyCurHP} maxHp={enemyHP} />
+				<PetSprite src={enmImg || qustion_icon} x={window.innerWidth * 0.5} y={window.innerHeight * 0.35} width={175} height={175} trigger={isEnmAttack} movingPoint={-35} />
 			</>}
 			{/* 상대 이펙트 중 공격 */}
-			<BasicAttack x={window.innerWidth * 0.5} y={window.innerHeight * 0.69} trigger={isEnmAttack} />
+			<BasicAttack x={window.innerWidth * 0.5} y={window.innerHeight * 0.69} width={200} height={200} trigger={isEnmAttack} />
 			{/* 내 이펙트 중 휴식, 공격 */}
-			<BasicAttack x={window.innerWidth * 0.5} y={window.innerHeight * 0.2} trigger={isMyAttack} />
+			<BasicAttack x={window.innerWidth * 0.5} y={window.innerHeight * 0.35} width={150} height={150} trigger={isMyAttack} />
 			<BasicRest x={window.innerWidth * 0.5} y={window.innerHeight * 0.69} size={50} thick={15} movingPoint={900} trigger={isMyRest} />
 
 			{/* 종료 phase */}
