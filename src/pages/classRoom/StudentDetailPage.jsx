@@ -270,7 +270,6 @@ const StudentDetailPage = () => {
                       {(!isModifiying || (isModifiying && user.uid !== uid && userStatus !== "master")) && <TeacherActiRow item={item} index={index} />}
                       {(isModifiying && (userStatus === "master" || (userStatus === "coTeacher" && user.uid === uid))) && <GridRow>
                         {/* 1열 */}
-                        {console.log(item)}
                         <GridItem>
                           <div style={{ display: "flex", flexDirection: "column" }}>
                             <button onClick={() => moveActiItem(index, 'up')}>▲</button>

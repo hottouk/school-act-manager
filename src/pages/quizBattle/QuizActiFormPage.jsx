@@ -47,7 +47,6 @@ const QuizActiFormPage = () => {
   const [_highRec, setHighRec] = useState('');
   const [_midRec, setMidRec] = useState('');
   const [_basicRec, setBasicRec] = useState('');
-  const [_isPrivate, setIsPrivate] = useState(false);
   const [subjGroup, setSubjGroup] = useState('');
   const [subjDetail, setSubjDetail] = useState('');
   //퀴즈 세트 선택
@@ -78,7 +77,6 @@ const QuizActiFormPage = () => {
     setBasicRec(recordList[2].record);
     setTitle(title);
     setContent(content);
-    setIsPrivate(isPrivate);
     setQuizSelected(quizInfo);
     setMonster(monster);
     fetchImgUrl(monster.path, setMonImg);
@@ -145,7 +143,7 @@ const QuizActiFormPage = () => {
       let confirm = window.confirm(`${quizActiInfo ? "이렇게 변경 저장할까요?" : "이 퀴즈 게임 활동을 생성할까요?"}`)
       if (confirm) {
         const recordList = [{ count: _highCount, record: _highRec }, { count: _midCount, record: _midRec }, { count: _basicCount, record: _basicRec }]
-        const data = { title: _title, recordList, content: _content, subject: subjGroup, subjDetail, quizInfo: _quizSelected, monster: _monster, isPrivate: _isPrivate, madeBy: user.name }
+        const data = { title: _title, recordList, content: _content, subject: subjGroup, subjDetail, quizInfo: _quizSelected, monster: _monster, madeBy: user.name }
         console.log(data)
         if (!quizActiInfo) {
           addData(data);
@@ -208,16 +206,6 @@ const QuizActiFormPage = () => {
           {_quizSelected && <StyledText>{subjGroup}교과 {subjDetail}</StyledText>}
         </Row>
 
-        {/* 공개/비공개 */}
-        <Row style={{ justifyContent: "space-between", marginBottom: "10px" }}>
-          <DotTitle title={"공개 여부"} styles={{ dotColor: "#3454d1;" }} />
-          <TwoRadios name="isPrivate_radio"
-            id={["private_radio", "public_radio"]}
-            value={_isPrivate} label={["비공개 활동", "공개 활동"]}
-            onChange={() => { setIsPrivate(!_isPrivate) }}
-            disabled={!isModifying}
-          />
-        </Row>
         {/* 몇번 이겨야? */}
         <DotTitle title={"성취도별 문구"} styles={{ dotColor: "#3454d1;" }} />
         <LevelWrapper>

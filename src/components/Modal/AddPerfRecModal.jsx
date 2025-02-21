@@ -121,7 +121,7 @@ const AddPerfRecModal = ({ show, onHide, acti, setPerfRecList }) => {
           : <Row style={{ justifyContent: "center" }}><MainBtn onClick={handleGptClick}>chat GPT</MainBtn></Row>
         }
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer style={{ backgroundColor: "#efefef" }}>
         <Row style={{ gap: "15px" }}>
           <ModalBtn onClick={() => { onHide(); }}>취소</ModalBtn>
           <ModalBtn styles={{ btnColor: "rgba(52, 84, 209, 0.8)", hoverColor: "rgb(52, 84, 209)" }} onClick={handleConfirm}>저장</ModalBtn>

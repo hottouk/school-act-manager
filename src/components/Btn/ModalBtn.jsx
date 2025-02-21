@@ -36,9 +36,6 @@ const StyledBtn = styled.button`
   &:disalbled {
     opacity: .5;
   }
-  &:focus {
-    outline: 0;
-  }
   &:hover {
     background-color: ${(props) => { return props.$hoverColor || "#0A46E4" }};
     border-color: ${(props) => { return props.$btnColor || "#1652F0" }};

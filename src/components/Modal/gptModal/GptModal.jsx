@@ -63,6 +63,11 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
       }
     })
   }
+  //placeholder text
+  const getPlaceholderText = () => {
+    if (tab === 1) { return "모든 역량을 다 눌러쓰시기보다 2~3개만 채우시는게 바람직합니다...from gpt" }
+    else { return "학생 보고서를 복사, 붙여넣기 하세요." }
+  }
 
   //input 변경
   const handleInputChange = (event, type) => {
@@ -74,6 +79,7 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
       setInputValues({ ...inputValues, [id]: value });
     }
   };
+
   //제출
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -157,11 +163,11 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
             <StyledImg src={arrowsIcon} alt="arrows_icon" />
             <textarea
               defaultValue={gptAnswer || ''}
-              placeholder="모든 역량을 다 눌러쓰시기보다 2~3개만 채우시는게 바람직합니다...from gpt"
+              placeholder={getPlaceholderText()}
               disabled
             >
             </textarea>
-            <Row style={{ margin: "10px 0", justifyContent: "flex-end" }}><ByteCalculator str={gptBytes} styles={{ isTotalByteHide: true }} /></Row>
+            <Row style={{ margin: "10px 0", justifyContent: "flex-end" }}><ByteCalculator str={gptAnswer} styles={{ isTotalByteHide: true }} /></Row>
             <MainBtn type="submit">Chat GPT </MainBtn>
           </StyledForm>
         }
@@ -170,7 +176,7 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
         <ModalBtn onClick={() => { onHide() }}>취소</ModalBtn>
         <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirmOnClick}>확인</ModalBtn>
       </Modal.Footer>
-    </Modal>)
+    </Modal >)
 }
 
 const StyledForm = styled.form`

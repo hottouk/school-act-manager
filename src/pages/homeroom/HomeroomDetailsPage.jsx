@@ -118,7 +118,7 @@ const HomeroomDetailsPage = () => {
   return (
     <>
       <Container $isVisible={isVisible}>
-        <ClassBoardSection isModifying={isModifying} title={_title} intro={_intro} notice={_notice} studentList={studentList} noticeList={noticeList}
+        <ClassBoardSection isModifying={isModifying} title={_title} intro={_intro} notice={_notice} klassData={klassData} studentList={studentList} noticeList={noticeList}
           setIsModifying={setIsModifying} setTitle={setTitle} setIntro={setIntro} setNotice={setNotice} handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} Row={Row} />
         <MainPanel>
           <TitleText>도구모음</TitleText>
