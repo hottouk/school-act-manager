@@ -15,11 +15,9 @@ import MainBtn from '../../components/Btn/MainBtn'
 import useFireBasic from '../../hooks/Firebase/useFireBasic'
 import useFireUserData from '../../hooks/Firebase/useFireUserData'
 import useFireSchoolData from '../../hooks/Firebase/useFireSchoolData'
-import { useSelector } from 'react-redux'
 
 //생성(250218)
-const SignupSection = ({ myUserData, findSchool, selectedSchool, setFindSchool, Wrapper, TitleText, ClickableText }) => {
-	const user = useSelector(({ user }) => user);
+const SignupSection = ({ myUserData: user, findSchool, selectedSchool, setFindSchool, Wrapper, TitleText, ClickableText }) => {
 	const [_isPublic, setIsPublic] = useState(false);
 	const [_otherName, setOtherName] = useState('');
 	const [_otherTel, setOtherTel] = useState('');
@@ -37,13 +35,13 @@ const SignupSection = ({ myUserData, findSchool, selectedSchool, setFindSchool, 
 	const handleSignUpSchool = () => {
 		const confirm = window.confirm("이 학교 멤버로 가입하시겠습니까?")
 		if (!confirm) return;
-		if (selectedSchool) {
+		if (selectedSchool) {							//기존 멤버 있는 학교 가입
 			const { memberList, ...rest } = selectedSchool;
 			const code = selectedSchool.schoolCode;
 			updateUserInfo("school", { ...rest });
-			joinSchool(code, myUserData);
-		} else {
-			const { createdTime, ...rest } = myUserData
+			joinSchool(code, user);
+		} else {													//학교에서 첫 가입자
+			const { createdTime, ...rest } = user
 			const schoolInfo = { ...findSchool, memberList: [{ ...rest }] };
 			setData(schoolInfo, findSchool.schoolCode);	//학교 신설
 			updateUserInfo("school", { ...findSchool })	//내 정보 수정
@@ -57,7 +55,7 @@ const SignupSection = ({ myUserData, findSchool, selectedSchool, setFindSchool, 
 		const { memberList, ...rest } = otherShcool;
 		const code = otherShcool.schoolCode;
 		updateUserInfo("school", { ...rest });
-		joinSchool(code, myUserData);
+		joinSchool(code, user);
 	}
 	//미등재 학교 검색
 	const handleSeachOnClick = async () => {
@@ -84,7 +82,7 @@ const SignupSection = ({ myUserData, findSchool, selectedSchool, setFindSchool, 
 		else {
 			const confirm = window.confirm(`${_otherName} 학교를 신설하시겠습니까?`)
 			if (!confirm) return;
-			const { createdTime, ...rest } = myUserData;
+			const { createdTime, ...rest } = user;
 			const schoolCode = getRandomID();
 			const memberList = [{ ...rest }];
 			const schoolInfo = { schoolName: _otherName, schoolTel: _otherTel, address: "나이스 미등재", eduOfficeName: "나이스 미등재", schoolCode };
@@ -114,7 +112,7 @@ const SignupSection = ({ myUserData, findSchool, selectedSchool, setFindSchool, 
 				<p>{selectedSchool?.schoolTel}</p>
 				{selectedSchool && <p>학교 코드: {selectedSchool?.schoolCode}</p>}
 				{(selectedSchool === undefined) && <TitleText>현재 학교 첫 가입이세요. 환영합니다.</TitleText>}
-				<Row style={{ justifyContent: "flex-end" }}><ClickableText onClick={() => { handleSignUpSchool(); }}>본교 가입</ClickableText></Row>
+				<Row style={{ justifyContent: "flex-end" }}><ClickableText onClick={handleSignUpSchool}>본교 가입</ClickableText></Row>
 			</MainPanel>
 		</AnimMaxHightOpacity>
 		{/* 나이스 미등재 */}
@@ -142,7 +140,7 @@ const SignupSection = ({ myUserData, findSchool, selectedSchool, setFindSchool, 
 				<Row style={{ marginTop: "20px", borderTop: "1px solid rgba(120, 120, 120, 0.5)", borderBottom: "1px solid rgba(120, 120, 120, 0.5)" }}>
 					<EmptyResult comment={"아직 등재된 학교가 없습니다."} />
 				</Row>
-				{user.isTeacher && <StyledForm onSubmit={onSubmit}>
+				{user?.isTeacher && <StyledForm onSubmit={onSubmit}>
 					<Row style={{ gap: "20px", margin: "20px auto", alignItems: "center" }}><p style={{ margin: "0" }}>학교이름</p><StyledInput type="text" value={_otherName} onChange={(event) => setOtherName(event.target.value)} /></Row>
 					<Row style={{ gap: "20px", margin: "0 auto", alignItems: "center" }}><p style={{ margin: "0" }}>전화번호</p><StyledInput type="text" value={_otherTel} onChange={(event) => { setOtherTel(event.target.value) }} /></Row>
 					<BtnWrapper><MainBtn type="submit">제출하기</MainBtn></BtnWrapper>

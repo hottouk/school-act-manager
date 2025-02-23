@@ -15,7 +15,6 @@ const useFireActiData = () => {
   const fetchAllActis = async (field, value, field2 = null, value2 = null) => {
     let q = query(colRef, value, where(field, "==", value))
     if (field2 && value2) { q = query(q, where(field2, "==", value2)); }
-    
     try {
       const querySnapshot = await getDocs(q);
       return querySnapshot.docs.map(

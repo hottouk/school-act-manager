@@ -7,7 +7,7 @@ let allActivities = createSlice({
     setAllActivities(state, action) {
       let allActiList = action.payload
       return allActiList
-    }
+    },
   }
 })
 

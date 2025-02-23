@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Select from 'react-select';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+//섹션
+import PetInfoSection from './PetInfoSection';
 //컴포넌트
 import SubNav from '../../components/Bar/SubNav';
 import SmallBtn from '../../components/Btn/SmallBtn';
@@ -22,13 +24,13 @@ import x_btn from "../../image/icon/x_btn.png"
 import arrows_icon from "../../image/icon/arrows_icon.png"
 //효과
 import AnimRotation from '../../anim/AnimRotation';
-import PetInfoSection from './PetInfoSection';
 
-//코드 간소화 및 기능추가(240720) -> 펫 동기화(250207) -> 코드 정리 및 버그 수정(250220)
+//코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223)
 const StudentDetailPage = () => {
-  //준비
   const params = useParams();
   const navigate = useNavigate();
+  //객체 접근
+  const selectRef = useRef({});
   useEffect(() => { setIsVisible(true); }, [])
   //전역변수(Frozen)
   const user = useSelector(({ user }) => user);
@@ -46,22 +48,19 @@ const StudentDetailPage = () => {
   }, [petData])
   //hooks
   //편집 모드 
-  const [isModifiying, setIsModifying] = useState(false)
+  const [isModifying, setIsModifying] = useState(false)
   const { deleteStudent, updateStudent } = useAddUpdFireData("classRooms")
   //학생 관련 정보
   const [nthStudent, setNthStudent] = useState(null);
   const [_writtenName, setWrittenName] = useState('미등록');
   const [_actiList, setActiList] = useState(null);
+  const [_addOnActi, setAddOnActi] = useState(null);
   const [isMaster, setIsMaster] = useState(false);
-  //객체 접근
-  const selectRef = useRef({});
   //GPT 모달
   const [isGptShown, setIsGptShown] = useState(false)
   const [selectedActi, setSelectedActi] = useState(null)
   const [gptRecord, setGptRecord] = useState('')
-  useEffect(() => { //GPT 개별화 문구 textArea에 띄우고 새 활동 문구로 저장.
-    if (selectedActi) { changeAccRecord(selectedActi.index, gptRecord); }
-  }, [gptRecord])
+  useEffect(() => { if (selectedActi) { changeAccRecord(selectedActi.index, gptRecord); } }, [gptRecord]) //GPT 개별화 문구 textArea에 띄우고 새 활동 문구로 저장.
   //에니메이션
   const [isVisible, setIsVisible] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false);
@@ -73,7 +72,6 @@ const StudentDetailPage = () => {
     if (writtenName) { setWrittenName(writtenName) }; //이름 or 미등록
     setActiList([...actList || []]);
   }
-
   //학생 본인 id가 아닐 경우 back
   const checkUser = () => {
     if (user.isTeacher || !petData) return;
@@ -81,7 +79,6 @@ const StudentDetailPage = () => {
     if (master?.studentId === user.uid) { setIsMaster(true); }
     else { navigate(-1); }
   }
-
   //펫 동기화
   const syncPetInfo = () => {
     if (user.isTeacher || !petData || !user) return;
@@ -95,18 +92,8 @@ const StudentDetailPage = () => {
       updateUserPetInfo(params.studentId, actiList);     //user 업데이트
     }
   }
-
   //실시간 acc
   const getAccRec = () => { return _actiList?.reduce((acc, cur) => acc + cur.record, '') }
-
-  //실시간 score
-  const getAccScores = () => {
-    const initScores = { attitudeScore: 0, careerScore: 0, coopScore: 0, leadership: 0, sincerityScore: 1 }
-    _actiList?.reduce((acc, cur) => {
-      return { attitudeScore: cur.attitudeScore + acc.attitudeScore, }
-    }, initScores)
-  }
-
   //학생 이동(241202)
   const moveStudent = (student) => {
     if (isAnimating) return;
@@ -129,27 +116,36 @@ const StudentDetailPage = () => {
       return newActiList;
     });
   };
-
-  //------상호작용------------------------------------------------  
-  //활동 셀렉터 변경시_2
-  const changeActiList = (event, index) => {
-    const today = new Date().toISOString().split('T')[0]
-    const newId = event.value //클릭한 새로운 이벤트 id
-    const newActi = allActivityList.find((acti) => { return acti.id === newId }) || {};                                              //전체 활동에서 클릭한 활동과 id가 일치하는 활동을 찾기 -> 원본 반환.
-    const { byte, studentDoneList, particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, ...rest } = newActi; //★필요한 prop만 사용하고 제외 및 불변성 보존★ allActivityList는 전역 변수
-    const pureActi = { ...rest, assignedDate: today }
-    setActiList(prevActiList => {
-      const newActiList = [...prevActiList.slice(undefined, index), pureActi, ...prevActiList.slice(index + 1)]
-      return newActiList
-    })
+  //셀렉터 체크
+  const check = (event) => {
+    if ((_actiList.findIndex(({ id }) => id === event.value.id)) === -1) { return { isValid: true, msg: "같은 활동 없음" } }
+    else { return { isValid: false, msg: "중복된 활동입니다." } };
   }
-  //활동 셀렉터 변경 시_1
-  const handleSelectOnchange = (event, index) => {                                  //event는 선택 acti Obj
-    if ((_actiList.findIndex(({ id }) => { return id === event.value })) === -1) {  //기존 활동과 중복된 활동이 아닌 경우만
-      changeActiList(event, index)
-    } else {
-      window.alert("중복된 활동으로는 변경할 수 없습니다.")
-    }
+  //활동 셀렉터 변경
+  const handleSelectOnchange = (event, index) => {
+    const result = check(event);
+    if (result.isValid) {
+      const assignedDate = new Date().toISOString().split('T')[0];
+      const selected = event.value;
+      const { byte, studentDoneList, particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, ...rest } = selected; //★필요한 prop만 사용하고 제외 및 불변성 보존★ allActivityList는 전역 변수
+      const newActi = { ...rest, assignedDate };
+      const newActiList = [..._actiList.slice(undefined, index), newActi, ..._actiList.slice(index + 1)];
+      setActiList(newActiList);
+    } else { window.alert(result.msg); };
+  }
+  //활동 추가 셀렉터 변경
+  const handleAddOnSelectOnChange = (event) => {
+    const result = check(event);
+    if (result.isValid) {
+      const assignedDate = new Date().toISOString().split('T')[0];
+      const { byte, studentDoneList, particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, ...rest } = event.value;
+      setAddOnActi({ ...rest, assignedDate });
+    } else { window.alert(result.msg); };
+  }
+  //활동 추가
+  const handleAddActiOnClick = () => {
+    const newList = [..._actiList, _addOnActi];
+    setActiList(newList);
   }
   //textarea 변경 (gpt, 수기 변경)
   const changeAccRecord = (index, newRec) => {
@@ -162,11 +158,10 @@ const StudentDetailPage = () => {
   }
   //textarea 수기 변경
   const handleTextareaOnChange = (event, index) => {
-    console.log(event.target.value)
     changeAccRecord(index, event.target.value);
   }
   //저장
-  const handleSaveBtnOnClick = () => {
+  const handleSaveOnClick = () => {
     if (window.confirm('학생정보를 이대로 저장하시겠습니까?')) {   //저장 버튼
       let accRecord = ""
       accRecord = _actiList.map(item => item.record).join(" "); // 누가기록 업데이트
@@ -237,38 +232,40 @@ const StudentDetailPage = () => {
       {user.isTeacher && <Select
         placeholder="학생 바로 이동"
         options={allStudentList.map((student) => { return { label: `${student.studentNumber} ${student.writtenName || '미등록'}`, value: student.id, key: student.id } })}
-        onChange={(event) => { moveStudent(allStudentList.find((student) => student.id === event.value)) }} />}
+        onChange={(event) => { moveStudent(allStudentList.find((student) => student.id === event.value)) }}
+        isDisabled={isModifying}
+      />}
       {!user.isTeacher && <BackBtn />}
     </SubNav>
     {/* 컨테이너 */}
     <Container $isVisible={isVisible}>
       {user.isTeacher && <CenterWrapper><ArrowBtn deg={225} onClick={() => { navigate(`/classrooms/${params.id}`) }} /></CenterWrapper>}
       <FlexWrapper>
-        {(user.isTeacher && !isModifiying) && <ArrowWrapper><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
+        {(user.isTeacher && !isModifying) && <ArrowWrapper><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
         <AnimRotation isAnimating={isAnimating}>
           <StyledBackgroundPannel>
             <PetInfoSection
               petName={petData?.petName} desc={petData?.desc} levelInfo={petData?.level} path={petData?.path}
               subject={petData?.subject} studentNumber={petData?.studentNumber} master={petData?.master} writtenName={_writtenName}
-              isModifiying={isModifiying} setWrittenName={setWrittenName} />
+              isModifiying={isModifying} setWrittenName={setWrittenName} />
             {(user.isTeacher || isMaster) && <GrayBotPannel>
               <GridBotContainer>
-                <HeaderWrapper>
-                  <StyledHeader>순서</StyledHeader>
+                <GridRow>
+                  <StyledHeader>연번</StyledHeader>
                   <StyledHeader>활동</StyledHeader>
                   <StyledHeader>생기부</StyledHeader>
-                  <StyledHeader>{!isModifiying ? "날짜" : "성취도"}</StyledHeader>
-                  <StyledHeader>{!isModifiying ? "기록자" : "변경"}</StyledHeader>
+                  <StyledHeader>{!isModifying ? "날짜" : "성취도"}</StyledHeader>
+                  <StyledHeader>{!isModifying ? "기록자" : "변경"}</StyledHeader>
                   <StyledHeader>바이트</StyledHeader>
-                </HeaderWrapper>
+                </GridRow>
                 {!_actiList || _actiList.length === 0
-                  ? <>  <GridItem style={{ gridColumn: "1/7" }}>활동이 없어요ㅠㅠ</GridItem></>
+                  ? <GridItem style={{ gridColumn: "1/7" }}>활동이 없어요ㅠㅠ</GridItem>
                   : _actiList.map((item, index) => {
                     const { record, perfRecordList, uid } = item;
                     const { userStatus } = user;
                     return <React.Fragment key={item.id}>
-                      {(!isModifiying || (isModifiying && user.uid !== uid && userStatus !== "master")) && <TeacherActiRow item={item} index={index} />}
-                      {(isModifiying && (userStatus === "master" || (userStatus === "coTeacher" && user.uid === uid))) && <GridRow>
+                      {(!isModifying || (isModifying && user.uid !== uid && userStatus !== "master")) && <TeacherActiRow item={item} index={index} />}
+                      {(isModifying && (userStatus === "master" || (userStatus === "coTeacher" && user.uid === uid))) && <GridRow>
                         {/* 1열 */}
                         <GridItem>
                           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -280,12 +277,12 @@ const StudentDetailPage = () => {
                         <GridItem>
                           <Select
                             ref={(ele) => selectRef.current[index] = ele}
-                            options={allActivityList.map((acti) => { return { label: acti.title, value: acti.id, key: acti.id } })}
+                            options={allActivityList.map((item) => { return { label: item.title, value: item } })}
                             onChange={(event) => { handleSelectOnchange(event, index) }} />
                         </GridItem>
                         {/* 3열 */}
                         <GridItem className="left-align">
-                          <textarea
+                          <StyledTextarea
                             value={_actiList[index].record}
                             onChange={(event) => handleTextareaOnChange(event, index)} />
                         </GridItem>
@@ -310,6 +307,14 @@ const StudentDetailPage = () => {
                       </GridRow>}
                     </React.Fragment>
                   })}
+                {isModifying && <GridRow>
+                  <GridItem style={{ gridColumn: "1/7", gap: "20px" }} >
+                    <Select
+                      options={allActivityList.map((item) => { return { label: item.title, value: item } })}
+                      onChange={handleAddOnSelectOnChange} />
+                    <SmallBtn onClick={handleAddActiOnClick}>추가</SmallBtn>
+                  </GridItem>
+                </GridRow>}
               </GridBotContainer>
               {(_actiList && _actiList.length !== 0) && <>
                 <CenterWrapper><img src={arrows_icon} alt="아래화살표" /></CenterWrapper>
@@ -322,14 +327,17 @@ const StudentDetailPage = () => {
             </StyledBotBackground>
           </TotalByteWrapper>
         </AnimRotation>
-        {(user.isTeacher && !isModifiying) && <ArrowWrapper><ArrowBtn id="right_arw_btn" onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
+        {(user.isTeacher && !isModifying) && <ArrowWrapper><ArrowBtn id="right_arw_btn" onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
       </FlexWrapper>
       {/* 교사전용 */}
       {user.isTeacher && <BtnWrapper>
-        {!isModifiying && <TransparentBtn id="edit_btn" onClick={() => { setIsModifying(!isModifiying) }} styles={{ width: "200px" }}>수정</TransparentBtn>}
-        {isModifiying && <TransparentBtn id="save_btn" onClick={handleSaveBtnOnClick} styles={{ width: "200px" }}>저장</TransparentBtn>}
-        {isModifiying && <TransparentBtn id="cancel_btn" onClick={handleCancelOnClick} styles={{ width: "200px" }}>취소</TransparentBtn>}
-        <TransparentBtn id="delete_btn" onClick={handleStudentDeleteOnClick} styles={{ width: "200px" }}>삭제</TransparentBtn>
+        {!isModifying && <>
+          <TransparentBtn onClick={() => { setIsModifying(!isModifying) }} styles={{ width: "200px" }}>수정</TransparentBtn>
+          <TransparentBtn onClick={handleStudentDeleteOnClick} styles={{ width: "200px" }}>삭제</TransparentBtn></>}
+        {isModifying && <>
+          <TransparentBtn onClick={handleSaveOnClick} styles={{ width: "200px" }}>저장</TransparentBtn>
+          <TransparentBtn onClick={handleCancelOnClick} styles={{ width: "200px" }}>취소</TransparentBtn>
+        </>}
       </BtnWrapper>}
     </Container >
     {/* 모달 */}
@@ -354,7 +362,6 @@ const Row = styled.div`
   display: flex;
 `
 const CenterWrapper = styled(Row)`
-  display: flex;
   justify-content: center;
 `
 const FlexWrapper = styled(Row)`
@@ -412,9 +419,6 @@ const StyledAcc = styled.div`
 const GridRow = styled.div`
   display: contents;
 `
-const HeaderWrapper = styled.div` 
-  display: contents;
-`
 const StyledHeader = styled.div`
   height: 40px;
   display: flex;
@@ -446,17 +450,17 @@ const GridItem = styled.div`
     cursor: pointer;
     margin: auto;
   }
-  textarea {
-    width: 95%;
-    height: 100%;
-    padding: 5px;
-    border-radius: 5px;
-  }
   &.left-align { 
     text-align: left;
     justify-content: flex-start;
     overflow-y: scroll;
   }
+`
+const StyledTextarea = styled.textarea`
+  width: 95%;
+  height: 100%;
+  padding: 5px;
+  border-radius: 5px;
 `
 const SmallBtnWrapper = styled.div`
   display: flex;

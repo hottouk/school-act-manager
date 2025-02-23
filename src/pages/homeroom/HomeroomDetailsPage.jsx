@@ -23,6 +23,7 @@ import useFireClassData from '../../hooks/Firebase/useFireClassData';
 import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData';
 //img
 import deskIcon from '../../image/icon/desk_icon.png'
+import { setAllActivities } from '../../store/allActivitiesSlice';
 
 //2024.10.22 생성 -> 250211 게시판 추가
 const HomeroomDetailsPage = () => {
@@ -36,9 +37,13 @@ const HomeroomDetailsPage = () => {
   //시작
   useEffect(() => {
     setIsVisible(true);
-    fetchAllActis("uid", user.uid, "subject", "담임").then((actiList) => { setActiList(actiList) });
+    fetchAllActis("uid", user.uid, "subject", "담임").then((actiList) => {
+      setActiList(actiList);
+      dispatcher(setAllActivities(actiList));
+    });
   }, [])
   const { updateClassroom } = useFireClassData();
+  const { deleteClassWithStudents } = useDeleteFireData();
   //반 전역변수
   const thisClass = useSelector(({ classSelected }) => { return classSelected });
   const [_title, setTitle] = useState('');
@@ -59,7 +64,6 @@ const HomeroomDetailsPage = () => {
   }, [actiList])
   const [selfActiList, setSelfActiList] = useState([]);
   const [careerActiList, setCareerActiList] = useState([]);
-  const { deleteClassWithStudents } = useDeleteFireData();
   //tab
   const [tab, setTab] = useState(1);
   //학생 추가 모달

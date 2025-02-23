@@ -214,19 +214,22 @@ const useFireTransaction = () => {
 
   //3. 학생 가입 신청
   const applyKlassTransaction = async (info) => {
-    const { uid, id, petId, petLabel, classTitle, subject, subjDetail, intro } = info
-    const klassInfo = { uid, id, classTitle, intro, subject, subjDetail: subjDetail || '', isApproved: false } //신청 정보
+    const { klass, petId, petLabel, user } = info
+    const klassInfo = { ...klass, isApproved: false } //신청 정보
     const today = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD' 형식
     const submitInfo =
-      { studentId: user.uid, studentName: user.name, studentNumber: user.studentNumber, school: user.school.schoolName, petId, petLabel, applyDate: today, type: "join", classId: id, classTitle, classSubj: subject } //상신 정보
+    {
+      studentId: user.uid, studentName: user.name, studentNumber: user.studentNumber, school: user.school.schoolName, petId, petLabel,
+      classId: klass.id, classTitle: klass.classTitle, classSubj: klass.subject, applyDate: today, type: "join"
+    } //상신 정보
     const studentDocRef = doc(userColRef, user.uid)
-    const teacherDocRef = doc(userColRef, uid)
+    const teacherDocRef = doc(userColRef, klassInfo.uid)
     await runTransaction(db, async (transaction) => {
       const studentDoc = await transaction.get(studentDocRef)
       if (!studentDoc.exists()) { throw new Error("학생 읽기 에러") }
 
       //이미 신청 확인
-      const isApplied = studentDoc.data().myClassList?.find((item) => item.id === id)
+      const isApplied = studentDoc.data().myClassList?.find((item) => item.id === klass.id)
       if (isApplied) throw new Error("이미 가입되었거나 가입 신청한 클래스입니다.")
 
       //학생 신청 정보 업데이트, 교사 상신
