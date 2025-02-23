@@ -149,6 +149,17 @@ const QuizFormPage = () => {
               setSelectedGroup={setSelectedSubjGroup} setSelectedDetail={setSelectedSubjDetail}
               disabled={!isModifying} />
           </Row>
+
+          {/* 공개/비공개 */}
+          {/* <Row style={{ justifyContent: "space-between", marginBottom: "10px" }}>
+            <DotTitle title={"공개 여부"} styles={{ dotColor: "#3454d1;" }} />
+            <TwoRadios name="isPrivate_radio"
+              id={["private_radio", "public_radio"]}
+              value={_isPrivate} label={["비공개 활동", "공개 활동"]}
+              onChange={() => { setIsPrivate(!_isPrivate) }}
+              disabled={!isModifying}
+            />
+          </Row> */}
           {_quizList.map((_, index) => (
             <Row key={index} className="input-group">
               <StyledLabel>{padNumber(index + 1, 3)}</StyledLabel>

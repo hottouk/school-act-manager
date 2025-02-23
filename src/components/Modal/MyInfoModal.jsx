@@ -1,5 +1,5 @@
 //라이브러리
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import useLogout from '../../hooks/useLogout';
 import { Badge } from 'react-bootstrap';
@@ -8,27 +8,25 @@ import styled from 'styled-components';
 //컴포넌트
 import CSInfoSelect from '../Select/CSInfoSelect';
 import ModalBtn from '../Btn/ModalBtn';
-import FindSchoolSelect from '../FindSchoolSelect';
 //hooks
+import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useStudent from '../../hooks/useStudent';
 import useFileCheck from '../../hooks/useFileCheck';
 import useStorage from '../../hooks/useStorage';
-import useSetUser from '../../hooks/useSetUser';
 //이미지
 import unknown from '../../image/icon/unkown_icon.png'
 
-//241124 1차 수정(코드 정리)
+//241124 1차 수정(코드 정리) -> 250223(학교 변경 삭제)
 const MyInfoModal = ({ show, onHide, isMobile }) => {
   const user = useSelector(({ user }) => user)
   useEffect(() => { //유저 
     setIsTeacher(user.isTeacher)
-    setSchool(user.school)
     if (user.profileImg) { setProfileImg(user.profileImg) }
-  }, [user])
+  }, [user]);
   //내부 정보
-  const [_isTeacher, setIsTeacher] = useState(user.isTeacher)
-  const [_profileImg, setProfileImg] = useState(null)
-  const [_profileFile, setProfileFile] = useState(null)
+  const [_isTeacher, setIsTeacher] = useState(user.isTeacher);
+  const [_profileImg, setProfileImg] = useState(null);
+  const [_profileFile, setProfileFile] = useState(null);
   useEffect(() => { //프로필 사진 변경
     if (_profileFile) {
       if (getIsImageCheck(_profileFile.name)) {
@@ -39,14 +37,12 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
         };
       } else { window.alert("이미지 파일만 가능합니다.") }
     }
-  }, [_profileFile])
-  const [_email, setEmail] = useState(user.email ? user.email : '')
-  const [_phoneNumber, setPhoneNumber] = useState(user.phoneNumber ? user.phoneNumber : '')
-  const [_grade, setGrade] = useState("1")
-  const [_classNumber, setClassNumber] = useState("01")
+  }, [_profileFile]);
+  const [_email, setEmail] = useState(user.email ? user.email : '');
+  const [_phoneNumber, setPhoneNumber] = useState(user.phoneNumber ? user.phoneNumber : '');
+  const [_grade, setGrade] = useState("1");
+  const [_classNumber, setClassNumber] = useState("01");
   const [_number, setNumber] = useState(1);
-  const [_school, setSchool] = useState(null)
-  const [_isSearchSchool, setIsSearchSchool] = useState(false) //학교 검색창 보이기
   //수정 모드
   const [isModifying, setIsModifying] = useState(false);
   //학번
@@ -54,7 +50,7 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
   const { getIsImageCheck } = useFileCheck();
   //통신
   const { saveProfileImgStorage, getProfileImgUrl } = useStorage();
-  const { updateUserInfo } = useSetUser();
+  const { updateMyInfo } = useFireUserData();
   const { logout } = useLogout();
 
   //------함수부------------------------------------------------ 
@@ -83,9 +79,6 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
   //버튼
   const handleOnClick = (event) => {
     switch (event.target.id) {
-      case "cancel_btn":
-
-        break;
       case "delete_img_btn":
         setProfileImg(null)
         break;
@@ -96,25 +89,25 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
   //확인
   const handleConfirmOnClick = () => {
     onHide();
-    setIsModifying(false)
+    setIsModifying(false);
   }
 
   //저장
   const handleSaveOnClick = () => {
     if (window.confirm("이대로 회원정보를 저장하시겠습니까?")) {
-      let studentNumber = createStudentNumber(_number - 1, _grade, _classNumber)
+      const studentNumber = createStudentNumber(_number - 1, _grade, _classNumber)
       let userInfo
       if (_profileFile) {//이미지 변경 시
         saveProfileImgStorage(_profileFile).then(() => { //스토리지에 저장
           getProfileImgUrl().then((profileUrl) => { //스토리지 저장 주소 받아서 userInfo 저장
-            userInfo = { email: _email, phoneNumber: _phoneNumber, studentNumber, profileImg: profileUrl, isTeacher: _isTeacher, school: _school }
-            updateUserInfo(userInfo)
+            userInfo = { email: _email, phoneNumber: _phoneNumber, studentNumber, profileImg: profileUrl, isTeacher: _isTeacher }
+            updateMyInfo(userInfo)
           })
           setProfileFile(null)
         })
       } else {
-        userInfo = { email: _email, phoneNumber: _phoneNumber, studentNumber, profileImg: _profileImg, isTeacher: _isTeacher, school: _school }
-        updateUserInfo(userInfo)
+        userInfo = { email: _email, phoneNumber: _phoneNumber, studentNumber, profileImg: _profileImg, isTeacher: _isTeacher }
+        updateMyInfo(userInfo)
       }//이미지 변경 x
       setIsModifying(false)
     }
@@ -123,7 +116,6 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
   //취소
   const handleCancelOnClick = () => {
     setIsModifying(false)
-    setIsSearchSchool(false)
     setProfileFile(null)
     setProfileImg(user.profileImg)
     setEmail(user.email ? user.email : '')
@@ -148,33 +140,35 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
       <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>{user.name}님의 정보</Modal.Header>
       <Modal.Body style={{ backgroundColor: "#efefef" }}>
         {/* 일반 */}
-        {!isModifying && <Container>
-          <div>
+        {!isModifying && <UpperSection>
+          <Row style={{ flexDirection: "column", gap: "10px" }}>
             <p>고유번호: {user.uid}</p>
             <p>이메일: {user.email ? user.email : "없음"}</p>
-            <p>학교명: {user.school ? user.school.schoolName : "없음"}</p>
             <p>연락처: {user.phoneNumber ? user.phoneNumber : "없음"}</p>
             <p>회원구분: {user.isTeacher ? "교사 회원" : "학생 회원"}</p>
-          </div>
+          </Row>
           {!isMobile && <ProfileImgWrapper>
             {_profileImg && <img src={_profileImg} alt="프로필 이미지" />}
             {!_profileImg && <img src={unknown} alt="프로필 이미지" />}
           </ProfileImgWrapper>}
-        </Container>}
+        </UpperSection>}
         {/* 수정 */}
-        {isModifying && <fieldset>
+        {isModifying && <fieldset style={{ padding: "0" }}>
           <UpperSection>
-            <div>
+            <Row style={{ flexDirection: "column", gap: "10px" }}>
               <p>고유번호: {user.uid}</p>
-              <InputWrapper>
-                <label htmlFor="email_input">이메일:&nbsp;&nbsp;</label>
-                <input className="email_input" type="text" value={_email} onChange={(event) => { setEmail(event.target.value) }} />
-              </InputWrapper>
-              <InputWrapper>
-                <label htmlFor="phoneNumber_input">연락처:&nbsp;&nbsp;</label>
-                <input className="phoneNumber_input" type="text" value={_phoneNumber} onChange={(event) => { setPhoneNumber(event.target.value) }} />
-              </InputWrapper>
-            </div>
+              <Row>
+                <p>이메일: &nbsp;&nbsp;</p>
+                <StyledInput type="text" value={_email} placeholder='hottouk@naver.com' onChange={(event) => { setEmail(event.target.value) }} />
+              </Row>
+              <Row>
+                <p>연락처: &nbsp;&nbsp;</p>
+                <StyledInput type="text" value={_phoneNumber} placeholder='01012341234' onChange={(event) => { setPhoneNumber(event.target.value) }} />
+              </Row>
+              {!_isTeacher && <Row>
+                <p>학번: &nbsp;&nbsp;</p>
+                <CSInfoSelect grade={_grade} classNumber={_classNumber} number={_number} handleOnChange={handleOnChange} /></Row>}
+            </Row>
             {!isMobile && <ProfileImgWrapper>
               <label htmlFor="profile_img_btn" style={{ cursor: "pointer" }} >
                 {_profileImg && <img src={_profileImg} alt="프로필 이미지" onClick={handleOnClick} />}
@@ -184,14 +178,6 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
               <Badge bg="primary" id="delete_img_btn" onClick={handleOnClick}>사진 삭제</Badge>
             </ProfileImgWrapper>}
           </UpperSection>
-          <div>
-            {!_isTeacher && <CSInfoSelect grade={_grade} classNumber={_classNumber} number={_number} handleOnChange={handleOnChange} />}
-            <InputWrapper>
-              <label>학교명:&nbsp;&nbsp;</label>
-              <input type="text" value={_school?.schoolName ?? ''} readOnly onClick={() => { setIsSearchSchool(true) }} />
-            </InputWrapper>
-            {_isSearchSchool && <FindSchoolSelect setSchool={setSchool} />}
-          </div>
         </fieldset>
         }
         {!isModifying && <Row style={{ justifyContent: "flex-end", gap: "10px" }}>
@@ -210,24 +196,23 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
     </Modal>
   )
 }
-
-const Container = styled.div`
-  display: flex;
-  padding: 0.35em 0.75em 0.625em;
-`
 const Row = styled.div`
   display: flex;
 `
-const UpperSection = styled.div`
+const UpperSection = styled(Row)`
   display: flex;
+  justify-content: space-between;
+  p { margin: 0; }
 `
 const ProfileImgWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
+
   img {
     width: 110px;
     height: 110px;
+    border-radius: 15px;
   }
 `
 const ClickableText = styled.p`
@@ -238,13 +223,11 @@ const ClickableText = styled.p`
     color: #3454d1;
   }
 `
-const InputWrapper = styled.div`
-  margin: 15px 0; 
-  input {
-    height: 35px;
-    border-radius: 7px;
+
+const StyledInput = styled.input`
+   height: 35px;
+    border-radius: 5px;
     border: 1px solid rgba(120, 120, 120, 0.5)
-  }
 `
 
 export default MyInfoModal

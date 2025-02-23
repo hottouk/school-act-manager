@@ -183,7 +183,7 @@ const MySchoolPage = () => {
         {!_mySchool && <SignupSection myUserData={user} findSchool={_findSchool} selectedSchool={_selectedSchool} setFindSchool={setFindSchool}
           Row={Row} Wrapper={Wrapper} TitleText={TitleText} ClickableText={ClickableText} />}
       </Container>
-      {isModal && <ClassMemberModal show={isModal} onHide={() => { setIsModal(false) }} klass={_klass} />}
+      {isModal && <ClassMemberModal show={isModal} onHide={() => { setIsModal(false) }} klass={_klass} myUserData={user} />}
     </>
   )
 }

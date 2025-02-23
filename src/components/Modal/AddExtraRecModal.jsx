@@ -125,14 +125,11 @@ const AddExtraRecModal = (props) => {
             </GridRowWrapper>
           })}
         </GridContainer>
-        {(gptRes === "loading") ?
-          <div className="text-center">
-            <Spinner animation="border" role="status">
-              <span className="sr-only">Loading...</span>
-            </Spinner></div> :
-          <Row style={{ justifyContent: "center", marginTop: "20px" }}><MainBtn btnName="chat GPT" btnOnClick={handleGptClick} /></Row>}
+        {(gptRes === "loading")
+          ? <Row style={{ justifyContent: "center", marginTop: "20px" }}><Spinner animation="border" role="status" /></Row>
+          : <Row style={{ justifyContent: "center", marginTop: "20px" }}><MainBtn onClick={handleGptClick}>ChatGPT</MainBtn></Row>}
       </Modal.Body>
-      <Modal.Footer >
+      <Modal.Footer style={{ backgroundColor: "#efefef" }} >
         <ModalBtn onClick={() => { props.onHide() }}>취소</ModalBtn>
         <ModalBtn styles={{ btnColor: "rgba(52, 84, 209, 0.8)", hoverColor: "#3454d1" }} onClick={handleConfirm}>저장</ModalBtn>
       </Modal.Footer>

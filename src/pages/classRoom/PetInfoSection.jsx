@@ -4,7 +4,8 @@ import styled from 'styled-components'
 //컴포넌트
 import PetImg from '../../components/PetImg'
 
-const PetInfoSection = ({ subject, studentNumber, petName, desc, levelInfo, isModifiying, writtenName, master, setWrittenName, path }) => {
+//생성(250223)
+const PetInfoSection = ({ subject, studentNumber, petName, desc, levelInfo, writtenName, setWrittenName, master, path, isModifiying }) => {
 
   return (
     <Container>

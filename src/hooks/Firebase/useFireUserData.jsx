@@ -1,12 +1,14 @@
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { collection, doc, getDoc, runTransaction, updateDoc, arrayUnion, arrayRemove, getDocFromCache, getDocFromServer, setDoc, } from 'firebase/firestore'
 import { appFireStore } from '../../firebase/config'
+import { setUserPersonalInfo } from '../../store/userSlice'
 
 //user collection 함수 모음
 const useFireUserData = () => {
   const user = useSelector(({ user }) => user)
   const db = appFireStore;
-  const col = collection(db, "user")
+  const col = collection(db, "user");
+  const dispatcher = useDispatch();
 
   //유저 기본 업데이트(250217)
   const updateUserInfo = async (field, info) => {
@@ -28,6 +30,18 @@ const useFireUserData = () => {
       window.alert(error);
       console.log(error);
     }
+  }
+
+  //내 정보 창에서 정보 변경(250223)
+  const updateMyInfo = async (info) => {
+    const userDocRef = doc(col, user.uid);
+    updateDoc(userDocRef, { ...info })
+      .then(() => {
+        dispatcher(setUserPersonalInfo(info))
+      }).catch((err) => {
+        window.alert(err)
+        console.log(err)
+      })
   }
 
   //유저 배열형 정보 삭제(250201)
@@ -126,7 +140,7 @@ const useFireUserData = () => {
     }
   }
 
-  return ({ updateUserInfo, fetchUserData, updateUser: updateUserArrayInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData })
+  return ({ updateUserInfo, fetchUserData, updateUser: updateUserArrayInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo })
 }
 
 export default useFireUserData

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setAllStudents } from '../../store/allStudentsSlice.jsx';
 import { setAllActivities } from '../../store/allActivitiesSlice.jsx';
 import { setSelectClass } from '../../store/classSelectedSlice.jsx';
+import { setUser } from '../../store/userSlice.jsx';
 import Select from 'react-select';
 import styled from 'styled-components';
 //페이지
@@ -33,7 +34,6 @@ import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData.jsx';
 import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
 import useMediaQuery from '../../hooks/useMediaQuery.jsx';
-import { setUser } from '../../store/userSlice.jsx';
 
 //240801(클래스 헤더 수정) -> 1113(애니메이션 추가) -> 250122(게임 추가, 가입 제거) -> 0125(학생 페이지 정비)
 const ClassroomDetailsPage = () => {
@@ -122,7 +122,6 @@ const ClassroomDetailsPage = () => {
     dispatcher(setAllStudents(studentDataList))                              //학생 data
     setStudentList(studentDataList);
   }
-
   //공지사항 list 변환
   const splitNotice = (notice) => {
     if (notice.length === 0) { setNoticeList([]) }
@@ -131,12 +130,10 @@ const ClassroomDetailsPage = () => {
       setNoticeList(arr)
     }
   }
-
   //클래스 이동
   const moveKlass = (event) => {
     navigate(`/classrooms/${event.value.id}`, { state: { ...event.value } })
   }
-
   //펫 정보 불러오기(학생 전용)
   const fetchPetData = () => {
     if (user.isTeacher || !myUserData) return;
@@ -144,7 +141,6 @@ const ClassroomDetailsPage = () => {
     const thisPet = myPetList.find(({ classId }) => classId === thisKlassId)
     setMyPetDetails(thisPet)
   }
-
   //몬스터 클릭
   const handleMonsterOnClick = (item) => {
     let { quizInfo, ...rest } = item
@@ -152,7 +148,6 @@ const ClassroomDetailsPage = () => {
     setQuizId(quizInfo.id)
     setGameDetails(rest)
   }
-
   //변경 저장
   const handleSaveOnClick = () => {
     const confirm = window.confirm("이대로 클래스 정보를 변경하시겠습니까?");
@@ -167,7 +162,6 @@ const ClassroomDetailsPage = () => {
     bindKlassData();
     setIsModifying(false);
   }
-
   //삭제 클릭
   const handleDeleteOnClick = () => {
     const deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
