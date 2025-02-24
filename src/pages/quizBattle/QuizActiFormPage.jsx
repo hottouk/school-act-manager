@@ -156,16 +156,6 @@ const QuizActiFormPage = () => {
     } else { window.alert(isValid.message) }
   }
 
-  //테스트 게임
-  const handleTestOnClick = () => {
-    if (check()) {
-      let confirm = window.confirm("이 내용으로 테스트 게임을 진행할까요?")
-      if (confirm) {
-        setIsGameModal(true);
-      }
-    }
-  }
-
   //수정 취소
   const hadleCancelOnClick = () => {
     bindInfo();
@@ -232,14 +222,14 @@ const QuizActiFormPage = () => {
 
         {!quizActiInfo && <BtnWrapper>
           <LongW100Btn btnName="생성" btnOnClick={handleSaveOnClick} />
-          <LongW100Btn btnName="테스트" btnOnClick={handleTestOnClick} />
+          {/* <LongW100Btn btnName="테스트" btnOnClick={handleTestOnClick} /> */}
         </BtnWrapper>}
         {quizActiInfo && <BtnWrapper>
           {isModifying && <LongW100Btn btnName="변경 저장" btnOnClick={handleSaveOnClick} />}
           {!isModifying && <LongW100Btn btnName="수정" btnOnClick={() => { setIsModifying(true) }} />}
           {isModifying && <LongW100Btn btnName="취소" btnOnClick={hadleCancelOnClick} />}
           {!isModifying && <LongW100Btn btnName="삭제" btnOnClick={handleDeleteOnClick} />}
-          <LongW100Btn btnName="테스트" btnOnClick={handleTestOnClick} />
+          {/* <LongW100Btn btnName="테스트" btnOnClick={handleTestOnClick} /> */}
         </BtnWrapper>}
       </FormFrame>
     </Container>
@@ -250,13 +240,6 @@ const QuizActiFormPage = () => {
       setMonster={setMonster}
       setMonImg={setMonImg}
     />
-    {isGameModal && <GameModal
-      show={isGameModal}
-      onHide={() => setIsGameModal(false)}
-      quizSetId={_quizSelected.id}
-      myPetDetails={{ petName: "교사의 화신", path: "images/pet/pet_water_001_3.png", spec: { atk: 15, def: 15, hp: 200, spd: 20 } }}
-      monsterDetails={{ ...monsterDetails }} //게임엔 레벨까지 제공
-    />}
   </>
   )
 }

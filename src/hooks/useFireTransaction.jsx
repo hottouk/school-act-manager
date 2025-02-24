@@ -51,7 +51,7 @@ const useFireTransaction = () => {
         //2. write
         const memberList = schoolSnapshot.data().memberList;
         const deleted = memberList.filter((item) => { return item.uid !== user.uid });
-        transaction.update(userRef, { school: deleteField() });
+        transaction.update(userRef, { school: deleteField(), coTeachingList: deleteField() });
         transaction.update(schoolRef, { memberList: deleted });
       })
       //3. classroom 컬렉션에서 특정 uid를 가진 문서들 삭제
