@@ -193,7 +193,7 @@ const ClassroomDetailsPage = () => {
           <MainSelector isMobile={isMobile} type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
         </MainPanel>}
         {/* 퀴즈 게임부 */}
-        {(user.uid === klassData?.uid) && <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} myPetDetails={myPetDetails} onClick={handleMonsterOnClick} />}
+        <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} myPetDetails={myPetDetails} onClick={handleMonsterOnClick} />
 
         {/* 학생 상세 보기*/}
         {!isMobile && <MainPanel>
@@ -205,7 +205,7 @@ const ClassroomDetailsPage = () => {
           </>}
         </MainPanel>}
         {/* 퀘스트 목록(학생) */}
-        {(!user.isTeacher && studentKlassData?.isApproved && !isMobile) && <MainPanel>
+        {(!user.isTeacher && studentKlassData?.isApproved) && <MainPanel>
           <TitleText>퀘스트 목록</TitleText>
           {(!actiList || actiList.length === 0)
             ? <EmptyResult comment="등록된 활동이 없습니다." />
