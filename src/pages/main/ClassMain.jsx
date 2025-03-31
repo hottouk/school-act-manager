@@ -3,10 +3,8 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 //컴포넌트
 import NoticeModal from '../../components/Modal/NoticeModal'
-import InfluencerList from '../../components/List/InfluencerList'
 import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
 //hooks
-import useFetchRtAllUserData from '../../hooks/RealTimeData/useFetchRtAllUserData'
 import useClientHeight from '../../hooks/useClientHeight'
 import useMediaQuery from '../../hooks/useMediaQuery'
 //이미지
@@ -14,12 +12,6 @@ import main from '../../image/main.png'
 
 //24.07.20 -> 모바일감지(250213)
 const ClassMain = () => {
-  const { teacherList, studentList, useFetchRtUserErr, sortByLikedCount } = useFetchRtAllUserData() //실시간 구독
-  const [influList, setInfluList] = useState([]);
-  useEffect(() => {
-    setInfluList(sortByLikedCount())
-    if (useFetchRtUserErr) console.log(useFetchRtUserErr)
-  }, [teacherList])
   const [isShownNotice, setIsShownNotice] = useState(false) //공지사항
   useEffect(() => { fetchNotice(); }, [])
   const isMobile = useMediaQuery('(max-width: 768px)'); //화면 크기 감지
@@ -57,17 +49,14 @@ const ClassMain = () => {
         </Wrapper>
       </LandingBackground>
       <StyledWhiteBackground>
-        {!isMobile && <InfluencerList dataList={influList || []} />}
-        <Wrapper>
-          <SubTitleText>{teacherList.length}명의 선생님, {studentList.length}명의 학생이 이용중!!</SubTitleText>
-        </Wrapper>
+        <SubTitleText>{2119}명의 선생님, {124}명의 학생이 이용중!!</SubTitleText>
+        <Row><HorizontalBannerAd /></Row>
       </StyledWhiteBackground>
       <BottomBlueBackground>
         <Wrapper>
           <BibleText className='bible'>네 길을 여호와께 맡기라 그를 의지하면 그가 이루시고 네 의를 빛 같이 나타내시며 네 공의를 정오의 빛 같이 하시리로다. 시편 37:5-6</BibleText>
         </Wrapper>
       </BottomBlueBackground>
-      <Row><HorizontalBannerAd /></Row>
       {/* 공지사항팝업 */}
       <NoticeModal
         show={isShownNotice}
@@ -130,7 +119,10 @@ const LandingImage = styled.img`
 `
 const StyledWhiteBackground = styled.div`
   background-color: #efefef;
-  height: 360px;
+  display: flex;
+  padding-top: 10px;
+  gap: 10px;
+  flex-direction: column;
   @media (max-width: 767px) {
     height: 130px;
     display: flex;
@@ -145,7 +137,6 @@ const BottomBlueBackground = styled.div`
 `
 const SubTitleText = styled.h3`
   position: relative;
-  top: 100px;
   width: 100%;
   display: flex;
   justify-content: center;

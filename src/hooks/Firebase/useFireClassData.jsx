@@ -1,5 +1,5 @@
 import { appFireStore, timeStamp } from '../../firebase/config'
-import { addDoc, arrayUnion, collection, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore'
+import { addDoc, arrayRemove, arrayUnion, collection, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore'
 
 const useFireClassData = () => {
   const db = appFireStore
@@ -21,6 +21,16 @@ const useFireClassData = () => {
     const klassDocRef = doc(colRef, klassId);
     try {
       setDoc(klassDocRef, { [field]: arrayUnion(info) }, { merge: true });
+    } catch (error) {
+      console.log(error);
+      window.alert(error);
+    }
+  }
+  //클래스 배열형 정보 삭제(250225)
+  const deleteKlassroomArrayInfo = async (klassId, field, info) => {
+    const klassDocRef = doc(colRef, klassId);
+    try {
+      setDoc(klassDocRef, { [field]: arrayRemove(info) }, { merge: true });
     } catch (error) {
       console.log(error);
       window.alert(error);
@@ -102,7 +112,7 @@ const useFireClassData = () => {
     return { subjClassList, homeroomClassList }
   }
 
-  return ({ updateKlassroomInfo, updateKlassroomArrayInfo, addClassroom, updateClassroom, addSeatMap, deleteSeatMap, fetchClassrooms, sortClassrooms })
+  return ({ updateKlassroomInfo, updateKlassroomArrayInfo, deleteKlassroomArrayInfo, addClassroom, updateClassroom, addSeatMap, deleteSeatMap, fetchClassrooms, sortClassrooms })
 }
 
 export default useFireClassData

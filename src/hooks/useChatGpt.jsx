@@ -74,7 +74,7 @@ const useChatGpt = () => {
         위 학생의 행동적 특성과 활동 내용에 따라서 글을 작성하되, 활동 내용을 더 구체적으로 묘사하고 구체적 근거 사례를 인용하여 글을 작성 바람.
         작성할 글의 문자 수는 현재 활동 내용과 행동 특성을 다 합친 문자의 길이와 비슷하거나 약간 긴 1.5배 정도로 작성해야함.
         또한, "학생은~" 과 같은 주어를 사용하면 안됨. "학생은~"을 생략하고 "성실한 수업 태도를 일관되게 보여줌." 로 써주어야 함.
-        학생의 행동적 특성과 현재 활동 내용을 바탕으로 구체적 예시를 들어 ${subject} 과목 세특을 작성해줘.
+        학생의 행동적 특성과 현재 활동 내용을 바탕으로 구체적 예시를 들어 ${subject} 과목 세특을 작성해주세요.
         `
       }
     ]
@@ -86,11 +86,30 @@ const useChatGpt = () => {
     {
       role: "user",
       content: `활동 문구: ${record}
-        아래는 위의 활동을 한 학생이 쓴 진로 보고서야.
-    
-        활동 보고서: ${report}
-    
-        위 활동과 보고서를 적절히 섞어서 생기부 문구를 만들어줘, 조건은 '학생은~'과 같은 주어가 없어야 하고 '~음', '~펼침', '~임', '~함', '~됨'등으로 끝나는 문장으로 작성해줘`
+        아래는 위의 활동을 한 학생이 활동 후에 작성한 결과 보고서입니다.
+        결과 보고서: ${report}
+
+        위 활동과 보고서를 적절히 섞어서 생기부 문구를 만들어 주세요. 
+        작성하신 생기부 문구는 '학생은~'과 같은 주어가 절대로 있으면 안됩니다. 
+        그리고 반드시 '~음', '~펼침', '~임', '~함', '~됨'등으로 끝나는 명사형 종결어미를 사용하여 문장을 끝맺어야 합니다`
+    },
+    ]
+    await playGpt(messages)
+  }
+  //타이핑 기반 개별화
+  const askPersonalizeOnTyping = async (record, text) => {
+    console.log("레코드", record, "보고서", text)
+    const messages = [...gptPersonalOnReportMsg,
+    {
+      role: "user",
+      content: `활동 문구: ${record}
+        아래는 위의 활동을 한 학생이 활동 후에 작성한 결과 보고서입니다.
+        결과 보고서: ${text}
+        위 활동과 보고서를 적절히 섞어서 생기부 문구를 만들어 주세요. 
+        
+        단, 결과 보고서는 학생의 손글씨를 기반으로 한 text라 오타가 있을 수 있습니다. 오타가 있다면 맥락에 맞게 적절히 수정해주세요.
+        작성하신 생기부 문구는 '학생은~'과 같은 주어가 절대로 있으면 안됩니다.
+        그리고 반드시 '~음', '~펼침', '~임', '~함', '~됨'등으로 끝나는 명사형 종결어미를 사용하여 문장을 끝맺어야 합니다`
     },
     ]
     await playGpt(messages)
@@ -141,7 +160,7 @@ const useChatGpt = () => {
     }
   }
 
-  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askExtraRecord, askPerfRecord, askBehavioralOp, gptBytes, gptRes }
+  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askExtraRecord, askPerfRecord, askBehavioralOp, gptBytes, gptRes }
 }
 
 export default useChatGpt

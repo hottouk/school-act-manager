@@ -41,5 +41,5 @@ let user = createSlice({
   },
 })
 
-export const { setUser, setUserPersonalInfo, setAppliedClassList, setJoinedClassList, setNewsBoxList, setMyHomeworkList, setHomeworkList, setClassNewsList, setmyPetList } = user.actions
+export const { setUser, setUserPersonalInfo, setNewsBoxList, setClassNewsList, setmyPetList } = user.actions
 export default user

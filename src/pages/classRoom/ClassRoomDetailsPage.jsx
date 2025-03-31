@@ -28,11 +28,12 @@ import PetInfoModal from '../../components/Modal/PetInfoModal.jsx';
 //hooks
 import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData.jsx';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData.jsx';
+import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData.jsx';
+import useFireUserData from '../../hooks/Firebase/useFireUserData.jsx';
 import useFireActiData from '../../hooks/Firebase/useFireActiData.jsx';
+import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
-import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData.jsx';
-import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
 import useMediaQuery from '../../hooks/useMediaQuery.jsx';
 
 //240801(클래스 헤더 수정) -> 1113(애니메이션 추가) -> 250122(게임 추가, 가입 제거) -> 0125(학생 페이지 정비)
@@ -47,7 +48,8 @@ const ClassroomDetailsPage = () => {
   const { state: studentKlassData } = useLocation();
   //hooks
   const { deleteClassWithStudents } = useDeleteFireData();
-  const { updateClassroom } = useFireClassData();
+  const { updateUserInfo } = useFireUserData();
+  const { updateClassroom, deleteKlassroomArrayInfo } = useFireClassData();
   const { getSubjKlassActiList } = useFireActiData();
   //실시간 데이터
   const { myUserData } = useFetchRtMyUserData();
@@ -162,7 +164,7 @@ const ClassroomDetailsPage = () => {
     bindKlassData();
     setIsModifying(false);
   }
-  //삭제 클릭
+  //삭제
   const handleDeleteOnClick = () => {
     const deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
     if (deleteConfirm === "삭제합니다") {
@@ -170,6 +172,16 @@ const ClassroomDetailsPage = () => {
       navigate("/classRooms")
     } else {
       window.alert("문구가 제대로 입력되지 않았습니다.");
+    }
+  }
+  //코티칭 탈퇴
+  const handleDropOutOnClick = () => {
+    const confirm = window.confirm("코티칭 클래스를 탈퇴하시겠습니까?");
+    if (confirm) {
+      const deletedList = user.coTeachingList.filter((item) => item.id !== klassData?.id)
+      updateUserInfo("coTeachingList", deletedList);                                     //유저 코티칭 list에서 삭제
+      deleteKlassroomArrayInfo(klassData.id, "coTeacher", user.uid);                     //클래스 코티쳐 list에서 삭제
+      navigate("/classRooms")
     }
   }
 
@@ -185,8 +197,9 @@ const ClassroomDetailsPage = () => {
     {klassData &&
       <Container $clientheight={clientHeight} $isVisible={isVisible}>
         {/* 반 기본 정보(공용) */}
-        <ClassBoardSection isModifying={isModifying} klassData={klassData} title={_title} intro={_intro} notice={_notice} studentList={studentList} noticeList={noticeList}
-          setIsModifying={setIsModifying} setTitle={setTitle} setIntro={setIntro} setNotice={setNotice} handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} Row={Row} />
+        <ClassBoardSection userStatus={userStatus} isModifying={isModifying} klassData={klassData} title={_title} intro={_intro} notice={_notice} studentList={studentList} noticeList={noticeList}
+          setIsModifying={setIsModifying} setTitle={setTitle} setIntro={setIntro} setNotice={setNotice}
+          handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} handleDropOutOnClick={handleDropOutOnClick} />
         {/* 쫑알이(교사)*/}
         {user.isTeacher && <MainPanel>
           <TitleText>세특 쫑알이</TitleText>

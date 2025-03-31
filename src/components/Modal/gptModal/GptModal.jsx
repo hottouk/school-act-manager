@@ -1,10 +1,9 @@
 //라이브러리
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Spinner } from 'react-bootstrap';
 import Modal from 'react-bootstrap/Modal';
+import axios from "axios";
 //컴포넌트
-import Button from 'react-bootstrap/esm/Button';
-import MainBtn from '../../Btn/MainBtn'
 import DotTitle from '../../Title/DotTitle';
 import GptPersonalRow from './GptPersonalRow';
 import AnimMaxHightOpacity from '../../../anim/AnimMaxHightOpacity';
@@ -19,8 +18,11 @@ import plusIcon from '../../../image/icon/plus.png'
 import arrowsIcon from '../../../image/icon/arrows_icon.png'
 import ModalBtn from '../../Btn/ModalBtn';
 import ByteCalculator from '../../Etc/ByteCalculator';
-//2024.09.04(수정) => 12.03(보고서 탭 추가)
+import useFireStorage from '../../../hooks/useFireStorage';
+import MidBtn from '../../Btn/MidBtn';
+//2024.09.04(수정) => 12.03(보고서 탭 추가) => OCR(250327)
 const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
+  const { uploadFile, findFile } = useFireStorage();
   //역량
   const [acadList, setAcadList] = useState([])      //학업
   const [careerList, setCareerList] = useState([])  //진로
@@ -31,7 +33,7 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
     sortAbilityList(subjectCoopAbility, "coop")
   }, [academicAbility, subjectCareerAbility, subjectCoopAbility])
   const [inputValues, setInputValues] = useState(null);
-  const { askGptPersonalize, askPersonalizeOnReport, gptAnswer, gptBytes, gptRes } = useChatGpt()
+  const { askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, gptAnswer, gptRes } = useChatGpt();
   //탭 
   const [tab, setTab] = useState(1)
   //숨기기 토글
@@ -39,9 +41,21 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const [isCareerShown, setIsCareerShown] = useState(false)
   const [isCoopShown, setIsCoopShown] = useState(false)
   //자기 보고서
-  const [report, setReport] = useState("")
-
-  //----2.함수부--------------------------------
+  const [report, setReport] = useState("");
+  //텍스트 추출
+  const [file, setFile] = useState(null);
+  useEffect(() => {
+    if (!file) return;
+    if (file.name.endsWith(".jpg")) { setIsPdf(false) } else if (file.name.endsWith(".pdf")) { setIsPdf(true) };
+  }, [file])
+  const [filePath, setFilePath] = useState(null);
+  const [extracted, setExtracted] = useState(null);
+  const [isPdf, setIsPdf] = useState(false);
+  const [isPdfReady, setIsPdfReady] = useState(false);
+  const [ocrStage, setOcrStage] = useState(0);
+  const [loadingStage, setLoadingStage] = useState(null);
+  const inputFileRef = useRef(null);
+  //------함수부------------------------------------------------  
   //능력 분류
   const sortAbilityList = (list, type) => {
     list.forEach((obj) => {
@@ -66,7 +80,8 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   //placeholder text
   const getPlaceholderText = () => {
     if (tab === 1) { return "모든 역량을 다 눌러쓰시기보다 2~3개만 채우시는게 바람직합니다...from gpt" }
-    else { return "학생 보고서를 복사, 붙여넣기 하세요." }
+    else if (tab === 2) { return "학생 보고서를 복사, 붙여넣기 하세요." }
+    else { return "pdf 또는 jpg 파일만 가능합니다." }
   }
 
   //input 변경
@@ -97,7 +112,17 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
         window.alert("학생 활동 보고서를 입력해주세요.")
       }
     }
+    //탭3: 추출 text 기반 개별화
+    else if (tab === 3) {
+      const check = extracted !== ""
+      if (check) {
+        askPersonalizeOnTyping(acti?.record, extracted)
+      } else {
+        window.alert("추출된 text가 없습니다.")
+      }
+    }
   };
+
   //inputValues중 값이 있는 항목만 배열로 변경
   const convertObjectToArray = (obj) => {
     return Object.entries(obj)
@@ -105,6 +130,90 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
       .map(([key, value]) => ({ [key]: value }));
   };
 
+  //파일 선택 버튼
+  const handleFileOnClick = (event) => {
+    event.preventDefault();
+    inputFileRef.current.click();
+    setOcrStage(0);
+  }
+  //파일 선택
+  const handleFileOnChange = (event) => {
+    setFile(event.target.files[0]);
+  }
+  //업로드
+  const handleUploadOnClick = async (event) => {
+    event.preventDefault();
+    if (!file) {
+      alert("파일이 없습니다.")
+      return;
+    }
+    setLoadingStage("uploading")
+    if (file.name.endsWith(".pdf")) {
+      uploadFile("pdfs", file).then(() => {
+        const filePath = `pdfs/${file.name}`;
+        setFilePath(filePath);
+        setLoadingStage(null);
+        setOcrStage(1);
+      })
+    } else if (file.name.endsWith(".jpg")) {
+      uploadFile("jpgs", file).then(() => {
+        const filePath = `jpgs/${file.name}`;
+        setFilePath(filePath);
+        setLoadingStage(null);
+        setOcrStage(1);
+      })
+    } else {
+      alert("jpg 또는 pdf 파일이 아닙니다.");
+      return;
+    }
+  }
+  //추출
+  const postExtractText = async () => {
+    const fileName = file.name.split(".")[0];
+    const isExist = await findFile("ocr_results", fileName);
+    if (isExist) { setOcrStage(2); } else {
+      let response = null;
+      if (!isPdf) { //jpg
+        setLoadingStage("extracting")
+        response = await axios.post(process.env.REACT_APP_OCR_API_URL, { filePath: filePath }, {
+          headers: { "Content-Type": "application/json" }
+        })
+        setExtracted(response.data.text)
+        if (response) { setLoadingStage(null) };
+      } else if (isPdf) { //pdf
+        setLoadingStage("extracting")
+        response = await axios.post(process.env.REACT_APP_OCR_API_PDF_URL, { fileName: file.name }, {
+          headers: { "Content-Type": "application/json" }
+        })
+        if (response) {
+          alert("추출 작업이 완료되었습니다.")
+          setOcrStage(2);
+          setIsPdfReady(true);
+          setLoadingStage(null);
+        };
+      }
+    }
+  }
+  //다운로드
+  const handleGetOcrResults = async () => {
+    let response = null;
+    try {
+      setLoadingStage("downloading")
+      response = await axios.get(process.env.REACT_APP_OCR_RESULT_URL, {
+        params: { fileName: file.name }
+      })
+      if (response) {
+        setExtracted(response.data.pages.join(","));
+        setOcrStage(3);
+        setLoadingStage(null);
+      }
+    } catch (error) {
+      console.error("OCR 결과 가져오기 실패:", error);
+      alert("OCR 결과 가져오기 실패:", error);
+      setOcrStage(3);
+    }
+  };
+  //확인
   const handleConfirmOnClick = () => {
     setPersonalRecord(gptAnswer);
     onHide();
@@ -128,6 +237,7 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
             <DotTitleWrapper>
               <StyledTab $tab={tab} onClick={() => { setTab(1) }}>특성</StyledTab>
               <StyledTab className="tab2" $tab={tab} onClick={() => { setTab(2) }}>보고서</StyledTab>
+              <StyledTab className="tab3" $tab={tab} onClick={() => { setTab(3) }}>OCR</StyledTab>
               {tab === 1 && <>
                 <StyledSpan>학생의 특성을 간단히 적어주세요</StyledSpan>
                 <DotTitle title={"학업 역량 ▼"} onClick={() => { setIsAcadShown((prev) => !prev) }} pointer="pointer"
@@ -151,6 +261,8 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
                     {coopList?.map((obj) => { return <GptPersonalRow key={obj.prop} itemObj={obj} onInputChange={handleInputChange} /> })}
                   </RowWrapper>
                   } />
+                <Row style={{ marginTop: "10px" }}><MidBtn type="submit">Chat GPT </MidBtn></Row>
+
               </>}
               {tab === 2 && <>
                 <StyledSpan>위 활동에 참여한 학생이 작성한 보고서 또는 소감문을 넣어주세요.</StyledSpan>
@@ -158,6 +270,27 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
                   value={report}
                   placeholder="복사/붙여넣기 하시면 됩니다."
                   onChange={(e) => { setReport(e.target.value) }} />
+                <Row style={{ marginTop: "10px" }}><MidBtn type="submit">Chat GPT </MidBtn></Row>
+              </>}
+              {tab === 3 && <>
+                <StyledSpan>pdf 또는 jpg 파일만 text 추출 가능합니다.</StyledSpan>
+                {loadingStage && <Row style={{ justifyContent: "center" }}><Spinner /></Row>}
+                {loadingStage === "uploading" && <Row style={{ justifyContent: "center" }}><p>⏳ 파일 업로드중...</p></Row>}
+                {loadingStage === "extracting" && <Row style={{ justifyContent: "center" }}><p>📤 텍스트 추출중...이 작업은 오래 걸릴 수 있습니다.</p></Row>}
+                {loadingStage === "downloading" && <Row style={{ justifyContent: "center" }}><p>⏳ 다운로드중...</p></Row>}
+                {!loadingStage && <>
+                  {(file && !filePath) && <StyledText style={{ borderColor: "rgba(120,120,120,0.5)" }}>파일명: {file.name}</StyledText>}
+                  {(file && filePath) && <StyledText style={{ borderColor: "rgba(120,120,120,0.5)" }}>파일 경로: {filePath}</StyledText>}
+                  <input type="file" ref={inputFileRef} onChange={handleFileOnChange} accept="application/pdf,image/jpeg" style={{ display: 'none' }} />
+                  <Row style={{ gap: "15px" }}>
+                    <MidBtn type="button" onClick={handleFileOnClick}>📁 파일 선택</MidBtn>
+                    {(file && ocrStage === 0) && <MidBtn type="button" onClick={handleUploadOnClick}>업로드</MidBtn>}
+                    {ocrStage === 1 && <Row><MidBtn type="button" onClick={postExtractText}>추출</MidBtn></Row>}
+                    {ocrStage === 2 && <Row style={{ gap: "5px" }}><MidBtn type="button" onClick={handleGetOcrResults}>다운로드</MidBtn></Row>}
+                  </Row>
+                  {(ocrStage === 3 && extracted) && <textarea value={extracted} onChange={(e) => { setExtracted(e.target.value) }} />}
+                  {extracted && <Row style={{ marginTop: "10px" }}><MidBtn type="submit">Chat GPT </MidBtn></Row>}
+                </>}
               </>}
             </DotTitleWrapper>
             <StyledImg src={arrowsIcon} alt="arrows_icon" />
@@ -168,7 +301,6 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
             >
             </textarea>
             <Row style={{ margin: "10px 0", justifyContent: "flex-end" }}><ByteCalculator str={gptAnswer} styles={{ isTotalByteHide: true }} /></Row>
-            <MainBtn type="submit">Chat GPT </MainBtn>
           </StyledForm>
         }
       </Modal.Body >
@@ -197,6 +329,7 @@ const StyledForm = styled.form`
 `
 const Row = styled.div`
   display: flex;
+  justify-content: center;
 `
 const StyledText = styled.p`
   width: 100%;
@@ -231,8 +364,12 @@ const StyledTab = styled.p`
   padding: 5px 15px;
   cursor: pointer;
   &.tab2 {
-    background-color: ${(props) => { return (props.$tab === 1 ? "#919294" : "#3454d1") }};
+    background-color: ${(props) => { return (props.$tab === 2 ? "#3454d1" : "#919294") }};
     left: 75px;
+  }
+  &.tab3 {
+    background-color: ${(props) => { return (props.$tab === 3 ? "#3454d1" : "#919294") }};
+    left: 153px;
   }
 `
 const RowWrapper = styled.ul`

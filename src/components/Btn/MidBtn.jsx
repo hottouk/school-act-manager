@@ -17,12 +17,11 @@ export default MidBtn
 
 const StyledBtn = styled.button`
   display: block;
-  margin: 10px auto;
-  width: 90px;
-  height: 30px;
+  width: 150px;
+  height: 35px;
   background-color: #3454d1;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   color: white;
   cursor: pointer;
   &:hover {

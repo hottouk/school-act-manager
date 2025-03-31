@@ -1,11 +1,9 @@
-import { collection, doc, getDocs, query, runTransaction, where } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore'
 import { appFireStore } from '../../firebase/config'
-import { useDispatch, useSelector } from 'react-redux'
-import { setHomeworkList } from '../../store/userSlice'
+import { useSelector } from 'react-redux'
 import useFireUserData from './useFireUserData'
 
 const useFireActiData = () => {
-  const dispatcher = useDispatch()
   const user = useSelector(({ user }) => user)
   const { fetchUserData } = useFireUserData();
   const db = appFireStore
@@ -48,33 +46,15 @@ const useFireActiData = () => {
     const allActiListSnap = await fetchAllActis("uid", id);       //교과 + 담임 + 퀴즈
     const myDataSnap = await fetchUserData(user.uid);
     const copied = myDataSnap.copiedActiList || [];               //업어온 활동
-    const combined = allActiListSnap.concat(copied)
+    const combined = allActiListSnap.concat(copied);
     const filtered = filterActiBySubject(combined, subject)   //같은 과목만
     return sortActiType(filtered)
   }
 
-  //todo actiForm에서만 사용됨, 수정요함
+  //활동 삭제(250310)
   const deleteActi = async (actId) => {
-    const actiDocRef = doc(db, "activities", actId)
-    const teacherDocRef = doc(db, "user", user.uid)
-    let homeworkList;
-    await runTransaction(db, async (transaction) => {
-      let actiDocSnap = await transaction.get(actiDocRef)
-      let teacherDocSnap = await transaction.get(teacherDocRef)
-      if (!actiDocSnap.exists()) { throw new Error("활동 읽기 에러") }
-      if (!teacherDocSnap.exists()) { throw new Error("교사 읽기 에러") }
-      homeworkList = teacherDocSnap.data().homeworkList //없으면 undefined
-      if (homeworkList) {
-        homeworkList = homeworkList.filter((item) => {
-          let itemId = item.id.split("/")[1]
-          return itemId !== actId
-        })
-      } else { homeworkList = [] }
-      transaction.update(teacherDocRef, { homeworkList })
-      transaction.delete(actiDocRef)
-    }).then(() => {
-      dispatcher(setHomeworkList(homeworkList)) //전역변수
-    }).catch(err => {
+    const actiDocRef = doc(db, "activities", actId);
+    await deleteDoc(actiDocRef).catch(err => {
       window.alert("삭제에 실패했습니다. 관리자에게 문의하세요.");
       console.log(err);
     })
