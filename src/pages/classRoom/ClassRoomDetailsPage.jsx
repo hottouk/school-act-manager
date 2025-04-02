@@ -280,7 +280,6 @@ const Container = styled.main`
 `
 const Row = styled.div`
   display: flex;
-  justify-content: center;
 `
 const TitleText = styled.h5`
   display: flex;

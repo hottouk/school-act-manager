@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux';
 import Select from 'react-select'
 import styled from 'styled-components';
 import axios from "axios";
-
 //컴포넌트
 import ModalBtn from '../Btn/ModalBtn';
 import MidBtn from '../Btn/MidBtn';
@@ -17,7 +16,7 @@ import useAcc from '../../hooks/useAcc';
 import useFireStorage from '../../hooks/useFireStorage';
 import useChatGpt from '../../hooks/useChatGpt';
 
-//생성(241113)
+//생성(241113)-> OCR(250402)
 const PerfModal = ({ show, onHide, studentList, classId }) => {
   useEffect(() => { initData() }, [studentList])
   const actiList = useSelector(({ allActivities }) => allActivities)
@@ -69,10 +68,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   const [replaceList, setReplaceList] = useState({});
   //pdf OCR
   const [pdfFile, setPdfFile] = useState(null);
-
   const [gptLoadingIndex, setGptLoadingIndex] = useState(null);
   const [loadingStage, setLoadingStage] = useState(null);
-
   const [ocrList, setOcrList] = useState([]);
   const [selectedOcr, setSelectedOcr] = useState(null);
   const [ocrStage, setOcrStage] = useState(0);
@@ -173,8 +170,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   }
   //------OCR------------------------------------------------  
   //pdf 선택 버튼
-  const handleFileOnClick = (event) => {
-    event.preventDefault();
+  const handleFileOnClick = () => {
     inputFileRef.current.click();
     setOcrStage(0);
   }
@@ -183,18 +179,21 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     setPdfFile(event.target.files[0]);
   }
   //업로드
-  const handleUploadOnClick = async (event) => {
-    event.preventDefault();
+  const handleUploadOnClick = async () => {
     if (!pdfFile) {
       alert("파일이 없습니다.")
       return;
     }
-    setLoadingStage("⏳ 파일 업로드중...")
     if (pdfFile.name.endsWith(".pdf")) {
-      uploadFile("pdfs", pdfFile).then(() => {
-        setLoadingStage(null);
-        setOcrStage(1);
-      })
+      const isExist = await findFile("pdfs", pdfFile.name);
+      if (isExist) { setOcrStage(1); }
+      else {
+        setLoadingStage("⏳ 파일 업로드중...");
+        uploadFile("pdfs", pdfFile).then(() => {
+          setLoadingStage(null);
+          setOcrStage(1);
+        })
+      }
     } else {
       alert("pdf 파일이 아닙니다.");
       return;
@@ -207,14 +206,17 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     if (isExist) { setOcrStage(2); } else {
       let response = null;
       setLoadingStage("📤 텍스트 추출중...이 작업은 오래 걸릴 수 있습니다.")
-      response = await axios.post(process.env.REACT_APP_OCR_API_PDF_URL, { fileName: pdfFile.name }, {
-        headers: { "Content-Type": "application/json" }
-      })
-      if (response) {
-        alert("추출 작업이 완료되었습니다.")
-        setOcrStage(2);
-        setLoadingStage(null);
-      };
+      try {
+        response = await axios.post(process.env.REACT_APP_OCR_API_PDF_URL, { fileName: pdfFile.name }, { headers: { "Content-Type": "application/json" } })
+        if (response) {
+          alert("추출 작업이 완료되었습니다.")
+          setOcrStage(2);
+          setLoadingStage(null);
+        };
+      } catch (error) {
+        console.error("추출 실패: ", error);
+        alert("추출 실패: ", error);
+      }
     }
   }
   //다운로드
@@ -252,9 +254,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     askPersonalizeOnTyping(perfRecord[index], studentOcr[index])
   }
   //ocr 제거
-  const handleOcrRemoveOnClick = (index) => {
-    setStudentOcr((prev) => { return { ...prev, [index]: '' } })
-  }
+  const handleOcrRemoveOnClick = (index) => { setStudentOcr((prev) => { return { ...prev, [index]: '' } }) }
+
   //------확인/취소------------------------------------------------  
   //최종 저장 확인 버튼
   const saveBtnOnClick = () => {
@@ -456,5 +457,4 @@ const StyledTextarea = styled.textarea`
   border-radius: 10px;
   height: 150px;
 `
-
 export default PerfModal

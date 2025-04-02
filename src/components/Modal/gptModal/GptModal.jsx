@@ -1,5 +1,6 @@
 //라이브러리
 import React, { useEffect, useRef, useState } from 'react'
+import styled from 'styled-components';
 import { Spinner } from 'react-bootstrap';
 import Modal from 'react-bootstrap/Modal';
 import axios from "axios";
@@ -7,22 +8,22 @@ import axios from "axios";
 import DotTitle from '../../Title/DotTitle';
 import GptPersonalRow from './GptPersonalRow';
 import AnimMaxHightOpacity from '../../../anim/AnimMaxHightOpacity';
+import ByteCalculator from '../../Etc/ByteCalculator';
+import MidBtn from '../../Btn/MidBtn';
+import ModalBtn from '../../Btn/ModalBtn';
 //hooks
 import useChatGpt from '../../../hooks/useChatGpt';
+import useFireStorage from '../../../hooks/useFireStorage';
 //data
 import { academicAbility, subjectCareerAbility, subjectCoopAbility } from '../../../data/AbilityList';
-//css
-import styled from 'styled-components';
 //img
 import plusIcon from '../../../image/icon/plus.png'
 import arrowsIcon from '../../../image/icon/arrows_icon.png'
-import ModalBtn from '../../Btn/ModalBtn';
-import ByteCalculator from '../../Etc/ByteCalculator';
-import useFireStorage from '../../../hooks/useFireStorage';
-import MidBtn from '../../Btn/MidBtn';
-//2024.09.04(수정) => 12.03(보고서 탭 추가) => OCR(250327)
+
+//수정(240904) => 보고서탭(241203) => OCR(250327)
 const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const { uploadFile, findFile } = useFireStorage();
+  const { askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, gptAnswer, gptRes } = useChatGpt();
   //역량
   const [acadList, setAcadList] = useState([])      //학업
   const [careerList, setCareerList] = useState([])  //진로
@@ -33,7 +34,6 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
     sortAbilityList(subjectCoopAbility, "coop")
   }, [academicAbility, subjectCareerAbility, subjectCoopAbility])
   const [inputValues, setInputValues] = useState(null);
-  const { askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, gptAnswer, gptRes } = useChatGpt();
   //탭 
   const [tab, setTab] = useState(1)
   //숨기기 토글
@@ -51,7 +51,6 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const [filePath, setFilePath] = useState(null);
   const [extracted, setExtracted] = useState(null);
   const [isPdf, setIsPdf] = useState(false);
-  const [isPdfReady, setIsPdfReady] = useState(false);
   const [ocrStage, setOcrStage] = useState(0);
   const [loadingStage, setLoadingStage] = useState(null);
   const inputFileRef = useRef(null);
@@ -94,7 +93,6 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
       setInputValues({ ...inputValues, [id]: value });
     }
   };
-
   //제출
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -122,14 +120,12 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
       }
     }
   };
-
   //inputValues중 값이 있는 항목만 배열로 변경
   const convertObjectToArray = (obj) => {
     return Object.entries(obj)
       .filter(([key, value]) => value) // 값이 있는 항목만 필터링
       .map(([key, value]) => ({ [key]: value }));
   };
-
   //파일 선택 버튼
   const handleFileOnClick = (event) => {
     event.preventDefault();
@@ -140,81 +136,104 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const handleFileOnChange = (event) => {
     setFile(event.target.files[0]);
   }
-  //업로드
+  //업로드 버튼
   const handleUploadOnClick = async (event) => {
     event.preventDefault();
     if (!file) {
       alert("파일이 없습니다.")
       return;
     }
-    setLoadingStage("uploading")
-    if (file.name.endsWith(".pdf")) {
-      uploadFile("pdfs", file).then(() => {
-        const filePath = `pdfs/${file.name}`;
+    const fileName = file.name
+    if (fileName.endsWith(".pdf")) {
+      const filePath = `pdfs/${file.name}`;
+      const isExist = await findFile("pdfs", fileName);
+      if (isExist) {
         setFilePath(filePath);
-        setLoadingStage(null);
         setOcrStage(1);
-      })
-    } else if (file.name.endsWith(".jpg")) {
-      uploadFile("jpgs", file).then(() => {
-        const filePath = `jpgs/${file.name}`;
+      } else {
+        uploadFile("pdfs", file).then(() => {
+          setLoadingStage("⏳ 파일 업로드중...");
+          setFilePath(filePath);
+          setLoadingStage(null);
+          setOcrStage(1);
+        })
+      };
+    } else if (fileName.endsWith(".jpg")) {
+      const filePath = `jpgs/${file.name}`;
+      const isExist = await findFile("jpgs", fileName);
+      if (isExist) {
         setFilePath(filePath);
-        setLoadingStage(null);
         setOcrStage(1);
-      })
+      } else {
+        uploadFile("jpgs", file).then(() => {
+          setFilePath(filePath);
+          setLoadingStage(null);
+          setOcrStage(1);
+        })
+      }
     } else {
       alert("jpg 또는 pdf 파일이 아닙니다.");
+      setLoadingStage(null);
       return;
     }
   }
-  //추출
-  const postExtractText = async () => {
+  //추출 버튼
+  const postExtractText = async (event) => {
+    event.preventDefault();
     const fileName = file.name.split(".")[0];
     const isExist = await findFile("ocr_results", fileName);
-    if (isExist) { setOcrStage(2); } else {
-      let response = null;
-      if (!isPdf) { //jpg
-        setLoadingStage("extracting")
-        response = await axios.post(process.env.REACT_APP_OCR_API_URL, { filePath: filePath }, {
-          headers: { "Content-Type": "application/json" }
-        })
-        setExtracted(response.data.text)
-        if (response) { setLoadingStage(null) };
-      } else if (isPdf) { //pdf
-        setLoadingStage("extracting")
-        response = await axios.post(process.env.REACT_APP_OCR_API_PDF_URL, { fileName: file.name }, {
-          headers: { "Content-Type": "application/json" }
-        })
-        if (response) {
-          alert("추출 작업이 완료되었습니다.")
-          setOcrStage(2);
-          setIsPdfReady(true);
-          setLoadingStage(null);
-        };
+    let response = null;
+    if (!isPdf) { //jpg
+      setLoadingStage("📤 텍스트 추출중...이 작업은 오래 걸릴 수 있습니다.");
+      try {
+        response = await axios.post(process.env.REACT_APP_OCR_API_URL, { filePath: filePath }, { headers: { "Content-Type": "application/json" } });
+        setOcrStage(3);
+        setExtracted(response.data.text);
+        setLoadingStage(null);
+      } catch (error) {
+        console.error("추출 실패: ", error);
+        alert("추출 실패: ", error);
+      }
+    } else if (isPdf) { //pdf
+      if (isExist) { setOcrStage(2); }
+      else {
+        setLoadingStage("📤 텍스트 추출중...이 작업은 오래 걸릴 수 있습니다.");
+        try {
+          response = await axios.post(process.env.REACT_APP_OCR_API_PDF_URL, { fileName: file.name }, { headers: { "Content-Type": "application/json" } })
+          if (response) {
+            alert("추출 작업이 완료되었습니다.");
+            setOcrStage(2);
+            setLoadingStage(null);
+          }
+        } catch (error) {
+          console.error("추출 실패: ", error);
+          alert("추출 실패: ", error);
+        }
       }
     }
   }
-  //다운로드
-  const handleGetOcrResults = async () => {
+  //다운로드 버튼
+  const handleGetOcrResults = async (event) => {
+    event.preventDefault();
     let response = null;
+    setLoadingStage("⏳ 다운로드중...")
     try {
-      setLoadingStage("downloading")
       response = await axios.get(process.env.REACT_APP_OCR_RESULT_URL, {
         params: { fileName: file.name }
       })
-      if (response) {
-        setExtracted(response.data.pages.join(","));
-        setOcrStage(3);
-        setLoadingStage(null);
-      }
+      setExtracted(response.data.pages.join(","));
+      setOcrStage(3);
+      setLoadingStage(null);
     } catch (error) {
       console.error("OCR 결과 가져오기 실패:", error);
       alert("OCR 결과 가져오기 실패:", error);
+      setLoadingStage(null);
       setOcrStage(3);
     }
   };
-  //확인
-  const handleConfirmOnClick = () => {
+  //확인 버튼
+  const handleConfirmOnClick = (event) => {
+    event.preventDefault();
     setPersonalRecord(gptAnswer);
     onHide();
   }
@@ -274,9 +293,7 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
               </>}
               {tab === 3 && <>
                 <StyledSpan>pdf 또는 jpg 파일만 text 추출 가능합니다.</StyledSpan>
-                {loadingStage && <Row style={{ justifyContent: "center" }}><Spinner /></Row>}
-                {loadingStage === "uploading" && <Row style={{ justifyContent: "center" }}><p>⏳ 파일 업로드중...</p></Row>}
-                {loadingStage === "extracting" && <Row style={{ justifyContent: "center" }}><p>📤 텍스트 추출중...이 작업은 오래 걸릴 수 있습니다.</p></Row>}
+                {loadingStage && <Row style={{ justifyContent: "center" }}><Spinner />{loadingStage}</Row>}
                 {loadingStage === "downloading" && <Row style={{ justifyContent: "center" }}><p>⏳ 다운로드중...</p></Row>}
                 {!loadingStage && <>
                   {(file && !filePath) && <StyledText style={{ borderColor: "rgba(120,120,120,0.5)" }}>파일명: {file.name}</StyledText>}
@@ -288,7 +305,7 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
                     {ocrStage === 1 && <Row><MidBtn type="button" onClick={postExtractText}>추출</MidBtn></Row>}
                     {ocrStage === 2 && <Row style={{ gap: "5px" }}><MidBtn type="button" onClick={handleGetOcrResults}>다운로드</MidBtn></Row>}
                   </Row>
-                  {(ocrStage === 3 && extracted) && <textarea value={extracted} onChange={(e) => { setExtracted(e.target.value) }} />}
+                  {(ocrStage === 3 && extracted) && <textarea value={extracted} onChange={(e) => { setExtracted(e.target.value) }} style={{ marginTop: "10px" }} />}
                   {extracted && <Row style={{ marginTop: "10px" }}><MidBtn type="submit">Chat GPT </MidBtn></Row>}
                 </>}
               </>}
