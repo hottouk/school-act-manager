@@ -16,6 +16,7 @@
   "functions": [
     {
       "source": "functions",
+      "v2": false,
       "codebase": "default",
       "ignore": [
         "node_modules",
@@ -23,9 +24,6 @@
         "firebase-debug.log",
         "firebase-debug.*.log",
         "*.local"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint"
       ]
     }
   ]

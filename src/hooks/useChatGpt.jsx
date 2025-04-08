@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
 import { useState } from 'react'
 import useGetByte from './useGetByte'
-import { gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg, gptPerfRecordMsg } from '../data/gptMsgDataList'
+import { gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg, gptPerfRecordMsg, gptTranslateMsg } from '../data/gptMsgDataList'
 
 //24.08.08 수정(바이트 변수 제거 및 프롬프트 수정)
 const useChatGpt = () => {
@@ -87,7 +87,7 @@ const useChatGpt = () => {
       role: "user",
       content: `활동 문구: ${record}
         아래는 위의 활동을 한 학생이 활동 후에 작성한 결과 보고서입니다.
-        결과 보고서: ${report}
+        활동 보고서: ${report}
 
         위 활동과 보고서를 적절히 섞어서 생기부 문구를 만들어 주세요. 
         작성하신 생기부 문구는 '학생은~'과 같은 주어가 절대로 있으면 안됩니다. 
@@ -98,21 +98,30 @@ const useChatGpt = () => {
   }
   //타이핑 기반 개별화
   const askPersonalizeOnTyping = async (record, text) => {
-    console.log("레코드", record, "보고서", text)
     const messages = [...gptPersonalOnReportMsg,
     {
       role: "user",
       content: `활동 문구: ${record}
         아래는 위의 활동을 한 학생이 활동 후에 작성한 결과 보고서입니다.
-        결과 보고서: ${text}
-        위 활동과 보고서를 적절히 섞어서 생기부 문구를 만들어 주세요. 
-        
-        단, 결과 보고서는 학생의 손글씨를 기반으로 한 text라 오타가 있을 수 있습니다. 오타가 있다면 맥락에 맞게 적절히 수정해주세요.
-        작성하신 생기부 문구는 '학생은~'과 같은 주어가 절대로 있으면 안됩니다.
-        그리고 반드시 '~음', '~펼침', '~임', '~함', '~됨'등으로 끝나는 명사형 종결어미를 사용하여 문장을 끝맺어야 합니다`
+        활동 보고서: ${text}
+        위 활동과 보고서를 적절히 섞어서 생기부 문구를 만들어 주세요.
+        단, 결과 보고서는 학생의 손글씨를 기반으로 하였으므로 오타가 있을 수 있음. 오타가 있다면 맥락에 맞게 적절히 수정 필요함.
+        작성한 생기부 문구는 '학생은~'과 같은 주어가 절대로 있으면 안됩니다.
+        반드시 '~음', '~펼침', '~임', '~함', '~됨'등으로 끝나는 명사형 종결어미를 사용하여 문장을 끝맺어야 함`
     },
     ]
     await playGpt(messages)
+  }
+  //한국말 번역
+  const translateEngtoKorean = async (text) => {
+    const message = [
+      ...gptTranslateMsg,
+      {
+        role: "user",
+        content: `${text},
+        위의 문장을 자연스러운 한국말로 번역해주세요.`
+      },]
+    await playGpt(message);
   }
   //행발
   const askBehavioralOp = async (specList) => {
@@ -139,7 +148,7 @@ const useChatGpt = () => {
         `
     }
     ]
-    await playGpt(messages)
+    await playGpt(messages);
   }
   // 공통 부분
   const playGpt = async (messages) => {
@@ -160,7 +169,7 @@ const useChatGpt = () => {
     }
   }
 
-  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askExtraRecord, askPerfRecord, askBehavioralOp, gptBytes, gptRes }
+  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, gptBytes, gptRes }
 }
 
 export default useChatGpt

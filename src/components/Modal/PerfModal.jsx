@@ -4,8 +4,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Spinner } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import Select from 'react-select'
-import styled from 'styled-components';
 import axios from "axios";
+import styled from 'styled-components';
 //컴포넌트
 import ModalBtn from '../Btn/ModalBtn';
 import MidBtn from '../Btn/MidBtn';
@@ -44,11 +44,14 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   const inputFileRef = useRef({});
   const { getByteLengthOfString } = useGetByte();
   const { writePerfRecDataOnDB } = useAcc();
-  const { askPersonalizeOnTyping, gptAnswer } = useChatGpt();
-  useEffect(() => {
-    //★★//
-    setPerfRecord((prev) => { return { ...prev, [gptLoadingIndex]: gptAnswer } });
+  const { askPersonalizeOnTyping, translateEngtoKorean, gptAnswer } = useChatGpt();
+  //gpt answer 임시 구분.
+  const [isTranslate, setIsTranslate] = useState(false);
+  useEffect(() => {//★★★//
+    if (isTranslate) { setStudentOcr((prev) => ({ ...prev, [gptLoadingIndex]: gptAnswer })); }
+    else { setPerfRecord((prev) => ({ ...prev, [gptLoadingIndex]: gptAnswer })); }
     setGptLoadingIndex(null);
+    setIsTranslate(false);
   }, [gptAnswer])
   //수행 문구
   const [perfTempRecord, setPerfTempRecord] = useState();
@@ -163,7 +166,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   }
   //최종 바이트 get
   const getByte = (index) => {
-    let text = perfRecord[index]
+    const text = perfRecord[index]
     if (typeof (text) == "string") {
       return getByteLengthOfString(text)
     } else { return 0 }
@@ -245,17 +248,27 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   }
   //ocr text 수정
   const handleOcrTextOnChange = (event, index) => {
-    const { value } = event.target
+    const { value } = event.target;
     setStudentOcr((prev) => { return { ...prev, [index]: value } })
   }
-  //ocr gpt 적용
+  //문구 text 수정
+  const handlePerfRecordOnChange = (event, index) => {
+    const { value } = event.target;
+    setPerfRecord((prev) => { return { ...prev, [index]: value } });
+  }
+  //ocr 제거
+  const handleOcrRemoveOnClick = (index) => { setStudentOcr((prev) => { return { ...prev, [index]: '' } }) }
+  //gpt ocr + 문구 적용
   const handleOcrGptOnClilck = (index) => {
     setGptLoadingIndex(index); //스피너 작동
     askPersonalizeOnTyping(perfRecord[index], studentOcr[index])
   }
-  //ocr 제거
-  const handleOcrRemoveOnClick = (index) => { setStudentOcr((prev) => { return { ...prev, [index]: '' } }) }
-
+  //gpt 번역
+  const handleTranslateOnClick = (index) => {
+    setIsTranslate(true);
+    setGptLoadingIndex(index); //스피너 작동
+    translateEngtoKorean(studentOcr[index]);
+  }
   //------확인/취소------------------------------------------------  
   //최종 저장 확인 버튼
   const saveBtnOnClick = () => {
@@ -358,16 +371,18 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
                     <StyledTextarea
                       value={studentOcr[index]}
                       onChange={(event) => { handleOcrTextOnChange(event, index) }} />
-                    <Row style={{ gap: "10px" }}>
-                      <MidBtn onClick={() => { handleOcrGptOnClilck(index) }}>적용</MidBtn>
+                    {!gptLoadingIndex && <Row style={{ gap: "10px" }}>
+                      <MidBtn onClick={() => { handleOcrGptOnClilck(index) }}>GPT 적용</MidBtn>
+                      <MidBtn onClick={() => { handleTranslateOnClick(index) }}>한국말로</MidBtn>
                       <MidBtn onClick={() => { handleOcrRemoveOnClick(index) }}>제거</MidBtn>
-                    </Row>
+                    </Row>}
                   </>}
                   {gptLoadingIndex === index && <Row style={{ marginTop: "10px" }}><Spinner /></Row>}
                   {(selectedOcr && perfRecord[index] !== '') && <Row><MidBtn onClick={() => { handleOcrInsertOnClick(index) }}>OCR 추가</MidBtn></Row>}
                 </ExtractWrapper>
               </StyledGridItem>
-              <StyledGridItem className="left-align">{perfRecord[index]}</StyledGridItem>
+              {/* 문구 */}
+              <StyledGridItem><StyledTextarea value={perfRecord[index]} onChange={(event) => { handlePerfRecordOnChange(event, index) }} /></StyledGridItem>
               <StyledGridItem>{getByte(index)}</StyledGridItem>
             </React.Fragment>
           })}
@@ -452,7 +467,7 @@ const BtnWrapper = styled.div`
   gap: 20px;
 `
 const StyledTextarea = styled.textarea`
-  margin-top: 20px;
+  width: 100%;
   border: none;
   border-radius: 10px;
   height: 150px;

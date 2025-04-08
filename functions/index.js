@@ -1,20 +1,25 @@
+/* eslint-disable linebreak-style */
 /* eslint-disable no-trailing-spaces */
 /* eslint-disable spaced-comment */
 /* eslint-disable object-curly-spacing */
 /* eslint-disable max-len */
 /* eslint-disable indent */
 /* eslint-disable no-unused-vars */
-const { Storage } = require("@google-cloud/storage");
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const vision = require("@google-cloud/vision");
-const cors = require("cors")({ origin: true });
-const storage = new Storage();
-admin.initializeApp();
-const client = new vision.ImageAnnotatorClient();
+import { Storage } from "@google-cloud/storage";
+import vision from "@google-cloud/vision";
+import { TranslationServiceClient } from "@google-cloud/translate";
+import corsLib from "cors";
+import { initializeApp } from "firebase-admin/app";
+import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
+import * as functions from "firebase-functions";  // ✅ v1 import
 
+initializeApp();
+const cors = corsLib({ origin: true });
+const storage = new Storage();
+const translationClient = new TranslationServiceClient();
+const client = new vision.ImageAnnotatorClient();
 //jpg OCR
-exports.extractText = functions.https.onRequest(async (req, res) => {
+export const extractText = onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
       const { filePath } = req.body;
@@ -35,7 +40,7 @@ exports.extractText = functions.https.onRequest(async (req, res) => {
 });
 
 //pdf OCR
-exports.startOcrOnPdf = functions.https.onRequest(async (req, res) => {
+export const startOcrOnPdf = onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
       const { fileName } = req.body;
@@ -72,7 +77,7 @@ exports.startOcrOnPdf = functions.https.onRequest(async (req, res) => {
 });
 
 //pdf OCR result
-exports.getPdfOcrResults = functions.https.onRequest(async (req, res) => {
+export const getPdfOcrResults = onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
       const bucketName = "school-act-manager.appspot.com";
@@ -106,4 +111,3 @@ exports.getPdfOcrResults = functions.https.onRequest(async (req, res) => {
     }
   });
 });
-
