@@ -1,6 +1,7 @@
 import { monsterWaterList } from '../data/monsterList'
 const usePet = () => {
 
+  //첫 가입 승인(250412)
   const getInitialPet = (subject) => {
     switch (subject) {
       case "영어":

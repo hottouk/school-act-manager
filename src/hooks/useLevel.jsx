@@ -13,9 +13,9 @@ const useLevel = () => {
     recordList.forEach((item) => {
       if (item.result === "Win") ++winCount
     })
-    if (winCount <= 3) {
+    if (winCount <= 5) {
       return 1
-    } else if (winCount <= 8) {
+    } else if (winCount <= 10) {
       return 2
     } else if (winCount <= 15) {
       return 3
@@ -47,29 +47,36 @@ const useLevel = () => {
   //몬스터 스펙 보정 수치 적용
   const getMonsterStat = (spec, level) => {
     if (!spec) return
-    let { hp, atk, def, spd, ...rest } = spec
-    let statUp = getMonsterUpStat(level)
-    return { hp: hp + statUp.hp, atk: atk + statUp.atk, def: def + statUp.def, spd: spd + statUp.spd, ...rest, level }
+    let { hp, atk, def, spd, ...rest } = spec;
+    let statUp = getMonsterUpStat(level);
+    return { hp: hp + statUp.hp, atk: atk + statUp.atk, def: def + statUp.def, spd: spd + statUp.spd, ...rest, level };
   }
 
   //경험치 획득
-  const gainXp = (levelInfo, gainXp, petInfo) => {
-    const { level, exp, nextLvXp, nextStepLv } = levelInfo
-    const levelMultiplier = 1.5
+  const gainXp = (petInfo, gainXp) => {
+    console.log(petInfo);
+    const { ev, petId, monId, name, spec, lvUp } = petInfo;               //현재 pet 정보                       
+    const { level, exp, nextLvXp, nextStepLv } = petInfo.level;           //현재 레벨 정보
+    const { hp, atk, def, mat, mdf, spd } = spec;
+    const { hpUp, atkUp, defUp, matUp, mdfUp, spdUp } = lvUp;
+    const levelMultiplier = 1.5;
     const updatedXp = exp + gainXp;
     // 레벨업 체크
     if (updatedXp >= nextLvXp && level < nextStepLv) {            //레벨 업
       const excessXp = updatedXp - nextLvXp;
       const newLevel = level + 1;
-      const newXp = excessXp
+      const newXp = excessXp;
       const newNextLvXp = Math.round(nextLvXp * levelMultiplier);
-      return { level: newLevel, exp: newXp, nextLvXp: newNextLvXp, nextStepLv }
+      const newSepc = { hp: hp + (hpUp ?? 0), atk: atk + (atkUp ?? 0), def: def + (defUp ?? 0), mat: mat + (matUp ?? 0), mdf: mdf + (mdfUp ?? 0), spd: spd + (spdUp ?? 0) };
+      const msg = `체력 +${hpUp ?? 0} 공격력 +${atkUp ?? 0} 방어력 +${defUp ?? 0} 마력 +${matUp ?? 0} 지혜 +${mdfUp ?? 0} 민첩 +${spdUp ?? 0} 상승함`;
+      alert(msg);
+      return { level: newLevel, exp: newXp, nextLvXp: newNextLvXp, nextStepLv, spec: newSepc }
     } else if (updatedXp >= nextLvXp && level === nextStepLv) {   //진화 레벨이 되었을 때
-      const submitInfo = { petId: petInfo.petId, monId: petInfo.monId, name: petInfo.name, level: petInfo.level.level, type: "evolution" }
-      updateUserArrayInfo(user.uid, "onSubmitList", submitInfo)
-      return { level, exp: nextLvXp, nextLvXp, nextStepLv }
+      const submitInfo = { ev, petId, monId, name, level: petInfo.level.level, type: "evolution" };
+      updateUserArrayInfo(user.uid, "onSubmitList", submitInfo);
+      return { level, exp: nextLvXp, nextLvXp, nextStepLv, spec }
     } else if (updatedXp < nextLvXp) {                            //레벨 업이 아닐 떄,
-      return { level, exp: updatedXp, nextLvXp, nextStepLv }
+      return { level, exp: updatedXp, nextLvXp, nextStepLv, spec }
     }
   };
 

@@ -58,7 +58,8 @@ const useFireUserData = () => {
   //해당 유저 펫 업데이트(250127) 게임
   const updateUserPetGameInfo = async (pId, levelInfo, gameInfo) => {
     const userDocRef = doc(col, user.uid);
-    const { actiId, ...rest } = gameInfo
+    const { spec, ...levelRest } = levelInfo;
+    const { actiId, ...gameRest } = gameInfo;
     try {
       await runTransaction(db, async (transaction) => {
         //1. 읽기
@@ -69,8 +70,8 @@ const useFireUserData = () => {
           if (pet.petId === pId) {                                        //해당 pet만 게임 결과 정보 수정
             const quizRecord = pet.quizRecord || {};
             const recordList = quizRecord[actiId] || [];
-            const updated = { ...quizRecord, [`${actiId}`]: [...recordList, { ...rest }] }
-            return { ...pet, level: levelInfo, quizRecord: updated }
+            const updated = { ...quizRecord, [`${actiId}`]: [...recordList, { ...gameRest }] };
+            return { ...pet, level: levelRest, quizRecord: updated, spec: spec };
           };
           return pet;                                                     //나머지 pet 유지
         })

@@ -67,11 +67,14 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     if (battleTurn === 0 || phase === "end") return
     setPhase(battleTurn === 4 ? "quiz" : "stance");
   }, [battleTurn])
-  const [myStance, setMyStance] = useState(null)
-  const [myHP, setMyHP] = useState(100)
-  const [myCurHP, setMyCurHP] = useState(100)
-  const [myAttck, setMyAttck] = useState(20)
-  const [myDef, setMyDef] = useState(3)
+  const [myStance, setMyStance] = useState(null);
+  const [myHP, setMyHP] = useState(100);
+  const [myCurHP, setMyCurHP] = useState(100);
+  const [myAttck, setMyAttck] = useState(20);
+  const [myDef, setMyDef] = useState(3);
+  const [myMatk, setMyMatk] = useState(0);
+  const [myMdef, setMyMdef] = useState(0);
+  const [mySpd, setMySpd] = useState(1);
   //상대 펫몬 정보
   const [enmLevel, setEnmLevel] = useState(1)
   const [enemyHP, setEnemyHP] = useState(100)
@@ -161,7 +164,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   //초기 데이터 다운로드
   const fetchInitData = () => {
     if (!gameDetails || !quizSetId || !myUserData) return;
-    let { monster } = gameDetails
+    const { monster } = gameDetails
     //실시간 데이터
     let myPet
     if (!user.isTeacher) { myPet = myUserData.myPetList.find((pet) => pet.petId === myPetDetails.petId) }
@@ -208,7 +211,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   }
   //게임 초기화
   const initGameInfo = () => {
-    let { monster } = gameDetails
+    let { monster } = gameDetails;
     qNumRef.current = 0;
     setBattleTurn(0)
     setCurQuiz('');
@@ -223,13 +226,16 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   //내 spec 바인딩
   const bindMyPetData = () => {
     if (!myPetInfo) return;
+    const { spec } = myPetInfo;
     //1. 내 스펙
-    setMyHP(myPetInfo.spec.hp);
-    setMyCurHP(myPetInfo.spec.hp);
-    setMyAttck(myPetInfo.spec.atk);
-    setMyDef(myPetInfo.spec.def);
-
-    const quizRecord = myPetInfo.quizRecord
+    setMyHP(Math.floor(spec.hp));
+    setMyCurHP(Math.floor(spec.hp));
+    setMyAttck(Math.floor(spec.atk));
+    setMyDef(Math.floor(spec.def));
+    setMyMatk(Math.floor(spec.mat));
+    setMyMdef(Math.floor(spec.mdf));
+    setMySpd(Math.floor(spec.spd));
+    const quizRecord = myPetInfo.quizRecord;
     if (quizRecord) {
       const key = gameDetails.id
       const thisRecordList = quizRecord[key] || [];
@@ -473,23 +479,24 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   //점수 계산 -result에 종속
   const finalizeGame = () => {
     if (!result || user.isTeacher) return;
-    let gameResult = { result, correct: correctNumber, enmLevel, name: user.name, uid: user.uid, actiId: gameDetails.id };
+    const today = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD' 형식
+    let gameResult = { result, correct: correctNumber, enmLevel, name: user.name, uid: user.uid, actiId: gameDetails.id, date: today };
     switch (result) {
       case "Win":
         const winScore = score * 2;
         gameResult = { score: winScore, ...gameResult };
         setScore(winScore);
-        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo.level, 5, myPetInfo), gameResult);  //결과 기록
+        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, 5), gameResult);  //결과 기록
         break;
       case "Draw":
         gameResult = { score, ...gameResult };
-        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo.level, 3, myPetInfo), gameResult);  //결과 기록
+        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, 3), gameResult);  //결과 기록
         break;
       case "Lose":
         const loseScore = score / 2;
         gameResult = { score: loseScore, ...gameResult };
         setScore(loseScore);
-        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo.level, 1, myPetInfo), gameResult);  //결과 기록
+        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, 1), gameResult);  //결과 기록
         break;
       default:
         break;
@@ -498,7 +505,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
 
   //승리 기록 세기
   const countWinRecord = () => {
-    return myRecordList.filter((item) => item.result === "Win").length
+    return myRecordList.filter((item) => item.result === "Win").length;
   }
 
   //생기부 기록하기
@@ -532,11 +539,13 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
         </Wrapper>}
         <Wrapper style={{ width: "240px" }}>
           <Row>
+            <p style={{ margin: "0" }}>체력: {myPetInfo?.spec.hp || "??"}</p>
             <p>공격: {myPetInfo?.spec.atk || "??"}</p>
             <p>방어: {myPetInfo?.spec.def ?? "??"}</p>
           </Row>
           <Row>
-            <p style={{ margin: "0" }}>체력: {myPetInfo?.spec.hp || "??"}</p>
+            <p style={{ margin: "0" }}>마력: {myPetInfo?.spec.mat || "??"}</p>
+            <p style={{ margin: "0" }}>지력: {myPetInfo?.spec.mdf || "??"}</p>
             <p style={{ margin: "0" }}>민첩: {myPetInfo?.spec.spd || "??"}</p>
           </Row>
         </Wrapper>

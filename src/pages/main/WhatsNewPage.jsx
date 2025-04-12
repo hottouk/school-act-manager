@@ -38,8 +38,8 @@ const WhatsNewPage = () => {
   }
   //가입 승인
   const handleApproveJoinOnClick = (item) => {
-    const { classId, petId } = item
-    const pet = { ...getInitialPet(item.classSubj), classId, petId }
+    const { classId, petId, classSubj } = item
+    const pet = { ...getInitialPet(classSubj), classId, petId }
     approveKlassTransaction(item, pet)
   }
   //생기부 기록 승인
