@@ -67,10 +67,10 @@ const Nav = () => {
           <span>퀴즈 관리</span></Link></li>
         <li><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon>
           <span>나의 학교</span></Link></li>
-        {/* {user.isMaster && <li id="lab_btn" ><Link to="/lab"><i className="fa-solid fa-khanda"></i>
-          <span>실험실</span></Link></li>}
-        {user.isMaster && <li id="master_btn" ><Link to="/master"><i className="fa-solid fa-key"></i>
-          <span>마스터</span></Link></li>} */}
+        {/* {user.isMaster && <li id="lab_btn" ><Link to="/lab"><Icon className="fa-solid fa-khanda"></Icon>
+          <span>실험실</span></Link></li>} */}
+        {user.isMaster && <li id="master_btn" ><Link to="/master"><Icon className="fa-solid fa-key"></Icon>
+          <span>마스터</span></Link></li>}
         <NewsWrapper >
           {isNew && <NewIcon><Badge bg="danger">new</Badge></NewIcon>}
           <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>

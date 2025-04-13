@@ -4,16 +4,15 @@ import { appFireStore } from '../../firebase/config';
 
 //24.01.23
 const useFetchRtAllUserData = () => {
-  //1. 변수
   const db = appFireStore
-  let q = query(collection(db, "user"))
-  const [teacherList, setTUserList] = useState([])
-  const [studentList, setSUserList] = useState([])
-  const [error, setError] = useState(null)
+  let q = query(collection(db, "user"));
+  const [teacherList, setTUserList] = useState([]);
+  const [studentList, setSUserList] = useState([]);
+  const [error, setError] = useState(null);
   useEffect(() => { //실시간 구독
-    let unsubscribe = onSnapshot(q, (snapshot) => {
-      let tList = []
-      let sList = []
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      let tList = [];
+      let sList = [];
       snapshot.docs.forEach((user) => {
         if (user.data().isTeacher) {
           tList.push({ ...user.data(), id: user.id })
@@ -21,13 +20,13 @@ const useFetchRtAllUserData = () => {
           sList.push({ ...user.data(), id: user.id })
         }
       })
-      setTUserList(tList)
-      setSUserList(sList)
+      setTUserList(tList);
+      setSUserList(sList);
     }, (error) => {
       setError(error.message)
     })
     return unsubscribe;
-  }, [])
+  }, []);
 
   //정렬 by 좋아요
   const sortByLikedCount = () => {

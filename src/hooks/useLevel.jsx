@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import useFireUserData from "./Firebase/useFireUserData";
 
-//케릭터 레벨 관련 함수 모음(250127)
+//케릭터 레벨 관련 함수 모음(250127) -> 레벨 업 추가(250413)
 const useLevel = () => {
   const user = useSelector(({ user }) => user)
   const { updateUserArrayInfo } = useFireUserData();
@@ -54,7 +54,6 @@ const useLevel = () => {
 
   //경험치 획득
   const gainXp = (petInfo, gainXp) => {
-    console.log(petInfo);
     const { ev, petId, monId, name, spec, lvUp } = petInfo;               //현재 pet 정보                       
     const { level, exp, nextLvXp, nextStepLv } = petInfo.level;           //현재 레벨 정보
     const { hp, atk, def, mat, mdf, spd } = spec;
@@ -63,6 +62,7 @@ const useLevel = () => {
     const updatedXp = exp + gainXp;
     // 레벨업 체크
     if (updatedXp >= nextLvXp && level < nextStepLv) {            //레벨 업
+      if (level === 3) return;
       const excessXp = updatedXp - nextLvXp;
       const newLevel = level + 1;
       const newXp = excessXp;
