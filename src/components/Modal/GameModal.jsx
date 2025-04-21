@@ -3,10 +3,11 @@ import Modal from 'react-bootstrap/Modal'
 import QuizBattlePage from '../../pages/quizBattle/QuizBattlePage'
 
 const GameModal = ({ show, onHide, quizSetId, myPetDetails, gameDetails }) => {
+  console.log(quizSetId);
   return (
     <Modal
       show={show}
-      onHide={onHide}
+      onHide={onHide} 
       fullscreen={true}>
       <Modal.Body>
         <QuizBattlePage quizSetId={quizSetId} myPetDetails={myPetDetails} gameDetails={gameDetails} onHide={onHide} />

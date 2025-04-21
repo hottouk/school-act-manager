@@ -13,7 +13,10 @@ const ActivityList = ({ actiList, setIsActiInfoModal, setActiInfo }) => {
 
   return (
     <Container>
-      {actiList.map((acti) => {
+      {actiList.filter((item) => {
+        const isPrivate = item.isPrivate;
+        return isPrivate === false;
+      }).map((acti) => {
         return (<MonListItem key={acti.id} item={acti} onClick={() => { handleOnClick(acti) }} type="acti" />)
       })}
     </Container >

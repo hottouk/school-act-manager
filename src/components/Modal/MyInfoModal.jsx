@@ -223,7 +223,6 @@ const ClickableText = styled.p`
     color: #3454d1;
   }
 `
-
 const StyledInput = styled.input`
    height: 35px;
     border-radius: 5px;

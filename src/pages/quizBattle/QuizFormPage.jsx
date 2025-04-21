@@ -149,7 +149,6 @@ const QuizFormPage = () => {
               setSelectedGroup={setSelectedSubjGroup} setSelectedDetail={setSelectedSubjDetail}
               disabled={!isModifying} />
           </Row>
-
           {/* 공개/비공개 */}
           {/* <Row style={{ justifyContent: "space-between", marginBottom: "10px" }}>
             <DotTitle title={"공개 여부"} styles={{ dotColor: "#3454d1;" }} />

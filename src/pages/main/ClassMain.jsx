@@ -49,7 +49,7 @@ const ClassMain = () => {
         </Wrapper>
       </LandingBackground>
       <StyledWhiteBackground>
-        <SubTitleText>{2131}명의 선생님, {153}명의 학생이 이용중!!</SubTitleText>
+        <SubTitleText>{2138}명의 선생님, {186}명의 학생이 이용중!!</SubTitleText>
         <Row><HorizontalBannerAd /></Row>
       </StyledWhiteBackground>
       <BottomBlueBackground>

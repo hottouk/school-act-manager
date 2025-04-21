@@ -22,20 +22,17 @@ const ClassRoomMainPage = () => {
   const navigate = useNavigate()
   const dispatcher = useDispatch()
   const isMobile = useMediaQuery("(max-width: 767px)")
-
   //교사
   const { classList } = useFetchRtMyClassData();
-  const [subjClassList, setSubjClassList] = useState(null);
-  const [homeroomClassList, setHomerooomClassList] = useState(null);
+  const [subjKlassList, setSubjKlassList] = useState(null);
+  const [homeroomKlassList, setHomerooomKlassList] = useState(null);
   const [coTeachingList, setCoTeachingList] = useState(null);
   useEffect(() => { sortTeacherKlass() }, [classList]);
-
   //학생
   const { fetchUserData } = useFireUserData();
   const [appplyKlass, setApplyKlass] = useState([]);
   const [myKlass, setMyKlass] = useState([]);
   useEffect(() => { fetchMyData() }, [user])
-
   //모니터 높이
   const clientHeight = useClientHeight(document.documentElement)
 
@@ -59,9 +56,9 @@ const ClassRoomMainPage = () => {
       if (!item.type || item.type === "subject") subjClassList.push(item)
       else homeroomClassList.push(item)
     })
-    setSubjClassList(subjClassList)
+    setSubjKlassList(subjClassList)
     dispatcher(setAllSubjClasses(subjClassList)) //교과반 전역 변수화
-    setHomerooomClassList(homeroomClassList)
+    setHomerooomKlassList(homeroomClassList)
   }
   //코티칭 클릭
   const handleCoTeachingOnClick = (item) => {
@@ -92,12 +89,12 @@ const ClassRoomMainPage = () => {
     <Container $clientheight={clientHeight}>
       {/* 교사 */}
       {user.isTeacher && <>
-        <SearchBar title="교과 클래스" type="classroom" list={subjClassList} setList={setSubjClassList} isMobile={isMobile} />
-        <CardList dataList={subjClassList} type="classroom" onClick={handleSubjClassOnClick} />
+        <SearchBar title="교과 클래스" type="classroom" list={subjKlassList} setList={setSubjKlassList} isMobile={isMobile} />
+        <CardList dataList={subjKlassList} type="classroom" onClick={handleSubjClassOnClick} />
         <SearchBar title="코티칭 클래스" />
         <CardList dataList={coTeachingList} type="classroom" onClick={handleCoTeachingOnClick} />
         {!isMobile && <SearchBar title="담임 클래스" />}
-        {!isMobile && <CardList dataList={homeroomClassList} type="homeroom" onClick={handleHomeroomOnClick} />}
+        {!isMobile && <CardList dataList={homeroomKlassList} type="homeroom" onClick={handleHomeroomOnClick} />}
         {!isMobile && <Row><MainBtn onClick={() => navigate('/classrooms_setting', { state: { step: "first" } })}>클래스 만들기</MainBtn></Row>}
       </>}
 

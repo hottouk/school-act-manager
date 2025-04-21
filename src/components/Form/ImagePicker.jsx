@@ -12,7 +12,7 @@ const ImagePicker = ({ children, src, onClick, styles }) => {
 const StyledImgPicker = styled.img`
   width: 100px;
   height: 100px;
-  padding: 5px;
+  padding: 12px;
   border-radius: 20px;
   border: 1px solid rgba(120,120,120,0.7);
   cursor: pointer;
