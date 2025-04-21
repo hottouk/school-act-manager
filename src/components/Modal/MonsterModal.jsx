@@ -1,7 +1,6 @@
 //라이브러리
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
 import styled from 'styled-components';
 //hooks
@@ -10,6 +9,7 @@ import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg';
 import { monsterEvilList } from "../../data/monsterList"
 //이미지
 import question_icon from "../../image/icon/question.png"
+import ModalBtn from '../Btn/ModalBtn';
 
 //25.01.16 변경
 const MonsterModal = ({ show, onHide, monster, setMonster, setMonImg }) => {
@@ -58,13 +58,10 @@ const MonsterModal = ({ show, onHide, monster, setMonster, setMonImg }) => {
       onHide={onHide}
       backdrop="static"
       keyboard={false}
-      size='lg'
-    >
-      <Modal.Header closeButton>
-        <Modal.Title>상대 몬스터 선택</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <StyledImageWrapper>
+      size='lg'>
+      <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>상대 몬스터 선택</Modal.Header>
+      <Modal.Body style={{ backgroundColor: "#efefef" }}>
+        <MonImgWrapper>
           {/* 상단 선택창 */}
           {(imgUrlList.length !== 0) && imgUrlList.map((item, index) => <React.Fragment key={item}>
             {monster?.path === monsterEvilList[index]?.path
@@ -72,14 +69,14 @@ const MonsterModal = ({ show, onHide, monster, setMonster, setMonImg }) => {
               : <UnSelected id="mon" src={item} alt={`mon${index + 1}`} onClick={(event) => { handleImgOnClick(event, index) }} />}
           </React.Fragment>)
           }
-        </StyledImageWrapper>
+        </MonImgWrapper>
         {/* 하단 상세 정보 */}
-        <Row style={{ margin: "30px 0" }}>
+        <Row style={{ margin: "30px 0", justifyContent: "space-evenly" }}>
           {/* 선택 전 */}
           {detailImgUrlList.length === 0 && <>
-            <UnSelected src={question_icon} style={{ width: "150px", height: "150px", border: "1px gray solid", borderRadius: "10px", cursor: "default" }} />
-            <UnSelected src={question_icon} style={{ width: "150px", height: "150px", border: "1px gray solid", borderRadius: "10px", cursor: "default" }} />
-            <UnSelected src={question_icon} style={{ width: "150px", height: "150px", border: "1px gray solid", borderRadius: "10px", cursor: "default" }} />
+            <UnSelected src={question_icon} style={{ width: "125px", height: "125px", border: "1px solid rgba(120, 120, 120, 0.5)", borderRadius: "10px", cursor: "default" }} />
+            <UnSelected src={question_icon} style={{ width: "125px", height: "125px", border: "1px solid rgba(120, 120, 120, 0.5)", borderRadius: "10px", cursor: "default" }} />
+            <UnSelected src={question_icon} style={{ width: "125px", height: "125px", border: "1px solid rgba(120, 120, 120, 0.5)", borderRadius: "10px", cursor: "default" }} />
           </>}
           {/* 로딩 중 */}
           {(monster && detailImgUrlList.length === 0) && <Spinner />}
@@ -87,34 +84,38 @@ const MonsterModal = ({ show, onHide, monster, setMonster, setMonImg }) => {
           {detailImgUrlList.length !== 0 &&
             detailImgUrlList.map((item, index) =>
               <UnSelected id='details' key={item} src={item} alt={"details"}
-                style={{ width: "150px", height: "150px", border: "1px gray solid", borderRadius: "10px" }}
+                style={{ width: "125px", height: "125px", border: "1px solid rgba(120, 120, 120, 0.5)", borderRadius: "10px" }}
                 onClick={(event) => { handleImgOnClick(event, index) }} />)}
         </Row>
-        <MonsterInfoWrapper>
-          {monsterDetails && <>
-            <Row style={{ color: "#3454d1", fontWeight: "bold" }}><h4> {monsterDetails.name}</h4></Row>
-            <h6>체력: {monsterDetails.spec?.hp ?? "??"}</h6>
-            <h6>공격력: {monsterDetails.spec?.atk ?? "??"}</h6>
-            <h6>방어력: {monsterDetails.spec?.def ?? "??"}</h6>
-            <h6>스피드: {monsterDetails.spec?.spd ?? "??"}</h6>
-          </>}
-          <StyledText>{monsterDetails?.desc || "각 몬스터를 클릭하세요"}</StyledText>
-        </MonsterInfoWrapper>
+        {monsterDetails && <MonsterInfoWrapper>
+          <h4 style={{ color: "#3454d1", fontWeight: "bold", textAlign: "center" }}> {monsterDetails.name}</h4>
+          <Row style={{ gap: "10px" }}>
+            <SpecWrapepr>
+              <h6>체력: {monsterDetails.spec?.hp ?? "??"}</h6>
+              <h6>공격력: {monsterDetails.spec?.atk ?? "??"}</h6>
+              <h6>방어력: {monsterDetails.spec?.def ?? "??"}</h6>
+              <h6>스피드: {monsterDetails.spec?.spd ?? "??"}</h6>
+            </SpecWrapepr>
+            <StyledText>{monsterDetails?.desc || "각 몬스터를 클릭하세요"}</StyledText>
+          </Row>
+        </MonsterInfoWrapper>}
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleCancelOnClick}>취소</Button>
-        <Button variant="primary" onClick={handleConfirmOnClick}>확인</Button>
+      <Modal.Footer style={{ backgroundColor: "#efefef" }}>
+        <ModalBtn onClick={handleCancelOnClick}>취소</ModalBtn>
+        <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirmOnClick}>확인</ModalBtn>
       </Modal.Footer>
     </Modal>
   );
 }
-const StyledImageWrapper = styled.div`
+const MonImgWrapper = styled.div`
   display: flex;
+  background-color: white;
+  border: 1px solid rgba(120, 120, 120, 0.5);
+  border-radius: 15px;
   overflow-x: scroll;
 `
 const Row = styled.div`
   display: flex;
-  justify-content: space-evenly;
 `
 const UnSelected = styled.img`
   box-sizing: border-box;
@@ -132,17 +133,22 @@ const Selected = styled.img`
   border: 1px solid black;
   padding: 8px;
 `
+const SpecWrapepr = styled.div`
+  width: 50%;
+  padding: 10px;
+  border: 1px dotted rgba(120, 120, 120, 0.5);
+  border-radius: 10px;
+`
 const MonsterInfoWrapper = styled.div`
-  width: 608px;
-  background-color: #ddd;
-  margin-left: 79px;
+  width: 100%;
   padding: 15px;
+  border: 1px solid rgba(120, 120, 120, 0.5);
   border-radius: 8px;
-}
 `
 const StyledText = styled.p`
   padding: 10px;
-  border: 1px solid gray;
+  border: 1px dotted rgba(120, 120, 120, 0.5);
   border-radius: 5px;
+  margin: 0;
 `
 export default MonsterModal;

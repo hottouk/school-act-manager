@@ -3,6 +3,8 @@ import React from 'react'
 import styled from 'styled-components'
 //컴포넌트
 import PetImg from '../../PetImg'
+//이미지
+import exclamationMark from '../../../image/icon/exclamation.png'
 
 // 리펙토링(250126) -> 등록, 미등록자 구분(250205)
 const SquareListItem = ({ item, onClick, type }) => {
@@ -24,7 +26,7 @@ const SquareListItem = ({ item, onClick, type }) => {
       {
         type === "acti" && <>
           <ImgWrapper>
-            <PetImg onClick={() => { onClick(item) }} styles={{ width: "80px", height: "80px" }} />
+            <ActiImg src={exclamationMark} onClick={() => { onClick(item) }} style={{ width: "80px", height: "80px" }} />
           </ImgWrapper>
           <TextWrapper>
             <ActiTitle >{title}</ActiTitle>
@@ -71,5 +73,9 @@ const ActiTitle = styled.p`
   -webkit-line-clamp: 2;    /* 표시할 줄 수 (2줄 제한 예시) */
   -webkit-box-orient:   vertical;
   overflow: hidden;         /* 넘치는 텍스트 숨기기 */
+`
+const ActiImg = styled.img`
+  width: 134px;
+  padding: 10px;
 `
 export default SquareListItem

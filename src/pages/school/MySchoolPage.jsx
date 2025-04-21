@@ -80,15 +80,10 @@ const MySchoolPage = () => {
   //멤버 분류하기
   const sortMember = () => {
     if (memberList.length === 0) return;
-    let teacherList = [];
-    let studentList = [];
-    memberList.forEach((member) => {
-      const isTeacher = member.isTeacher
-      if (isTeacher === true) { teacherList.push(member) }
-      else { studentList.push(member) }
+    const teacherList = memberList.filter((item) => {
+      return item.isTeacher === true && item.uid !== user.uid
     });
-    const filtered = teacherList.filter((item) => item.uid !== user.uid); //본인 제외
-    setTeacherList(filtered);
+    setTeacherList(teacherList);
   }
   //선택 교사 클래스 가져오기 + 분류
   const fetchClassroomList = () => {

@@ -22,7 +22,7 @@ const useFireBasic = (col) => {
     try {
       let createdTime = timeStamp.fromDate(new Date());
       let docRef = doc(db, col, docId)
-      await setDoc(docRef, { ...data, createdTime, uid: String(user.uid) })
+      await setDoc(docRef, { ...data, createdTime, uid: String(user.uid) }, { merge: true })
       console.log("덮어쓰기 성공")
     } catch (err) {
       console.error(err)

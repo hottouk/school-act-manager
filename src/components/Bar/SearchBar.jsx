@@ -2,9 +2,11 @@ import React, { useRef, useState } from 'react';
 import SmallBtn from '../Btn/SmallBtn';
 import styled from 'styled-components';
 import SearchSection from './SearchSection';
-//24.12.15(생성)
+//생성(241215) -> 연도필터링(250416)
 const SearchBar = ({ title, type, list, setList, isMobile }) => {
   const [keyword, setKeyword] = useState('');
+  const [clicked, setClicked] = useState(null);
+  const [originalList, setOriginalList] = useState(null);
   const originalListRef = useRef([]); //상태 변경에도 값을 유지하기 위해서 ref로 받음.
   // 초기 값 저장 (컴포넌트가 처음 렌더링될 때 한 번만 실행)
   if (originalListRef.current.length === 0 && list?.length > 0) {
@@ -21,11 +23,29 @@ const SearchBar = ({ title, type, list, setList, isMobile }) => {
     // keyword가 없으면 원래 리스트로 복구
     if (!originalListRef.current || originalListRef.current.length === 0 || keyword.trim() === '') {
       setList([...originalListRef.current]);
-      return;
+      return
     }
     // 키워드 검색
-    let results = [...list].filter(item => item[criterion] && item[criterion].toLowerCase().includes(keyword.toLowerCase()))
-    setList(results)
+    let results = [...list].filter(item => item[criterion] && item[criterion].toLowerCase().includes(keyword.toLowerCase()));
+    setList(results);
+  }
+  //해당 연도 생성반만 필터
+  const showOnlythisYear = (thisYear) => {
+    setOriginalList(list);
+    const onlyThisYear = list.filter((klass) => {
+      const timeStamp = klass.createdTime;
+      const date = new Date(timeStamp.seconds * 1000);
+      const year = date.getFullYear();
+      return year === thisYear;
+    })
+    setList(onlyThisYear);
+    setClicked("thisYear");
+  }
+
+  //필터링 이전
+  const showAll = () => {
+    setList(originalList);
+    setClicked(null);
   }
 
   return (
@@ -47,6 +67,8 @@ const SearchBar = ({ title, type, list, setList, isMobile }) => {
           <SmallBtn btnColor="#3454d1" btnName="교사" btnOnClick={() => { sortDataList("madeBy") }} />
         </>}
         {(type === "classroom" && !isMobile) && <>
+          {clicked === null && <SmallBtn btnColor="#3454d1" btnName="2025" btnOnClick={() => { showOnlythisYear(2025); }} />}
+          {clicked === "thisYear" && <SmallBtn btnColor="#3454d1" btnName="전체반" btnOnClick={showAll} />}
           <SmallBtn btnColor="#3454d1" btnName="과목" btnOnClick={() => { sortDataList("subject") }} />
           <SmallBtn btnColor="#3454d1" btnName="반이름" btnOnClick={() => { sortDataList("classNumber") }} />
         </>}
@@ -61,14 +83,6 @@ const Container = styled.div`
   p {
     display: inline-block;
     margin: 10px 10px; 
-  }
-`
-const Wrapper = styled.div`
-  input, button {
-    border: 1px solid black;
-    border-radius: 3px;
-    height: 25px;
-    margin: 0 4px;
   }
 `
 const BtnWrapper = styled.div`

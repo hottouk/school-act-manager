@@ -119,7 +119,8 @@ const ClassroomDetailsPage = () => {
     getSubjKlassActiList(classTeacherId, klassData?.subject).then((list) => { //활동 data
       dispatcher(setAllActivities(list.subjActiList));
       setActiList(list.subjActiList);
-      setQuizList(list.quizActiList);
+      const quizActis = list.quizActiList.filter((item) => { return item.isPrivate === false });
+      setQuizList(quizActis);
     });
     dispatcher(setAllStudents(studentDataList))                              //학생 data
     setStudentList(studentDataList);
@@ -145,7 +146,7 @@ const ClassroomDetailsPage = () => {
   }
   //몬스터 클릭
   const handleMonsterOnClick = (item) => {
-    let { quizInfo, ...rest } = item
+    const { quizInfo, ...rest } = item
     setIsGameModal(true)
     setQuizId(quizInfo.id)
     setGameDetails(rest)

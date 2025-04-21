@@ -67,8 +67,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const [isGptDetailShown, setIsGptDetailShown] = useState(false)
   const [isPerfRecShown, setIsPerfRecShown] = useState(false)
   //hooks
-  //4.데이터 통신 변수
-  const { addActi, updateActi } = useAddUpdFireData("activities");
+  const { addActi, updateActi } = useFireActiData();
   const { copyActiTransaction, delCopiedActiTransaction } = useFireTransaction()
   const { deleteActi } = useFireActiData();
   //5.경로 이동 관련 변수

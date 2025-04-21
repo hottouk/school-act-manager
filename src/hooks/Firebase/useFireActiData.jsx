@@ -1,5 +1,5 @@
-import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore'
-import { appFireStore } from '../../firebase/config'
+import { addDoc, arrayUnion, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { appFireStore, timeStamp } from '../../firebase/config'
 import { useSelector } from 'react-redux'
 import useFireUserData from './useFireUserData'
 
@@ -21,6 +21,25 @@ const useFireActiData = () => {
     } catch (error) {
       console.log(error)
     }
+  }
+
+  //활동 생성(250419_이동)
+  const addActi = async (acti) => {
+    const createdTime = timeStamp.fromDate(new Date());
+    await addDoc(colRef, { ...acti, createdTime }).catch(err => {
+      window.alert("생성에 실패했습니다. 관리자에게 문의하세요(useFireActi_01)");
+      console.log(err);
+    })
+  }
+
+  //활동 수정(250419_이동)
+  const updateActi = async (acti, actiId) => {
+    const actiDocRef = doc(colRef, actiId);
+    const createdTime = timeStamp.fromDate(new Date());
+    await updateDoc(actiDocRef, { ...acti, createdTime }).catch(err => {
+      window.alert("수정에 실패했습니다. 관리자에게 문의하세요(useFireActi_02)");
+      console.log(err);
+    })
   }
 
   //활동 타입으로 분류(250125)
@@ -51,17 +70,27 @@ const useFireActiData = () => {
     return sortActiType(filtered)
   }
 
+  //게임 결과 활동에 입력(250419)
+  const updateGameResult = async (actiId, record) => {
+    const actiDocRef = doc(colRef, actiId);
+    await updateDoc(actiDocRef, {
+      gameRecord: arrayUnion(record)
+    }).catch(err => {
+      console.log(err, "결과 입력 실패. 관리자에게 문의하세요(useFireActi_06)");
+    })
+  }
+
   //활동 삭제(250310)
-  const deleteActi = async (actId) => {
-    const actiDocRef = doc(db, "activities", actId);
+  const deleteActi = async (actiId) => {
+    const actiDocRef = doc(colRef, actiId);
     await deleteDoc(actiDocRef).catch(err => {
-      window.alert("삭제에 실패했습니다. 관리자에게 문의하세요.");
+      window.alert("삭제에 실패했습니다. 관리자에게 문의하세요(useFireActi_07)");
       console.log(err);
     })
   }
 
   return (
-    { fetchAllActis, deleteActi, sortActiType, filterActiBySubject, getSubjKlassActiList }
+    { fetchAllActis, addActi, updateActi, deleteActi, sortActiType, filterActiBySubject, getSubjKlassActiList, updateGameResult, }
   )
 }
 

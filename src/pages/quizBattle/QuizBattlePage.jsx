@@ -17,10 +17,10 @@ import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData'
 import useLevel from '../../hooks/useLevel';
 //img
 import qustion_icon from '../../image/icon/question.png'
+import useFireActiData from '../../hooks/Firebase/useFireActiData';
 
 //250111 생성
 const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame }) => {
-  //준비
   //실시간 데이터
   const user = useSelector(({ user }) => user);
   const { myUserData } = useFetchRtMyUserData();
@@ -33,6 +33,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   const { fetchImgUrl } = useFetchStorageImg(); //이미지 불러오기
   const { fetchDoc } = useFireBasic("quiz");
   const { updateUserPetGameInfo, updateUserArrayInfo } = useFireUserData();
+  const { updateGameResult } = useFireActiData();
   const [quizList, setQuizList] = useState([]);
   useEffect(() => { bindQuizData(); }, [quizList]);
   //문제 준비
@@ -487,6 +488,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
         gameResult = { score: winScore, ...gameResult };
         setScore(winScore);
         updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, 5), gameResult);  //결과 기록
+        updateGameResult(gameDetails.id, gameResult);
         break;
       case "Draw":
         gameResult = { score, ...gameResult };

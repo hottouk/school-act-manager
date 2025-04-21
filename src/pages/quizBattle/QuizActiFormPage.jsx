@@ -13,8 +13,6 @@ import LongW100Btn from '../../components/Btn/LongW100Btn'
 import BackBtn from '../../components/Btn/BackBtn'
 import SubNav from '../../components/Bar/SubNav'
 import MonsterModal from '../../components/Modal/MonsterModal'
-import GameModal from '../../components/Modal/GameModal'
-import TwoRadios from '../../components/Radio/TwoRadios'
 //hooks
 import useTeacherAuth from '../../hooks/useTeacherAuth'
 import useFireBasic from '../../hooks/Firebase/useFireBasic'
@@ -22,6 +20,8 @@ import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg'
 //이미지
 import temp_icon from '../../image/icon/question.png'
 import { useSelector } from 'react-redux'
+import TwoRadios from '../../components/Radio/TwoRadios'
+import GameResultModal from '../../components/Modal/GameResultModal'
 //250119 생성 -> 0202 recordList로 갱신
 const QuizActiFormPage = () => {
   //준비
@@ -49,6 +49,8 @@ const QuizActiFormPage = () => {
   const [_basicRec, setBasicRec] = useState('');
   const [subjGroup, setSubjGroup] = useState('');
   const [subjDetail, setSubjDetail] = useState('');
+  const [_isPrivate, setIsPrivate] = useState(false);
+  const [gameRecord, setGameRecord] = useState(null);
   //퀴즈 세트 선택
   const [quizOptionList, setQuizOptionList] = useState([]);
   const [_quizSelected, setQuizSelected] = useState(null);
@@ -62,13 +64,14 @@ const QuizActiFormPage = () => {
   const [isModifying, setIsModifying] = useState(!quizActiInfo);
   //모달
   const [isMonsterModal, setIsMonsterModal] = useState(false);
-  const [isGameModal, setIsGameModal] = useState(false)
+  const [isResultModal, setIsResultModal] = useState(false);
 
   //------함수부------------------------------------------------ 
   //기존 state 렌더링
   const bindInfo = () => {
     if (!quizActiInfo) return;
-    const { title, content, quizInfo, monster, isPrivate, recordList } = quizActiInfo
+    // gameRecord: 게임 결과
+    const { title, content, quizInfo, monster, isPrivate, recordList, gameRecord } = quizActiInfo
     setHighCount(recordList[0].count);
     setHighRec(recordList[0].record)
     setMidCount(recordList[1].count);
@@ -79,9 +82,10 @@ const QuizActiFormPage = () => {
     setContent(content);
     setQuizSelected(quizInfo);
     setMonster(monster);
+    setIsPrivate(isPrivate);
+    setGameRecord(gameRecord);
     fetchImgUrl(monster.path, setMonImg);
   }
-
   //자동 완성
   const autoFill = () => {
     if (!_quizSelected) return;
@@ -90,7 +94,6 @@ const QuizActiFormPage = () => {
     setSubjDetail(_quizSelected.subjDetail)
     setTitle(_quizSelected.title)
   }
-
   //자동 채우기
   const autoFilRecord = (level) => {
     if (!_quizSelected) return;
@@ -105,7 +108,6 @@ const QuizActiFormPage = () => {
       setBasicRec(basicRecord)
     }
   }
-
   //입력 확인
   const check = () => {
     // 조건 1: 선택했는가?
@@ -114,6 +116,7 @@ const QuizActiFormPage = () => {
     };
     // 조건 2: 순서 조건을 만족하는지 확인
     if (_highCount < _midCount || _midCount < _basicCount) {
+      console.log(typeof (_highCount), typeof (_midCount), typeof (_basicCount))
       return { valid: false, message: "성취도 값은 상 >= 중 >= 하 순으로 입력해야 합니다." };
     }
     // 조건 3: 중복된 값이 있는지 확인
@@ -129,7 +132,6 @@ const QuizActiFormPage = () => {
     // 모든 조건 통과
     return { valid: true, message: "유효한 성취도 입력입니다!" };
   }
-
   //몬스터 클릭
   const handleMonImgOnClick = () => {
     if (!isModifying) return
@@ -139,12 +141,10 @@ const QuizActiFormPage = () => {
   const handleSaveOnClick = () => {
     let isValid = check();
     if (isValid.valid) {
-      console.log(isValid.message)
       let confirm = window.confirm(`${quizActiInfo ? "이렇게 변경 저장할까요?" : "이 퀴즈 게임 활동을 생성할까요?"}`)
       if (confirm) {
         const recordList = [{ count: _highCount, record: _highRec }, { count: _midCount, record: _midRec }, { count: _basicCount, record: _basicRec }]
-        const data = { title: _title, recordList, content: _content, subject: subjGroup, subjDetail, quizInfo: _quizSelected, monster: _monster, madeBy: user.name }
-        console.log(data)
+        const data = { title: _title, recordList, content: _content, subject: subjGroup, subjDetail, quizInfo: _quizSelected, monster: _monster, madeBy: user.name, isPrivate: _isPrivate }
         if (!quizActiInfo) {
           addData(data);
           navigate("/activities");
@@ -155,13 +155,11 @@ const QuizActiFormPage = () => {
       }
     } else { window.alert(isValid.message) }
   }
-
   //수정 취소
   const hadleCancelOnClick = () => {
     bindInfo();
     setIsModifying(false);
   }
-
   //삭제
   const handleDeleteOnClick = () => {
     const { id } = quizActiInfo
@@ -184,52 +182,62 @@ const QuizActiFormPage = () => {
         </Row>
         <Row style={{ justifyContent: "space-between", margin: "13px 0" }}>
           <DotTitle title={"게임 제목"} styles={{ dotColor: "#3454d1;" }} />
-          <StyledInput type="text" value={_title} onChange={(e) => { setTitle(e.target.value) }} disabled={!isModifying} />
+          <StyledInput type="text" value={_title} onChange={(event) => { setTitle(event.target.value) }} disabled={!isModifying} />
         </Row>
         <Row style={{ marginBottom: "10px", justifyContent: "space-between" }}>
           <DotTitle title={"단어 세트"} styles={{ dotColor: "#3454d1;" }} />
           {!isModifying && <StyledText>{_quizSelected?.title}</StyledText>}
-          {isModifying && <Select options={quizOptionList} onChange={(e) => { setQuizSelected(e.value) }} />}
+          {isModifying && <Select options={quizOptionList} onChange={(event) => { setQuizSelected(event.value) }} />}
         </Row>
-        <Row style={{ marginBottom: "10px", justifyContent: "space-between" }}>
+        <Row style={{ marginBottom: "15px", justifyContent: "space-between" }}>
           <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
           {_quizSelected && <StyledText>{subjGroup}교과 {subjDetail}</StyledText>}
         </Row>
-
+        <Row style={{ marginBottom: "15px", justifyContent: "space-between" }}>
+          <DotTitle title={"공개/비공개"} styles={{ dotColor: "#3454d1;" }} />
+          <TwoRadios
+            name={"isPrivate_radio"}
+            id={["private_radio", "public_radio"]}
+            value={_isPrivate}
+            label={["비공개 활동", "공개 활동"]}
+            onChange={() => { setIsPrivate(!_isPrivate) }}
+            disabled={!isModifying}
+          />
+        </Row>
         {/* 몇번 이겨야? */}
-        <DotTitle title={"성취도별 문구"} styles={{ dotColor: "#3454d1;" }} />
-        <LevelWrapper>
-          <Row style={{ gap: "10px", alignItems: "center" }}>
-            <LevelText>상급</LevelText>
-            <NumberInput type="number" value={_highCount} min={3} max={50} onChange={(event) => { setHighCount(event.target.value) }} disabled={!isModifying} />
-            <RecordTextArea value={_highRec} onChange={(event) => { setHighRec(event.target.value) }} disabled={!isModifying}></RecordTextArea>
-          </Row>
-          <Row style={{ gap: "10px", alignItems: "center" }}>
-            <LevelText>중급</LevelText>
-            <NumberInput type="number" value={_midCount} min={2} max={49} onChange={(event) => { setMidCount(event.target.value) }} disabled={!isModifying} />
-            <RecordTextArea value={_midRec} onChange={(event) => { setMidRec(event.target.value) }} disabled={!isModifying}></RecordTextArea>
-          </Row>
-          <Row style={{ gap: "10px", alignItems: "center" }}>
-            <LevelText>기본</LevelText>
-            <NumberInput type="number" value={_basicCount} min={1} max={48} onChange={(event) => { setBasicCount(event.target.value) }} disabled={!isModifying} />
-            <RecordTextArea value={_basicRec} onChange={(event) => { setBasicRec(event.target.value) }} disabled={!isModifying}></RecordTextArea>
-          </Row>
-        </LevelWrapper>
-
+        {_quizSelected && <>
+          <DotTitle title={"성취도별 문구"} styles={{ dotColor: "#3454d1;" }} />
+          <LevelWrapper>
+            <Row style={{ gap: "10px", alignItems: "center" }}>
+              <LevelText>상급</LevelText>
+              <NumberInput type="number" value={_highCount} min={3} max={50} onChange={(event) => { setHighCount(Number(event.target.value)) }} disabled={!isModifying} />
+              <RecordTextArea value={_highRec} onChange={(event) => { setHighRec(event.target.value) }} disabled={!isModifying}></RecordTextArea>
+            </Row>
+            <Row style={{ gap: "10px", alignItems: "center" }}>
+              <LevelText>중급</LevelText>
+              <NumberInput type="number" value={_midCount} min={2} max={49} onChange={(event) => { setMidCount(Number(event.target.value)) }} disabled={!isModifying} />
+              <RecordTextArea value={_midRec} onChange={(event) => { setMidRec(event.target.value) }} disabled={!isModifying}></RecordTextArea>
+            </Row>
+            <Row style={{ gap: "10px", alignItems: "center" }}>
+              <LevelText>기본</LevelText>
+              <NumberInput type="number" value={_basicCount} min={1} max={48} onChange={(event) => { setBasicCount(Number(event.target.value)) }} disabled={!isModifying} />
+              <RecordTextArea value={_basicRec} onChange={(event) => { setBasicRec(event.target.value) }} disabled={!isModifying}></RecordTextArea>
+            </Row>
+          </LevelWrapper>
+        </>}
         {/* 설명 */}
         <CommonTextarea title="활동 설명" onChange={(e) => { setContent(e.target.value) }} value={_content}
           placeholder={"단어세트를 선택하세요"} disabled={!isModifying} />
 
         {!quizActiInfo && <BtnWrapper>
           <LongW100Btn btnName="생성" btnOnClick={handleSaveOnClick} />
-          {/* <LongW100Btn btnName="테스트" btnOnClick={handleTestOnClick} /> */}
         </BtnWrapper>}
         {quizActiInfo && <BtnWrapper>
+          {(!isModifying && gameRecord) && <LongW100Btn btnName="결과 보기" btnOnClick={() => { setIsResultModal(true) }} />}
           {isModifying && <LongW100Btn btnName="변경 저장" btnOnClick={handleSaveOnClick} />}
           {!isModifying && <LongW100Btn btnName="수정" btnOnClick={() => { setIsModifying(true) }} />}
           {isModifying && <LongW100Btn btnName="취소" btnOnClick={hadleCancelOnClick} />}
           {!isModifying && <LongW100Btn btnName="삭제" btnOnClick={handleDeleteOnClick} />}
-          {/* <LongW100Btn btnName="테스트" btnOnClick={handleTestOnClick} /> */}
         </BtnWrapper>}
       </FormFrame>
     </Container>
@@ -239,6 +247,11 @@ const QuizActiFormPage = () => {
       monster={_monster}
       setMonster={setMonster}
       setMonImg={setMonImg}
+    />
+    <GameResultModal
+      show={isResultModal}
+      onHide={() => { setIsResultModal(false) }}
+      result={gameRecord}
     />
   </>
   )

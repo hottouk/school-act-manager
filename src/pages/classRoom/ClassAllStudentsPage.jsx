@@ -101,7 +101,7 @@ const ClassAllStudents = () => {
         <ExportAsExcel />
         <PrintBtn onClick={() => { handlePrint() }} />
       </SubNav>
-      <GirdContainer ref={printRef}>
+      <GridContainer ref={printRef}>
         <TableHeaderWrapper>
           <Header>연번</Header>
           <Header>학번</Header>
@@ -142,7 +142,7 @@ const ClassAllStudents = () => {
             </StyledGridItem>
           </React.Fragment>
         })}
-      </GirdContainer >
+      </GridContainer >
     </Container>
   )
 }
@@ -175,7 +175,7 @@ const StyledShfBtn = styled.img`
     transition: background-color 0.5s ease-in-out;
   }
 `
-const GirdContainer = styled.div`
+const GridContainer = styled.div`
   margin: 50px auto;
   display: grid;
   justify-content: center;
