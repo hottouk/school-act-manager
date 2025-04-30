@@ -30,7 +30,7 @@ const Nav = () => {
 
   //------함수부------------------------------------------------ 
   const bindData = () => {
-    setProfileImg(user.profileImg)//프로필 사진
+    setProfileImg(user.profileImg);//프로필 사진
     if (myUserData?.onSubmitList?.length) { setIsNew(true) } else { setIsNew(false) }
   }
 
@@ -91,10 +91,10 @@ const Nav = () => {
           <span>참여 클래스</span></Link></li>
         <li><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon>
           <span>나의 학교</span></Link></li>
-        <li>
+        <NewsWrapper>
           {isNew && <NewIcon><Badge bg="danger">new</Badge></NewIcon>}
           <Link to="/news" ><Icon className="fa-solid fa-bell" /></Link>
-        </li>
+        </NewsWrapper>
       </MenuWrapper>
       {_profileImg && <ProfileImg className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
       {!_profileImg && <ProfileImg className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
@@ -105,7 +105,7 @@ const Nav = () => {
       <MenuWrapper>
         <MoebileLi><Link to="/"><Icon className="fa-solid fa-house"></Icon></Link></MoebileLi>
         <MoebileLi><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon></Link></MoebileLi>
-        <NewsWrapper >
+        <NewsWrapper>
           {isNew && <NewDot>.</NewDot>}
           <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
         </NewsWrapper>
@@ -119,7 +119,7 @@ const Nav = () => {
         <MoebileLi><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon></Link></MoebileLi>
         <MoebileLi><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon></Link></MoebileLi>
         <MoebileLi><Icon className="fa-solid fa-user" onClick={() => setIsMyInfoShow(true)}></Icon></MoebileLi>
-        <NewsWrapper >
+        <NewsWrapper>
           {isNew && <NewDot>.</NewDot>}
           <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
         </NewsWrapper>

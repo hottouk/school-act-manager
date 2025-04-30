@@ -9,7 +9,7 @@ import Container from '../../components/MainPanel'
 import PetImg from '../../components/PetImg'
 
 //로직 분리(250204) -> 모바일(250213)
-const KlassQuizSection = ({ isMobile, quizList, klassData, myPetDetails, onClick }) => {
+const KlassQuizSection = ({ isMobile, quizList, klassData, myPetDetails, onClick, smallBtnOnClick }) => {
   return (
     <Container>
       <TitleText>퀴즈 게임</TitleText>
@@ -27,9 +27,9 @@ const KlassQuizSection = ({ isMobile, quizList, klassData, myPetDetails, onClick
       <BoldText style={{ marginTop: "10px" }}>vs</BoldText>
       {/* 단어 게임부 */}
       <GameMonListWrapper>
-        {quizList.length === 0 && < EmptyResult comment="등록단 단어 게임이 없습니다." />}
+        {quizList.length === 0 && < EmptyResult comment="등록된 단어 게임이 없습니다." />}
         {quizList.length !== 0 && quizList.map((item) => {
-          return <QuizMonListItem key={item.id} item={item} onClick={onClick} />
+          return <QuizMonListItem key={item.id} item={item} onClick={onClick} smallBtnOnClick={smallBtnOnClick} />
         })}
       </GameMonListWrapper>
     </Container>

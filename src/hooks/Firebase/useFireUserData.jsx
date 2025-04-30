@@ -23,7 +23,7 @@ const useFireUserData = () => {
 
   //유저 배열형 정보 추가(250127)
   const updateUserArrayInfo = async (id, field, info) => {
-    const userDocRef = doc(col, id)
+    const userDocRef = doc(col, id);
     try {
       await setDoc(userDocRef, { [field]: arrayUnion(info) }, { merge: true });
     } catch (error) {
@@ -56,10 +56,10 @@ const useFireUserData = () => {
   }
 
   //해당 유저 펫 업데이트(250127) 게임
-  const updateUserPetGameInfo = async (pId, levelInfo, gameInfo) => {
+  const updateUserPetGameInfo = async (pId, levelInfo, resultInfo) => {
     const userDocRef = doc(col, user.uid);
     const { spec, ...levelRest } = levelInfo;
-    const { actiId, ...gameRest } = gameInfo;
+    const { actiId, ...gameRest } = resultInfo;
     try {
       await runTransaction(db, async (transaction) => {
         //1. 읽기
@@ -73,39 +73,40 @@ const useFireUserData = () => {
             const updated = { ...quizRecord, [`${actiId}`]: [...recordList, { ...gameRest }] };
             return { ...pet, level: levelRest, quizRecord: updated, spec: spec };
           };
-          return pet;                                                     //나머지 pet 유지
-        })
+          return pet                                                      //나머지 pet 유지
+        });
         transaction.update(userDocRef, { myPetList: updatedPetList });
       });
     } catch (error) {
-      console.log(error)
-      window.alert(error)
+      console.log(error);
+      window.alert(error);
     }
   }
 
-  //해당 유저 펫 업데이트(250130) 진화
-  const updateUserPetInfo = async (pId, info) => {
+  //해당 유저 펫 진화(250427)
+  const updateUserPetInfo = async (pId, nextMon, submitItem) => {
     const userDocRef = doc(col, user.uid);
-    try {
-      await runTransaction(db, async (transaction) => {
-        //1. 읽기
-        const userDoc = await transaction.get(userDocRef);
-        if (!userDoc.exists()) throw new Error("Error: 문서가 없습니다. 관리자 문의 요망");
-
-        //2. 수정
-        const updatedPetList = userDoc.data().myPetList.map((pet) => {
-          if (pet.petId === pId) {
-            const newPetInfo = { ...info, ...pet }
-            return newPetInfo
-          };
-          return pet;
-        })
-        transaction.update(userDocRef, { myPetList: updatedPetList });
+    await runTransaction(db, async (transaction) => {
+      //1. 읽기
+      const userDoc = await transaction.get(userDocRef);
+      if (!userDoc.exists()) throw new Error("Error: 문서가 없습니다. 관리자 문의 요망");
+      //2. 수정
+      const updated = userDoc.data().myPetList.map((pet) => {
+        if (pet.petId === pId) {
+          const { level, ...nextMonRest } = nextMon;
+          const accExp = pet.level.accExp;
+          const newLevel = { ...level, accExp }
+          const newPetInfo = { ...pet, level: newLevel, ...nextMonRest }; //순서가 중요(덮어쓰기)
+          return newPetInfo
+        };
+        return pet
       });
-    } catch (error) {
-      console.log(error)
-      window.alert(error)
-    }
+      //3. 업데이트 및 삭제 처리
+      transaction.update(userDocRef, { myPetList: updated, onSubmitList: arrayRemove(submitItem) });
+    }).catch((err) => {
+      console.log(err)
+      window.alert(err)
+    })
   }
 
   //퍼온 Acti 리스트 - 활동관리(250210) 이동
@@ -129,7 +130,6 @@ const useFireUserData = () => {
     }
   }
 
-
   //해당 유저 정보 가져오기
   const fetchUserData = async (uid) => {
     const userDocRef = doc(col, uid || user.uid)
@@ -141,7 +141,7 @@ const useFireUserData = () => {
     }
   }
 
-  return ({ updateUserInfo, fetchUserData, updateUser: updateUserArrayInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo })
+  return ({ updateUserInfo, fetchUserData, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo })
 }
 
 export default useFireUserData

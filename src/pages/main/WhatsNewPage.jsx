@@ -132,14 +132,15 @@ const WhatsNewPage = () => {
   //------학생용 랜더링----------------------------------------------- 
   //진화 알림
   const StudentEvolutionRow = ({ index, item }) => {
-    const { level, monId, petId, name, type } = item
+    const { level, name, } = item;
     return <>
       <GridItem>{index + 1}</GridItem>
       <GridItem><p style={{ margin: "0" }}>{name}</p></GridItem>
       <GridItem><p style={{ margin: "0" }}>당신의 펫이 <Highlight>{level}</Highlight>레벨이 되어 다음 단계로 진화하려합니다.</p></GridItem>
-      <GridItem><SmallBtn onClick={() => { handleEvolutionOnClick({ monId, petId, name, type, userData: myUserData }) }}>진화</SmallBtn></GridItem>
+      <GridItem><SmallBtn onClick={() => { handleEvolutionOnClick({ ...item, submitItem: item }) }}>진화</SmallBtn></GridItem>
     </>
   }
+
   //결과 알림
   const StudentResultRow = (({ index, item }) => {
     const { classTitle, petLabel, reason, school, title } = item
@@ -205,6 +206,7 @@ const WhatsNewPage = () => {
 
   //진화 확인
   const handleEvolutionOnClick = (info) => {
+    console.log(info)
     setIsRewardModal(true)
     setReward(info)
   }
@@ -247,6 +249,7 @@ const WhatsNewPage = () => {
           <Header>확인</Header>
         </TableHeaderWrapper>
         {(onSubmitList?.length === 0 || !onSubmitList) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
+
         {onSubmitList?.map((item, index) => {
           if (item.type === "evolution") { return <StudentEvolutionRow key={item.petId} index={index} item={item} /> }
           else { return <StudentResultRow key={`${index}${item.reason}${item.petLabel}`} index={index} item={item} /> }
@@ -265,6 +268,7 @@ const WhatsNewPage = () => {
       })}
     </>}
   </Container >
+    {/* 진화모달 */}
     <EvolutionModal show={isRewardModal} onHide={() => { setIsRewardModal(false) }} info={reward} />
   </>)
 }

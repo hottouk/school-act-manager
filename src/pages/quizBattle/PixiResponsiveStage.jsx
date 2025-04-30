@@ -12,11 +12,12 @@ import BasicDefense from '../../components/Game/Skills/BasicDefense';
 import BasicRest from '../../components/Game/Skills/BasicRest';
 import MarkingUI from '../../components/Game/MarkingUI';
 import BattleReport from '../../components/Game/BattleReport';
-
+import SkillAttack from '../../components/Game/Skills/SkillAttack';
+//250427 분리 확인
 const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef, curQuiz, marking, score, actionBall,
-	myPetImg, myPetInfo, myHP, myCurHP, isMyAttack, isMyDefense, isMyRest, myPetBackImg,
+	myPetImg, myPetInfo, myHP, myCurHP, isMyAttack, isMyDefense, isMyRest, myPetBackImg, isMySkillAttack,
 	enmImg, monsterInfo, enmLevel, enemyHP, enemyCurHP, enemyAttck, enemyDef, enmSpd, isEnmAttack, isEnmDefense, isEnmRest,
-	isCountdown, setIsCountdown, setPhase, result, correctNumber, rewardPoint, countWinRecord }) => {
+	isCountdown, setIsCountdown, setPhase, result, correctNumber, rewardPoint, countWinRecord, exp }) => {
 
 	return (<>
 		{!isMobile && <Stage width={1200} height={900} options={{ background: "#3454d1" }} >
@@ -59,13 +60,13 @@ const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef
 			<BasicAttack x={950} y={175} width={75} height={75} trigger={isMyAttack} />
 			<BasicDefense x={100} y={750} radius={200} trigger={isMyDefense} />
 			<BasicRest x={150} y={750} size={50} thick={15} movingPoint={900} trigger={isMyRest} />
+			<SkillAttack x={950} y={175} width={300} height={300} trigger={isMySkillAttack} />
 			{/* 상대 이펙트 */}
 			<BasicAttack x={200} y={750} width={150} height={150} trigger={isEnmAttack} />
 			<BasicDefense x={1000} y={200} radius={100} trigger={isEnmDefense} />
 			<BasicRest x={1000} y={255} size={35} thick={10} movingPoint={300} trigger={isEnmRest} />
-
 			{/* 종료 phase */}
-			{phase === "end" && <BattleReport x={350} y={100} result={result} correct={correctNumber} src={enmImg} score={score} winCount={rewardPoint - countWinRecord()} />}
+			{phase === "end" && <BattleReport x={350} y={100} result={result} correct={correctNumber} src={enmImg} score={score} winCount={rewardPoint - countWinRecord()} exp={exp} />}
 		</Stage>}
 		{isMobile && <Stage width={window.innerWidth} height={window.innerHeight} options={{ background: "#3454d1" }} >
 			{/* 배경화면 */}
@@ -105,6 +106,7 @@ const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef
 			{/* 상대 이펙트 중 공격 */}
 			<BasicAttack x={window.innerWidth * 0.5} y={window.innerHeight * 0.69} width={200} height={200} trigger={isEnmAttack} />
 			{/* 내 이펙트 중 휴식, 공격 */}
+			<SkillAttack x={window.innerWidth * 0.5} y={window.innerHeight * 0.35} width={300} height={300} trigger={isMySkillAttack} />
 			<BasicAttack x={window.innerWidth * 0.5} y={window.innerHeight * 0.35} width={150} height={150} trigger={isMyAttack} />
 			<BasicRest x={window.innerWidth * 0.5} y={window.innerHeight * 0.69} size={50} thick={15} movingPoint={900} trigger={isMyRest} />
 

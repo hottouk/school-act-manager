@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import useFetchStorageImg from '../../../hooks/Game/useFetchStorageImg'
 import question_icon from '../../../image/icon/question.png'
+import SmallBtn from '../../Btn/SmallBtn'
 
-const QuizMonListItem = ({ item, onClick }) => {
+const QuizMonListItem = ({ item, onClick, smallBtnOnClick }) => {
   useEffect(() => { fetchImgUrl(monster.path, setMonImg) }, [item])
   const { monster } = item
   const { step } = monster
@@ -14,7 +15,10 @@ const QuizMonListItem = ({ item, onClick }) => {
       {monImg && <MonsterImg src={monImg || question_icon} onClick={() => { onClick(item) }} />}
       <TextWrapper>
         <StyledTitle>{item.title}</StyledTitle>
-        <StyledText style={{ fontSize: "17px" }}>{`${step[0].name}`}</StyledText>
+        <Row>
+          <StyledText style={{ fontSize: "17px" }}>{`${step[0].name}`}</StyledText>
+          <SmallBtn onClick={() => { smallBtnOnClick(item) }}>순위</SmallBtn>
+        </Row>
         <StyledText>{item.content}</StyledText>
       </TextWrapper>
     </Container>
@@ -28,6 +32,10 @@ const Container = styled.li`
   border: 1px solid rgb(120,120,120,0.5);
   border-radius: 15px;
   padding: 10px;
+`
+const Row = styled.div`
+  display: flex;
+  justify-content: space-between;
 `
 const TextWrapper = styled.div`
   display: flex;
