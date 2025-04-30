@@ -3,7 +3,7 @@ import { Text, Container, Graphics } from '@pixi/react'
 import PetSprite from './PetSprite';
 
 //250112 생성 -> 모바일(250213)
-const BattleReport = ({ isMobile, result, correct, src, x, y, score, winCount }) => {
+const BattleReport = ({ isMobile, result, correct, src, x, y, score, winCount, exp }) => {
   const titleFontSize = isMobile ? 35 : 55;
   const width = isMobile ? window.innerWidth : 500;
   const height = isMobile ? 600 : 550;
@@ -89,7 +89,7 @@ const BattleReport = ({ isMobile, result, correct, src, x, y, score, winCount })
       anchor={0.5}
       style={textStyle} />
     <Text
-      text={`얻은 경험치: +5 exp`}
+      text={`얻은 경험치: +${exp} exp`}
       x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 432}
       anchor={0.5}

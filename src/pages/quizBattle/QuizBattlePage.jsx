@@ -14,10 +14,13 @@ import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg';
 import useFireBasic from '../../hooks/Firebase/useFireBasic';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
+import useBattleLogic from '../../hooks/Game/useBattleLogic';
 import useLevel from '../../hooks/useLevel';
 //img
 import qustion_icon from '../../image/icon/question.png'
 import useFireActiData from '../../hooks/Firebase/useFireActiData';
+//Data
+import { skillList } from '../../data/skillList';
 
 //250111 생성
 const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame }) => {
@@ -29,11 +32,12 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
 
   useEffect(() => { bindMyPetData(); }, [myPetInfo]);
   useEffect(() => { fetchInitData(); }, [quizSetId, gameDetails, myPetDetails, myUserData])
-  const { gainXp, getEnmLevel, getMonsterStat } = useLevel();   //레벨 관련
+  const { gainXp, getEnmLevel, getEarnedXp, getMonsterStat } = useLevel();   //레벨 관련
   const { fetchImgUrl } = useFetchStorageImg(); //이미지 불러오기
   const { fetchDoc } = useFireBasic("quiz");
   const { updateUserPetGameInfo, updateUserArrayInfo } = useFireUserData();
   const { updateGameResult } = useFireActiData();
+  const { getRandomStance, getSkillDamge } = useBattleLogic();
   const [quizList, setQuizList] = useState([]);
   useEffect(() => { bindQuizData(); }, [quizList]);
   //문제 준비
@@ -76,22 +80,25 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   const [myMatk, setMyMatk] = useState(0);
   const [myMdef, setMyMdef] = useState(0);
   const [mySpd, setMySpd] = useState(1);
+  const [mySkillList, setMySkillList] = useState([]);
+  const [skillCooldowns, setSkillCooldowns] = useState({});
   //상대 펫몬 정보
-  const [enmLevel, setEnmLevel] = useState(1)
-  const [enemyHP, setEnemyHP] = useState(100)
-  const [enemyCurHP, setEnemyCurHP] = useState(100)
-  const [enemyAttck, setEmenyAttck] = useState(20)
-  const [enemyDef, setEnemyDef] = useState(3)
-  const [enmSpd, setEnmSpd] = useState(1)
-  const [hasDone, setHasDone] = useState(false)
+  const [enmLevel, setEnmLevel] = useState(1);
+  const [enemyHP, setEnemyHP] = useState(100);
+  const [enemyCurHP, setEnemyCurHP] = useState(100);
+  const [enemyAttck, setEmenyAttck] = useState(20);
+  const [enemyDef, setEnemyDef] = useState(3);
+  const [enmSpd, setEnmSpd] = useState(1);
+  const [hasDone, setHasDone] = useState(false);
   //이펙트 트리거
-  const [isMyAttack, setIsMyAttack] = useState(false)
-  const [isMyDefense, setIsMyDefense] = useState(false)
-  const [isMyRest, setIsMyRest] = useState(false)
+  const [isMyAttack, setIsMyAttack] = useState(false);
+  const [isMySkillAttack, setIsMySkillAttack] = useState(false);
+  const [isMyDefense, setIsMyDefense] = useState(false);
+  const [isMyRest, setIsMyRest] = useState(false);
   //상대 트리거
-  const [isEnmDefense, setIsEnmDefense] = useState(false)
-  const [isEnmAttack, setIsEnmAttack] = useState(false)
-  const [isEnmRest, setIsEnmRest] = useState(false)
+  const [isEnmDefense, setIsEnmDefense] = useState(false);
+  const [isEnmAttack, setIsEnmAttack] = useState(false);
+  const [isEnmRest, setIsEnmRest] = useState(false);
   //승리
   const [myRecordList, setMyRecordList] = useState([]);   //퀴즈 참여 기록
   const [myWinCount, setMyWinCount] = useState(0);        //승리 횟수
@@ -227,8 +234,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   //내 spec 바인딩
   const bindMyPetData = () => {
     if (!myPetInfo) return;
-    const { spec } = myPetInfo;
-    //1. 내 스펙
+    const { spec, skills, level } = myPetInfo;
     setMyHP(Math.floor(spec.hp));
     setMyCurHP(Math.floor(spec.hp));
     setMyAttck(Math.floor(spec.atk));
@@ -236,11 +242,12 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     setMyMatk(Math.floor(spec.mat));
     setMyMdef(Math.floor(spec.mdf));
     setMySpd(Math.floor(spec.spd));
+    setMySkillList(skills);
     const quizRecord = myPetInfo.quizRecord;
     if (quizRecord) {
       const key = gameDetails.id
       const thisRecordList = quizRecord[key] || [];
-      const enmLevel = thisRecordList.length ? getEnmLevel(thisRecordList) : 1
+      const enmLevel = level ? getEnmLevel(level?.accExp) : 1;
       setMyRecordList(thisRecordList);
       setEnmLevel(enmLevel);
       bindEnmData(enmLevel);
@@ -304,20 +311,22 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     if (hasDone) return
     switch (phase) {
       case "quiz":
-        setHasDone(true)
-        checkAnswer(index)
+        setHasDone(true);
+        checkAnswer(index);
         break;
       case "stance":
-        handleSelectStance(index)
+        handleSelectStance(index);
         break;
       case "battle":
-        handleBattleCommand(index)
+        handleBattleCommand(index);
+        break;
+      case "skill":
+        handleUsingSkill(index);
         break;
       default:
         break;
     }
   }
-
   //정답 확인하기
   const checkAnswer = (index) => {
     if (curAnswer === optionList[index]) {
@@ -332,24 +341,61 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
       setIncorrectList(prev => [...prev, { quiz: curQuiz, answer: curAnswer }])
     }
   }
-
   //태세 선택하기
   const handleSelectStance = (index) => {
-    setMyStance(optionList[index])
-    setPhase("battle")
+    setMyStance(optionList[index]);
+    setPhase("battle");
   }
-
+  //기술 사용 클릭
+  const showSkillList = (type) => {
+    setPhase("skill");
+    const skills = mySkillList.filter(item => item.type === type).map(item => { return item.name; });
+    const filledSkills = [...skills];
+    while (filledSkills.length < 3) { filledSkills.push("기술 없음"); };
+    filledSkills.push("취소");
+    setOptionList(filledSkills);
+  }
+  //기술 사용
+  const handleUsingSkill = (index) => {
+    if (index === 3) { //취소
+      setPhase("stance");
+      setMyStance(null);
+    } else {
+      const selected = skillList.find((item) => item.name === optionList[index]);
+      if (!selected) return;
+      if (skillCooldowns[selected.name] > 0) {
+        alert(`${selected.name}을(를) 사용하려면 아직 ${skillCooldowns[selected.name]}턴 남았습니다.`);
+        return;
+      }
+      processCommand(selected);
+      setSkillCooldowns(prev => ({
+        ...prev,
+        [selected.name]: selected.delay
+      }));
+    }
+  }
+  //스킬 쿨타임 줄이기;
+  const reduceCooldowns = () => {
+    setSkillCooldowns(prev => {
+      const updated = {};
+      for (const key in prev) {
+        updated[key] = Math.max(prev[key] - 1, 0);
+      }
+      return updated;
+    });
+  };
   //전투 명령
   const handleBattleCommand = (index) => {
     switch (index) {
       case 0:
-        if (myStance === "공격") {
-          if (actionBall === 0) { setMessage("기력이 없습니다. 방어나 휴식을 선택하세요") }
-          else processCommand(attackSequence);
-        } else if (myStance === "방어") { processCommand(defenseSequence); }
-        else { processCommand(restSequence); }
+        if (myStance === "공격" && actionBall === 0) { setMessage("기력이 없습니다. 방어나 휴식을 선택하세요"); }
+        else { processCommand() }
         break;
       case 1: //기술 사용
+        if (!mySkillList || mySkillList.length === 0) return;
+        if (myStance === "공격") { showSkillList("atk"); }
+        else if (myStance === "방어") { showSkillList("def"); }
+        else { showSkillList("res"); }
         break;
       case 2: //취소 버튼
         setPhase("stance")
@@ -359,57 +405,73 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
         break;
     }
   }
-
-  //랜덤 태세
-  const getRandomStance = () => {
-    const stances = ['공격', '방어', '휴식'];
-    return stances[Math.floor(Math.random() * stances.length)];
-  };
-
   //사용자 행동 커맨드 처리
-  const processCommand = async (processResult) => {
-    setHasDone(true)
-    let enemyNewStance = getRandomStance();
-    setMessage(`상대는 ${enemyNewStance} 자세를 취했다`);
+  const processCommand = async (skill) => {
+    setHasDone(true);
+    const enemyStance = getRandomStance();
+    //스킬 사용 메세지
+    if (!skill) { setMessage(`상대는 ${enemyStance} 자세를 취했다`); }
+    else { setMessage(skill.desc); }
+    //태세 메세지 확인 위한 1초 지연
     await new Promise((resolve) => {
       setTimeout(() => {
-        processResult(enemyNewStance) //태세 메세지 확인 위한 1초 지연
+        switch (myStance) {
+          case "공격":
+            attackSequence(enemyStance, skill);
+            break;
+          case "방어":
+            defenseSequence(enemyStance, skill);
+            break;
+          case "휴식":
+            restSequence(enemyStance, skill);
+            break;
+          default:
+            break;
+        }
       }, 1000);
       resolve();
     });
     await new Promise((resolve) => {
+      //결과 메세지 확인 2.5초 지연
       setTimeout(() => {
-        setBattleTurn(prev => ++prev) //결과 메세지 확인 2.5초 지연
-      }, 2500)
+        reduceCooldowns();
+        setBattleTurn(prev => ++prev)
+      }, 2500);
       resolve();
     })
   }
 
   //공격 결과 계산
-  const attackSequence = async (enemyStance) => {
-    setIsMyAttack(prev => !prev)
-    setActionBall((prev) => Math.max(0, prev - 1))
+  const attackSequence = async (enemyStance, skill) => {
+    let damge = 0;
+    if (skill) {
+      setIsMySkillAttack(prev => !prev);
+      damge = getSkillDamge(skill, myPetInfo.spec);
+    } else {
+      setIsMyAttack(prev => !prev);
+      damge = myAttck;
+    }
+    setActionBall((prev) => Math.max(0, prev - 1));
     switch (enemyStance) {
       case "공격":
         setMessage("서로 공격해 피해를 입혔다.")
-        setIsEnmAttack(prev => !prev)
-        setEnemyCurHP((prev) => prev - Math.max(Math.floor(myAttck - enemyDef)), 1);
+        setIsEnmAttack(prev => !prev);
+        setEnemyCurHP((prev) => prev - Math.max(Math.floor(damge - enemyDef)), 1);
         setMyCurHP((prev) => prev - Math.floor(enemyAttck - myDef));
         break;
       case "방어":
         setMessage("상대는 효과적으로 방어했다. 상대 다음턴 공격력 증가!!")
         setIsEnmDefense(prev => !prev);
-        setEnemyCurHP((prev) => prev - Math.max(Math.floor(myAttck * 90 / 100 - (enemyDef * 2)), 1));
+        setEnemyCurHP((prev) => prev - Math.max(Math.floor(damge * 0.9 - (enemyDef * 2)), 1));
         break;
       case "휴식":
         setMessage("상대의 휴식 중에 공격하여 휴식을 방해했다")
-        setEnemyCurHP((prev) => prev - Math.floor(myAttck * 1.2));
+        setEnemyCurHP((prev) => prev - Math.floor(damge * 1.3));
         break;
       default:
         break;
     }
   }
-
   //방어 결과 계산
   const defenseSequence = async (enemyStance) => {
     setIsMyDefense(prev => !prev)
@@ -434,7 +496,6 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
         break;
     }
   }
-
   //휴식 결과 계산
   const restSequence = async (enemyStance) => {
     switch (enemyStance) {
@@ -485,20 +546,21 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     switch (result) {
       case "Win":
         const winScore = score * 2;
+        const exp = getEarnedXp(enmLevel)
         gameResult = { score: winScore, ...gameResult };
         setScore(winScore);
-        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, 5), gameResult);  //결과 기록
+        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, exp), gameResult);  //결과 기록
         updateGameResult(gameDetails.id, gameResult);
         break;
       case "Draw":
         gameResult = { score, ...gameResult };
-        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, 3), gameResult);  //결과 기록
+        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, enmLevel * 2), gameResult);  //결과 기록
         break;
       case "Lose":
         const loseScore = score / 2;
         gameResult = { score: loseScore, ...gameResult };
         setScore(loseScore);
-        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, 1), gameResult);  //결과 기록
+        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, enmLevel), gameResult);  //결과 기록
         break;
       default:
         break;
@@ -512,13 +574,13 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
 
   //생기부 기록하기
   const sendNoticeToTeacher = () => {
-    window.alert("생기부 문구 획득 기준에 도달하였습니다.")
-    const { petId, classId } = myPetDetails
-    const { uid: tId, id: actiId, title, } = gameDetails
-    const { name, studentNumber } = user
+    window.alert("생기부 문구 획득 기준에 도달하였습니다.");
+    const { petId, classId } = myPetDetails;
+    const { uid: tId, id: actiId, title, } = gameDetails;
+    const { name, studentNumber } = user;
     const today = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD' 형식
-    const info = { sId: user.uid, actiId, classId, petId, name, studentNumber, title, actiRecord: reward, type: "win", date: today, tId }
-    updateUserArrayInfo(tId, "onSubmitList", info)
+    const info = { sId: user.uid, actiId, classId, petId, name, studentNumber, title, actiRecord: reward, type: "win", date: today, tId };
+    updateUserArrayInfo(tId, "onSubmitList", info);
   }
 
   //게임 종료
@@ -558,10 +620,10 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     {!background && <Spinner variant="primary" />}
     {(background && phase !== "review") &&
       <PixiResponsiveStage isMobile={isMobile} phase={phase} background={background} message={message} quizListRef={quizListRef} curQuiz={curQuiz} marking={marking} score={score} actionBall={actionBall}
-        myPetImg={myPetImg} myPetInfo={myPetInfo} myHP={myHP} myCurHP={myCurHP} isMyAttack={isMyAttack} isMyDefense={isMyDefense} isMyRest={isMyRest} myPetBackImg={myPetBackImg}
+        myPetImg={myPetImg} myPetInfo={myPetInfo} myHP={myHP} myCurHP={myCurHP} isMyAttack={isMyAttack} isMyDefense={isMyDefense} isMyRest={isMyRest} myPetBackImg={myPetBackImg} isMySkillAttack={isMySkillAttack}
         enmImg={enmImg} monsterInfo={monsterInfo} enmLevel={enmLevel} enemyHP={enemyHP} enemyCurHP={enemyCurHP} enemyAttck={enemyAttck} enemyDef={enemyDef} enmSpd={enmSpd} isEnmAttack={isEnmAttack} isEnmDefense={isEnmDefense} isEnmRest={isEnmRest}
         isCountdown={isCountdown} setIsCountdown={setIsCountdown} setPhase={setPhase}
-        result={result} correctNumber={correctNumber} rewardPoint={rewardPoint} countWinRecord={countWinRecord}
+        result={result} correctNumber={correctNumber} rewardPoint={rewardPoint} countWinRecord={countWinRecord} exp={getEarnedXp(enmLevel)}
       />
     }
     {/* 리뷰 phase */}

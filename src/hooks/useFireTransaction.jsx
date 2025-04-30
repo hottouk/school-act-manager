@@ -142,10 +142,10 @@ const useFireTransaction = () => {
 
   //5. 교사 생기부 기록 승인
   const approvWinTransaction = async (info) => {
-    const { actiId, classId, petId, actiRecord, title, date, tId } = info
-    const actiInfo = { assignedDate: date, id: actiId, madeBy: "획득", record: actiRecord, title, uid: tId }
+    const { actiId, classId, petId, actiRecord, title, date, tId } = info;
+    const actiInfo = { assignedDate: date, id: actiId, madeBy: "획득", record: actiRecord, title, uid: tId };
     const teacherRef = doc(db, "user", user.uid);
-    const petRef = doc(db, "classRooms", classId, "students", petId)
+    const petRef = doc(db, "classRooms", classId, "students", petId);
 
     await runTransaction(db, async (transaction) => {
       const teacherDoc = await transaction.get(teacherRef);
@@ -156,12 +156,12 @@ const useFireTransaction = () => {
       //2. 수정
       //교사: 상신 목록 삭제
       transaction.update(teacherRef, { onSubmitList: arrayRemove(info) })
-
       //펫: 생기부 기록
       const actiList = petDoc.data().actList || [];
       const uniqueList = replaceItem(actiList, actiInfo, "id");
       const accRecord = makeAccRec(uniqueList);
-      transaction.update(petRef, { accRecord, actList: uniqueList })
+      console.log(uniqueList);
+      transaction.update(petRef, { accRecord, actList: uniqueList });
     }).then(() => {
       window.alert("생기부가 해당 학생에게 기록되었습니다.")
     }).catch(err => {

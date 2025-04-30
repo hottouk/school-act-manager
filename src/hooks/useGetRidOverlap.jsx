@@ -34,11 +34,11 @@ const useGetRidOverlap = () => {
   const replaceItem = (curList, newEle, idName) => {
     let uArr
     if (idName === "uid") {
-      let deletedArr = curList.filter(({ uid }) => uid !== newEle.uid)
+      const deletedArr = curList.filter(({ uid }) => uid !== newEle.uid)
       uArr = [...deletedArr, newEle]
     }
     else if (idName === "id") {
-      let deletedArr = curList.filter(({ id }) => id !== newEle.id)
+      const deletedArr = curList.filter(({ id }) => id !== newEle.id)
       uArr = [...deletedArr, newEle]
     }
     return uArr

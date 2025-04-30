@@ -29,7 +29,7 @@ const EmailLogin = (props) => {
       </LoginWrapper>
       <TextWrapper>
         <p className="errMsg">{props.emailMsg || null}</p>
-        <p onClick={() => { props.openEmailModal(true) }}>쫑일이가 처음이세요? 회원가입</p>
+        <p onClick={() => { props.openEmailModal(true) }}>쫑알이가 처음이세요? 회원가입</p>
       </TextWrapper>
     </Container>
   )

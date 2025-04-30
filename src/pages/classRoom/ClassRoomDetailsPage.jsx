@@ -35,6 +35,7 @@ import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useMediaQuery from '../../hooks/useMediaQuery.jsx';
+import GameRankModal from '../../components/Modal/GameRankModal.jsx';
 
 //240801(클래스 헤더 수정) -> 1113(애니메이션 추가) -> 250122(게임 추가, 가입 제거) -> 0125(학생 페이지 정비)
 const ClassroomDetailsPage = () => {
@@ -73,9 +74,11 @@ const ClassroomDetailsPage = () => {
   const [quizId, setQuizId] = useState([]);
   const [petInfo, setPetInfo] = useState(null);
   const [actiInfo, setActiInfo] = useState(null);
-  // 게임 구동 정보
+  //게임 구동 정보
   const [gameDetails, setGameDetails] = useState(null);
   const [myPetDetails, setMyPetDetails] = useState(null);
+  //게임 랭크 정보
+  const [gameRankInfo, setGameRankInfo] = useState(null);
   //모드
   const [isModifying, setIsModifying] = useState(false);
   //모달
@@ -84,6 +87,7 @@ const ClassroomDetailsPage = () => {
   const [isGameModal, setIsGameModal] = useState(false)           //게임 
   const [isPetInfoModal, setIsPetInfoModal] = useState(false);    //펫
   const [isActiInfoModal, setIsActiInfoModal] = useState(false);  //활동
+  const [isQuizRankModal, setIsQuizRankModal] = useState(false);  //게임순위
   //에니메이션
   const [isVisible, setIsVisible] = useState(false)
   //모바일
@@ -141,15 +145,21 @@ const ClassroomDetailsPage = () => {
   const fetchPetData = () => {
     if (user.isTeacher || !myUserData) return;
     const { myPetList } = myUserData;
-    const thisPet = myPetList.find(({ classId }) => classId === thisKlassId)
-    setMyPetDetails(thisPet)
+    const thisPet = myPetList.find(({ classId }) => classId === thisKlassId);
+    setMyPetDetails(thisPet);
   }
   //몬스터 클릭
   const handleMonsterOnClick = (item) => {
-    const { quizInfo, ...rest } = item
-    setIsGameModal(true)
-    setQuizId(quizInfo.id)
-    setGameDetails(rest)
+    const { quizInfo, ...rest } = item;
+    setIsGameModal(true);
+    setQuizId(quizInfo.id);
+    setGameDetails(rest);
+  }
+  //게임 순위 클릭
+  const handleRankOnClick = (item) => {
+    const { gameRecord } = item;
+    setIsQuizRankModal(true);
+    setGameRankInfo(gameRecord);
   }
   //변경 저장
   const handleSaveOnClick = () => {
@@ -157,7 +167,7 @@ const ClassroomDetailsPage = () => {
     if (confirm) {
       const classInfo = { title: _title, intro: _intro, notice: _notice };
       updateClassroom(classInfo, klassData.id);
-      setIsModifying(false)
+      setIsModifying(false);
     }
   }
   //변경 취소
@@ -207,8 +217,7 @@ const ClassroomDetailsPage = () => {
           <MainSelector isMobile={isMobile} type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
         </MainPanel>}
         {/* 퀴즈 게임부 */}
-        <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} myPetDetails={myPetDetails} onClick={handleMonsterOnClick} />
-
+        <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} myPetDetails={myPetDetails} onClick={handleMonsterOnClick} smallBtnOnClick={handleRankOnClick} />
         {/* 학생 상세 보기*/}
         {!isMobile && <MainPanel>
           <TitleText>학생 상세히 보기</TitleText>
@@ -260,6 +269,12 @@ const ClassroomDetailsPage = () => {
       show={isActiInfoModal}
       onHide={() => setIsActiInfoModal(false)}
       acti={actiInfo}
+    />}
+    {/* 게임 순위 */}
+    {gameRankInfo && <GameRankModal
+      show={isQuizRankModal}
+      onHide={() => { setIsQuizRankModal(false) }}
+      result={gameRankInfo}
     />}
   </>)
 }

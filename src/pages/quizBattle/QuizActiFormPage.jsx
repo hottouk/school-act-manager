@@ -21,7 +21,7 @@ import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg'
 import temp_icon from '../../image/icon/question.png'
 import { useSelector } from 'react-redux'
 import TwoRadios from '../../components/Radio/TwoRadios'
-import GameResultModal from '../../components/Modal/GameResultModal'
+import GameRankModal from '../../components/Modal/GameRankModal'
 //250119 생성 -> 0202 recordList로 갱신
 const QuizActiFormPage = () => {
   //준비
@@ -64,7 +64,7 @@ const QuizActiFormPage = () => {
   const [isModifying, setIsModifying] = useState(!quizActiInfo);
   //모달
   const [isMonsterModal, setIsMonsterModal] = useState(false);
-  const [isResultModal, setIsResultModal] = useState(false);
+  const [isRankModal, setIsRankModal] = useState(false);
 
   //------함수부------------------------------------------------ 
   //기존 state 렌더링
@@ -116,7 +116,6 @@ const QuizActiFormPage = () => {
     };
     // 조건 2: 순서 조건을 만족하는지 확인
     if (_highCount < _midCount || _midCount < _basicCount) {
-      console.log(typeof (_highCount), typeof (_midCount), typeof (_basicCount))
       return { valid: false, message: "성취도 값은 상 >= 중 >= 하 순으로 입력해야 합니다." };
     }
     // 조건 3: 중복된 값이 있는지 확인
@@ -233,7 +232,7 @@ const QuizActiFormPage = () => {
           <LongW100Btn btnName="생성" btnOnClick={handleSaveOnClick} />
         </BtnWrapper>}
         {quizActiInfo && <BtnWrapper>
-          {(!isModifying && gameRecord) && <LongW100Btn btnName="결과 보기" btnOnClick={() => { setIsResultModal(true) }} />}
+          {(!isModifying && gameRecord) && <LongW100Btn btnName="결과 보기" btnOnClick={() => { setIsRankModal(true) }} />}
           {isModifying && <LongW100Btn btnName="변경 저장" btnOnClick={handleSaveOnClick} />}
           {!isModifying && <LongW100Btn btnName="수정" btnOnClick={() => { setIsModifying(true) }} />}
           {isModifying && <LongW100Btn btnName="취소" btnOnClick={hadleCancelOnClick} />}
@@ -248,9 +247,9 @@ const QuizActiFormPage = () => {
       setMonster={setMonster}
       setMonImg={setMonImg}
     />
-    <GameResultModal
-      show={isResultModal}
-      onHide={() => { setIsResultModal(false) }}
+    <GameRankModal
+      show={isRankModal}
+      onHide={() => { setIsRankModal(false) }}
       result={gameRecord}
     />
   </>
