@@ -1,12 +1,10 @@
 import { appFireStore, timeStamp } from "../../firebase/config"
-import { addDoc, collection, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
+import { deleteDoc, doc, setDoc, updateDoc } from "firebase/firestore"
 import { useSelector } from "react-redux"
 
 const useAddUpdFireData = (collectionName) => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
-  const colRef = collection(db, collectionName)
-
 
   //10. 공지사항(24.07.16)
   const addNotice = async (noticeList) => {
@@ -20,33 +18,8 @@ const useAddUpdFireData = (collectionName) => {
     }
   }
   //9. 클래스룸 추가 함수(24.09.18 1차 수정: 담임반 추가)
-  const addClassroom = async (classInfo, studentPetList) => {
-    try {
-      let type = classInfo.type
-      let createdTime = timeStamp.fromDate(new Date());
-      let docRef = await addDoc(colRef, { ...classInfo, createdTime });
-      let subColRef = collection(docRef, "students")
-      await studentPetList.map(studentPet => {
-        let studentPetInfo
-        if (type === "subject") { studentPetInfo = { ...studentPet, subject: classInfo.subject } }
-        else if (type === "homeroom") { studentPetInfo = { ...studentPet, type } }
-        addDoc(subColRef, studentPetInfo);
-        return null;
-      })
-    } catch (err) {
-      console.error(err)
-    }
-  }
+
   //5. 학생 추가 함수(2024.1.7)
-  const addStudent = async (newInfo, classId) => {
-    let studentColRef = collection(db, "classRooms", classId, "students");
-    let modifiedTime = timeStamp.fromDate(new Date());
-    try {
-      addDoc(studentColRef, { ...newInfo, modifiedTime })
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   //4. 학생 update 함수(2024.1.6) 사용처(2): 행발 저장, 행발 특성 데이터 저장
   const updateStudent = async (newInfo, classId, studentId) => {
@@ -80,7 +53,7 @@ const useAddUpdFireData = (collectionName) => {
   }
 
   return (
-    { addNotice, updateStudent, deleteStudent, addClassroom, addStudent, updateClassListInfo }
+    { addNotice, updateStudent, deleteStudent, updateClassListInfo }
   )
 }
 

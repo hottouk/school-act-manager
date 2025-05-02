@@ -1,22 +1,21 @@
 //라이브러리
 import { useState } from 'react'
 import { useSelector } from 'react-redux';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/esm/Button';
-//hooks
-import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
-//css
 import styled from 'styled-components';
+import Modal from 'react-bootstrap/Modal';
+//컴포넌트
+import ModalBtn from '../Btn/ModalBtn';
+//hooks
+import useFireClassData from '../../hooks/Firebase/useFireClassData';
 
-//2024.10.22 정리
+//정리(241022)->디자인수정(250502)
 const AddNewStudentModal = ({ show, onHide, classId, type }) => {
-  //----1.변수부--------------------------------
-  const selectedClassInfo = useSelector(({ classSelected }) => classSelected)
-  const [_name, setName] = useState('')
-  const [_studentNumber, setStudentNumber] = useState('')
-  const { addStudent } = useAddUpdFireData("classRooms")
+  const selectedClassInfo = useSelector(({ classSelected }) => classSelected);
+  const [_name, setName] = useState('');
+  const [_studentNumber, setStudentNumber] = useState('');
+  const { addStudent } = useFireClassData();
 
-  //----2.함수부--------------------------------
+  //------함수부------------------------------------------------
   const handleOnChange = (event) => {
     switch (event.target.id) {
       case "student_number":
@@ -30,9 +29,9 @@ const AddNewStudentModal = ({ show, onHide, classId, type }) => {
   }
   //취소
   const handleBtnClick = () => {
-    onHide()
-    setName('')
-    setStudentNumber('')
+    onHide();
+    setName('');
+    setStudentNumber('');
   }
   //제출
   const handleSubmit = (event) => {
@@ -41,10 +40,10 @@ const AddNewStudentModal = ({ show, onHide, classId, type }) => {
     if (type === "homeroom") { student = { ...student, type: "homeroom" } }
     else { student = { ...student, subject: selectedClassInfo.subject } }
     if (_name !== '' && _studentNumber !== '') {
-      addStudent(student, classId,)
-      onHide()
-      setName('')
-      setStudentNumber('')
+      addStudent(student, classId);
+      onHide();
+      setName('');
+      setStudentNumber('');
     }
   }
 
@@ -54,24 +53,22 @@ const AddNewStudentModal = ({ show, onHide, classId, type }) => {
       onHide={onHide}
       backdrop="static"
       keyboard={false}>
-      <Modal.Header closeButton>
-        <Modal.Title>학생 추가</Modal.Title>
-      </Modal.Header>
+      <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>학생 추가</Modal.Header>
       <form onSubmit={handleSubmit}>
         <Modal.Body>
           <fieldset>
             <InputWrapper>
               <label htmlFor="student_number">학번:&nbsp;&nbsp;</label>
-              <input type="text" id="student_number" required value={_studentNumber} onChange={handleOnChange} />
+              <StyledInptu type="text" id="student_number" required value={_studentNumber} onChange={handleOnChange} />
             </InputWrapper>
             <InputWrapper>
               <label htmlFor="student_number">이름:&nbsp;&nbsp;</label>
-              <input type="text" id="student_name" required value={_name} onChange={handleOnChange} />
+              <StyledInptu type="text" id="student_name" required value={_name} onChange={handleOnChange} />
             </InputWrapper>
           </fieldset>
           <Modal.Footer>
-            <Button variant="secondary" id="cancel_btn" onClick={handleBtnClick}>취소</Button>
-            <Button type="submit" variant="primary" id="confirm_btn" >확인</Button>
+            <ModalBtn onClick={handleBtnClick}>취소</ModalBtn>
+            <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} type="submit">확인</ModalBtn>
           </Modal.Footer>
         </Modal.Body>
       </form>
@@ -80,10 +77,9 @@ const AddNewStudentModal = ({ show, onHide, classId, type }) => {
 }
 const InputWrapper = styled.div`
   margin-top: 10px;  
-  input {
-    display: inline-block;
-    height: 35px;
-    border-radius: 5px;
-  }
+`
+const StyledInptu = styled.input`
+  width: 100%;
+  height: 35px;
 `
 export default AddNewStudentModal
