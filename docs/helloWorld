@@ -4,21 +4,21 @@ primaryWhite #efefef,
 /* = rgba(52, 84, 209, 0.8) hover는 투명도 1로 */
 /* royalRed #9b0c24
 모달 헤더 스타일 : style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }}
-모달 확인 버튼: <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirm}>저장</ModalBtn>
+모달 확인 버튼: styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }}
 
 grey #949192;
 Green #00a86b;
-Pink  #FF69B4;
+Pink #FF69B4;
 phone max-width 767px
 BorderColor: rgb(120, 120, 120, 0.5);
 black: 3a3a3a
-    
- icon size
- w25 h25
 
- petImg
-  default w134; 
- icon size
-  width: 45px;
-  height: 45px;
- */
+icon size
+w25 h25
+
+petImg
+default w134;
+icon size
+width: 45px;
+height: 45px;
+*/

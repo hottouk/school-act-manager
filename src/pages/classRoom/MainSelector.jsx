@@ -1,6 +1,8 @@
 //라이브러리
 import { useSelector } from 'react-redux';
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from "styled-components"
 //컴포넌트
 import MidBtn from '../../components/Btn/MidBtn.jsx';
 import MainBtn from '../../components/Btn/MainBtn.jsx'
@@ -9,9 +11,6 @@ import SelectedDialogModal from '../../components/Modal/SelectedDialogModal.jsx'
 //hooks
 import useAcc from '../../hooks/useAcc.jsx';
 import useGetByte from '../../hooks/useGetByte.jsx';
-import { useNavigate } from 'react-router-dom';
-//css
-import styled from "styled-components"
 
 const MainSelector = ({ isMobile, type, studentList, actiList, classId, setIsPerfModalShow }) => {
   const navigate = useNavigate();
@@ -89,7 +88,7 @@ const MainSelector = ({ isMobile, type, studentList, actiList, classId, setIsPer
         </SelectorWrapper>}
         {(!actiList || actiList.length === 0) &&
           <SelectorWrapper>활동이 없습니다. PC 버젼에서 활동을 추가해주세요.
-            {!isMobile && <MidBtn onClick={() => { navigate("/activities_setting") }}>활동 추가</MidBtn>}
+            <Row style={{ justifyContent: "center", marginTop: "10px" }}>{!isMobile && <MidBtn onClick={() => { navigate("/activities_setting") }}>활동 추가</MidBtn>}</Row>
           </SelectorWrapper>}
         <AccWrapper>
           <AccTextArea type="text" value={_accRecord} disabled={true} />
@@ -125,6 +124,9 @@ const Container = styled.div`
     width: 100%;
     margin: 0;
   }
+`
+const Row = styled.div`
+  display: flex;
 `
 const BtnWrapper = styled.div`
   display: flex;

@@ -12,8 +12,8 @@ import SubjectSelects from '../../components/Select/SubjectSelects';
 import DotTitle from '../../components/Title/DotTitle';
 //hooks
 import useStudent from '../../hooks/useStudent';
-import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import useClientHeight from '../../hooks/useClientHeight';
+import useFireClassData from '../../hooks/Firebase/useFireClassData';
 
 //2024.11.23 3차 수정(클래스 타입 추가, css정리), ux 향상 -> 250212 코드 간소화
 const ClassroomMakePage = () => {
@@ -33,7 +33,7 @@ const ClassroomMakePage = () => {
   const navigate = useNavigate();
   const { makeStudent } = useStudent();
   //데이터 통신 변수
-  const { addClassroom } = useAddUpdFireData("classRooms");
+  const { addClassroom } = useFireClassData();
   //반 생성 종류에 따라 
   const { state } = useLocation();
   const [how, setHow] = useState('');             //만드는 방법
@@ -99,8 +99,8 @@ const ClassroomMakePage = () => {
     } else if (type === "homeroom") {
       classInfo = { uid: user.uid, classTitle: _classTitle, type, grade: _grade, classNumber: _classNumber, intro: _intro }
     }
-    addClassroom(classInfo, studentList)
-    navigate("/classRooms")
+    addClassroom(classInfo, studentList);
+    navigate("/classRooms");
   }
 
   return (

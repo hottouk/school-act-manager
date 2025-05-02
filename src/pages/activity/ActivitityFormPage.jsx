@@ -6,7 +6,6 @@ import styled from "styled-components";
 //hooks
 import useChatGpt from "../../hooks/useChatGpt";
 import useClientHeight from "../../hooks/useClientHeight";
-import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData";
 import useFireActiData from "../../hooks/Firebase/useFireActiData";
 import useFireTransaction from "../../hooks/useFireTransaction";
 //모달
@@ -67,9 +66,8 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const [isGptDetailShown, setIsGptDetailShown] = useState(false)
   const [isPerfRecShown, setIsPerfRecShown] = useState(false)
   //hooks
-  const { addActi, updateActi } = useFireActiData();
+  const { addActi, updateActi, deleteActi } = useFireActiData();
   const { copyActiTransaction, delCopiedActiTransaction } = useFireTransaction()
-  const { deleteActi } = useFireActiData();
   //5.경로 이동 관련 변수
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -118,16 +116,16 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
 
   //활동 저장 대화창 ==> 추후 디자인 수정 필요 (교사전용)
   const showConfirmModal = () => {
-    let scores = { leadership: leadershipScore, careerScore, sincerityScore, coopScore, attitudeScore };
-    let money = coin
+    const scores = { leadership: leadershipScore, careerScore, sincerityScore, coopScore, attitudeScore };
+    const money = coin;
     if (state) {
       const confirm = window.confirm("활동을 수정하시겠습니까?")
-      let actId = state.acti.id
+      const actId = state.acti.id;
       if (confirm) {
-        let modifiedActi = { title: _title, content: _content, record: _record, scores, money, isPrivate: _isPrivate };
-        updateActi(modifiedActi, "activities", actId)
-        navigate("/activities")
-        setIsModified(false)
+        const modifiedActi = { title: _title, content: _content, record: _record, scores, money, isPrivate: _isPrivate };
+        updateActi(modifiedActi, actId);
+        navigate("/activities");
+        setIsModified(false);
       }
     } else {
       const confirm = window.confirm('활동을 생성하시겠습니까?')

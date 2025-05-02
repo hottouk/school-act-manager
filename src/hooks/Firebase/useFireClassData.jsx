@@ -67,6 +67,17 @@ const useFireClassData = () => {
     }
   }
 
+  //클래스 수정(250502 이동)
+  const addStudent = async (newInfo, classId) => {
+    let studentColRef = collection(db, "classRooms", classId, "students");
+    let modifiedTime = timeStamp.fromDate(new Date());
+    try {
+      addDoc(studentColRef, { ...newInfo, modifiedTime })
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   //좌석배치도 저장(241210)
   const addSeatMap = async (id, info) => {
     let { seatMapsList, positionList, objPositionList, studentList, objInfoList } = info
@@ -112,7 +123,7 @@ const useFireClassData = () => {
     return { subjClassList, homeroomClassList }
   }
 
-  return ({ updateKlassroomInfo, updateKlassroomArrayInfo, deleteKlassroomArrayInfo, addClassroom, updateClassroom, addSeatMap, deleteSeatMap, fetchClassrooms, sortClassrooms })
+  return ({ updateKlassroomInfo, updateKlassroomArrayInfo, deleteKlassroomArrayInfo, addClassroom, addStudent, updateClassroom, addSeatMap, deleteSeatMap, fetchClassrooms, sortClassrooms })
 }
 
 export default useFireClassData

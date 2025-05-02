@@ -6,11 +6,11 @@ import MainBtn from '../Btn/MainBtn';
 import ModalBtn from '../Btn/ModalBtn';
 //hooks
 import useChatGpt from '../../hooks/useChatGpt';
-import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData';
 //css
 import styled from 'styled-components';
 import ByteCalculator from '../Etc/ByteCalculator';
+import useFireActiData from '../../hooks/Firebase/useFireActiData';
 
 //2024.08.24(생성) -> 11.12.(개별화 틀 생성 버튼 추가) -> 250210(디자인 정리)
 const AddPerfRecModal = ({ show, onHide, acti, setPerfRecList }) => {
@@ -27,7 +27,7 @@ const AddPerfRecModal = ({ show, onHide, acti, setPerfRecList }) => {
   const achivList = ["상", "중", "하", "최하"]
   const [_textareaValueList, setTaValueList] = useState(['', '', '', ''])
   const textareaRef = useRef({})
-  const { updateActi } = useAddUpdFireData("activities");
+  const { updateActi } = useFireActiData();
   //gpt
   const { askPerfRecord, gptAnswer, gptRes } = useChatGpt();
   useEffect(() => {
@@ -58,9 +58,9 @@ const AddPerfRecModal = ({ show, onHide, acti, setPerfRecList }) => {
       let perfRecordList = [..._textareaValueList]
       setPerfRecList(perfRecordList)  // 외부 문구 list 셋 
       let modifiedActi = { perfRecordList }; // firedata 업데이트 위한 객체화
-      updateActi(modifiedActi, "activities", acti.id)
+      updateActi(modifiedActi, acti.id);
     }
-    onHide()
+    onHide();
   }
 
   //개별화 틀 클릭
@@ -185,5 +185,4 @@ const AchivTap = styled.div`
   padding: 2px 15px;
   border-radius: 10px 10px 0 0;
 `
-
 export default AddPerfRecModal
