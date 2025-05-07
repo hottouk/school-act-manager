@@ -247,11 +247,11 @@ const QuizActiFormPage = () => {
       setMonster={setMonster}
       setMonImg={setMonImg}
     />
-    <GameRankModal
+    {gameRecord && <GameRankModal
       show={isRankModal}
       onHide={() => { setIsRankModal(false) }}
       result={gameRecord}
-    />
+    />}
   </>
   )
 }

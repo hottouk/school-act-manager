@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 //컴포넌트
 import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
 import CardList from '../../components/List/CardList'
@@ -13,12 +14,10 @@ import useTeacherAuth from '../../hooks/useTeacherAuth'
 import useClientHeight from '../../hooks/useClientHeight'
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 import useFetchRtActiData from '../../hooks/RealTimeData/useFetchRtActiData'
+import useFireUserData from '../../hooks/Firebase/useFireUserData'
 //데이터
 import { subjectGroupList } from '../../data/subjectGroupList'
-//css
-import styled from 'styled-components'
-import useFireUserData from '../../hooks/Firebase/useFireUserData'
-//todo 영어 퀴즈 활동 실시간 구독 시 초기화 안되어서 하나씩 추가됨.
+
 //24.09.37 subjList update -> 24.12.18 코드 정리 및 담임반 섹션 추가
 const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 나의 활동, 활동 관리 - 전체 활동)
   //교사 인증
