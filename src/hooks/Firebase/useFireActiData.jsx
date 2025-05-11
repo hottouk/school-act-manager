@@ -9,18 +9,15 @@ const useFireActiData = () => {
   const db = appFireStore
   const colRef = collection(db, "activities")
 
-  //모든 활동(250125) Read //todo 캐시처리
+  //모든 활동(250125)
   const fetchAllActis = async (field, value, field2 = null, value2 = null) => {
     let q = query(colRef, value, where(field, "==", value))
-    if (field2 && value2) { q = query(q, where(field2, "==", value2)); }
-    try {
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() })
-      )
-    } catch (error) {
-      console.log(error)
-    }
+    if (field2 !== null && value2 !== null) { q = query(q, where(field2, "==", value2)); }
+    const querySnapshot = await getDocs(q).catch(err => {
+      window.alert("활동을 불러오는데 실패했습니다. 관리자에게 문의하세요(useFireActi_00)");
+      console.log(err);
+    })
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
   }
 
   //활동 생성(250419_이동)

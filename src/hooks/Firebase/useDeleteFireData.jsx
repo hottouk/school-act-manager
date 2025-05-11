@@ -17,10 +17,8 @@ const useDeleteFireData = () => {
       deletePromises.push(deleteDoc(doc.ref));
     });
     try {
-      await Promise.all(deletePromises)
-      await deleteDoc(classDocRef).then(() => {
-        window.alert("클래스와 모든 학생 정보가 삭제 되었습니다.")
-      })
+      await Promise.all(deletePromises);
+      await deleteDoc(classDocRef);
     } catch (err) {
       window.alert("학생 정보 삭제 중 문제가 발생하였습니다. 캡쳐해서 관리자에게 보내주세요.", err)
       console.log(err)

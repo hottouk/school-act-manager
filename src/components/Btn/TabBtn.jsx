@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-//2024.07.25 샘플탭 정비
-function TabBtn(props) {
+//샘플탭 정비(240725)
+function TabBtn({ tabItems, activeTab, setActiveTab }) {
   //샘플: 1부터 9까지의 숫자 배열 생성
   const [sampleTab, setSampleTab] = useState("1")
   const tabSamples = Array.from({ length: 9 }, (_, index) => index + 1);
   const handleTabClick = (item) => {
-    if (!props.tabItems) { setSampleTab(item); }
-    else { props.setActiveTab(item); }
+    if (!tabItems) { setSampleTab(item); }
+    else { setActiveTab(item); }
   };
 
   return (
     <Container>
-      {!props.tabItems && tabSamples.map((tabItem, index) => { //샘플
+      {!tabItems && tabSamples.map((tabItem, index) => { //샘플
         return <StyledTabBtn
           key={`${tabItem}${index}`}
           className={`tab-button ${sampleTab === tabItem ? 'active' : ''}`}
           onClick={() => handleTabClick(tabItem)}
         >{tabItem}</StyledTabBtn>
       })}
-      {props.tabItems && props.tabItems.map((tabItem, index) => { //실제 데이터 list, 배열
+      {tabItems && tabItems.map((tabItem, index) => { //실제 데이터 list, 배열
         return <StyledTabBtn
           key={`${tabItem}${index}`}
-          className={`${props.activeTab === tabItem ? 'active' : ''}`}
+          className={`${activeTab === tabItem ? 'active' : ''}`}
           onClick={() => handleTabClick(tabItem)}
         >{tabItem}</StyledTabBtn>
       })}

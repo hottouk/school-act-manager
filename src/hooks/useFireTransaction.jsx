@@ -146,13 +146,17 @@ const useFireTransaction = () => {
     const actiInfo = { assignedDate: date, id: actiId, madeBy: "획득", record: actiRecord, title, uid: tId };
     const teacherRef = doc(db, "user", user.uid);
     const petRef = doc(db, "classRooms", classId, "students", petId);
+    const actiRef = doc(db, "activities", actiId);
 
     await runTransaction(db, async (transaction) => {
+      //1. 읽기
       const teacherDoc = await transaction.get(teacherRef);
       const petDoc = await transaction.get(petRef);
-      //1. 읽기
+      const actiDoc = await transaction.get(actiRef);
       if (!teacherDoc.exists()) { throw new Error("TeacherUserInfo does not exist!"); }
       if (!petDoc.exists()) { throw new Error("Pet does not exist!"); }
+      if (!actiDoc.exists()) { throw new Error("Acti does not exist!"); }
+
       //2. 수정
       //교사: 상신 목록 삭제
       transaction.update(teacherRef, { onSubmitList: arrayRemove(info) })
@@ -160,8 +164,12 @@ const useFireTransaction = () => {
       const actiList = petDoc.data().actList || [];
       const uniqueList = replaceItem(actiList, actiInfo, "id");
       const accRecord = makeAccRec(uniqueList);
-      console.log(uniqueList);
       transaction.update(petRef, { accRecord, actList: uniqueList });
+      //활동: 달성자 기록(test 안해봄)
+      const winnerList = actiDoc.data().winnerList || [];
+      const studentNumber = petDoc.data().studentNumber || "00000";
+      const updatedList = [...winnerList, studentNumber];
+      transaction.update(actiRef, { winnerList: updatedList });
     }).then(() => {
       window.alert("생기부가 해당 학생에게 기록되었습니다.")
     }).catch(err => {

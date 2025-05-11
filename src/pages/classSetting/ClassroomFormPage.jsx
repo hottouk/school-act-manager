@@ -16,7 +16,7 @@ import useClientHeight from '../../hooks/useClientHeight';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
 
 //2024.11.23 3차 수정(클래스 타입 추가, css정리), ux 향상 -> 250212 코드 간소화
-const ClassroomMakePage = () => {
+const ClassroomFormPage = () => {
   //인증
   useEffect(() => { setIsVisible(true) }, []);
   const user = useSelector(({ user }) => { return user });
@@ -214,4 +214,4 @@ const BtnWrapper = styled(Row)`
   margin-top: 10px;
   gap: 20px;
 `
-export default ClassroomMakePage
+export default ClassroomFormPage

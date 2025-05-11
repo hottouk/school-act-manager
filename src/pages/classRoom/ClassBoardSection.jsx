@@ -4,7 +4,7 @@ import Container from '../../components/MainPanel';
 
 //250211 분리 생성
 const ClassBoardSection = ({ userStatus, isModifying, klassData, title, intro, notice, studentList, noticeList,
-  setIsModifying, setTitle, setIntro, setNotice, handleSaveOnClick, handleCancelOnClick, handleDeleteOnClick, handleDropOutOnClick }) => {
+  setIsModifying, setTitle, setIntro, setNotice, handleSaveOnClick, handleCancelOnClick, handleDeleteOnClick, handleDropOutOnClick, handleCopyOnClick }) => {
 
   return (
     <Container>
@@ -30,6 +30,7 @@ const ClassBoardSection = ({ userStatus, isModifying, klassData, title, intro, n
       {(userStatus === "master") &&
         <Row style={{ justifyContent: "flex-end", marginTop: "20px", gap: "20px" }}>
           {!isModifying && <MarginalText onClick={() => { setIsModifying((prev) => !prev) }}>정보 수정</MarginalText>}
+          {!isModifying && <MarginalText onClick={handleCopyOnClick}>클래스 복제</MarginalText>}
           {!isModifying && <MarginalText onClick={handleDeleteOnClick}>클래스 삭제</MarginalText>}
           {isModifying && <MarginalText onClick={handleSaveOnClick}>변경 저장</MarginalText>}
           {isModifying && <MarginalText onClick={handleCancelOnClick}>취소</MarginalText>}

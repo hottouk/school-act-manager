@@ -4,12 +4,9 @@ import styled from 'styled-components'
 //컴포넌트
 import CardListItem from './ListItem/CardListItem'
 import EmptyResult from '../EmptyResult'
-import Pagenation from '../Pagenation'
-import { useState } from 'react'
-//2024.01.09 -> onClick 로직 분리(250122)
+//생성(240109) -> onClick 로직 분리(250122)
 const CardList = ({ dataList, type, onClick, selected }) => {
   const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState(1);
   return (
     <Container>
       <CardWrapper>
@@ -46,13 +43,6 @@ const CardList = ({ dataList, type, onClick, selected }) => {
           return (<CardListItem key={item.id} item={item} onClick={() => { navigate('/quiz_setting', { state: item }) }} type={"quiz"} />)
         })}
       </CardWrapper>
-      {/* {(dataList && dataList.length !== 0) && <PageWrapper>
-        <Pagenation
-          totalItems={dataList.length}
-          itemsPerPage={10}
-          onPageChange={() => { }}
-        />
-      </PageWrapper>} */}
     </Container>
   )
 }
@@ -74,10 +64,5 @@ const CardWrapper = styled.ul`
   width: 100%;
   display: flex;
   flex-wrap: wrap;
-`
-const PageWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  margin: 10px;
 `
 export default CardList

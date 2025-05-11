@@ -12,11 +12,12 @@ import SearchBar from '../../components/Bar/SearchBar'
 //hooks
 import useTeacherAuth from '../../hooks/useTeacherAuth'
 import useClientHeight from '../../hooks/useClientHeight'
-import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
 import useFetchRtActiData from '../../hooks/RealTimeData/useFetchRtActiData'
 import useFireUserData from '../../hooks/Firebase/useFireUserData'
 //데이터
 import { subjectGroupList } from '../../data/subjectGroupList'
+import useFireActiData from '../../hooks/Firebase/useFireActiData'
+import Pagenation from '../../components/Pagenation'
 
 //24.09.37 subjList update -> 24.12.18 코드 정리 및 담임반 섹션 추가
 const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 나의 활동, 활동 관리 - 전체 활동)
@@ -32,8 +33,8 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   const [subjectList, setSubjectList] = useState(null);
   useEffect(() => { extractSubjFromData() }, [subjectGroupList])
   //모든 활동, 업어온 활동, 내 활동
-  const { fetchAlActiiBySubjList } = useFetchFireData();
   const { fetchCopiesData } = useFireUserData();
+  const { fetchAllActis } = useFireActiData();
   const [_allActiList, setAllActiList] = useState([]);
   const [_mySubjActiList, setMySubjActiList] = useState([]);
   const [_myHomeActiList, setMyHomeActiList] = useState([]);
@@ -48,9 +49,17 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   }, [subjActiList, homeActiList, quizActiList])
   //진입 경로
   const location = useLocation();
-  useEffect(() => { fetchDataByLocation() }, [location, selectedSubj])
+  useEffect(() => { fetchDataByLocation() }, [location, selectedSubj]);
+  const itemsPerPage = 30;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageData, setPageData] = useState(_allActiList?.slice(0, 30));
+  useEffect(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = currentPage * itemsPerPage;
+    setPageData(_allActiList?.slice(start, end));
+  }, [currentPage]);
   //css
-  const clientHeight = useClientHeight(document.documentElement)
+  const clientHeight = useClientHeight(document.documentElement);
 
   //----2.함수부--------------------------------
   //교과 제목 추출
@@ -68,13 +77,15 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
       fetchCopiesData().then((copiedList) => { setCopiedList(copiedList) })
       setIsLoading(false)
     } else { //활동관리-전체 활동-과목 선택
-      fetchAlActiiBySubjList(selectedSubj).then((subjActiList) => {
-        setAllActiList(subjActiList)
-        setIsLoading(false)
+      fetchAllActis("subject", selectedSubj, "isPrivate", false).then((actiList) => {
+        actiList.sort((a, b) => a.title.localeCompare(b.title));
+        setPageData(actiList.slice(0, 30));
+        setAllActiList(actiList);
+        setCurrentPage(1);
+        setIsLoading(false);
       })
     }
   }
-
   //활동 클릭
   const handleActiOnClick = (item) => {
     if (item.subject === "담임") { navigate(`/activities/${item.id}?sort=homeroom`, { state: { acti: item } }) }  //담임
@@ -104,7 +115,15 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
         </TabBtnContainer>
         <SearchBar title={isLoading ? "데이터를 서버에서 불러오는 중 입니다." : `서버에 총 ${_allActiList ? _allActiList.length : 0}개의 활동이 등록되어 있습니다.`}
           type="allActi" list={_allActiList} setList={setAllActiList} />
-        <CardList dataList={_allActiList} type="activity" comment="아직 활동이 없습니다. 활동을 생성해주세요" onClick={handleActiOnClick} />
+        <CardList dataList={pageData} type="activity" comment="아직 활동이 없습니다. 활동을 생성해주세요" onClick={handleActiOnClick} />
+        {_allActiList?.length > itemsPerPage && <PageWrapper>
+          <Pagenation
+            totalItems={_allActiList.length}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+        </PageWrapper>}
         <HorizontalBannerAd />
       </>}
     </Container>
@@ -133,4 +152,10 @@ const TabBtnContainer = styled.div`
   background-color: #f0f0f0;
   height: 100px;
 `
+const PageWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 10px;
+`
+
 export default ActivityMain
