@@ -22,7 +22,7 @@ import HomeroomDetailsPage from './pages/homeroom/HomeroomDetailsPage';
 import HomeStudentDetailsPage from './pages/homeroom/HomeStudentDetailsPage';
 import HomeClassAllStudentsPage from './pages/homeroom/HomeClassAllStudentsPage';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
-import ClassroomMakePage from './pages/classSetting/ClassroomMakePage';
+import ClassroomFormPage from './pages/classSetting/ClassroomFormPage';
 import WhatsNewPage from './pages/main/WhatsNewPage';
 import MySchoolPage from './pages/school/MySchoolPage';
 import { useSelector } from 'react-redux';
@@ -75,7 +75,7 @@ function App() {
           <Route path="/classrooms/:id/:studentId" element={uid ? <StudentDetailPage /> : <Navigate replace={true} to='/login' />} />
           {/* 클래스 만들기, 교사 회원만 가능 */}
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
-          <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomMakePage /> : <Navigate replace={true} to='/' />} />
+          <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomFormPage /> : <Navigate replace={true} to='/' />} />
           {/* 학생 관리 */}
           <Route path="/myschool" element={uid ? <MySchoolPage /> : <Navigate replace={true} to='/login' />} />
           {/* 퀴즈 관리 */}

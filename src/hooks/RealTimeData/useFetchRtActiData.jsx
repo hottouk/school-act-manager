@@ -28,7 +28,7 @@ const useFetchRtMyActiData = (uid) => {
     })
     // 컴포넌트 언마운트 시 구독 해제
     return () => unsubscribe();
-  }, [uid])
+  }, [uid]);
 
   return { subjActiList, homeActiList, quizActiList };
 }

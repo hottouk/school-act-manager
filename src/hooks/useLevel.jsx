@@ -8,7 +8,6 @@ const useLevel = () => {
 
   //승리 횟수에 따라 몬스터 Level 조정
   const getEnmLevel = (accExp) => {
-    console.log(accExp)
     if (accExp <= 25) {
       return 1
     } else if (accExp <= 100) {
@@ -68,7 +67,7 @@ const useLevel = () => {
 
   //경험치 획득
   const gainXp = (petInfo, gainXp) => {
-    const { ev, petId, monId, name, spec, lvUp } = petInfo;               //현재 pet 정보                       
+    const { ev, petId, monId, name, spec, lvUp } = petInfo;                   //현재 pet 정보                       
     const { level, exp, nextLvXp, nextStepLv, accExp } = petInfo.level;           //현재 레벨 정보
     if (level === 8) return;
     const { hp, atk, def, mat, mdf, spd } = spec;

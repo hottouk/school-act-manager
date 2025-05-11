@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setAllStudents } from '../../store/allStudentsSlice';
 import styled from 'styled-components';
+import { setAllActivities } from '../../store/allActivitiesSlice';
 //페이지
 import ClassBoardSection from '../classroom/ClassBoardSection';
 import MainSelector from '../classroom/MainSelector';
@@ -23,7 +24,6 @@ import useFireClassData from '../../hooks/Firebase/useFireClassData';
 import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData';
 //img
 import deskIcon from '../../image/icon/desk_icon.png'
-import { setAllActivities } from '../../store/allActivitiesSlice';
 
 //2024.10.22 생성 -> 250211 게시판 추가
 const HomeroomDetailsPage = () => {
@@ -42,7 +42,7 @@ const HomeroomDetailsPage = () => {
       dispatcher(setAllActivities(actiList));
     });
   }, [])
-  const { updateClassroom } = useFireClassData();
+  const { updateClassroom, copyKlassroom } = useFireClassData();
   const { deleteClassWithStudents } = useDeleteFireData();
   //반 전역변수
   const thisClass = useSelector(({ classSelected }) => { return classSelected });
@@ -84,13 +84,11 @@ const HomeroomDetailsPage = () => {
     if (!notice) return;
     splitNotice(notice || []);
   }
-
   //공지사항 list 변환
   const splitNotice = (notice) => {
     const arr = notice.split("^").map((item) => item.trim()).slice(0, 3);
     setNoticeList(arr)
   }
-
   //저장
   const handleSaveOnClick = () => {
     const confirm = window.confirm("이대로 클래스 정보를 변경하시겠습니까?");
@@ -100,19 +98,31 @@ const HomeroomDetailsPage = () => {
       setIsModifying(false);
     }
   };
-
   //취소 
   const handleCancelOnClick = () => {
     bindData();
     setIsModifying(false);
   };
-
+  //클래스 복제
+  const handleCopyOnClick = () => {
+    const { classTitle } = klassData;
+    const copyConfrim = window.prompt("클래스를 복제하시겠습니까? 클래스 이름을 입력하세요.", `2학기 ${classTitle} 사본`);
+    if (copyConfrim === null) return;
+    if (copyConfrim !== '') {
+      copyKlassroom(klassData, studentList, copyConfrim).then(() => {
+        alert("복제 되었습니다");
+        navigate("/classRooms");
+      })
+    } else {
+      alert("클래스 제목을 입력해주세요.");
+    }
+  }
   //반 삭제
   const handleDeleteOnClick = () => {
-    let deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
+    let deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.");
     if (deleteConfirm === "삭제합니다") {
-      deleteClassWithStudents(thisClass.id)
-      navigate("/classRooms")
+      deleteClassWithStudents(thisClass.id);
+      navigate("/classRooms");
     } else {
       window.alert("문구가 제대로 입력되지 않았습니다.");
       return;
@@ -123,7 +133,9 @@ const HomeroomDetailsPage = () => {
     <>
       <Container $isVisible={isVisible}>
         <ClassBoardSection userStatus={"master"} isModifying={isModifying} title={_title} intro={_intro} notice={_notice} klassData={klassData} studentList={studentList} noticeList={noticeList}
-          setIsModifying={setIsModifying} setTitle={setTitle} setIntro={setIntro} setNotice={setNotice} handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} Row={Row} />
+          setIsModifying={setIsModifying} setTitle={setTitle} setIntro={setIntro} setNotice={setNotice}
+          handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} handleCopyOnClick={handleCopyOnClick}
+          Row={Row} />
         <MainPanel>
           <TitleText>도구모음</TitleText>
           <IconWrapper>

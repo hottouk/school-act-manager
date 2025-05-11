@@ -234,7 +234,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   //내 spec 바인딩
   const bindMyPetData = () => {
     if (!myPetInfo) return;
-    const { spec, skills, level } = myPetInfo;
+    const { spec, skills, level, quizRecord } = myPetInfo;
     setMyHP(Math.floor(spec.hp));
     setMyCurHP(Math.floor(spec.hp));
     setMyAttck(Math.floor(spec.atk));
@@ -243,7 +243,6 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     setMyMdef(Math.floor(spec.mdf));
     setMySpd(Math.floor(spec.spd));
     setMySkillList(skills);
-    const quizRecord = myPetInfo.quizRecord;
     if (quizRecord) {
       const key = gameDetails.id
       const thisRecordList = quizRecord[key] || [];
@@ -555,12 +554,14 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
       case "Draw":
         gameResult = { score, ...gameResult };
         updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, enmLevel * 2), gameResult);  //결과 기록
+        updateGameResult(gameDetails.id, gameResult);
         break;
       case "Lose":
         const loseScore = score / 2;
         gameResult = { score: loseScore, ...gameResult };
         setScore(loseScore);
         updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, enmLevel), gameResult);  //결과 기록
+        updateGameResult(gameDetails.id, gameResult);
         break;
       default:
         break;

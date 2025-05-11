@@ -25,6 +25,7 @@ import PerfModal from '../../components/Modal/PerfModal.jsx';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
 import GameModal from '../../components/Modal/GameModal.jsx';
 import PetInfoModal from '../../components/Modal/PetInfoModal.jsx';
+import GameRankModal from '../../components/Modal/GameRankModal.jsx';
 //hooks
 import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData.jsx';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData.jsx';
@@ -35,9 +36,8 @@ import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useMediaQuery from '../../hooks/useMediaQuery.jsx';
-import GameRankModal from '../../components/Modal/GameRankModal.jsx';
 
-//240801(클래스 헤더 수정) -> 1113(애니메이션 추가) -> 250122(게임 추가, 가입 제거) -> 0125(학생 페이지 정비)
+//클래스 헤더 수정(240801) -> 애니메이션 추가(241113) -> 게임 추가, 가입 제거(250122) -> 학생 페이지 정비(250122)
 const ClassroomDetailsPage = () => {
   //준비
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ const ClassroomDetailsPage = () => {
   //hooks
   const { deleteClassWithStudents } = useDeleteFireData();
   const { updateUserInfo } = useFireUserData();
-  const { updateClassroom, deleteKlassroomArrayInfo } = useFireClassData();
+  const { updateClassroom, deleteKlassroomArrayInfo, copyKlassroom } = useFireClassData();
   const { getSubjKlassActiList } = useFireActiData();
   //실시간 데이터
   const { myUserData } = useFetchRtMyUserData();
@@ -175,24 +175,40 @@ const ClassroomDetailsPage = () => {
     bindKlassData();
     setIsModifying(false);
   }
-  //삭제
-  const handleDeleteOnClick = () => {
-    const deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.")
-    if (deleteConfirm === "삭제합니다") {
-      deleteClassWithStudents(thisKlassId)
-      navigate("/classRooms")
+  //클래스 복제
+  const handleCopyOnClick = () => {
+    const { classTitle } = klassData;
+    const copyConfrim = window.prompt("클래스를 복제하시겠습니까? 클래스 이름을 입력하세요.", `2학기 ${classTitle} 사본`);
+    if (copyConfrim === null) return;
+    if (copyConfrim !== '') {
+      copyKlassroom(klassData, studentDataList, copyConfrim).then(() => {
+        alert("복제 되었습니다");
+        navigate("/classRooms");
+      })
     } else {
-      window.alert("문구가 제대로 입력되지 않았습니다.");
+      alert("클래스 제목을 입력해주세요.");
+    }
+  }
+  //클래스 삭제
+  const handleDeleteOnClick = () => {
+    const deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.");
+    if (deleteConfirm === "삭제합니다") {
+      deleteClassWithStudents(thisKlassId).then(() => {
+        alert("클래스와 모든 학생 정보가 삭제 되었습니다.")
+        navigate("/classRooms");
+      })
+    } else {
+      alert("문구가 제대로 입력되지 않았습니다.");
     }
   }
   //코티칭 탈퇴
   const handleDropOutOnClick = () => {
     const confirm = window.confirm("코티칭 클래스를 탈퇴하시겠습니까?");
     if (confirm) {
-      const deletedList = user.coTeachingList.filter((item) => item.id !== klassData?.id)
+      const deletedList = user.coTeachingList.filter((item) => item.id !== klassData?.id);
       updateUserInfo("coTeachingList", deletedList);                                     //유저 코티칭 list에서 삭제
       deleteKlassroomArrayInfo(klassData.id, "coTeacher", user.uid);                     //클래스 코티쳐 list에서 삭제
-      navigate("/classRooms")
+      navigate("/classRooms");
     }
   }
 
@@ -210,7 +226,7 @@ const ClassroomDetailsPage = () => {
         {/* 반 기본 정보(공용) */}
         <ClassBoardSection userStatus={userStatus} isModifying={isModifying} klassData={klassData} title={_title} intro={_intro} notice={_notice} studentList={studentList} noticeList={noticeList}
           setIsModifying={setIsModifying} setTitle={setTitle} setIntro={setIntro} setNotice={setNotice}
-          handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} handleDropOutOnClick={handleDropOutOnClick} />
+          handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} handleDropOutOnClick={handleDropOutOnClick} handleCopyOnClick={handleCopyOnClick} />
         {/* 쫑알이(교사)*/}
         {user.isTeacher && <MainPanel>
           <TitleText>세특 쫑알이</TitleText>
@@ -222,10 +238,7 @@ const ClassroomDetailsPage = () => {
         {!isMobile && <MainPanel>
           <TitleText>학생 상세히 보기</TitleText>
           {studentList && <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModal(true) }} classType={"subject"} setIsPetInfoModal={setIsPetInfoModal} setPetInfo={setPetInfo} />}
-          {(!studentList || studentList.length === 0) && <>
-            <EmptyResult comment="등록된 학생이 없습니다." />
-            {user.isTeacher && <MidBtn onClick={() => { setIsAddStuModal(true) }}>학생 추가</MidBtn>}
-          </>}
+          {(!studentList || studentList.length === 0) && <><EmptyResult comment="등록된 학생이 없습니다." /></>}
         </MainPanel>}
         {/* 퀘스트 목록(학생) */}
         {(!user.isTeacher && studentKlassData?.isApproved) && <MainPanel>

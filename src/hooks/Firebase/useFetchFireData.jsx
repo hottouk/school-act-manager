@@ -1,11 +1,8 @@
 import { appFireStore } from '../../firebase/config'
-import { collection, doc, getDocFromCache, getDocFromServer, getDocs, query, where } from 'firebase/firestore'
-import { useSelector } from 'react-redux'
+import { collection, doc, getDocFromServer, getDocs, query, where } from 'firebase/firestore'
 
 const useFetchFireData = () => {
   const db = appFireStore
-  const user = useSelector(({ user }) => { return user })
-  const actiColRef = collection(appFireStore, "activities")
   const userColRef = collection(appFireStore, "user")
   //todo 삭제 1순위
   //2024.06.30 수정
@@ -33,21 +30,8 @@ const useFetchFireData = () => {
     }
   }
 
-  //6. 과목 전체 Acti 리스트 - 활동관리
-  const fetchAlActiiBySubjList = async (sbuj) => {
-    try {
-      let q = query(actiColRef, where("subject", "==", sbuj));
-      let querySnapshot = await getDocs(q);
-      let allActiBySubj = querySnapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter((acti) => acti.isPrivate === false)
-        .sort((a, b) => a.title.localeCompare(b.title))
-      return allActiBySubj;
-    } catch (err) {
-      window.alert(err.message)
-      console.log(err)
-    }
-  }
+  //6. 과목 전체 Acti 리스트 - 활동관리(250508 삭제)
+
   //5. 다른 교사 Acti 리스트 - 활동관리(241215 삭제)
 
   //4. 내 Acti 리스트(250125 삭제)
@@ -78,7 +62,7 @@ const useFetchFireData = () => {
 
   //1-1. DB에서 검색(20250127 삭제)
 
-  return ({ db, fetchDoc, fetchSubDoc, fetchTeacherList, fetchAlActiiBySubjList })
+  return ({ db, fetchDoc, fetchSubDoc, fetchTeacherList })
 }
 
 export default useFetchFireData
