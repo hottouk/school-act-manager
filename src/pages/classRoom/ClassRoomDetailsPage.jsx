@@ -16,7 +16,6 @@ import ClassBoardSection from './ClassBoardSection.jsx';
 import StudentList from '../../components/List/StudentList.jsx';
 import ActivityList from '../../components/List/ActivityList.jsx';
 import EmptyResult from '../../components/EmptyResult.jsx';
-import MidBtn from '../../components/Btn/MidBtn.jsx';
 import SubNav from '../../components/Bar/SubNav.jsx';
 import ActiInfoModal from '../../components/Modal/ActiInfoModal.jsx';
 import MainPanel from '../../components/MainPanel.jsx';
