@@ -101,13 +101,15 @@ const useChatGpt = () => {
     const messages = [...gptPersonalOnReportMsg,
     {
       role: "user",
-      content: `활동 문구: ${record}
+      content: `기존 문구: ${record}
         아래는 위의 활동을 한 학생이 활동 후에 작성한 결과 보고서입니다.
+        
         활동 보고서: ${text}
-        위 활동과 보고서를 적절히 섞어서 생기부 문구를 만들어 주세요.
-        단, 결과 보고서는 학생의 손글씨를 기반으로 하였으므로 오타가 있을 수 있음. 오타가 있다면 맥락에 맞게 적절히 수정 필요함.
-        작성한 생기부 문구는 '학생은~'과 같은 주어가 절대로 있으면 안됩니다.
-        반드시 '~음', '~펼침', '~임', '~함', '~됨'등으로 끝나는 명사형 종결어미를 사용하여 문장을 끝맺어야 함`
+        활동 보고서를 핵심만 요약하고 기존 문구와 혼합하여 기존 문구보다 1.2배 분량정도 되는 문구를 작성 바람. 
+        기존 문구에 '[]'가 있다면 대괄호를 뺴고 이 부분에 활동 보고서 요약본을 넣어 기존 문구와 유기적으로 연결되도록 작성 바람. 
+        단, 결과 보고서는 학생의 손글씨를 기반으로 하였으므로 오타가 있을 수 있음. 오타가 있다면 맥락에 맞게 적절히 수정 바람.
+        또한, "학생은~" 과 같은 주어를 사용하면 안됨. "학생은~"을 생략하고 "성실한 수업 태도를 일관되게 보여줌." 로 써주어야 함.
+        반드시 '~음', '~펼침', '~임', '~함', '~됨','~됨'등으로 끝나는 명사형 종결어미를 사용하여 문장을 끝맺어야 함`
     },
     ]
     await playGpt(messages)
@@ -155,9 +157,10 @@ const useChatGpt = () => {
     setGptRes("loading")
     const completion = await openai.chat.completions.create({
       messages: messages,
-      model: "gpt-3.5-turbo",
-      temperature: 1.0, //창의성
-      top_p: 0.6        //다양성
+      // model: gpt-3.5-turbo, gpt-4o-mini, gpt-4.1-mini
+      model: "o4-mini",
+      temperature: 1.0, //창의성  0.0 (정확, 보수적) ~ 1.0+ 2.0까지 가능 (창의, 다양)
+      // top_p: 0.6        //다양성 0.6 중간 다양성
     });
     if (completion.choices[0].message.content) {
       setGptAnswer(completion.choices[0].message.content)
