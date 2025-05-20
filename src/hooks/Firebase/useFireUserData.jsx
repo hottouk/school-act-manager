@@ -9,7 +9,15 @@ const useFireUserData = () => {
   const db = appFireStore;
   const col = collection(db, "user");
   const dispatcher = useDispatch();
-
+  //1. 유저 정보 하나
+  const fetchUserData = async (id) => {
+    const userDoc = doc(col, id);
+    const userSnapshot = await getDoc(userDoc).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireUserData_01),${error}`);
+      console.log(error);
+    })
+    return userSnapshot.data();
+  }
   //유저 기본 업데이트(250217)
   const updateUserInfo = async (field, info) => {
     const userDocRef = doc(col, user.uid);
@@ -20,7 +28,6 @@ const useFireUserData = () => {
       console.log(error);
     }
   }
-
   //유저 배열형 정보 추가(250127)
   const updateUserArrayInfo = async (id, field, info) => {
     const userDocRef = doc(col, id);
@@ -130,18 +137,8 @@ const useFireUserData = () => {
     }
   }
 
-  //해당 유저 정보 가져오기
-  const fetchUserData = async (uid) => {
-    const userDocRef = doc(col, uid || user.uid)
-    try {
-      const userDoc = await getDoc(userDocRef)
-      return userDoc.data()
-    } catch (error) {
-      console.log(error)
-    }
-  }
 
-  return ({ updateUserInfo, fetchUserData, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo })
+  return ({ fetchUserData, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo })
 }
 
 export default useFireUserData

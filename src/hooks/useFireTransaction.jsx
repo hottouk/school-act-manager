@@ -1,6 +1,6 @@
 import { arrayRemove, arrayUnion, collection, deleteDoc, deleteField, doc, getDocs, query, runTransaction, where, writeBatch } from 'firebase/firestore'
 import { useSelector } from 'react-redux'
-import { appFireStore } from '../firebase/config'
+import { appFireStore, timeStamp } from '../firebase/config'
 import useGetRidOverlap from './useGetRidOverlap'
 import useAcc from './useAcc'
 
@@ -8,54 +8,100 @@ import useAcc from './useAcc'
 const useFireTransaction = () => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
-  const userColRef = collection(db, "user")
-  const userDocRef = doc(userColRef, user.uid)
-  const { makeUniqueArrWithEle, replaceItem } = useGetRidOverlap()
+  const userCol = collection(db, "user");
+  const schoolCol = collection(db, "school");
+  const klassRoomCol = collection(db, "classRooms");
+  const { makeUniqueArrWithEle, replaceItem } = useGetRidOverlap();
   const { makeAccRec } = useAcc();
 
+  //11. 담임 클래스 추가(250511 이동)
+  const addHomeKlassroomTransaction = async (klassInfo, studentPetList, schoolCode) => {
+    const { type } = klassInfo;
+    const createdTime = timeStamp.fromDate(new Date());
+    const schoolDoc = doc(schoolCol, schoolCode);
+    await runTransaction(db, async (transaction) => {
+      //1. read
+      const schoolSnapshot = await transaction.get(schoolDoc);
+      if (!schoolSnapshot.exists()) { throw new Error("학교 읽기 에러") };
+      //2. create
+      const klassDoc = doc(klassRoomCol);                                                  //반id 설정
+      transaction.set(klassDoc, { ...klassInfo, createdTime, id: klassDoc.id });           //반 생성
+      const petCol = collection(klassDoc, "students");
+      studentPetList.forEach(studentPet => {
+        const petDoc = doc(petCol);                                                        //petId 설정
+        transaction.set(petDoc, { ...studentPet, type, id: petDoc.id });                   //pet 생성
+      })
+      //3. edit
+      transaction.update(schoolDoc, { homeroomList: arrayUnion({ ...klassInfo, id: klassDoc.id }) });
+    }).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireTransaction_11),${error}`)
+      console.log(error);
+    })
+  }
+  //10. 교사/학생 변경
+  const changeIsTeacherTransaction = async (schoolCode, memberId) => {
+    const schoolDoc = doc(schoolCol, schoolCode);
+    const memberDoc = doc(userCol, memberId);
+    await runTransaction(db, async (transaction) => {
+      //1. read
+      const schoolSnapshot = await transaction.get(schoolDoc);
+      if (!schoolSnapshot.exists()) { throw new Error("학교 읽기 에러") };
+      const memberSnapshot = await transaction.get(memberDoc);
+      if (!memberSnapshot) { throw new Error("멤버 읽기 에러") };
+      //2. edit
+      const isTeacher = memberSnapshot.data().isTeacher;
+      const updatedMemberList = schoolSnapshot.data().memberList.map((member) => {
+        return member.uid === memberId
+          ? { ...member, isTeacher: !isTeacher }
+          : member
+      })
+      transaction.update(memberDoc, { isTeacher: !isTeacher });
+      transaction.update(schoolDoc, { memberList: updatedMemberList });
+    }).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireTransaction_10),${error}`)
+      console.log(error);
+    })
+  }
   //9. 코티칭 교사 가입 승인 
   const approveCoteahingTransaction = async (teacherId, klassId) => {
-    const coTeacherRef = doc(userColRef, teacherId);
-    try {
-      await runTransaction(db, async (transaction) => {
-        //1. read
-        const coTeacherSnapshot = await transaction.get(coTeacherRef);
-        if (!coTeacherSnapshot.exists()) { throw new Error("교사 정보 없음") };
-        const coTeachingList = coTeacherSnapshot.data().coTeachingList;
-        if (!coTeachingList) { throw new Error("코티칭 신청 정보 없음") };
-        //2. edit
-        const newList = coTeachingList.map((item) => {
-          if (item.id === klassId) { return { ...item, isApproved: true } }
-          return item
-        });
-        transaction.update(coTeacherRef, { coTeachingList: newList });
-      })
-    } catch (error) {
+    const coTeacherRef = doc(userCol, teacherId);
+    await runTransaction(db, async (transaction) => {
+      //1. read
+      const coTeacherSnapshot = await transaction.get(coTeacherRef);
+      if (!coTeacherSnapshot.exists()) { throw new Error("교사 읽기 에러") };
+      const coTeachingList = coTeacherSnapshot.data().coTeachingList;
+      if (!coTeachingList) { throw new Error("코티칭 신청 읽기 에러") };
+      //2. edit
+      const newList = coTeachingList.map((item) => {
+        if (item.id === klassId) { return { ...item, isApproved: true } }
+        return item
+      });
+      transaction.update(coTeacherRef, { coTeachingList: newList });
+    }).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireTransaction_09),${error}`)
       console.log(error);
-      window.alert(error);
-    };
+    })
   }
-
   //8. 학교 탈퇴하기(250217)
   const leaveSchoolTransaction = async (schoolCode) => {
-    const userRef = doc(db, "user", user.uid);
-    const schoolRef = doc(db, "school", schoolCode);
-    const classroomsRef = collection(db, "classRooms");
+    const userDoc = doc(db, "user", user.uid);
+    const schoolDoc = doc(schoolCol, schoolCode);
+    const classroomsCol = collection(db, "classRooms");
     try {
       await runTransaction(db, async (transaction) => {
         //1. read
-        const userSnapshot = await transaction.get(userDocRef);
-        const schoolSnapshot = await transaction.get(schoolRef);
+        const userSnapshot = await transaction.get(userDoc);
+        const schoolSnapshot = await transaction.get(schoolDoc);
         if (!userSnapshot.exists()) { throw new Error("유저 정보 없음"); };
         if (!schoolSnapshot.exists()) { throw new Error("학교 정보 없음"); };
         //2. write
         const memberList = schoolSnapshot.data().memberList;
         const deleted = memberList.filter((item) => { return item.uid !== user.uid });
-        transaction.update(userRef, { school: deleteField(), coTeachingList: deleteField() });
-        transaction.update(schoolRef, { memberList: deleted });
+        transaction.update(userDoc, { school: deleteField(), coTeachingList: deleteField() });
+        transaction.update(schoolDoc, { memberList: deleted });
       })
       //3. classroom 컬렉션에서 특정 uid를 가진 문서들 삭제
-      const q = query(classroomsRef, where("uid", "==", user.uid));
+      const q = query(classroomsCol, where("uid", "==", user.uid));
       const querySnapshot = await getDocs(q);
       for (const klassSnapshot of querySnapshot.docs) {
         const klassId = klassSnapshot.id;
@@ -82,7 +128,7 @@ const useFireTransaction = () => {
     const userRef = doc(db, "user", user.uid);
     try {
       await runTransaction(db, async (transaction) => {
-        const userDoc = await transaction.get(userDocRef);
+        const userDoc = await transaction.get(userDoc);
         //1. read
         if (!userDoc.exists()) { throw new Error("유저 정보 없음"); }
         //2. update
@@ -230,8 +276,8 @@ const useFireTransaction = () => {
       studentId: user.uid, studentName: user.name, studentNumber: user.studentNumber, school: user.school.schoolName, petId, petLabel,
       classId: klass.id, classTitle: klass.classTitle, classSubj: klass.subject, applyDate: today, type: "join"
     } //상신 정보
-    const studentDocRef = doc(userColRef, user.uid)
-    const teacherDocRef = doc(userColRef, klassInfo.uid)
+    const studentDocRef = doc(userCol, user.uid)
+    const teacherDocRef = doc(userCol, klassInfo.uid)
     await runTransaction(db, async (transaction) => {
       const studentDoc = await transaction.get(studentDocRef)
       if (!studentDoc.exists()) { throw new Error("학생 읽기 에러") }
@@ -253,7 +299,7 @@ const useFireTransaction = () => {
 
   //2. 업어온 활동 삭제하기: 활동 관리 - 나의 활동 - 업어온 활동 - 삭제
   const delCopiedActiTransaction = async (actiId) => {
-    let userDocRef = doc(userColRef, user.uid)
+    let userDocRef = doc(userCol, user.uid)
     await runTransaction(db, async (transaction) => {
       const userDoc = await transaction.get(userDocRef)
       if (!userDoc.exists()) { throw new Error("유저 읽기 에러") }
@@ -299,7 +345,10 @@ const useFireTransaction = () => {
       console.log(err);
     })
   }
-  return { copyActiTransaction, delCopiedActiTransaction, applyKlassTransaction, approveKlassTransaction, approvWinTransaction, denyTransaction, confirmDenialTransaction, leaveSchoolTransaction, approveCoteahingTransaction }
+  return {
+    changeIsTeacherTransaction, copyActiTransaction, delCopiedActiTransaction, applyKlassTransaction, approveKlassTransaction, approvWinTransaction,
+    denyTransaction, confirmDenialTransaction, leaveSchoolTransaction, approveCoteahingTransaction, addHomeKlassroomTransaction
+  }
 }
 
 

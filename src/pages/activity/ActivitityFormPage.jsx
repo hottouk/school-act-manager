@@ -9,7 +9,6 @@ import useClientHeight from "../../hooks/useClientHeight";
 import useFireActiData from "../../hooks/Firebase/useFireActiData";
 import useFireTransaction from "../../hooks/useFireTransaction";
 //모달
-import Wait3SecondsModal from "../../components/Modal/Wait3SecondsModal";
 import AddExtraRecModal from "../../components/Modal/AddExtraRecModal";
 import AddPerfRecModal from "../../components/Modal/AddPerfRecModal";
 //컴포넌트
@@ -26,6 +25,7 @@ import SubNav from "../../components/Bar/SubNav";
 import BackBtn from "../../components/Btn/BackBtn";
 //애니
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
+import { Spinner } from "react-bootstrap";
 
 //24.07.06 수정(실시간 바이트 갱신) -> 24.12.21(담임반 활동)
 const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
@@ -57,7 +57,6 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const [attitudeScore, setAttitudeScore] = useState(0);
   const [coin, setCoin] = useState(0);
   //3.대화창 보여주기 변수
-  const [timerModalShow, setTimerModalShow] = useState(false)
   const [isExtraRecModalShown, setIsExtraRecModalShown] = useState(false)
   const [isPerfRecModalShown, setIsPerfRecModalShown] = useState(false)
   const [isModified, setIsModified] = useState(false)
@@ -78,20 +77,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const navigate = useNavigate()
   //6. ChatGPt
   const { gptAnswer, askSubjRecord, askHomeroomReccord, gptRes } = useChatGpt();
-  useEffect(() => {
-    if (gptAnswer !== '') {
-      setRecord(gptAnswer)
-    }
-    switch (gptRes) {
-      case 'loading':
-        setTimerModalShow(true)
-        break;
-      case 'complete':
-        setTimerModalShow(false)
-        break;
-      default: return;
-    }
-  }, [gptRes, gptAnswer])
+  useEffect(() => { if (gptAnswer !== '') { setRecord(gptAnswer) } }, [gptAnswer])
   //8. css 및 에니
   const clientHeight = useClientHeight(document.documentElement)
   const [isVisible, setIsVisible] = useState(false)
@@ -196,7 +182,6 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
         if (_title !== '' && _selectedSubjDetail !== 'default' && _content !== '') {
           try {
             if (sort === "homeroom") { askHomeroomReccord(_title, _selectedSubjDetail, _content, _timeFormat, _myByte) } else { askSubjRecord(_title, _selectedSubjDetail, _content) }
-            setTimerModalShow(true)
           } catch (error) {
             window.alert.log(error.message)
           }
@@ -346,7 +331,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
               disabled={!isModified} />
 
             {/*교사 버튼 영역 */}
-            <BtnWrapper>
+            {gptRes !== "loading" ? <BtnWrapper>
               {!state ? <> {/*활동 첫 생성 */}
                 <LongW100Btn id="gpt_btn" btnName="GPT로 세특 문구 작성" btnOnClick={handleBtnClick} />
                 <LongW100Btn type="submit" btnName="생성" /></>
@@ -369,14 +354,12 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                     <LongW100Btn id="copy_btn" btnName="업어가기" btnOnClick={handleBtnClick} />
                   </>}
                 </>}
-            </BtnWrapper>
+            </BtnWrapper> : <Row style={{ justifyContent: "center" }}><Spinner /></Row>}
           </fieldset>
         </StyledForm>}
     </Container>
 
     {/* 모달  */}
-    <Wait3SecondsModal
-      show={timerModalShow} />
     {(state && isExtraRecModalShown) &&
       < AddExtraRecModal
         show={isExtraRecModalShown}

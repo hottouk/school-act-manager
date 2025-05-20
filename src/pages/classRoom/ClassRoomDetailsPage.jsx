@@ -54,13 +54,14 @@ const ClassroomDetailsPage = () => {
   //실시간 데이터
   const { myUserData } = useFetchRtMyUserData();
   const { klassData } = useFetchRtClassroomData(thisKlassId);                                                 //클래스 기본 data
-  const { studentDataList } = useFetchRtMyStudentData("classRooms", thisKlassId, "students", "studentNumber") //학생 data
+  const { studentDataList } = useFetchRtMyStudentData("classRooms", thisKlassId, "students", "studentNumber") //학생 실시간 data
   useEffect(() => {                                                                                           //애니메이션 처리 및 데이터 바인딩
-    setIsVisible(false)
     verifyUser();
-    setTimeout(() => setIsVisible(true), 200)
+    setIsVisible(false);
     bindActiData();
+    bindStudentData();
     bindKlassData();
+    setTimeout(() => setIsVisible(true), 200);
   }, [thisKlassId, klassData, studentDataList])
   useEffect(() => { fetchPetData(); }, [myUserData, thisKlassId])//마이 펫 바인딩
   const [_title, setTitle] = useState('');
@@ -115,16 +116,20 @@ const ClassroomDetailsPage = () => {
     setNotice(notice || '공지 없음');
     splitNotice(notice || []);
   }
-  //데이터 바인딩
+  //활동 데이터 바인딩
   const bindActiData = () => {
-    if (!klassData || !studentDataList) return;
-    const classTeacherId = user.isTeacher ? user.uid : studentKlassData?.uid
-    getSubjKlassActiList(classTeacherId, klassData?.subject).then((list) => { //활동 data
+    if (!klassData) return;
+    const classTeacherId = user.isTeacher ? user.uid : studentKlassData?.uid;
+    getSubjKlassActiList(classTeacherId, klassData?.subject).then((list) => {
       dispatcher(setAllActivities(list.subjActiList));
       setActiList(list.subjActiList);
       const quizActis = list.quizActiList.filter((item) => { return item.isPrivate === false });
       setQuizList(quizActis);
     });
+  }
+  //학생 데이터 바인딩
+  const bindStudentData = () => {
+    if (!studentDataList) return;
     dispatcher(setAllStudents(studentDataList))                              //학생 data
     setStudentList(studentDataList);
   }
@@ -234,11 +239,11 @@ const ClassroomDetailsPage = () => {
         {/* 퀴즈 게임부 */}
         <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} myPetDetails={myPetDetails} onClick={handleMonsterOnClick} smallBtnOnClick={handleRankOnClick} />
         {/* 학생 상세 보기*/}
-        {!isMobile && <MainPanel>
+        <MainPanel>
           <TitleText>학생 상세히 보기</TitleText>
           {studentList && <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModal(true) }} classType={"subject"} setIsPetInfoModal={setIsPetInfoModal} setPetInfo={setPetInfo} />}
           {(!studentList || studentList.length === 0) && <><EmptyResult comment="등록된 학생이 없습니다." /></>}
-        </MainPanel>}
+        </MainPanel>
         {/* 퀘스트 목록(학생) */}
         {(!user.isTeacher && studentKlassData?.isApproved) && <MainPanel>
           <TitleText>퀘스트 목록</TitleText>
