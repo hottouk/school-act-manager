@@ -5,9 +5,9 @@ import { useSelector } from 'react-redux'
 const useAcc = () => {
   const db = appFireStore
   //redux 전역변수
-  const studentSelectedList = useSelector(({ studentSelected }) => { return studentSelected })
-  const activitySelectedList = useSelector(({ activitySelected }) => { return activitySelected })
-
+  const studentSelectedList = useSelector(({ studentSelected }) => studentSelected)
+  const activitySelectedList = useSelector(({ activitySelected }) => activitySelected)
+  const user = useSelector(({ user }) => user)
   //★★★ 활동 누가 함수
   const makeAccWithSelectedActi = async () => {
     let newActiList = []
@@ -67,7 +67,7 @@ const useAcc = () => {
     }
   }
 
-  //★★★★ 담임반 누가기록
+  //★★★★ 2. 담임반 누가기록
   const writeHomeAccOnDB = async (classId, type) => {
     let typeList = `${type}List`;
     let typeAccRecord = `${type}AccRecord`;
@@ -83,31 +83,30 @@ const useAcc = () => {
           let uniqueList = makeUniqueList(actiList);
           setDoc(petRef, { [typeList]: uniqueList, [typeAccRecord]: makeAccRec(uniqueList) }, { merge: true })
         }))
-    } catch (e) {
-      window.alert("데이터 기록 오류 발생. 오류번호 001. 관리자에게 문의하십시오.")
+    } catch (error) {
+      alert(`관리자에게 문의하세요(useAcc_02),${error}`);
     }
   }
 
-  //★★★★ 수행 관리 입력하기
+  //★★★★ 3. 수행 관리 입력하기: 수정(250515)
   const writePerfRecDataOnDB = async (studentList, classId, selectedPerf, perfRecord) => {
-    console.log(studentList, classId, selectedPerf, perfRecord)
-    studentList.forEach((student, index) => {
-      const curActiList = student.actList || [];                                                                      //기존 list 없으면 []
-      let newActiList = [...curActiList]                                                                              //기존 활동에 추가
+    const promises = studentList.map(async (student, index) => {
+      const assignedDate = new Date().toISOString().split("T")[0];
+      const madeBy = user.name;
+      let newActiList = student.actList || [];                                                                         //기존 list 없으면 []
       if (perfRecord[index] !== '') {
-        newActiList = newActiList.filter(({ id }) => { return id !== selectedPerf.id })                               //기존에 같은 수행평가를 입력했다면 제거
-        selectedPerf.record = perfRecord[index]                                                                       //성취도에 맞게 문구 변경    
-        newActiList.push(selectedPerf)
+        newActiList = newActiList.filter(({ id }) => { return id !== selectedPerf.id });                               //기존에 같은 수행평가를 입력했다면 제거
+        newActiList.push({ ...selectedPerf, record: perfRecord[index], assignedDate, madeBy });                        //성취도에 맞게 문구 변경    
       }
-      const newAcc = makeAccRec(newActiList)                                                                          //누가 기록 생성하기    
-      const updatedStudent = { ...student, actList: newActiList, accRecord: newAcc }                                  //학생 업데이트
+      const newAcc = makeAccRec(newActiList);                                                                          //누가 기록 생성하기    
+      const updatedStudent = { ...student, actList: newActiList, accRecord: newAcc };                                  //학생 업데이트
       //DB 통신
-      const petRef = doc(appFireStore, "classRooms", classId, "students", student.id);                                //학생 DB ref
-      try {
-        setDoc(petRef, updatedStudent, { merge: true })
-      } catch (error) {
-        console.log(error.message)
-      }
+      const petDoc = doc(appFireStore, "classRooms", classId, "students", student.id);                                 //학생 DB ref
+      await setDoc(petDoc, updatedStudent, { merge: true });
+    })
+    await Promise.all(promises).catch((error) => {
+      alert(`관리자에게 문의하세요(useAcc_03),${error}`);
+      console.log(error);
     })
   }
 

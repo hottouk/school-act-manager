@@ -14,12 +14,15 @@ import DotTitle from '../../components/Title/DotTitle';
 import useStudent from '../../hooks/useStudent';
 import useClientHeight from '../../hooks/useClientHeight';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
-
+import useFireTransaction from '../../hooks/useFireTransaction';
 //2024.11.23 3차 수정(클래스 타입 추가, css정리), ux 향상 -> 250212 코드 간소화
 const ClassroomFormPage = () => {
   //인증
   useEffect(() => { setIsVisible(true) }, []);
   const user = useSelector(({ user }) => { return user });
+  //데이터 통신 변수
+  const { addClassroom } = useFireClassData();
+  const { addHomeKlassroomTransaction } = useFireTransaction();
   //교실에 필요한 속성 값
   const [_classTitle, setClassTitle] = useState('');
   const [_subjGroup, setSubjGroup] = useState('default');
@@ -32,8 +35,6 @@ const ClassroomFormPage = () => {
   //hooks
   const navigate = useNavigate();
   const { makeStudent } = useStudent();
-  //데이터 통신 변수
-  const { addClassroom } = useFireClassData();
   //반 생성 종류에 따라 
   const { state } = useLocation();
   const [how, setHow] = useState('');             //만드는 방법
@@ -45,7 +46,6 @@ const ClassroomFormPage = () => {
   //애니메이션
   const clientHeight = useClientHeight(document.documentElement);
   const [isVisible, setIsVisible] = useState(false);
-
   //------함수부------------------------------------------------  
   const handleOnChange = (event) => {
     if (event.target.id === 'class_grade') {
@@ -54,7 +54,6 @@ const ClassroomFormPage = () => {
       setClassNumber(event.target.value)
     }
   }
-
   //제출 버튼: 유효성 검사
   const handleOnSubmit = (event) => {
     event.preventDefault();
@@ -73,7 +72,6 @@ const ClassroomFormPage = () => {
       }
     }
   }
-
   //반 생성
   const makeClass = (type) => {
     let studentList //학생 데이터 생성
@@ -96,13 +94,13 @@ const ClassroomFormPage = () => {
     let classInfo //교실 정보
     if (type === "subject") {
       classInfo = { uid: user.uid, classTitle: _classTitle, type, subject: _subjGroup, subjDetail: _subjDetail, grade: _grade, classNumber: _classNumber, intro: _intro }
+      addClassroom(classInfo, studentList);
     } else if (type === "homeroom") {
-      classInfo = { uid: user.uid, classTitle: _classTitle, type, grade: _grade, classNumber: _classNumber, intro: _intro }
+      classInfo = { uid: user.uid, classTitle: _classTitle, type, grade: _grade, classNumber: _classNumber, intro: _intro };
+      addHomeKlassroomTransaction(classInfo, studentList, user.school.schoolCode);
     }
-    addClassroom(classInfo, studentList);
     navigate("/classRooms");
   }
-
   return (
     <Container $clientheight={clientHeight} $isVisible={isVisible}>
       <StyledForm onSubmit={handleOnSubmit}>
@@ -120,7 +118,6 @@ const ClassroomFormPage = () => {
               <CSInfoSelect grade={_grade} classNumber={_classNumber} subject={_subjDetail} handleOnChange={handleOnChange} classMode={true} />
             </SelectWrapper>
           </SpBtwnWrapper>
-
           {/* 클래스 타입 */}
           {classType === "subject" && <SpBtwnWrapper>
             <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />

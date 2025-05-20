@@ -4,7 +4,23 @@ import { addDoc, arrayRemove, arrayUnion, collection, doc, getDocs, query, setDo
 const useFireClassData = () => {
   const db = appFireStore
   const colRef = collection(db, "classRooms")
-
+  
+  //1. 클래스 추가(250205 이동)
+  const addClassroom = async (klassInfo, studentPetList) => {
+    const { subject } = klassInfo;
+    const createdTime = timeStamp.fromDate(new Date());
+    try {
+      const classRef = await addDoc(colRef, { ...klassInfo, createdTime });
+      const petColRef = collection(classRef, "students");
+      const promises = studentPetList.map(async studentPet => {
+        await addDoc(petColRef, { ...studentPet, subject: subject });
+      });
+      await Promise.all(promises);
+    } catch (error) {
+      console.log("클래스 생성 실패", error);
+      window.alert("클래스 생성에 실패했습니다. 관리자에게 문의하세요(useFireClassData_01)");
+    }
+  }
   //클래스 기본 정보 수정(250219)
   const updateKlassroomInfo = async (klassId, field, info) => {
     const klassDocRef = doc(colRef, klassId);
@@ -35,28 +51,8 @@ const useFireClassData = () => {
       window.alert(error);
     }
   }
-  //클래스 추가(250205 이동)
-  const addClassroom = async (klassInfo, studentPetList) => {
-    const { type, subject } = klassInfo
-    try {
-      const createdTime = timeStamp.fromDate(new Date());
-      const classRef = await addDoc(colRef, { ...klassInfo, createdTime });
-      const petColRef = collection(classRef, "students");
-      const promises = studentPetList.map(studentPet => {
-        let studentPetInfo
-        if (type === "subject") { studentPetInfo = { ...studentPet, subject: subject } }
-        else if (type === "homeroom") { studentPetInfo = { ...studentPet, type } }
-        return addDoc(petColRef, studentPetInfo);
-      })
-      await Promise.all(promises);
-    } catch (error) {
-      console.log("클래스 생성 실패", error);
-      window.alert("클래스 생성에 실패했습니다. 관리자에게 문의하세요(useFireClassData_001)");
-    }
-  }
   //클래스 복제(2501511 추가)
   const copyKlassroom = async (klassInfo, studentPetList, newTitle) => {
-    console.log(studentPetList);
     const { id, classTitle, ...klassInfoRest } = klassInfo;
     const type = klassInfo.type;
     try {
@@ -73,7 +69,7 @@ const useFireClassData = () => {
       await Promise.all(promises);
     } catch (error) {
       console.log("클래스 복제에 실패", error);
-      window.alert("클래스 복제에 실패했습니다. 관리자에게 문의하세요(useFireClassData_002");
+      window.alert("클래스 복제에 실패했습니다. 관리자에게 문의하세요(useFireClassData_02");
     }
   }
   //클래스 수정(250205 생성)

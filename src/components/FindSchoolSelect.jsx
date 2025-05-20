@@ -105,7 +105,7 @@ const FindSchoolSelect = ({ setSchool }) => {
     <div className="bot_section">
       <StyledSearchBtn id="search_school_btn" type="button" onClick={handleOnClick}>검색</StyledSearchBtn>
     </div>
-    <StyledSchoolListWrapper $isSeacrh={_isSearch}>
+    <SchoolListWrapper $isSeacrh={_isSearch}>
       {_message && _message}
       <ul>
         {_schoolList && _schoolList.map((item) => {
@@ -123,7 +123,7 @@ const FindSchoolSelect = ({ setSchool }) => {
           </li>)
         })}
       </ul>
-    </StyledSchoolListWrapper>
+    </SchoolListWrapper>
   </Container>
   )
 }
@@ -151,7 +151,7 @@ const StyledSearchBtn = styled.button`
   font-size: 12px;
   color: black;
 `
-const StyledSchoolListWrapper = styled.div`
+const SchoolListWrapper = styled.div`
   width: 100%;
   background-color: #efefef;
   height: ${({ $isSeacrh }) => { return $isSeacrh ? "200px" : "0" }};

@@ -19,7 +19,7 @@ const PetImg = ({ subject, step, onClick, path, styles }) => {
   const getImage = () => {
     if (!subject) return;
     if (path) {
-      fetchImgUrl(path, setImgSrc)
+      fetchImgUrl(path, setImgSrc);
     } else {
       let pathList
       switch (subject) {

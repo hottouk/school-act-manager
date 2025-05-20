@@ -269,12 +269,11 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     setGptLoadingIndex(index); //스피너 작동
     translateEngtoKorean(studentOcr[index]);
   }
-  //------확인/취소------------------------------------------------  
   //최종 저장 확인 버튼
   const saveBtnOnClick = () => {
     if (selectedPerf) {
       if (window.confirm("저장하시겠습니까?")) {
-        writePerfRecDataOnDB(studentList, classId, selectedPerf, perfRecord)
+        writePerfRecDataOnDB(studentList, classId, selectedPerf, perfRecord);
         initData();
         onHide();
       }

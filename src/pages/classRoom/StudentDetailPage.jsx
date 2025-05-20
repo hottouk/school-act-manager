@@ -37,13 +37,14 @@ const StudentDetailPage = () => {
   const allStudentList = useSelector((state) => state.allStudents);
   const allActivityList = useSelector((state) => state.allActivities);
   const { updatePetInfo } = useFirePetData();
-  const { updateUserPetInfo } = useFireUserData();
+  const { fetchUserData } = useFireUserData();
   //실시간 학생 pet 정보
   const { pet: petData } = useFetchRtPetDoc(params.id, params.studentId);
   useEffect(() => {
     checkUser();
     setNthStudent(allStudentList.findIndex(({ id }) => { return id === params.studentId })); //전체 학생에서 몇 번째인지 index 찾기
     syncPetInfo();
+    fetchPetInfo();
     bindData();
   }, [petData])
   //hooks
@@ -79,18 +80,28 @@ const StudentDetailPage = () => {
     if (master?.studentId === user.uid) { setIsMaster(true); }
     else { navigate(-1); }
   }
-  //펫 동기화
+  //펫 동기화(학생)
   const syncPetInfo = () => {
     if (user.isTeacher || !petData || !user) return;
     const confirm = window.confirm("펫 정보를 동기화 하시겠습니까?")
     if (confirm) {
-      const actiList = { actList: petData.actList }
       const myPetList = user.myPetList;
       if (!myPetList) return;
-      const myPet = myPetList.find((item) => { return item.petId === params.studentId });
+      const myPet = myPetList.find((item) => item.petId === params.studentId);
       updatePetInfo(params.id, params.studentId, myPet); //pet 업데이트
-      updateUserPetInfo(params.studentId, actiList);     //user 업데이트
     }
+  }
+  //펫 동기화(교사)
+  const fetchPetInfo = () => {
+    if (!user.isTeacher) return;
+    const masterId = petData?.master?.studentId;
+    if (!masterId) return;
+    fetchUserData(masterId).then((info) => {
+      const petList = info.myPetList;
+      if (!petList) return;
+      const thisPet = petList.find((item) => item.petId === params.studentId);
+      updatePetInfo(params.id, params.studentId, thisPet); //pet 업데이트
+    })
   }
   //실시간 acc
   const getAccRec = () => { return _actiList?.reduce((acc, cur) => acc + cur.record, '') }
@@ -244,10 +255,9 @@ const StudentDetailPage = () => {
         {(user.isTeacher && !isModifying) && <ArrowWrapper><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
         <AnimRotation isAnimating={isAnimating}>
           <StyledBackgroundPannel>
-            <PetInfoSection
-              petName={petData?.petName} desc={petData?.desc} levelInfo={petData?.level} path={petData?.path}
-              subject={petData?.subject} studentNumber={petData?.studentNumber} master={petData?.master} writtenName={_writtenName}
-              isModifiying={isModifying} setWrittenName={setWrittenName} />
+            {petData && <PetInfoSection
+              pet={petData} writtenName={_writtenName}
+              isModifiying={isModifying} setWrittenName={setWrittenName} />}
             {(user.isTeacher || isMaster) && <GrayBotPannel>
               <GridBotContainer>
                 <GridRow>

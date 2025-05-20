@@ -1,5 +1,5 @@
 import { appFireStore } from '../../firebase/config'
-import { addDoc, collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { addDoc, collection, doc, getDocs, updateDoc } from 'firebase/firestore'
 
 //250122 생성
 const useFirePetData = () => {
@@ -8,12 +8,10 @@ const useFirePetData = () => {
   //3. Pet 업데이트(250207)
   const updatePetInfo = async (klassId, petId, info) => {
     const petRef = doc(db, "classRooms", klassId, "students", petId);
-    try {
-      await updateDoc(petRef, { ...info })
-    } catch (error) {
-      console.log(error)
-      window.alert(error)
-    }
+    await updateDoc(petRef, { ...info }).catch((error) => {
+      alert(`관리자에게 문의하세요(useFirePetData_03),${error}`);
+      console.log(error);
+    })
   }
 
   //2. fetch 클래스 petList 

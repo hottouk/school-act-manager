@@ -16,8 +16,8 @@ const StudentList = ({ petList, plusBtnOnClick, classType, setIsPetInfoModal, se
 
   //유저 상호작용
   const handleOnClick = (pet) => {
-    const petId = pet.id
-    const masterId = pet.master?.studentId
+    const petId = pet.id;
+    const masterId = pet.master?.studentId;
     if (user.isTeacher) { // 교사
       if (classType === "subject") { navigate(`/classrooms/${classId.id}/${petId}`) }
       else { navigate(`/homeroom/${classId.id}/${pet.id}`) }

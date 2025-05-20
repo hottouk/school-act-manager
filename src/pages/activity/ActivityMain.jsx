@@ -52,7 +52,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   useEffect(() => { fetchDataByLocation() }, [location, selectedSubj]);
   const itemsPerPage = 30;
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageData, setPageData] = useState(_allActiList?.slice(0, 30));
+  const [pageData, setPageData] = useState(_allActiList?.slice(0, itemsPerPage));
   useEffect(() => {
     const start = (currentPage - 1) * itemsPerPage;
     const end = currentPage * itemsPerPage;
@@ -79,7 +79,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
     } else { //활동관리-전체 활동-과목 선택
       fetchAllActis("subject", selectedSubj, "isPrivate", false).then((actiList) => {
         actiList.sort((a, b) => a.title.localeCompare(b.title));
-        setPageData(actiList.slice(0, 30));
+        setPageData(actiList.slice(0, itemsPerPage));
         setAllActiList(actiList);
         setCurrentPage(1);
         setIsLoading(false);
