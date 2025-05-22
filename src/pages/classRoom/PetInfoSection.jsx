@@ -32,7 +32,7 @@ const PetInfoSection = ({ pet, isModifiying, setWrittenName, writtenName }) => {
 
 const Container = styled.div`
 	display: grid;
-  grid-template-columns: 250px 1fr; 
+  grid-template-columns: 1fr 3fr; 
   background-color: #efefef;
   border-radius: 15px;
   @media screen and (max-width: 768px){

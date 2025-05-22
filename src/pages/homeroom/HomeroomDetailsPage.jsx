@@ -146,7 +146,7 @@ const HomeroomDetailsPage = () => {
         <MainPanel styles={{ marginTop: "55px" }}>
           <TabWrapper>
             <UpperTab className="tab1" value={tab} top="-61px" onClick={() => { setTab(1) }}>자율</UpperTab>
-            <UpperTab className="tab2" value={tab} top="-61px" left="62px" onClick={() => { setTab(2) }}>진로</UpperTab>
+            <UpperTab className="tab2" value={tab} top="-61px" left="59px" onClick={() => { setTab(2) }}>진로</UpperTab>
           </TabWrapper>
           <TitleText>빠른 세특 쫑알이</TitleText>
           {tab === 1 && <MainSelector type="self" studentList={studentList} actiList={selfActiList} classId={thisClass.id} />}
