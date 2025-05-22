@@ -1,6 +1,5 @@
 import OpenAI from 'openai'
 import { useState } from 'react'
-import useGetByte from './useGetByte'
 import { gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg, gptPerfRecordMsg, gptTranslateMsg } from '../data/gptMsgDataList'
 
 //프롬프트 수정(240808)-> 모델 변경 가능(250520)
@@ -8,7 +7,6 @@ const useChatGpt = () => {
   const openai = new OpenAI({ apiKey: process.env.REACT_APP_OPENAI_API_KEY, dangerouslyAllowBrowser: true })
   const [gptAnswer, setGptAnswer] = useState('');
   const [gptRes, setGptRes] = useState(null);
-  const { getByteLengthOfString } = useGetByte();
 
   //교과 과세특 
   const askSubjRecord = async (title, subject, content) => {

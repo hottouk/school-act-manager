@@ -24,8 +24,8 @@ const StudentList = ({ petList, plusBtnOnClick, classType, setIsPetInfoModal, se
     } else {              // 학생
       if (user.uid === masterId) { navigate(`/classrooms/${classId.id}/${petId}`) }
       else {
-        setPetInfo(pet)
-        setIsPetInfoModal(true)
+        setPetInfo(pet);
+        setIsPetInfoModal(true);
       }
     }
   }

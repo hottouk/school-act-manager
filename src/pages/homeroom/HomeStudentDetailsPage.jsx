@@ -18,6 +18,7 @@ import ByteCalculator from '../../components/Etc/ByteCalculator';
 import TransparentBtn from '../../components/Btn/TransparentBtn';
 import UpperTab from '../../components/UpperTab';
 import SubNav from '../../components/Bar/SubNav';
+import PetInfoSection from '../classroom/PetInfoSection';
 //hooks
 import useChatGpt from '../../hooks/useChatGpt';
 import useClassAuth from '../../hooks/useClassAuth';
@@ -30,7 +31,6 @@ import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity';
 import AnimRotation from '../../anim/AnimRotation';
 //이미지
 import arrows_icon from '../../image/icon/arrows_icon.png';
-import PetInfoSection from '../classroom/PetInfoSection';
 
 //2024.10.16 생성-> 회전효과 추가(24.12.01)-> 정보 통신 일원화(250104)-> 진로, 자율 그리드 섹션 추가(250223)
 const HomeStudentDetailPage = () => {
@@ -223,11 +223,11 @@ const HomeStudentDetailPage = () => {
           <StyledBackgroundPannel>
             <TabWrapper>
               <UpperTab className="tab1" value={tab} onClick={() => { handleTabOnClick(1) }}>행동특성</UpperTab>
-              <UpperTab className="tab2" value={tab} left="94px" onClick={() => { handleTabOnClick(2) }}>자율</UpperTab>
-              <UpperTab className="tab3" value={tab} left="156px" onClick={() => { handleTabOnClick(3) }}>진로</UpperTab>
+              <UpperTab className="tab2" value={tab} left="89px" onClick={() => { handleTabOnClick(2) }}>자율</UpperTab>
+              <UpperTab className="tab3" value={tab} left="148px" onClick={() => { handleTabOnClick(3) }}>진로</UpperTab>
             </TabWrapper>
             {/* 펫 정보 */}
-            <PetInfoSection subject={""} studentNumber={studentNumber} isModifiying={isModifying} writtenName={_writtenName} setWrittenName={setWrittenName} />
+            {pet && <PetInfoSection pet={pet} subject={""} studentNumber={studentNumber} isModifiying={isModifying} writtenName={_writtenName} setWrittenName={setWrittenName} />}
             <StyledGrayPannel>
               {/* 개요 */}
               {(step === '') && <IntroWrapper>

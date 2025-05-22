@@ -244,9 +244,9 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     setMySpd(Math.floor(spec.spd));
     setMySkillList(skills);
     if (quizRecord) {
-      const key = gameDetails.id
+      const key = gameDetails.id;
       const thisRecordList = quizRecord[key] || [];
-      const enmLevel = level ? getEnmLevel(level?.accExp) : 1;
+      const enmLevel = level?.accExp ? getEnmLevel(level.accExp) : 1;
       setMyRecordList(thisRecordList);
       setEnmLevel(enmLevel);
       bindEnmData(enmLevel);

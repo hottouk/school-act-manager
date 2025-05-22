@@ -156,10 +156,10 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
         setCoin(Number(event.target.value))
         break;
       case "first_date":
-        setDate(event.target.value.replace(/-/g, "."))
+        setDate(event.target.value.replace(/-/g, "."));
         break;
       case "second_date":
-        setSecondDate(event.target.value.replace(/-/g, "."))
+        setSecondDate(event.target.value.replace(/-/g, "."));
         break;
       default:
         return;
@@ -232,10 +232,10 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   //날짜, 시간, 생기부 포맷으로
   const handleTimeFormatted = () => {
     let result = ''
-    if (_date && _secondDate && _hour) result = `(${_date}-${_secondDate}/${_hour}시간)`
-    if (_date && _secondDate && !_hour) result = `(${_date}-${_secondDate})`
-    if (_date && !_secondDate && _hour) result = `(${_date}/${_hour}시간)`
-    if (_date && !_secondDate && !_hour) result = `(${_date})`
+    if (_date && _secondDate && _hour) result = `(${_date}.-${_secondDate}./${_hour}시간)`
+    if (_date && _secondDate && !_hour) result = `(${_date}.-${_secondDate}.)`
+    if (_date && !_secondDate && _hour) result = `(${_date}./${_hour}시간)`
+    if (_date && !_secondDate && !_hour) result = `(${_date}.)`
     if (!_date && !_secondDate && _hour) result = `(${_hour}시간)`
     if (!_date && !_secondDate && !_hour) result = ''
     return result
