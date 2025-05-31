@@ -3,7 +3,7 @@ import Select from 'react-select'
 import { useDispatch } from 'react-redux'
 import { setSelectStudent } from '../store/studentSelectedSlice'
 import { setSelectActivity } from '../store/activitySelectedSlice'
-let MultiSelector = (
+const MultiSelector = (
   { studentList, activitiyList, selectStudentRef, selectActRef, studentCheckBoxRef, actCheckBoxRef, isAllStudentChecked, isAllActivitySelected, setIsAllStudentChecked, setIsAllActivitySelected }) => {
   //1. 변수
   let dispatcher = useDispatch() //redux dispatcher
@@ -46,6 +46,7 @@ let MultiSelector = (
   }
 
   const handleActivitySelection = (event) => {
+    console.log(event);
     dispatcher(setSelectActivity(event))
   }
 

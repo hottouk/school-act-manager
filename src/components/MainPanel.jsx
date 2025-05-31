@@ -3,7 +3,6 @@ import styled from "styled-components"
 //2024.12.07 => 250211 수정
 const MainPanel = ({ children, styles }) => {
   const marginTop = styles?.marginTop || "25px"
-
   return (
     <Container
       $marginTop={marginTop}

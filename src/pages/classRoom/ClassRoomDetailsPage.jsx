@@ -250,9 +250,7 @@ const ClassroomDetailsPage = () => {
           {(!actiList || actiList.length === 0)
             ? <EmptyResult comment="등록된 활동이 없습니다." />
             : <ActivityList actiList={actiList} setIsActiInfoModal={setIsActiInfoModal} setActiInfo={setActiInfo} />}
-        </MainPanel>
-        }
-
+        </MainPanel>}
       </Container >
     }
     {/* 학생 추가 */}

@@ -1,9 +1,9 @@
 //라이브러리
 import useClientHeight from "../../hooks/useClientHeight"
 import { useEffect, useState } from "react"
-import { useDispatch } from "react-redux"
-import { setAllStudents } from "../../store/allStudentsSlice"
+import { useDispatch, } from "react-redux"
 import styled from "styled-components"
+import { setAllStudents } from "../../store/allStudentsSlice"
 //페이지
 import SignupSection from "./SignupSection"
 //컴포넌트
@@ -12,6 +12,7 @@ import CardList from "../../components/List/CardList"
 import ClassMemberModal from "../../components/Modal/ApplyClassModal"
 import SearchBar from "../../components/Bar/SearchBar"
 import Pagenation from "../../components/Pagenation"
+import UpperTab from "../../components/UpperTab"
 //hooks
 import useFireBasic from "../../hooks/Firebase/useFireBasic"
 import useFireClassData from "../../hooks/Firebase/useFireClassData"
@@ -21,12 +22,19 @@ import useFireTransaction from "../../hooks/useFireTransaction"
 import useFetchRtMyUserData from "../../hooks/RealTimeData/useFetchRtMyUserData"
 import useFireUserData from "../../hooks/Firebase/useFireUserData"
 import useFireSchoolData from "../../hooks/Firebase/useFireSchoolData"
+import useFireActiData from "../../hooks/Firebase/useFireActiData"
+import MySchoolSelectorSection from "./MySchoolSelectorSection"
+import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity"
 
 //25.01.21 생성 -> 로직 수정(250216)-> 가입 섹션 분리(250218)
 const MySchoolPage = () => {
   //준비
   const { myUserData: user } = useFetchRtMyUserData();
-  useEffect(() => { setMySchool(user?.school) }, [user])
+  useEffect(() => {
+    if (!user) return;
+    setMySchool(user?.school);
+    fetchAllActis("uid", user?.uid, "subject", "담임").then((actiList) => { setActiList(actiList); });
+  }, [user])
   const dispatcher = useDispatch();
   const { fetchDoc } = useFireBasic("school");
   const { changeSchoolMaster } = useFireSchoolData();
@@ -34,8 +42,13 @@ const MySchoolPage = () => {
   const { leaveSchoolTransaction, changeIsTeacherTransaction } = useFireTransaction();
   const { fetchPets } = useFirePetData();
   const { fetchUserData, updateUserArrayInfo } = useFireUserData();
+  const { fetchAllActis } = useFireActiData();
+  //시작
   const [_mySchool, setMySchool] = useState(null);                       //가입된 학교
-  useEffect(() => { fetchSchoolInfo(); }, [_mySchool]);                  //가입 학교 멤버
+  useEffect(() => {
+    fetchHomeroomListInfo();                                                //가입 학교 담임반    
+    fetchSchoolInfo();                                                      //가입 학교 멤버 
+  }, [_mySchool]);
   const [_findSchool, setFindSchool] = useState(null);                   //검색된 학교
   useEffect(() => { fetchSchoolData(); }, [_findSchool])
   const [_selectedSchool, setSelectedSchool] = useState(null);           //검색 선택 학교
@@ -50,18 +63,22 @@ const MySchoolPage = () => {
   useEffect(() => { onSelectedMemberUpdate() }, [_selectedMember]); //fetch 선택 교사 반 list
   const [subjKlassList, setSubjKlassList] = useState([]);
   const [_klass, setKlass] = useState(null);
-  useEffect(() => { fetchPetList(); }, [_klass]);         //fetch 선택 반 pet list
+  useEffect(() => { fetchPetListInfo(); }, [_klass]);         //fetch 선택 반 pet list
   //페이지네이션
   const itemsPerPage = 20;
   const [currentStudentPage, setCurrentStudentPage] = useState(1);
   const [studentPageData, setStudentPageData] = useState([]);
   useEffect(() => { devideDataToPage(); }, [currentStudentPage]);
+  //자율/진로 입력창
+  const [tab, setTab] = useState(1);
+  const [homeroomList, setHomeroomList] = useState([]);
+  const [actiList, setActiList] = useState([]);
   //모달
-  const [isModal, setIsModal] = useState(false);
+  const [isKlassMemberModal, setIsKlassMemberModal] = useState(false);
   //반응형
   const isMobile = useMediaQuery("(max-width: 768px)");
   const clientHeight = useClientHeight(document.documentElement);
-
+  const [isShowStudent, setIsShowStudent] = useState(false);
   //------함수부------------------------------------------------  
   //학교 외 다른 정보 초기화
   const initData = () => {
@@ -71,10 +88,17 @@ const MySchoolPage = () => {
     setSubjKlassList([]);
     setTeacherList([]);
   }
+  //학교 담임반 가져오기
+  const fetchHomeroomListInfo = () => {
+    const code = _mySchool?.schoolCode ?? null;
+    if (!code) return;
+    fetchClassrooms("schoolCode", code).then((list) => { setHomeroomList(list); });
+  }
+
   //선택 멤버 변경시
   const onSelectedMemberUpdate = () => {
     if (!_selectedMember) return;
-    if (_selectedMember.isTeacher) { fetchClassroomList(); }
+    if (_selectedMember.isTeacher) { fetchKlassroomsInfoByTeacher(); }
     else { fetchUserData(_selectedMember.uid).then((data) => { setSelectedStudent(data); }) }
   }
   //학교 조회_school Col
@@ -87,12 +111,10 @@ const MySchoolPage = () => {
   }
   //학교 정보 가져오기_(내 학교 정보)school Col
   const fetchSchoolInfo = async () => {
-    if (!_mySchool) return;
     initData();
-    const code = _mySchool.schoolCode;
+    const code = _mySchool?.schoolCode ?? null;
     if (!code) return;
     fetchDoc(code).then((info) => {
-      console.log(info);
       setSchoolMaster(info?.schoolMaster ?? null);
       setMemberList(info?.memberList ?? []);
     })
@@ -110,22 +132,22 @@ const MySchoolPage = () => {
     setTeacherList(teacherList);
     setStudentList(studentList);
   }
-
   //선택 교사 클래스 가져오기 + 분류
-  const fetchClassroomList = () => {
+  const fetchKlassroomsInfoByTeacher = () => {
     if (!_selectedMember) return;
     fetchClassrooms("uid", _selectedMember?.uid).then((list) => {
-      let sorted = sortClassrooms(list)
+      const sorted = sortClassrooms(list)
       setSubjKlassList(sorted.subjClassList);
     })
   }
   //선택 클래스 pet 가져오기
-  const fetchPetList = () => {
+  const fetchPetListInfo = () => {
     if (!_klass) return;
     fetchPets(_klass.id).then((list) => {
       dispatcher(setAllStudents(list))
     })
   }
+
   //페이지네이션 데이터 나누기
   const devideDataToPage = () => {
     const start = (currentStudentPage - 1) * itemsPerPage;
@@ -152,7 +174,7 @@ const MySchoolPage = () => {
   }
   //멤버 클릭
   const handleMemberOnClick = (item) => {
-    setSelectedMember(item)
+    setSelectedMember(item);
   }
   //선택 해제
   const handleUnSelect = () => {
@@ -167,7 +189,7 @@ const MySchoolPage = () => {
     else { confirm = window.confirm(`${item.classTitle}에 가입 신청하시겠습니까?`); }
     if (!confirm) return;
     if (user.isTeacher) { joinAsCoTeacher(item, user) }
-    else { setIsModal(true) }
+    else { setIsKlassMemberModal(true) }
   }
   //교사 학생 변경
   const handleIsTeacherChangeOnClick = () => {
@@ -199,6 +221,8 @@ const MySchoolPage = () => {
     if (confirm === "탈퇴합니다") { leaveSchoolTransaction(user.school.schoolCode); }
     else { alert("문구가 제대로 입력되지 않았습니다."); }
   }
+
+
   return (
     <>
       <Container $clientheight={clientHeight}>
@@ -219,15 +243,17 @@ const MySchoolPage = () => {
               <ClickableText onClick={handleChangeOnClick}>학교 변경</ClickableText>
             </Row>
           </MainPanel>
-          {/* 교사/학생 ㅕ명단 */}
+          {/* 교사/학생명단 */}
           <MainPanel>
             {/* PC */}
             {!isMobile && <>
               <TitleText>{_mySchool?.schoolName} 등록 교사 명단</TitleText>
               {_mySchool && <CardList dataList={teacherList} type="teacher" onClick={handleMemberOnClick} selected={_selectedMember?.uid} />}
-              <TitleText>{_mySchool?.schoolName} 등록 학생 명단</TitleText>
-              {_mySchool && <CardList dataList={studentPageData} type="teacher" onClick={handleMemberOnClick} selected={_selectedMember?.uid} />}
-              <Row style={{ justifyContent: "center" }}><Pagenation totalItems={studentList?.length ?? 1} itemsPerPage={20} currentPage={currentStudentPage} onPageChange={setCurrentStudentPage} /></Row>
+              <ClikableTitle onClick={() => { setIsShowStudent(!isShowStudent) }}>{_mySchool?.schoolName} 등록 학생 명단 ▼ </ClikableTitle>
+              {_mySchool && <AnimMaxHightOpacity isVisible={isShowStudent}>
+                <CardList dataList={studentPageData} type="teacher" onClick={handleMemberOnClick} selected={_selectedMember?.uid} />
+                <Row style={{ justifyContent: "center" }}><Pagenation totalItems={studentList?.length ?? 1} itemsPerPage={20} currentPage={currentStudentPage} onPageChange={setCurrentStudentPage} /></Row>
+              </AnimMaxHightOpacity>}
             </>}
             {/* 모바일 */}
             {(isMobile && !_selectedMember) && <><TitleText>{_mySchool?.schoolName} 등록 교사 명단</TitleText>
@@ -239,16 +265,21 @@ const MySchoolPage = () => {
             {!isMobile && <SearchBar title="교과반 목록" type="classroom" list={subjKlassList} setList={setSubjKlassList} />}
             <CardList dataList={subjKlassList} type="classroom" onClick={handleKlassOnClick} />
           </MainPanel>}
-          {_selectedMember?.isTeacher === false && <MainPanel>
-            <TitleText>학생 정보</TitleText>
-          </MainPanel>}
         </>}
+        {/* 자율/진로 입력 */}
+        {user?.isTeacher && <MainPanel styles={{ marginTop: "55px" }}>
+          <TabWrapper>
+            <UpperTab className="tab1" value={tab} top="-70px" onClick={() => { setTab(1) }}>자율</UpperTab>
+            <UpperTab className="tab2" value={tab} top="-70px" left="59px" onClick={() => { setTab(2) }}>진로</UpperTab>
+            <TitleText>자율/진로 입력창</TitleText>
+            <MySchoolSelectorSection tab={tab} homeroomList={homeroomList} actiList={actiList} />
+          </TabWrapper>
+        </MainPanel>}
         {/* 학교 미가입자 */}
         {!_mySchool && <SignupSection myUserData={user} findSchool={_findSchool} selectedSchool={_selectedSchool} setFindSchool={setFindSchool}
           Row={Row} Wrapper={Wrapper} TitleText={TitleText} ClickableText={ClickableText} />}
       </Container >
-      {isModal && <ClassMemberModal show={isModal} onHide={() => { setIsModal(false) }} klass={_klass} myUserData={user} />
-      }
+      {isKlassMemberModal && <ClassMemberModal show={isKlassMemberModal} onHide={() => { setIsKlassMemberModal(false) }} klass={_klass} myUserData={user} />}
     </>
   )
 }
@@ -256,6 +287,7 @@ const MySchoolPage = () => {
 const Container = styled.div`
   box-sizing: border-box;
   width: 80%;
+  min-height: 350px;
   margin: 0 auto 50px;
   @media (max-width: 768px){
     margin: 0;
@@ -268,11 +300,13 @@ const Container = styled.div`
 `
 const Row = styled.div`
   display: flex;
-  justify-content: center;
 `
 const Wrapper = styled(Row)`
   margin: 0 auto;
   width: 80%;
+`
+const TabWrapper = styled.div`
+  position: relative;
 `
 const TitleText = styled.h5`
   display: flex;
@@ -280,6 +314,9 @@ const TitleText = styled.h5`
   color: #3a3a3a;
   font-weight: bold;
   margin: 10px auto;
+`
+const ClikableTitle = styled(TitleText)`
+  cursor: pointer;
 `
 const ClickableText = styled.p`
   margin: 0;

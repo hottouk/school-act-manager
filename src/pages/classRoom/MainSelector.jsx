@@ -64,7 +64,7 @@ const MainSelector = ({ isMobile, type, studentList, actiList, classId, setIsPer
     <>
       {/* 학생 셀렉터, 활동 셀렉터 */}
       <Container>
-        <SelectorWrapper>
+        <SelectWrapper>
           <MultiSelector
             studentList={studentList}
             selectStudentRef={selectStudentRef}
@@ -74,8 +74,8 @@ const MainSelector = ({ isMobile, type, studentList, actiList, classId, setIsPer
             setIsAllStudentChecked={setIsAllStudentChecked}
             setIsAllActivitySelected={setIsAllActiChecked}
           />
-        </SelectorWrapper>
-        {(actiList && actiList.length !== 0) && <SelectorWrapper>
+        </SelectWrapper>
+        {(actiList && actiList.length !== 0) && <SelectWrapper>
           <MultiSelector
             activitiyList={actiList}
             selectActRef={selectActRef}
@@ -85,11 +85,11 @@ const MainSelector = ({ isMobile, type, studentList, actiList, classId, setIsPer
             setIsAllStudentChecked={setIsAllStudentChecked}
             setIsAllActivitySelected={setIsAllActiChecked}
           />
-        </SelectorWrapper>}
+        </SelectWrapper>}
         {(!actiList || actiList.length === 0) &&
-          <SelectorWrapper>활동이 없습니다. PC 버젼에서 활동을 추가해주세요.
+          <SelectWrapper>활동이 없습니다. PC 버젼에서 활동을 추가해주세요.
             <Row style={{ justifyContent: "center", marginTop: "10px" }}>{!isMobile && <MidBtn onClick={() => { navigate("/activities_setting") }}>활동 추가</MidBtn>}</Row>
-          </SelectorWrapper>}
+          </SelectWrapper>}
         <AccWrapper>
           <AccTextArea type="text" value={_accRecord} disabled={true} />
           <ByteWrapper>
@@ -128,12 +128,7 @@ const Container = styled.div`
 const Row = styled.div`
   display: flex;
 `
-const BtnWrapper = styled.div`
-  display: flex;
-  margin: 20px auto;
-  gap: 40px;
-`
-const SelectorWrapper = styled.div`
+const SelectWrapper = styled.div`
   width: 50%;
   margin: 0 auto;
   margin-top: 35px;
@@ -142,8 +137,7 @@ const SelectorWrapper = styled.div`
     margin-top: 35px;
   }
 `
-const AccWrapper = styled.div`
-  display: flex;
+const AccWrapper = styled(Row)`
   flex-direction: column;
   align-items: flex-end;
   margin: 10px auto;
@@ -156,6 +150,10 @@ const ByteWrapper = styled.div`
     width: 85px;
     border-radius: 7px;
   }
+`
+const BtnWrapper = styled(Row)`
+  margin: 20px auto;
+  gap: 40px;
 `
 const AccTextArea = styled.textarea`
   width: 80%;

@@ -95,8 +95,8 @@ const HomeClassAllStudentsPage = () => {
       <StyledGirdContainer ref={printRef}>
         <TabWrapper >
           <UpperTab className="tab1" value={tab} onClick={() => { setTab(1) }}>행동특성</UpperTab>
-          <UpperTab className="tab2" value={tab} left="94px" onClick={() => { setTab(2) }}>자율</UpperTab>
-          <UpperTab className="tab3" value={tab} left="156px" onClick={() => { setTab(3) }}>진로</UpperTab>
+          <UpperTab className="tab2" value={tab} left="88px" onClick={() => { setTab(2) }}>자율</UpperTab>
+          <UpperTab className="tab3" value={tab} left="147px" onClick={() => { setTab(3) }}>진로</UpperTab>
         </TabWrapper>
         <HeaderWrapper>
           <StyledHeader>연번</StyledHeader>
