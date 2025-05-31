@@ -91,14 +91,13 @@ const ClassroomFormPage = () => {
         break;
       default: return
     }
-    let classInfo //교실 정보
+    let klassInfo //교실 정보
     if (type === "subject") {
-      classInfo = { uid: user.uid, classTitle: _classTitle, type, subject: _subjGroup, subjDetail: _subjDetail, grade: _grade, classNumber: _classNumber, intro: _intro }
-      addClassroom(classInfo, studentList);
+      klassInfo = { uid: user.uid, classTitle: _classTitle, type, subject: _subjGroup, subjDetail: _subjDetail, grade: _grade, classNumber: _classNumber, intro: _intro }
     } else if (type === "homeroom") {
-      classInfo = { uid: user.uid, classTitle: _classTitle, type, grade: _grade, classNumber: _classNumber, intro: _intro };
-      addHomeKlassroomTransaction(classInfo, studentList, user.school.schoolCode);
+      klassInfo = { uid: user.uid, classTitle: _classTitle, type, grade: _grade, classNumber: _classNumber, intro: _intro, schoolCode: user.school.schoolCode };
     }
+    addClassroom(klassInfo, studentList);
     navigate("/classRooms");
   }
   return (
@@ -135,8 +134,8 @@ const ClassroomFormPage = () => {
             <StyledInput id="class_number_of_studnets" type="number" min='1' max='99' value={_numberOfStudent} onChange={(event) => { setNumberOfStudent(event.target.value) }} required /></ColWrapper>}
           {(how === "by_hand") && <label>학생 이름과 학번을 모두 수동 입력하여 반을 생성합니다.</label>}
           <BtnWrapper>
-            <LongW100Btn type="submit" btnName="생성" />
-            <LongW100Btn id="cancel" btnName="취소" btnOnClick={() => { navigate('/classRooms') }} />
+            <LongW100Btn type="submit">생성</LongW100Btn>
+            <LongW100Btn id="cancel" btnOnClick={() => { navigate('/classRooms') }}>취소</LongW100Btn>
           </BtnWrapper>
         </fieldset>
       </StyledForm >

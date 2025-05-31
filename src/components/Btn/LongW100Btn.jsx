@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-const LongW100Btn = ({ id, btnName, type, btnOnClick, styles }) => {
+const LongW100Btn = ({ id, btnName, type, btnOnClick, styles, children }) => {
   //기본값
   let btnColor = styles?.btnColor || "transparent";
   let border = styles?.border || "2px solid rgba(120, 120, 120, 0.5)";
@@ -14,7 +14,7 @@ const LongW100Btn = ({ id, btnName, type, btnOnClick, styles }) => {
       $color={color}
       $hoverBtnColor={hoverBtnColor}
     >
-      {btnName || "샘플"}</StyledButton>
+      {children || btnName || "샘플"}</StyledButton>
   )
 }
 

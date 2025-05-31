@@ -382,11 +382,11 @@ const StyledTab = styled.p`
   cursor: pointer;
   &.tab2 {
     background-color: ${(props) => { return (props.$tab === 2 ? "#3454d1" : "#919294") }};
-    left: 75px;
+    left: 72px;
   }
   &.tab3 {
     background-color: ${(props) => { return (props.$tab === 3 ? "#3454d1" : "#919294") }};
-    left: 153px;
+    left: 146px;
   }
 `
 const RowWrapper = styled.ul`

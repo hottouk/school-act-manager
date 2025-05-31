@@ -24,6 +24,7 @@ import x_btn from "../../image/icon/x_btn.png"
 import arrows_icon from "../../image/icon/arrows_icon.png"
 //효과
 import AnimRotation from '../../anim/AnimRotation';
+import useMediaQuery from '../../hooks/useMediaQuery';
 
 //코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223)
 const StudentDetailPage = () => {
@@ -46,11 +47,10 @@ const StudentDetailPage = () => {
     syncPetInfo();
     fetchPetInfo();
     bindData();
-  }, [petData])
-  //hooks
+  }, [petData]);
   //편집 모드 
-  const [isModifying, setIsModifying] = useState(false)
-  const { deleteStudent, updateStudent } = useAddUpdFireData("classRooms")
+  const [isModifying, setIsModifying] = useState(false);
+  const { deleteStudent, updateStudent } = useAddUpdFireData("classRooms");
   //학생 관련 정보
   const [nthStudent, setNthStudent] = useState(null);
   const [_writtenName, setWrittenName] = useState('미등록');
@@ -58,12 +58,14 @@ const StudentDetailPage = () => {
   const [_addOnActi, setAddOnActi] = useState(null);
   const [isMaster, setIsMaster] = useState(false);
   //GPT 모달
-  const [isGptShown, setIsGptShown] = useState(false)
-  const [selectedActi, setSelectedActi] = useState(null)
-  const [gptRecord, setGptRecord] = useState('')
-  useEffect(() => { if (selectedActi) { changeAccRecord(selectedActi.index, gptRecord); } }, [gptRecord]) //GPT 개별화 문구 textArea에 띄우고 새 활동 문구로 저장.
+  const [isGptShown, setIsGptShown] = useState(false);
+  const [selectedActi, setSelectedActi] = useState(null);
+  const [gptRecord, setGptRecord] = useState('');
+  useEffect(() => { if (selectedActi) { changeAccRecord(selectedActi.index, gptRecord); } }, [gptRecord]); //GPT 개별화 문구 textArea에 띄우고 새 활동 문구로 저장.
+  //모바일
+  const isMobile = useMediaQuery("(max-width: 768px)");
   //에니메이션
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   //------함수부------------------------------------------------  
@@ -114,7 +116,6 @@ const StudentDetailPage = () => {
       setIsAnimating(false);
     }, 500); // 애니메이션 시간과 동일하게 설정
   }
-
   //활동 순서 변경(241224)
   const moveActiItem = (index, direction) => {
     setActiList((prevActiList) => {
@@ -224,17 +225,16 @@ const StudentDetailPage = () => {
   }
 
   //------랜더링------------------------------------------------  
-  //교사
-  const TeacherActiRow = ({ item, index }) => {
+  const ActiRow = ({ item, index }) => {
     const { title, record, madeBy, assignedDate } = item;
     return (
       <GridRow>
-        <GridItem>{index + 1}</GridItem>
+        {!isMobile && <GridItem>{index + 1}</GridItem>}
         <GridItem><p style={{ margin: "0" }}>{title}</p></GridItem>
         <GridItem className="left-align"><span>{record}</span></GridItem>
-        <GridItem>{assignedDate || '없음'}</GridItem>
-        <GridItem>{madeBy || '익명'}</GridItem>
-        <GridItem><ByteCalculator str={record} styles={{ isTotalByteHide: true }} /></GridItem>
+        {!isMobile && <GridItem>{assignedDate || '없음'}</GridItem>}
+        {!isMobile && <GridItem>{madeBy || '익명'}</GridItem>}
+        {!isMobile && <GridItem><ByteCalculator str={record} styles={{ isTotalByteHide: true }} /></GridItem>}
       </GridRow>)
   }
 
@@ -255,66 +255,66 @@ const StudentDetailPage = () => {
         {(user.isTeacher && !isModifying) && <ArrowWrapper><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
         <AnimRotation isAnimating={isAnimating}>
           <StyledBackgroundPannel>
-            {petData && <PetInfoSection
-              pet={petData} writtenName={_writtenName}
-              isModifiying={isModifying} setWrittenName={setWrittenName} />}
+            {petData && <PetInfoSection pet={petData} writtenName={_writtenName} isModifiying={isModifying} setWrittenName={setWrittenName} />}
             {(user.isTeacher || isMaster) && <GrayBotPannel>
               <GridBotContainer>
                 <GridRow>
-                  <StyledHeader>연번</StyledHeader>
+                  {!isMobile && <StyledHeader>연번</StyledHeader>}
                   <StyledHeader>활동</StyledHeader>
                   <StyledHeader>생기부</StyledHeader>
-                  <StyledHeader>{!isModifying ? "날짜" : "성취도"}</StyledHeader>
-                  <StyledHeader>{!isModifying ? "기록자" : "변경"}</StyledHeader>
-                  <StyledHeader>바이트</StyledHeader>
+                  {!isMobile && <StyledHeader>{!isModifying ? "날짜" : "성취도"}</StyledHeader>}
+                  {!isMobile && <StyledHeader>{!isModifying ? "기록자" : "변경"}</StyledHeader>}
+                  {!isMobile && <StyledHeader>바이트</StyledHeader>}
                 </GridRow>
                 {!_actiList || _actiList.length === 0
                   ? <GridItem style={{ gridColumn: "1/7" }}>활동이 없어요ㅠㅠ</GridItem>
                   : _actiList.map((item, index) => {
                     const { record, perfRecordList, uid } = item;
-                    const { userStatus } = user;
                     return <React.Fragment key={item.id}>
-                      {(!isModifying || (isModifying && user.uid !== uid && userStatus !== "master")) && <TeacherActiRow item={item} index={index} />}
-                      {(isModifying && (userStatus === "master" || (userStatus === "coTeacher" && user.uid === uid))) && <GridRow>
-                        {/* 1열 */}
-                        <GridItem>
-                          <div style={{ display: "flex", flexDirection: "column" }}>
-                            <button onClick={() => moveActiItem(index, 'up')}>▲</button>
-                            <button onClick={() => moveActiItem(index, 'down')}>▼</button>
-                          </div>
-                        </GridItem>
-                        {/* 2열 */}
-                        <GridItem>
-                          <Select
-                            ref={(ele) => selectRef.current[index] = ele}
-                            options={allActivityList.map((item) => { return { label: item.title, value: item } })}
-                            onChange={(event) => { handleSelectOnchange(event, index) }} />
-                        </GridItem>
-                        {/* 3열 */}
-                        <GridItem className="left-align">
-                          <StyledTextarea
-                            value={_actiList[index].record}
-                            onChange={(event) => handleTextareaOnChange(event, index)} />
-                        </GridItem>
-                        {/* 4열 */}
-                        <GridItem>{perfRecordList && <SmallBtnWrapper>
-                          <SmallBtn btnName="상" btnOnClick={() => { changeAccRecord(index, perfRecordList[0]) }} />
-                          <SmallBtn btnName="중" btnOnClick={() => { changeAccRecord(index, perfRecordList[1]) }} />
-                          <SmallBtn btnName="하" btnOnClick={() => { changeAccRecord(index, perfRecordList[2]) }} />
-                          <SmallBtn btnName="최하" btnOnClick={() => { changeAccRecord(index, perfRecordList[3]) }} />
-                        </SmallBtnWrapper>}</GridItem>
-                        {/* 5열 */}
-                        <GridItem><SmallBtnWrapper className="gpt">
-                          <SmallBtn btnColor="#3454d1" btnName="GPT" btnOnClick={() => { //gpt 버튼
-                            setSelectedActi({ item, index });
-                            setIsGptShown(true);
-                          }}></SmallBtn>
-                          <img src={x_btn} id="delete_acti_btn" alt="삭제x" onClick={(event) => handleDeleteActiOnClick(index)} />
-                        </SmallBtnWrapper>
-                        </GridItem>
-                        {/* 6열 */}
-                        <GridItem><ByteCalculator str={record} styles={{ isTotalByteHide: true }} /></GridItem>
-                      </GridRow>}
+                      {/* 열람 */}
+                      {(!isModifying || (isModifying && user.uid !== uid && user.userStatus !== "master")) && <ActiRow item={item} index={index} />}
+                      {/* 수정 */}
+                      {(isModifying && (user.userStatus === "master" || (user.userStatus === "coTeacher" && user.uid === uid))) &&
+                        <GridRow>
+                          {/* 1열 */}
+                          <GridItem>
+                            <div style={{ display: "flex", flexDirection: "column" }}>
+                              <button onClick={() => moveActiItem(index, 'up')}>▲</button>
+                              <button onClick={() => moveActiItem(index, 'down')}>▼</button>
+                            </div>
+                          </GridItem>
+                          {/* 2열 */}
+                          <GridItem>
+                            <Select
+                              ref={(ele) => selectRef.current[index] = ele}
+                              options={allActivityList.map((item) => { return { label: item.title, value: item } })}
+                              onChange={(event) => { handleSelectOnchange(event, index) }} />
+                          </GridItem>
+                          {/* 3열 */}
+                          <GridItem className="left-align">
+                            <StyledTextarea
+                              value={_actiList[index].record}
+                              onChange={(event) => handleTextareaOnChange(event, index)} />
+                          </GridItem>
+                          {/* 4열 */}
+                          <GridItem>{perfRecordList && <SmallBtnWrapper>
+                            <SmallBtn btnName="상" btnOnClick={() => { changeAccRecord(index, perfRecordList[0]) }} />
+                            <SmallBtn btnName="중" btnOnClick={() => { changeAccRecord(index, perfRecordList[1]) }} />
+                            <SmallBtn btnName="하" btnOnClick={() => { changeAccRecord(index, perfRecordList[2]) }} />
+                            <SmallBtn btnName="최하" btnOnClick={() => { changeAccRecord(index, perfRecordList[3]) }} />
+                          </SmallBtnWrapper>}</GridItem>
+                          {/* 5열 */}
+                          <GridItem><SmallBtnWrapper className="gpt">
+                            <SmallBtn btnColor="#3454d1" btnName="GPT" btnOnClick={() => { //gpt 버튼
+                              setSelectedActi({ item, index });
+                              setIsGptShown(true);
+                            }}></SmallBtn>
+                            <img src={x_btn} id="delete_acti_btn" alt="삭제x" onClick={(event) => handleDeleteActiOnClick(index)} />
+                          </SmallBtnWrapper>
+                          </GridItem>
+                          {/* 6열 */}
+                          <GridItem><ByteCalculator str={record} styles={{ isTotalByteHide: true }} /></GridItem>
+                        </GridRow>}
                     </React.Fragment>
                   })}
                 {isModifying && <GridRow>
@@ -327,7 +327,7 @@ const StudentDetailPage = () => {
                 </GridRow>}
               </GridBotContainer>
               {(_actiList && _actiList.length !== 0) && <>
-                <CenterWrapper><img src={arrows_icon} alt="아래화살표" /></CenterWrapper>
+                {user.isTeacher && <CenterWrapper><img src={arrows_icon} alt="아래화살표" /></CenterWrapper>}
                 {user.isTeacher && <StyledAcc>{getAccRec()}</StyledAcc >}</>}
             </GrayBotPannel>}
           </StyledBackgroundPannel>
@@ -340,7 +340,7 @@ const StudentDetailPage = () => {
         {(user.isTeacher && !isModifying) && <ArrowWrapper><ArrowBtn id="right_arw_btn" onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
       </FlexWrapper>
       {/* 교사전용 */}
-      {user.isTeacher && <BtnWrapper>
+      {(user.isTeacher && !isMobile) && <BtnWrapper>
         {!isModifying && <>
           <TransparentBtn onClick={() => { setIsModifying(!isModifying) }} styles={{ width: "200px" }}>수정</TransparentBtn>
           <TransparentBtn onClick={handleStudentDeleteOnClick} styles={{ width: "200px" }}>삭제</TransparentBtn></>}
@@ -407,7 +407,7 @@ const GrayBotPannel = styled.div`
   display; flex;
   flex-direction: column;
   overflow-y: scroll;
-   @media screen and (max-width: 767px){
+  @media screen and (max-width: 767px){
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -419,6 +419,9 @@ const GridBotContainer = styled.div`
   border-radius: 10px;
   display: grid;
   grid-template-columns: 52px 130px 9fr 1fr 1fr 1fr;
+  @media screen and (max-width: 767px){
+    grid-template-columns: 1fr 4fr;
+  }
 `
 const StyledAcc = styled.div`
   margin: 10px auto;

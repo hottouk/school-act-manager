@@ -16,15 +16,13 @@ const useFirePetData = () => {
 
   //2. fetch 클래스 petList 
   const fetchPets = async (klassId) => {
-    let petColRef = collection(db, "classRooms", klassId, "students");
-    try {
-      const docsSnapshot = await getDocs(petColRef);
-      return docsSnapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
-    } catch (err) {
-      console.log(err)
-      window.alert(err.message)
-    }
+    const petCol = collection(db, "classRooms", klassId, "students");
+    const docsSnapshot = await getDocs(petCol).catch((error) => {
+      alert(`관리자에게 문의하세요(useFirePetData_02),${error}`);
+      console.log(error);
+    })
+    return docsSnapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
   }
 
   const addPet = async (data, classId) => {

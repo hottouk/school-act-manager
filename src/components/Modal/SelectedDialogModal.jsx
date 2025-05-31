@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import ModalBtn from '../Btn/ModalBtn';
 
 //2024.12.19 코드 정리 -> 250212 디자인 수정
-const SelectedDialogModal = (props) => {
+const SelectedDialogModal = ({ show, onHide, onClearSelect, writeAccDataOnDB }) => {
   const studentSelectedList = useSelector(({ studentSelected }) => { return studentSelected });
   const actiSelectedList = useSelector(({ activitySelected }) => { return activitySelected });
   const [studentList, setStudentList] = useState(null);
@@ -35,20 +35,20 @@ const SelectedDialogModal = (props) => {
   //------함수부------------------------------------------------  
   //확인
   const handleConfirmOnClick = () => {
-    props.onHide();
-    props.writeAccDataOnDB().then(window.alert("입력 되었습니다."));
-    props.onClearSelect();
+    onHide();
+    writeAccDataOnDB().then(window.alert("입력 되었습니다."));
+    onClearSelect();
   }
 
   const handleCancelOnClick = () => {
-    props.onHide();
-    props.onClearSelect();
+    onHide();
+    onClearSelect();
   }
 
   return (
     <Modal
-      show={props.show}
-      onHide={props.onHide}
+      show={show}
+      onHide={onHide}
       backdrop="static"
     >
       <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>학생 생기부 입력 확인</Modal.Header>

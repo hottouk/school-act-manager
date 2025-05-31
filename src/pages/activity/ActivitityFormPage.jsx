@@ -26,6 +26,7 @@ import BackBtn from "../../components/Btn/BackBtn";
 //애니
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
 import { Spinner } from "react-bootstrap";
+import SmallBtn from "../../components/Btn/SmallBtn";
 
 //24.07.06 수정(실시간 바이트 갱신) -> 24.12.21(담임반 활동)
 const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
@@ -85,19 +86,19 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   //------함수부------------------------------------------------  
   //데이터 초기화
   const initData = () => {
-    let acti = state.acti
-    let scoresObj = acti.scores
-    setTitle(acti.title)
-    setContent(acti.content)
-    setRecord(acti.record)
-    setExtraRecList(acti.extraRecordList)
-    setPerfRecList(acti.perfRecordList)
-    setSelectedSubjDetail(acti.subject)
-    setIsPrivate(acti.isPrivate || false)
-    setLeadershipScore(scoresObj?.leadership ?? 0)
-    setCareerScore(scoresObj?.careerScore ?? 0)
-    setSincerityScore(scoresObj?.sincerityScore ?? 0)
-    setAttitudeScore(scoresObj?.attitudeScore ?? 0)
+    const acti = state.acti;
+    const scoresObj = acti.scores;
+    setTitle(acti.title);
+    setContent(acti.content);
+    setRecord(acti.record);
+    setExtraRecList(acti.extraRecordList);
+    setPerfRecList(acti.perfRecordList);
+    setSelectedSubjDetail(acti.subject);
+    setIsPrivate(acti.isPrivate || false);
+    setLeadershipScore(scoresObj?.leadership ?? 0);
+    setCareerScore(scoresObj?.careerScore ?? 0);
+    setSincerityScore(scoresObj?.sincerityScore ?? 0);
+    setAttitudeScore(scoresObj?.attitudeScore ?? 0);
   }
 
   //활동 저장 대화창 ==> 추후 디자인 수정 필요 (교사전용)
@@ -134,7 +135,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
       case "act_content":
         setContent(event.target.value)
         break;
-      case "act_record":
+      case "acti_record":
         setRecord(event.target.value)
         break;
       case "act_leadership":
@@ -180,17 +181,10 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     switch (event.target.id) {
       case "gpt_btn": //교사 전용
         if (_title !== '' && _selectedSubjDetail !== 'default' && _content !== '') {
-          try {
-            if (sort === "homeroom") { askHomeroomReccord(_title, _selectedSubjDetail, _content, _timeFormat, _myByte) } else { askSubjRecord(_title, _selectedSubjDetail, _content) }
-          } catch (error) {
-            window.alert.log(error.message)
-          }
+          if (sort === "homeroom") { askHomeroomReccord(_title, _selectedSubjDetail, _content, _myByte) } else { askSubjRecord(_title, _selectedSubjDetail, _content) }
         } else {
           window.alert('활동 제목, 과목, 간단한 설명을 입력해주세요.')
         }
-        break;
-      case "modi_btn":
-        setIsModified((prev) => !prev)
         break;
       case "cancel_modi_btn":
         initData()
@@ -208,27 +202,21 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
           navigate("/activities")
         }
         break;
-      case "go_back_to_class_btn":
-        navigate(-1)
-        break;
-      case "copy_btn":
-        if (window.confirm("이 활동을 업어가시겠습니까?")) {
-          copyActiTransaction(state.acti)
-          navigate("/activities_all", { state: "acti_all" })
-        }
-        break;
-      case 'go_back_btn': //공용
-        navigate("/activities")
-        break;
       default: return
     }
   }
 
-  //공개, 비공개
-  const handleRadioBtnClick = () => {
-    setIsPrivate(!_isPrivate)
+  //활동 업어가기
+  const handleCopyOnClick = () => {
+    if (window.confirm("이 활동을 업어가시겠습니까?")) {
+      copyActiTransaction(state.acti);
+      navigate("/activities_all", { state: "acti_all" });
+    }
   }
-
+  //공개, 비공개
+  const handleRadioBtnClick = () => { setIsPrivate(!_isPrivate) }
+  //날짜 추가
+  const handleAddDataOnClick = () => { setRecord((prev) => String(prev).concat(_timeFormat)); }
   //날짜, 시간, 생기부 포맷으로
   const handleTimeFormatted = () => {
     let result = ''
@@ -263,7 +251,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
             {/* 활동 설명 */}
             <CommonTextArea id="act_content" title="활동 설명" onChange={handleOnChange} value={_content} disabled={!isModified}
               placeholder={"ex)포도당 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동."} />
-            <CommonTextArea id="act_record" title="생기부 문구" onChange={handleOnChange} value={_record} disabled={!isModified} required
+            <CommonTextArea id="acti_record" title="생기부 문구" onChange={handleOnChange} value={_record} disabled={!isModified} required
               placeholder={"직접 쓰지 마시고 gpt 버튼 클릭! 직접 작성도 가능함."} />
             <ByteCalculator handleOnConhange={handleOnChange} str={_record} />
             {/* 날짜_담임반 전용 */}
@@ -276,6 +264,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                   <StyledInput type="date" id="second_date" onChange={handleOnChange} />까지
                 </Row>
                 <Row style={{ margin: "5px 0", alignItems: "center", gap: "10px" }}><StyledInput type="number" min={0} max={99} value={_hour} onChange={(event) => { setHour(event.target.value) }} />시간</Row>
+                <Row style={{ justifyContent: "center" }}><SmallBtn onClick={handleAddDataOnClick}>추가</SmallBtn></Row>
               </HiddenWrapper>
             </AnimMaxHightOpacity>
             {/* GPT 세부 설정 */}
@@ -340,7 +329,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                     {!state.acti.madeById
                       ? <>{/*업어오지 않고 내가 생성한 활동 수정하기 */}
                         {!isModified && <>
-                          <LongW100Btn id="modi_btn" btnName="수정" btnOnClick={handleBtnClick} />
+                          <LongW100Btn btnName="수정" btnOnClick={setIsModified((prev) => !prev)} />
                           <LongW100Btn id="delete_btn" btnName="삭제" btnOnClick={handleBtnClick} /></>
                         }
                         {isModified && <>
@@ -350,9 +339,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                       : <>{/*업어온 활동 삭제하기 */}
                         <LongW100Btn id="copied_delete_btn" btnName="삭제" btnOnClick={handleBtnClick} /></>}
                   </>}
-                  {(state.acti.uid !== user.uid) && <> {/*활동 업어가기 */}
-                    <LongW100Btn id="copy_btn" btnName="업어가기" btnOnClick={handleBtnClick} />
-                  </>}
+                  {(state.acti.uid !== user.uid) && <LongW100Btn btnOnClick={handleCopyOnClick}>업어가기</LongW100Btn>}
                 </>}
             </BtnWrapper> : <Row style={{ justifyContent: "center" }}><Spinner /></Row>}
           </fieldset>

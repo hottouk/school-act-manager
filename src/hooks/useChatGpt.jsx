@@ -12,21 +12,16 @@ const useChatGpt = () => {
   const askSubjRecord = async (title, subject, content) => {
     let messages = [
       ...gptSubjectDetailsMsg,
-      {
-        role: "user", content: `[과목]: ${subject}, [활동]: ${title}-${content}. 위 활동을 수행한 학생의 교과 세부능력 및 특기사항의 예시문을 작성바람.`
-      }
+      { role: "user", content: `[과목]: ${subject}, [활동]: ${title}-${content}. 위 활동을 수행한 학생의 교과 세부능력 및 특기사항의 예시문을 작성바람.` }
     ]
     await playGpt(messages, "gpt-4o-mini");
   }
   //자율, 진로
-  const askHomeroomReccord = async (title, subject, content, date, byte) => {
-    if (date === '') date = '없음'
-    if (byte === 0) byte = 300
+  const askHomeroomReccord = async (title, subject, content, byte) => {
+    if (byte === 0) byte = 300;
     let messages = [
       ...gptHomeroomDetailMsg,
-      {
-        role: "user", content: `[과목]: ${subject}, [활동]: ${title}, [날짜정보]:${date}, [설명]: ${content}, [바이트]: ${byte}   위 활동을 수행한 학생의 교과 세부능력 및 특기사항의 예시문을 작성바람.`
-      }]
+      { role: "user", content: `[과목]: ${subject}, [활동]: ${title}, [설명]: ${content}, [바이트]: ${byte}. 위 활동을 수행한 학생의 교과 세부능력 및 특기사항의 예시문을 작성바람.` }]
     await playGpt(messages, "gpt-4o-mini");
   }
   //돌려 쓰기
@@ -150,12 +145,11 @@ const useChatGpt = () => {
     ]
     await playGpt(messages, "gpt-4o-mini");
   }
-  // 공통 부분
+  // 공통 부분(gpt-4o-mini, gpt-4.1-mini)
   const playGpt = async (messages, model) => {
-    setGptRes("loading")
+    setGptRes("loading");
     const completion = await openai.chat.completions.create({
       messages: messages,
-      // model: gpt-3.5-turbo, gpt-4o-mini, gpt-4.1-mini
       model: model,
       temperature: 1.0, //창의성  0.0 (정확, 보수적) ~ 1.0+ 2.0까지 가능 (창의, 다양)
     });
@@ -168,7 +162,7 @@ const useChatGpt = () => {
     }
   }
 
-  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean,  gptRes }
+  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, gptRes }
 }
 
 export default useChatGpt

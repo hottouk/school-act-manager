@@ -10,34 +10,9 @@ const useFireTransaction = () => {
   const db = appFireStore
   const userCol = collection(db, "user");
   const schoolCol = collection(db, "school");
-  const klassRoomCol = collection(db, "classRooms");
   const { makeUniqueArrWithEle, replaceItem } = useGetRidOverlap();
   const { makeAccRec } = useAcc();
 
-  //11. 담임 클래스 추가(250511 이동)
-  const addHomeKlassroomTransaction = async (klassInfo, studentPetList, schoolCode) => {
-    const { type } = klassInfo;
-    const createdTime = timeStamp.fromDate(new Date());
-    const schoolDoc = doc(schoolCol, schoolCode);
-    await runTransaction(db, async (transaction) => {
-      //1. read
-      const schoolSnapshot = await transaction.get(schoolDoc);
-      if (!schoolSnapshot.exists()) { throw new Error("학교 읽기 에러") };
-      //2. create
-      const klassDoc = doc(klassRoomCol);                                                  //반id 설정
-      transaction.set(klassDoc, { ...klassInfo, createdTime, id: klassDoc.id });           //반 생성
-      const petCol = collection(klassDoc, "students");
-      studentPetList.forEach(studentPet => {
-        const petDoc = doc(petCol);                                                        //petId 설정
-        transaction.set(petDoc, { ...studentPet, type, id: petDoc.id });                   //pet 생성
-      })
-      //3. edit
-      transaction.update(schoolDoc, { homeroomList: arrayUnion({ ...klassInfo, id: klassDoc.id }) });
-    }).catch((error) => {
-      alert(`관리자에게 문의하세요(useFireTransaction_11),${error}`)
-      console.log(error);
-    })
-  }
   //10. 교사/학생 변경
   const changeIsTeacherTransaction = async (schoolCode, memberId) => {
     const schoolDoc = doc(schoolCol, schoolCode);
@@ -347,7 +322,7 @@ const useFireTransaction = () => {
   }
   return {
     changeIsTeacherTransaction, copyActiTransaction, delCopiedActiTransaction, applyKlassTransaction, approveKlassTransaction, approvWinTransaction,
-    denyTransaction, confirmDenialTransaction, leaveSchoolTransaction, approveCoteahingTransaction, addHomeKlassroomTransaction
+    denyTransaction, confirmDenialTransaction, leaveSchoolTransaction, approveCoteahingTransaction
   }
 }
 

@@ -4,16 +4,18 @@ import { addDoc, arrayRemove, arrayUnion, collection, doc, getDocs, query, setDo
 const useFireClassData = () => {
   const db = appFireStore
   const colRef = collection(db, "classRooms")
-  
+
   //1. 클래스 추가(250205 이동)
   const addClassroom = async (klassInfo, studentPetList) => {
-    const { subject } = klassInfo;
+    const { subject, type } = klassInfo;
     const createdTime = timeStamp.fromDate(new Date());
     try {
-      const classRef = await addDoc(colRef, { ...klassInfo, createdTime });
-      const petColRef = collection(classRef, "students");
+      const klassDoc = await addDoc(colRef, { ...klassInfo, createdTime });
+      await updateDoc(klassDoc, { id: klassDoc.id, });
+      const petColRef = collection(klassDoc, "students");
       const promises = studentPetList.map(async studentPet => {
-        await addDoc(petColRef, { ...studentPet, subject: subject });
+        if (type === "subject") { await addDoc(petColRef, { ...studentPet, type, subject: subject }); }
+        else if (type === "homeroom") { await addDoc(petColRef, { ...studentPet, type }); }
       });
       await Promise.all(promises);
     } catch (error) {
@@ -21,6 +23,16 @@ const useFireClassData = () => {
       window.alert("클래스 생성에 실패했습니다. 관리자에게 문의하세요(useFireClassData_01)");
     }
   }
+  //2. 클래스 불러오기(250122)
+  const fetchClassrooms = async (field, value) => {
+    const q = query(colRef, where(field, "==", value));
+    const querySnapshot = await getDocs(q).catch((error) => {
+      console.log("클래스 생성 실패", error);
+      alert("클래스 생성에 실패했습니다. 관리자에게 문의하세요(useFireClassData_02)");
+    });
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  }
+
   //클래스 기본 정보 수정(250219)
   const updateKlassroomInfo = async (klassId, field, info) => {
     const klassDocRef = doc(colRef, klassId);
@@ -111,17 +123,6 @@ const useFireClassData = () => {
     let docRef = doc(colRef, id)
     try { await updateDoc(docRef, { seatInfo: [...deleted] }) }
     catch (error) { window.alert("정보 업데이트 에러: ", error); }
-  }
-  //클래스 불러오기(250122)
-  const fetchClassrooms = async (field, value) => {
-    const q = query(colRef, where(field, "==", value))
-    try {
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-    } catch (error) {
-      console.log(error)
-    }
   }
   //반 분류하기(250122)
   const sortClassrooms = (list) => {
