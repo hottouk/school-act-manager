@@ -10,7 +10,7 @@ const useAcc = () => {
   const user = useSelector(({ user }) => user)
   //★★★4. 활동 누가 함수
   const makeAccWithSelectedActi = async () => {
-    let newActiList = []
+    const newActiList = [];
     const promises = activitySelectedList.map(async ({ value: actiId }) => {
       const actiDoc = doc(db, "activities", actiId);             //id로 활동 acti 참조
       const actiSnapshot = await getDoc(actiDoc);                //데이터 통신
@@ -18,7 +18,8 @@ const useAcc = () => {
       const assignedDate = new Date().toISOString().split("T")[0];
       let { byte, monImg, studentDoneList, subjDetail, subject, monster, quizInfo,
         particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, record, ...rest } = acti;   //불필요 속성 제거
-      if (acti.extraRecordList && acti.extraRecordList.length > 1) {                                             //extra가 있으면 랜덤문구
+      //랜덤문구 체크
+      if (acti.extraRecordList?.length > 0) {
         const randomIndex = Math.floor(Math.random() * acti.extraRecordList.length);
         record = acti.extraRecordList[randomIndex];
       };
@@ -30,36 +31,45 @@ const useAcc = () => {
     });
     return { newActiList };
   }
-
   //★★ 활동 기록 누가
   const makeAccRec = (list) => {
     if (list.length > 0) {
       return list.reduce((acc, cur) => acc.concat(" ", cur.record), '') //리턴 값이 초기값으로 대입됨.
     } else { return '' }
   }
-
-  //중복 제거
+  //★★★중복 제거: 반복형 활동(250607 수정)
   const makeUniqueList = (list) => {
     return list.reduce((acc, cur) => {
-      if (acc.findIndex(({ id }) => id === cur.id) === -1) {  //배열에서 조건을 충족하는 index를 반환, 없을 경우 -1 반환; 
-        acc.push(cur);
-      } else {
-        acc = acc.filter(({ id }) => id !== cur.id)           //이전 삭제
-        acc.push(cur);                                        //새로 덮기
+      const isRepeated = acc.findIndex(({ id }) => id === cur.id) === -1 //배열에서 조건을 충족하는 index를 반환, 없을 경우 -1 반환; 
+      if (isRepeated) { acc.push(cur); }  //중복 없음
+      else {                              //중복 발견
+        //새 활동 반복형 타입?
+        if (cur.repeatInfoList?.length > 0) {
+          const accRepeated = acc.find(({ id }) => id === cur.id);
+          //기존 활동 반복형 타입?
+          if (accRepeated.repeatInfoList?.length > 0) {
+            let repeatTimes = accRepeated.repeatTimes || 1;
+            repeatTimes = repeatTimes + 1;
+            const ascendingList = accRepeated.repeatInfoList.sort((a, b) => a.times - b.times);
+            ascendingList.forEach(item => { if (item.times <= repeatTimes) cur.record = item.record; });
+            cur = { ...cur, repeatTimes }
+          }
+        }
+        acc = acc.filter(({ id }) => id !== cur.id);           //이전 삭제 
+        acc.push(cur);                                         //새로 덮기
       }
       return acc;
     }, [])
   }
-
-  //★★★★1. 핵심 로직(250208 간소화)
+  //★★★★ 1. 핵심 로직(250208 간소화)
   const writeAccDataOnDB = async (classId) => {
     const promises = studentSelectedList.map(async ({ value: petId }) => {
       const petRef = doc(appFireStore, "classRooms", classId, "students", petId);
       const petDoc = await getDoc(petRef);
-      const curList = petDoc.data().actList;                          //기존 활동
-      const { newActiList } = await makeAccWithSelectedActi();        //신규 활동
-      const actiList = [...(curList || []), ...newActiList];          //기존+신규
-      const uniqueList = makeUniqueList(actiList);                    //중복 제거
+      const curList = petDoc.data().actList;                                            //기존 활동
+      const { newActiList } = await makeAccWithSelectedActi();                          //신규 활동
+      const actiList = [...(curList || []), ...newActiList];                            //기존+신규
+      const uniqueList = makeUniqueList(actiList);                                      //중복 제거
       setDoc(petRef, { actList: uniqueList, accRecord: makeAccRec(uniqueList) }, { merge: true });
     })
     try {
@@ -69,8 +79,7 @@ const useAcc = () => {
       alert(`관리자에게 문의하세요(useAcc_01),${error}`);
     }
   }
-
-  //★★★★2. 담임반 누가기록
+  //★★★★ 2. 담임반 누가기록
   const writeHomeAccOnDB = async (classId, type) => {
     const typeList = `${type}List`;
     const typeAccRecord = `${type}AccRecord`;
@@ -91,7 +100,6 @@ const useAcc = () => {
       alert(`관리자에게 문의하세요(useAcc_02),${error}`);
     }
   }
-
   //★★★★ 3. 수행 관리 입력하기: 수정(250515)
   const writePerfRecDataOnDB = async (studentList, classId, selectedPerf, perfRecord) => {
     const promises = studentList.map(async (student, index) => {

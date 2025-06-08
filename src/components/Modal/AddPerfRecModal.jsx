@@ -86,7 +86,6 @@ const AddPerfRecModal = ({ show, onHide, acti, setPerfRecList }) => {
       show={show}
       onHide={onHide}
       backdrop="static"
-      keyboard={false}
     >
       <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>수행 문구 관리</Modal.Header>
       <Modal.Body style={{ backgroundColor: "#efefef" }}>

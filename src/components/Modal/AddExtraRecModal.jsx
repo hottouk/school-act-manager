@@ -1,32 +1,31 @@
+//라이브러리
 import { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { Spinner } from 'react-bootstrap';
 //컴포넌트
 import Modal from 'react-bootstrap/Modal';
 import ModalBtn from '../Btn/ModalBtn';
-import MainBtn from '../Btn/MainBtn';
-import { Spinner } from 'react-bootstrap';
+import ByteCalculator from '../Etc/ByteCalculator';
 //hooks
-import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
+import useFireActiData from '../../hooks/Firebase/useFireActiData';
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData'
-//gpt
 import useChatGpt from '../../hooks/useChatGpt';
 //이미지
-import xImage from '../../image/icon/x_btn.png'
-//css
-import styled from 'styled-components';
-import ByteCalculator from '../Etc/ByteCalculator';
+import xImage from '../../image/icon/x_btn.png';
+import MidBtn from '../Btn/MidBtn';
 
-//2024.07.19 --> 11.23 6개로 수정 --> 디자인정리(250210)
+//생성(240719) --> 6개로 수정(241123) --> 디자인정리(250210)
 const AddExtraRecModal = (props) => {
   //ex record
-  const [extraRecList, setExtraRecList] = useState(['']); // 초기 입력 필드 하나를 설정; 얘가 늘어나면 input text개수 알아서 늘어남.
+  const [_extraRecList, setExtraRecList] = useState(['']); // 초기 입력 필드 하나를 설정; 얘가 늘어나면 input text개수 알아서 늘어남.
   //데이터 통신
-  const { updateActi } = useAddUpdFireData("activities");
+  const { updateActi } = useFireActiData();
   const { fetchDoc } = useFetchFireData();
   useEffect(() => {
     fetchDoc("activities", props.acti.id).then((acti) => {
       if (acti.extraRecordList && acti.extraRecordList.length > 1) { // 한 개는 기본 문구
-        let recList = acti.extraRecordList
-        let initialFieldList = recList.slice(0, -1)
+        const recList = acti.extraRecordList;
+        const initialFieldList = recList.slice(0, -1);
         setExtraRecList(initialFieldList);
       } else { setExtraRecList(['']) }
     }
@@ -34,59 +33,54 @@ const AddExtraRecModal = (props) => {
   }, [props])
   //gpt
   const { askExtraRecord, gptAnswer, gptRes } = useChatGpt();
+  //문구 textarea에 넣기
   useEffect(() => {
-    let gptAnswerList = splitGptAnswers(gptAnswer)
+    const gptAnswerList = splitGptAnswers(gptAnswer);
     setExtraRecList(gptAnswerList);
-  }, [gptAnswer]) //문구 textarea에 넣기
+  }, [gptAnswer])
 
   //------함수부------------------------------------------------  
   const handleKeyDown = (index, event) => { //textarea 내 tab 키
-    if (event.key === 'Tab' && index === extraRecList.length - 1) {
-      event.preventDefault();
-      if (extraRecList.length < 6) {
-        addInputField(1);
-      } else {
-        window.alert("문구는 최대 6개까지 입니다.")
-      }
-    }
+    event.preventDefault();
+    if (event.key === 'Tab' && index === _extraRecList.length - 1) addInputField();
   };
   // n개의 새로운 빈 입력 필드를 추가
-  const addInputField = (number) => {
-    setExtraRecList(prevFields => [
-      ...prevFields,
-      ...Array(number).fill('')
-    ]);
+  const addInputField = (number = 1) => {
+    if (_extraRecList.length < 6) {
+      setExtraRecList(prevFields => [
+        ...prevFields,
+        ...Array(number).fill('')
+      ]);
+    } else {
+      window.alert("문구는 최대 6개까지 입니다.")
+    }
   };
   //textarea 바꾸기
-  const handleChange = (index, event) => {
-    let values = [...extraRecList];
+  const handleOnChange = (index, event) => {
+    let values = [..._extraRecList];
     values[index] = event.target.value;
     setExtraRecList(values);
   };
   //gpt -> 배열
-  const splitGptAnswers = (gptAnswers) => {
-    return gptAnswers.split('^');
-  };
+  const splitGptAnswers = (gptAnswers) => { return gptAnswers.split('^'); };
   //gpt 요청 버튼
-  const handleGptClick = async () => {
-    await askExtraRecord(props.acti.record)
-  }
+  const handleGptClick = async () => { await askExtraRecord(props.acti.record); };
+  //삭제 버튼
+  const handleDeleteOnClick = (index) => {
+    const newArr = _extraRecList.filter((_, i) => { return i !== index });
+    setExtraRecList(newArr)
+  };
   //저장 버튼
   const handleConfirm = () => {
     const confirm = window.confirm("추가 문구를 저장하시겠습니까?")
     if (confirm) {
-      let extraRecordList = [...extraRecList, props.acti.record]
+      const extraRecordList = [..._extraRecList, props.acti.record]
       props.setExtraRecList(extraRecordList)  // 외부 문구 list 셋 
-      let modifiedActi = { extraRecordList }; // firedata 업데이트 위한 객체화
-      updateActi(modifiedActi, "activities", props.acti.id)
+      const modifiedActi = { extraRecordList }; // firedata 업데이트 위한 객체화
+      updateActi(modifiedActi, props.acti.id);
     }
-    props.onHide()
-  }
-
-  const handleDeleteBtn = (index) => { //삭제 버튼
-    const newArr = extraRecList.filter((_, i) => { return i !== index });
-    setExtraRecList(newArr)
-  }
+    props.onHide();
+  };
 
   return (
     <Modal
@@ -94,9 +88,8 @@ const AddExtraRecModal = (props) => {
       show={props.show}
       onHide={props.onHide}
       backdrop="static"
-      keyboard={false}
     >
-      <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>돌려쓰기 문구 추가</Modal.Header>
+      <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>돌려쓰기 문구 관리</Modal.Header>
       <Modal.Body style={{ backgroundColor: "#efefef" }}>
         <CurWrapper>
           <AchivTap $top={-28}>현재 문구</AchivTap>
@@ -109,25 +102,28 @@ const AddExtraRecModal = (props) => {
             <StyledHeader>바이트</StyledHeader>
             <StyledHeader>삭제</StyledHeader>
           </TableHeaderWrapper>
-          {extraRecList.map((record, index) => {
-
+          {_extraRecList?.length === 0 && <GridItem $columns={"1/6"} style={{ height: "35px" }}><span>설정된 문구가 없습니다.</span></GridItem>}
+          {_extraRecList.map((record, index) => {
             return <GridRowWrapper key={index} >
               <GridItem $columns={"1/2"}><span>{index + 1}</span></GridItem>
               <GridItem $columns={"2/3"}>
                 <textarea
                   type="text"
                   value={record}
-                  onChange={(event) => handleChange(index, event)}
+                  onChange={(event) => handleOnChange(index, event)}
                   onKeyDown={(event) => handleKeyDown(index, event)}
                 /></GridItem>
               <GridItem $columns={"3/4"}><ByteCalculator str={record} styles={{ isTotalByteHide: true }} /></GridItem>
-              <GridItem $columns={"4/5"}><img src={xImage} alt="삭제 버튼" onClick={() => { handleDeleteBtn(index) }} /></GridItem>
+              <GridItem $columns={"4/5"}><img src={xImage} alt="삭제 버튼" onClick={() => { handleDeleteOnClick(index) }} /></GridItem>
             </GridRowWrapper>
           })}
         </GridContainer>
         {(gptRes === "loading")
           ? <Row style={{ justifyContent: "center", marginTop: "20px" }}><Spinner animation="border" role="status" /></Row>
-          : <Row style={{ justifyContent: "center", marginTop: "20px" }}><MainBtn onClick={handleGptClick}>ChatGPT</MainBtn></Row>}
+          : <Row style={{ justifyContent: "space-evenly", marginTop: "20px", }}>
+            <MidBtn onClick={addInputField}>한줄 추가</MidBtn>
+            <MidBtn onClick={handleGptClick}>ChatGPT</MidBtn>
+          </Row>}
       </Modal.Body>
       <Modal.Footer style={{ backgroundColor: "#efefef" }} >
         <ModalBtn onClick={() => { props.onHide() }}>취소</ModalBtn>
@@ -179,6 +175,7 @@ const GridItem = styled.div`
   textarea {
     width: 100%;
     height: 75px;
+    border: none;
     border-radius: 10px;
     display: block;
     margin: 10px;
@@ -188,16 +185,16 @@ const GridItem = styled.div`
     cursor: pointer;
   }
 `
+const CurWrapper = styled.div`
+  position: relative;
+  margin: 25px 0;
+`
 const StyledCurRec = styled.div`
   border: 1px solid black;
   border-radius: 10px;
   border-top-left-radius: 0;
   padding: 10px;
   margin-bottom: 10px;
-`
-const CurWrapper = styled.div`
-  position: relative;
-  margin: 25px 0;
 `
 const AchivTap = styled.div`
   border-bottom: none;

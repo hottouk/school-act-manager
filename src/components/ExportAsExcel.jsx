@@ -1,46 +1,44 @@
 //라이브러리
 import xlsx from 'xlsx';
-//전역 변수
-import { useSelector } from 'react-redux';
 //hooks
 import useGetByte from '../hooks/useGetByte';
 //img
 import styled from 'styled-components';
 import excelIcon from '../image/icon/excel.png';
+import { useEffect } from 'react';
 
-const ExportAsExcel = ({ type }) => {
-  //전역 변수(새로고침하면 초기화)
-  const allStudentList = useSelector(({ allStudents }) => { return allStudents }) //ClassRoomDetail에서 저장한 학생List 불러오기(전역)
-  //hooks
-  const { getByteLengthOfString } = useGetByte()
-
-  //데이터 담은 배열
-  let data = allStudentList.map((student, index) => {
-    let studentNumber = student.studentNumber;
-    let name = (student.writtenName || "미등록");
-    let record
-    if (type === "home") { record = student.behaviorOpinion || "기록 없음" }
-    else { record = student.accRecord || "기록 없음" }
-    let bytes = ((record !== "기록 없음") ? getByteLengthOfString(record) : 0);
-    let studentInfo = {
-      number: index + 1,
-      studentNumber: studentNumber,
-      name: name,
-      accRecord: record,
-      Byte: bytes,
-    }
-    return studentInfo; //studentInfo를 다 담은 obj을 반환한다.
-  })
-
-  //배열파일 엑셀로 변환
+const ExportAsExcel = ({ allStudentList, type }) => {
+  const { getByteLengthOfString } = useGetByte();
   const wb = xlsx.utils.book_new();
-  const ws = xlsx.utils.json_to_sheet(data);
-  xlsx.utils.book_append_sheet(wb, ws, "반별데이터");
+  useEffect(() => {
+    if (!allStudentList || !wb) return
+    const ws = xlsx.utils.json_to_sheet(getXlSheetData());
+    xlsx.utils.book_append_sheet(wb, ws, "반별데이터");
+  }, [allStudentList])
+
+  //배열파일 엑셀형식로 변환
+  const getXlSheetData = () => {
+    const data = allStudentList.map((student, index) => {
+      const studentNumber = student.studentNumber;
+      const name = (student.writtenName || "미등록");
+      let record
+      if (type === "home") { record = student.behaviorOpinion || "기록 없음" }
+      else { record = student.accRecord || "기록 없음" }
+      const bytes = ((record !== "기록 없음") ? getByteLengthOfString(record) : 0);
+      const studentInfo = {
+        number: index + 1,
+        studentNumber: studentNumber,
+        name: name,
+        accRecord: record,
+        Byte: bytes,
+      }
+      return studentInfo
+    })
+    return data
+  }
 
   //버튼 클릭
-  const handleBtnClick = () => {
-    xlsx.writeFile(wb, "생기부데이터.xlsx");
-  }
+  const handleBtnClick = () => { xlsx.writeFile(wb, "생기부데이터.xlsx"); }
   return (
     <StyledExcelImgBtn src={excelIcon} alt='엑셀아이콘' onClick={handleBtnClick} />
   )

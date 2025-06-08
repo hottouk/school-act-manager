@@ -6,6 +6,7 @@ import styled from "styled-components"
 import { setAllStudents } from "../../store/allStudentsSlice"
 //페이지
 import SignupSection from "./SignupSection"
+import MySchoolSelectorSection from "./MySchoolSelectorSection"
 //컴포넌트
 import MainPanel from "../../components/MainPanel"
 import CardList from "../../components/List/CardList"
@@ -13,6 +14,7 @@ import ClassMemberModal from "../../components/Modal/ApplyClassModal"
 import SearchBar from "../../components/Bar/SearchBar"
 import Pagenation from "../../components/Pagenation"
 import UpperTab from "../../components/UpperTab"
+import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity"
 //hooks
 import useFireBasic from "../../hooks/Firebase/useFireBasic"
 import useFireClassData from "../../hooks/Firebase/useFireClassData"
@@ -23,8 +25,6 @@ import useFetchRtMyUserData from "../../hooks/RealTimeData/useFetchRtMyUserData"
 import useFireUserData from "../../hooks/Firebase/useFireUserData"
 import useFireSchoolData from "../../hooks/Firebase/useFireSchoolData"
 import useFireActiData from "../../hooks/Firebase/useFireActiData"
-import MySchoolSelectorSection from "./MySchoolSelectorSection"
-import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity"
 
 //25.01.21 생성 -> 로직 수정(250216)-> 가입 섹션 분리(250218)
 const MySchoolPage = () => {
@@ -46,8 +46,8 @@ const MySchoolPage = () => {
   //시작
   const [_mySchool, setMySchool] = useState(null);                       //가입된 학교
   useEffect(() => {
-    fetchHomeroomListInfo();                                                //가입 학교 담임반    
-    fetchSchoolInfo();                                                      //가입 학교 멤버 
+    fetchHomeroomListInfo();                                             //가입 학교 담임반    
+    fetchSchoolInfo();                                                   //가입 학교 정보
   }, [_mySchool]);
   const [_findSchool, setFindSchool] = useState(null);                   //검색된 학교
   useEffect(() => { fetchSchoolData(); }, [_findSchool])
@@ -221,8 +221,6 @@ const MySchoolPage = () => {
     if (confirm === "탈퇴합니다") { leaveSchoolTransaction(user.school.schoolCode); }
     else { alert("문구가 제대로 입력되지 않았습니다."); }
   }
-
-
   return (
     <>
       <Container $clientheight={clientHeight}>
@@ -240,7 +238,8 @@ const MySchoolPage = () => {
                 <ClickableText onClick={handleIsTeacherChangeOnClick}>교사 학생 변경</ClickableText>
                 <ClickableText onClick={handleMasterChangeOnClick}>담당자 변경</ClickableText>
               </>}
-              <ClickableText onClick={handleChangeOnClick}>학교 변경</ClickableText>
+              <ClickableText onClick={handleChangeOnClick}>학교 탈퇴</ClickableText>
+              <ClickableText onClick={() => { alert("학교 탈퇴 후에 회원 탈퇴를 진행하실 수 있습니다") }}>쫑알이 회원 탈퇴</ClickableText>
             </Row>
           </MainPanel>
           {/* 교사/학생명단 */}
@@ -265,19 +264,18 @@ const MySchoolPage = () => {
             {!isMobile && <SearchBar title="교과반 목록" type="classroom" list={subjKlassList} setList={setSubjKlassList} />}
             <CardList dataList={subjKlassList} type="classroom" onClick={handleKlassOnClick} />
           </MainPanel>}
+          {/* 자율/진로 입력 */}
+          {user?.isTeacher && <MainPanel styles={{ marginTop: "55px" }}>
+            <TabWrapper>
+              <UpperTab className="tab1" value={tab} top="-70px" onClick={() => { setTab(1) }}>자율</UpperTab>
+              <UpperTab className="tab2" value={tab} top="-70px" left="59px" onClick={() => { setTab(2) }}>진로</UpperTab>
+              <TitleText>자율/진로 입력창</TitleText>
+              <MySchoolSelectorSection tab={tab} homeroomList={homeroomList} actiList={actiList} />
+            </TabWrapper>
+          </MainPanel>}
         </>}
-        {/* 자율/진로 입력 */}
-        {user?.isTeacher && <MainPanel styles={{ marginTop: "55px" }}>
-          <TabWrapper>
-            <UpperTab className="tab1" value={tab} top="-70px" onClick={() => { setTab(1) }}>자율</UpperTab>
-            <UpperTab className="tab2" value={tab} top="-70px" left="59px" onClick={() => { setTab(2) }}>진로</UpperTab>
-            <TitleText>자율/진로 입력창</TitleText>
-            <MySchoolSelectorSection tab={tab} homeroomList={homeroomList} actiList={actiList} />
-          </TabWrapper>
-        </MainPanel>}
         {/* 학교 미가입자 */}
-        {!_mySchool && <SignupSection myUserData={user} findSchool={_findSchool} selectedSchool={_selectedSchool} setFindSchool={setFindSchool}
-          Row={Row} Wrapper={Wrapper} TitleText={TitleText} ClickableText={ClickableText} />}
+        {!_mySchool && <SignupSection myUserData={user} findSchool={_findSchool} selectedSchool={_selectedSchool} setFindSchool={setFindSchool} TitleText={TitleText} ClickableText={ClickableText} />}
       </Container >
       {isKlassMemberModal && <ClassMemberModal show={isKlassMemberModal} onHide={() => { setIsKlassMemberModal(false) }} klass={_klass} myUserData={user} />}
     </>

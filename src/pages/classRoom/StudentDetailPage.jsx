@@ -226,11 +226,14 @@ const StudentDetailPage = () => {
 
   //------랜더링------------------------------------------------  
   const ActiRow = ({ item, index }) => {
-    const { title, record, madeBy, assignedDate } = item;
+    const { title, record, madeBy, assignedDate, repeatTimes } = item;
     return (
       <GridRow>
         {!isMobile && <GridItem>{index + 1}</GridItem>}
-        <GridItem><p style={{ margin: "0" }}>{title}</p></GridItem>
+        <GridItem style={{ flexDirection: "column" }}>
+          {title}
+          {repeatTimes && <span style={{ fontWeight: "bold", color:"#3454d1" }}>{repeatTimes}회 반복</span>}
+        </GridItem>
         <GridItem className="left-align"><span>{record}</span></GridItem>
         {!isMobile && <GridItem>{assignedDate || '없음'}</GridItem>}
         {!isMobile && <GridItem>{madeBy || '익명'}</GridItem>}
