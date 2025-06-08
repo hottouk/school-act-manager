@@ -27,12 +27,13 @@ import BackBtn from "../../components/Btn/BackBtn";
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
 import { Spinner } from "react-bootstrap";
 import SmallBtn from "../../components/Btn/SmallBtn";
+import AddRepeatRecModal from "../../components/Modal/AddRepeatRecModal";
 
 //24.07.06 수정(실시간 바이트 갱신) -> 24.12.21(담임반 활동)
 const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
   useEffect(() => { setIsVisible(true) }, [])
   const user = useSelector(({ user }) => { return user })
-  //1.활동 기본 정보 변수
+  //활동 기본 정보 변수
   const [_title, setTitle] = useState('');
   const [_selectedSubjGroup, setSelectedSubjGroup] = useState('default');
   const [_selectedSubjDetail, setSelectedSubjDetail] = useState('default');
@@ -40,6 +41,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const [_record, setRecord] = useState('');
   const [_extraRecList, setExtraRecList] = useState(null);
   const [_perfRecList, setPerfRecList] = useState(null);
+  const [_repeatInfoList, setRepeatInfoList] = useState(null);
   //담임반 활동
   const [_date, setDate] = useState('')
   const [_secondDate, setSecondDate] = useState('')
@@ -50,36 +52,38 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const [_isPrivate, setIsPrivate] = useState(true)
   //gpt 요청 바이트
   const [_myByte, setMyByte] = useState(0);
-  //2.경험치 점수 변수
+  //경험치 점수 변수
   const [leadershipScore, setLeadershipScore] = useState(0);
   const [careerScore, setCareerScore] = useState(0);
   const [sincerityScore, setSincerityScore] = useState(1);
   const [coopScore, setCoopScore] = useState(0);
   const [attitudeScore, setAttitudeScore] = useState(0);
   const [coin, setCoin] = useState(0);
-  //3.대화창 보여주기 변수
-  const [isExtraRecModalShown, setIsExtraRecModalShown] = useState(false)
-  const [isPerfRecModalShown, setIsPerfRecModalShown] = useState(false)
-  const [isModified, setIsModified] = useState(false)
-  const [isExtraRecShown, setIsExtraRecShown] = useState(false)
-  const [isDateShown, setIsDateShown] = useState(false)
-  const [isGptDetailShown, setIsGptDetailShown] = useState(false)
-  const [isPerfRecShown, setIsPerfRecShown] = useState(false)
+  //모달
+  const [isExtraRecModalShown, setIsExtraRecModalShown] = useState(false);
+  const [isPerfRecModalShown, setIsPerfRecModalShown] = useState(false);
+  const [isRepeatRecModalShown, setIsRepeatRecModalShown] = useState(false);
+  //숨은 대화창 보여주기 변수
+  const [isModified, setIsModified] = useState(false);
+  const [isPerfRecShown, setIsPerfRecShown] = useState(false);
+  const [isExtraRecShown, setIsExtraRecShown] = useState(false);
+  const [isRepeatRecShown, setIsRepeatRecShown] = useState(false);
+  const [isDateShown, setIsDateShown] = useState(false);
+  const [isGptDetailShown, setIsGptDetailShown] = useState(false);
   //hooks
   const { addActi, updateActi, deleteActi } = useFireActiData();
   const { copyActiTransaction, delCopiedActiTransaction } = useFireTransaction()
-  //5.경로 이동 관련 변수
+  //경로 이동 관련 변수
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const sort = queryParams.get("sort")
   const { state } = location //state.acti는 활동
-
-  useEffect(() => { if (state?.acti) { initData() } else { setIsModified(true) } }, [state]);
+  useEffect(() => { if (state?.acti) { initData(); } else { setIsModified(true); } }, [state]);
   const navigate = useNavigate()
-  //6. ChatGPt
+  //ChatGPt
   const { gptAnswer, askSubjRecord, askHomeroomReccord, gptRes } = useChatGpt();
   useEffect(() => { if (gptAnswer !== '') { setRecord(gptAnswer) } }, [gptAnswer])
-  //8. css 및 에니
+  //css 및 에니
   const clientHeight = useClientHeight(document.documentElement)
   const [isVisible, setIsVisible] = useState(false)
 
@@ -91,14 +95,16 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     setTitle(acti.title);
     setContent(acti.content);
     setRecord(acti.record);
-    setExtraRecList(acti.extraRecordList);
     setPerfRecList(acti.perfRecordList);
+    setExtraRecList(acti.extraRecordList);
+    setRepeatInfoList(acti.repeatInfoList)
     setSelectedSubjDetail(acti.subject);
     setIsPrivate(acti.isPrivate || false);
     setLeadershipScore(scoresObj?.leadership ?? 0);
     setCareerScore(scoresObj?.careerScore ?? 0);
     setSincerityScore(scoresObj?.sincerityScore ?? 0);
     setAttitudeScore(scoresObj?.attitudeScore ?? 0);
+    setIsModified(true);
   }
 
   //활동 저장 대화창 ==> 추후 디자인 수정 필요 (교사전용)
@@ -289,26 +295,41 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
               {(state && sort === "subject") && <DotTitle title={"성취도별 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
             </Row>
             <AnimMaxHightOpacity isVisible={isPerfRecShown}>
-              <Row style={{ gap: "5px" }}>
+              <HiddenWrapper style={{ flexDirection: "row", padding: "0 15px 10px 5px" }}>
                 {_perfRecList && <LevelWrapper>
                   <p>상</p><p>중</p><p>하</p><p>최하</p>
                 </LevelWrapper>}
                 <MoreRecordListForm
                   moreRecList={_perfRecList}
-                  noListText="등록된 수행평가 문구가 없습니다."
+                  noListText="수행 성취도에 따라 각기 다른 문구를 설정합니다."
                   isBtnShown={state?.acti?.uid === user.uid && !state?.acti?.madeById}
-                  btnOnClick={() => { setIsPerfRecModalShown(true) }} />
-              </Row>
+                  btnOnClick={() => { setIsPerfRecModalShown(true); }} />
+              </HiddenWrapper>
             </AnimMaxHightOpacity>
             <Row style={{ marginBottom: "10px" }}>
-              {(state && sort === "subject") && <DotTitle title={"돌려 쓰기 ▼"} onClick={() => { setIsExtraRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+              {(state && sort === "subject") && <DotTitle title={"돌려쓰기 문구 ▼"} onClick={() => { setIsExtraRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
             </Row>
             <AnimMaxHightOpacity isVisible={isExtraRecShown}>
-              <MoreRecordListForm
-                moreRecList={_extraRecList}
-                noListText="돌려 쓰기 문구가 없습니다."
-                isBtnShown={state?.acti?.uid === user.uid && !state?.acti?.madeById}
-                btnOnClick={() => { setIsExtraRecModalShown(true) }} />
+              <HiddenWrapper style={{ padding: "0 15px 10px 5px" }}>
+                <MoreRecordListForm
+                  moreRecList={_extraRecList}
+                  noListText="표현만 약간 다른 같은 내용의 돌려쓸 문구를 설정합니다."
+                  isBtnShown={state?.acti?.uid === user.uid && !state?.acti?.madeById}
+                  btnOnClick={() => { setIsExtraRecModalShown(true); }} />
+              </HiddenWrapper>
+            </AnimMaxHightOpacity>
+            <Row style={{ marginBottom: "10px" }}>
+              {(state && sort === "subject") && <DotTitle title={"반복 문구 ▼"} onClick={() => { setIsRepeatRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+            </Row>
+            <AnimMaxHightOpacity isVisible={isRepeatRecShown}>
+              <HiddenWrapper style={{ flexDirection: "row", padding: "0 15px 10px 5px" }}>
+                {_repeatInfoList && <LevelWrapper>{_repeatInfoList.map((item, i) => <p key={i}>{item.times}회</p>)}</LevelWrapper>}
+                <MoreRecordListForm
+                  moreRecList={_repeatInfoList?.map((item) => item.record)}
+                  noListText="반복 수행 횟수에 따라 각기 다른 문구를 설정합니다."
+                  isBtnShown={state?.acti?.uid === user.uid && !state?.acti?.madeById}
+                  btnOnClick={() => { setIsRepeatRecModalShown(true); }} />
+              </HiddenWrapper>
             </AnimMaxHightOpacity>
             <ScoreWrapper handleChange={handleOnChange}
               leadershipScore={leadershipScore}
@@ -328,14 +349,10 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                   {(state.acti.uid === user.uid) && <>
                     {!state.acti.madeById
                       ? <>{/*업어오지 않고 내가 생성한 활동 수정하기 */}
-                        {!isModified && <>
-                          <LongW100Btn btnName="수정" btnOnClick={setIsModified((prev) => !prev)} />
-                          <LongW100Btn id="delete_btn" btnName="삭제" btnOnClick={handleBtnClick} /></>
-                        }
-                        {isModified && <>
-                          <LongW100Btn id="gpt_btn" btnName="GPT로 세특 문구 작성" btnOnClick={handleBtnClick} />
-                          <LongW100Btn type="submit" btnName="저장" />
-                          <LongW100Btn id="cancel_modi_btn" btnName="취소" btnOnClick={handleBtnClick} /></>}</>
+                        <LongW100Btn id="gpt_btn" btnName="GPT로 세특 문구 작성" btnOnClick={handleBtnClick} />
+                        <LongW100Btn type="submit" btnName="저장" />
+                        <LongW100Btn id="delete_btn" btnName="삭제" btnOnClick={handleBtnClick} />
+                      </>
                       : <>{/*업어온 활동 삭제하기 */}
                         <LongW100Btn id="copied_delete_btn" btnName="삭제" btnOnClick={handleBtnClick} /></>}
                   </>}
@@ -347,19 +364,26 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     </Container>
 
     {/* 모달  */}
-    {(state && isExtraRecModalShown) &&
+    {state &&
       < AddExtraRecModal
         show={isExtraRecModalShown}
         onHide={() => setIsExtraRecModalShown(false)}
         acti={state.acti}
         setExtraRecList={setExtraRecList} //부모 컴포넌트에 변경 data 반영
       />}
-    {(state && isPerfRecModalShown) &&
+    {state &&
       < AddPerfRecModal
         show={isPerfRecModalShown}
         onHide={() => setIsPerfRecModalShown(false)}
         acti={state.acti}
         setPerfRecList={setPerfRecList}
+      />}
+    {state &&
+      < AddRepeatRecModal
+        show={isRepeatRecModalShown}
+        onHide={() => setIsRepeatRecModalShown(false)}
+        acti={state.acti}
+        setList={setRepeatInfoList}
       />}
   </>
   )
@@ -410,7 +434,7 @@ const StyledInput = styled.input`
 `
 const HiddenWrapper = styled(Row)`
   flex-direction: column;
-  border: 2px solid #919294;
+  border: 2px solid rgba(120, 120, 120, 0.5);
   margin-bottom: 15px;
   padding: 15px;
   border-radius: 5px;

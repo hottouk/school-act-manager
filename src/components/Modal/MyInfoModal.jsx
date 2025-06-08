@@ -69,13 +69,11 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
       default: return
     }
   }
-
   //프로필 사진 변경
   const handleInputFielOnChange = (event) => {
     let file = event.target.files[0];
     setProfileFile(file) //유저가 파일 변경
   }
-
   //버튼
   const handleOnClick = (event) => {
     switch (event.target.id) {
@@ -85,13 +83,11 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
       default: return;
     }
   }
-
   //확인
   const handleConfirmOnClick = () => {
     onHide();
     setIsModifying(false);
   }
-
   //저장
   const handleSaveOnClick = () => {
     if (window.confirm("이대로 회원정보를 저장하시겠습니까?")) {
@@ -112,7 +108,6 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
       setIsModifying(false)
     }
   }
-
   //취소
   const handleCancelOnClick = () => {
     setIsModifying(false)
@@ -121,16 +116,11 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
     setEmail(user.email ? user.email : '')
     setPhoneNumber(user.phoneNumber ? user.phoneNumber : '')
   }
-
-  //회원 탈퇴
-  const handleLeaveOnClick = () => { window.alert("25년 초에 구현 예정입니다.") }
-
   //로그아웃
   const handleLogoutOnClick = () => {
     onHide();
     logout();
   }
-
   return (
     <Modal
       show={show}
@@ -181,7 +171,6 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
         </fieldset>
         }
         {!isModifying && <Row style={{ justifyContent: "flex-end", gap: "10px" }}>
-          <ClickableText onClick={handleLeaveOnClick} >회원 탈퇴</ClickableText>
           <ClickableText onClick={() => { setIsModifying(true) }}>정보 수정</ClickableText>
         </Row>}
         {isModifying && <Row style={{ justifyContent: "flex-end", gap: "10px" }}>

@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
 import { useState } from 'react'
-import { gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg, gptPerfRecordMsg, gptTranslateMsg } from '../data/gptMsgDataList'
+import { gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg, gptRepeatRecMsg, gptPerfRecordMsg, gptTranslateMsg } from '../data/gptMsgDataList'
 
 //프롬프트 수정(240808)-> 모델 변경 가능(250520)
 const useChatGpt = () => {
@@ -24,17 +24,6 @@ const useChatGpt = () => {
       { role: "user", content: `[과목]: ${subject}, [활동]: ${title}, [설명]: ${content}, [바이트]: ${byte}. 위 활동을 수행한 학생의 교과 세부능력 및 특기사항의 예시문을 작성바람.` }]
     await playGpt(messages, "gpt-4o-mini");
   }
-  //돌려 쓰기
-  const askExtraRecord = async (curRecord) => {
-    let messages = [
-      ...gptExtraRecordMsg,
-      {
-        role: "user", content: `[주어진 문장]: '${curRecord}'
-        "위 주어진 문장의 의미와 길이가 비슷한 문구를 6개 생성해주세요. 문구들 사이에 각각 '^' 구분자를 사용하여 제시해야함.`
-      },
-    ]
-    playGpt(messages, "gpt-4o-mini");
-  }
   //수행평가 상,중,하 문구 만들기
   const askPerfRecord = async (subject, acti, curRecord) => {
     let messages = [
@@ -49,6 +38,28 @@ const useChatGpt = () => {
     ]
     playGpt(messages, "gpt-4o-mini");
   }
+  //돌려 쓰기 문구
+  const askExtraRecord = async (curRecord) => {
+    let messages = [
+      ...gptExtraRecordMsg,
+      {
+        role: "user", content: `[주어진 문장]: '${curRecord}'
+        "위 주어진 문장의 의미와 길이가 비슷한 문구를 6개 생성해주세요. 문구들 사이에 각각 '^' 구분자를 사용하여 제시해야함.`
+      },
+    ]
+    playGpt(messages, "gpt-4o-mini");
+  };
+  //반복 문구 
+  const askRepeatRecord = async (curRecord) => {
+    let messages = [
+      ...gptRepeatRecMsg,
+      {
+        role: "user", content: `[예시 문구]: '${curRecord}'
+        "[예시 문구]를 토대로 달성 수준이 '상','중','하' 일 때의 예시문을 각각 생성 바람.`
+      },
+    ]
+    playGpt(messages, "gpt-4o-mini");
+  };
   //특성 기반 개별화
   const askGptPersonalize = async (acti, personalPropList) => {
     let subject = acti.subject || "국어"
@@ -162,7 +173,7 @@ const useChatGpt = () => {
     }
   }
 
-  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, gptRes }
+  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, askRepeatRecord, gptRes }
 }
 
 export default useChatGpt

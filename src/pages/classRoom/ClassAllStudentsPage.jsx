@@ -98,7 +98,7 @@ const ClassAllStudents = () => {
         <p>※수정은 PC에서 가능함</p>
         <BackBtn />
         {user.userStatus === "master" && <StyledShfBtn $wid="45" src={recycleIcon} alt="섞기 버튼" onClick={() => { handleShuffleAllBtnOnClick() }} />}
-        <ExportAsExcel />
+        <ExportAsExcel allStudentList={studentDataList} />
         <PrintBtn onClick={() => { handlePrint() }} />
       </SubNav>
       <GridContainer ref={printRef}>

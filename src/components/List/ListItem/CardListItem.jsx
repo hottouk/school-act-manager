@@ -3,7 +3,8 @@ import React from 'react'
 import styled from 'styled-components'
 //이미지
 import iconImg from '../../../image/icon/like_icon.png'
-import unknonIcon from '../../../image/icon/unkown_icon.png'
+import unknownIcon from '../../../image/icon/unkown_icon.png'
+import recycleIcon from '../../../image/icon/recycle_icon.png'
 //25.01.18 생성
 const CardListItem = ({ item, onClick, type, styles }) => {
   const hoverColor = styles?.hoverColor
@@ -15,7 +16,7 @@ const CardListItem = ({ item, onClick, type, styles }) => {
       {type === "teacher" && <>
         <Row style={{ flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
           <Row style={{ justifyContent: "flex-start", alignItems: "center" }}>
-            <StyledImg src={item.profileImg || unknonIcon} alt='프로필' />
+            <StyledImg src={item.profileImg || unknownIcon} alt='프로필' />
             <StyledTitle style={{ color: "#3454d1", margin: "0 20px" }}>{item.name}</StyledTitle>
           </Row>
           <p>{item.email}</p>
@@ -39,7 +40,8 @@ const CardListItem = ({ item, onClick, type, styles }) => {
       {type === "subjActi" && <>
         <StyledTitle style={{ color: "#3454d1" }} >{item.title}</StyledTitle>
         <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
-        <Row style={{ height: "41px" }}>
+        <Row style={{ height: "41px", gap: "5px" }}>
+          {item.repeatInfoList && <StyledIconImg alt='반복형' src={recycleIcon} />}
           <StyledIconImg src={iconImg} alt={"받은좋아요"} />
           <p style={{ margin: "4px 0" }}>{item.likedCount ? item.likedCount : 0}</p>
         </Row>
@@ -114,7 +116,6 @@ const MadeByTagText = styled.p`
 const StyledIconImg = styled.img`
   width: 30px;
   height: 30px; 
-  margin-right: 5px;
   margin-bottom: 7px;
   padding: 1px;
   border: 1px solid rgb(120, 120, 120, 0.5);

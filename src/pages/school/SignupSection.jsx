@@ -15,39 +15,41 @@ import MainBtn from '../../components/Btn/MainBtn'
 import useFireBasic from '../../hooks/Firebase/useFireBasic'
 import useFireUserData from '../../hooks/Firebase/useFireUserData'
 import useFireSchoolData from '../../hooks/Firebase/useFireSchoolData'
+import useLogout from '../../hooks/useLogout'
+import useFireTransaction from '../../hooks/useFireTransaction'
 
 //생성(250218)
-const SignupSection = ({ myUserData: user, findSchool, selectedSchool, setFindSchool, Wrapper, TitleText, ClickableText }) => {
+const SignupSection = ({ myUserData: user, findSchool, selectedSchool, setFindSchool, TitleText, ClickableText }) => {
 	const [_isPublic, setIsPublic] = useState(false);
 	const [_otherName, setOtherName] = useState('');
 	const [_otherTel, setOtherTel] = useState('');
 	const { setData } = useFireBasic("school");
 	const { updateUserInfo } = useFireUserData();
 	const { joinSchool, searchSchoolByField } = useFireSchoolData();
+	//탈퇴
+	const { deleteUserTransaction } = useFireTransaction();
 	//검색
 	const [_keyword, setKeyword] = useState('');
 	const options = [{ label: "학교명", value: "school" }, { label: "학교 코드", value: "code" }];
 	const [_searchBy, setSearchBy] = useState("school");
 	const [otherShcool, setOtherSchool] = useState(null);
-
 	//------함수부------------------------------------------------  
 	//나이스 등재 학교 가입
 	const handleSignUpSchool = () => {
 		const confirm = window.confirm("이 학교 멤버로 가입하시겠습니까?")
 		if (!confirm) return;
-		if (selectedSchool) {							//기존 멤버 있는 학교 가입
+		if (selectedSchool?.memberList?.length > 0) {							//기존 멤버 있는 학교 가입
 			const { memberList, ...rest } = selectedSchool;
 			const code = selectedSchool.schoolCode;
 			updateUserInfo("school", { ...rest });
 			joinSchool(code, user);
 		} else {													//학교에서 첫 가입자
-			const { createdTime, ...rest } = user
-			const schoolInfo = { ...findSchool, memberList: [{ ...rest }] };
+			const { createdTime, uid, ...rest } = user
+			const schoolInfo = { ...findSchool, memberList: [{ ...rest, uid }], schoolMaster: uid };
 			setData(schoolInfo, findSchool.schoolCode);	//학교 신설
 			updateUserInfo("school", { ...findSchool })	//내 정보 수정
 		}
 	}
-
 	//미등재 학교 가입
 	const handleSignUpOtherSchool = () => {
 		const confirm = window.confirm("이 학교 멤버로 가입하시겠습니까?")
@@ -90,18 +92,31 @@ const SignupSection = ({ myUserData: user, findSchool, selectedSchool, setFindSc
 			updateUserInfo("school", { ...schoolInfo });				//내 정보 수정	
 		}
 	}
+	//회원 탈퇴
+	const handleLeaveOnClick = () => {
+		const first = window.prompt("회원 탈퇴는 모든 클래스와 학생정보가 삭제되며 절대로 복구할 수 없습니다. 진행하려면 '탈퇴합니다'를 입력해주세요");
+		if (first === "탈퇴합니다") {
+			const second = window.confirm("확인을 누르면 탈퇴가 진행됩니다ㅠㅠ영원한 이별은 아니겠죠?");
+			if (second) {
+				alert("작별이다! 다음에 더 좋은 모습으로 만나요 :D");
+				deleteUserTransaction();
+			} else {
+				alert("잘 생각하셨어요:D 내가 더 잘할게요");
+			}
+		}
+	}
 
 	return (<>
 		<MainPanel>
 			<TitleText>1. 나이스에 등재된 학교입니까?</TitleText>
 			<Wrapper><TwoRadios value={_isPublic} label={["등재 학교", "그 외 단체, 학원, 대안학교"]} onChange={() => setIsPublic(!_isPublic)} /></Wrapper>
+			<Row style={{ justifyContent: "flex-end" }}><ClickableText onClick={handleLeaveOnClick}>쫑알이 회원 탈퇴</ClickableText></Row>
 		</MainPanel>
 		{/* 나이스 등재 */}
 		<AnimMaxHightOpacity isVisible={_isPublic === true}>
 			<MainPanel>
 				<TitleText>2. 학교 찾기</TitleText>
 				<Wrapper><FindSchoolSelect setSchool={setFindSchool} /></Wrapper>
-				<Row></Row>
 			</MainPanel>
 		</AnimMaxHightOpacity>
 		<AnimMaxHightOpacity isVisible={selectedSchool !== null}>
@@ -112,7 +127,7 @@ const SignupSection = ({ myUserData: user, findSchool, selectedSchool, setFindSc
 				<p>{selectedSchool?.schoolTel}</p>
 				{selectedSchool && <p>학교 코드: {selectedSchool?.schoolCode}</p>}
 				{(selectedSchool === undefined) && <TitleText>현재 학교 첫 가입이세요. 환영합니다.</TitleText>}
-				<Row style={{ justifyContent: "flex-end" }}><ClickableText onClick={handleSignUpSchool}>본교 가입</ClickableText></Row>
+				<Row style={{ justifyContent: "flex-end" }}><ClickableText onClick={handleSignUpSchool}>학교 가입</ClickableText></Row>
 			</MainPanel>
 		</AnimMaxHightOpacity>
 		{/* 나이스 미등재 */}
@@ -153,6 +168,10 @@ const SignupSection = ({ myUserData: user, findSchool, selectedSchool, setFindSc
 
 const Row = styled.div`
 	display: flex;
+`
+const Wrapper = styled(Row)`
+  margin-top: 20px;
+  justify-content: center;
 `
 const BtnWrapper = styled(Row)`
 	button { width: 150px; }
