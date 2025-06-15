@@ -29,14 +29,13 @@ const useFetchStorageImg = () => {
   //이미지 하나 가져오기
   const fetchImgUrl = async (path, setter) => {
     if (!path || !setter) return
-    const cachedUrl = sessionStorage.getItem(path)
-    if (cachedUrl) {
-      setter(cachedUrl)
-    } else {
-      let imgRef = ref(storage, path)
+    const cachedUrl = sessionStorage.getItem(path);
+    if (cachedUrl) { setter(cachedUrl); }
+    else {
+      const imgRef = ref(storage, path)
       getDownloadURL(imgRef).then((url) => {
-        setter(url)
-        sessionStorage.setItem(path, url)
+        setter(url);
+        sessionStorage.setItem(path, url);
       })
     }
   }

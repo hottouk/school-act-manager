@@ -1,61 +1,55 @@
 //라이브러리
-import React from 'react'
 import styled from 'styled-components'
 //이미지
 import iconImg from '../../../image/icon/like_icon.png'
 import unknownIcon from '../../../image/icon/unkown_icon.png'
 import recycleIcon from '../../../image/icon/recycle_icon.png'
-//25.01.18 생성
+//생성(250118)
 const CardListItem = ({ item, onClick, type, styles }) => {
   const hoverColor = styles?.hoverColor
   const backgroundColor = styles?.backgroundColor
+
   return (
     <Container $hoverColor={hoverColor} $backgroundColor={backgroundColor} onClick={() => { onClick(item) }}    >
-
       {/* 교사 */}
       {type === "teacher" && <>
         <Row style={{ flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
           <Row style={{ justifyContent: "flex-start", alignItems: "center" }}>
             <StyledImg src={item.profileImg || unknownIcon} alt='프로필' />
-            <StyledTitle style={{ color: "#3454d1", margin: "0 20px" }}>{item.name}</StyledTitle>
+            <Title style={{ color: "#3454d1", margin: "0 20px" }}>{item.name}</Title>
           </Row>
           <p>{item.email}</p>
         </Row></>}
-
       {/* 교과 클래스 */}
       {type === "classroom" && <>
-        <StyledTitle style={{ color: "#3454d1" }}>{item.classTitle}</StyledTitle>
+        <Title style={{ color: "#3454d1" }}>{item.classTitle}</Title>
         <p style={{ marginBottom: "20px" }}>{item.intro}</p>
         <p>{item.subject ? `${item.subject}과` : "교사가 삭제한 클래스입니다."}{item.subjDetail ? '-' + item.subjDetail : ''} </p></>}
-
       {/* 담임 클래스 */}
       {type === "homeroom" && <>
-        <StyledTitle style={{ color: "#3454d1" }}>{item.classTitle}</StyledTitle>
+        <Title style={{ color: "#3454d1" }}>{item.classTitle}</Title>
         <Row style={{ justifyContent: "flex-start", marginBottom: "20px" }}>
           <h5 style={{ color: "#3454d1" }}>{item.grade}</h5><span>학년</span>
           <h5 style={{ color: "#3454d1" }}>{item.classNumber}</h5><span>반</span></Row>
         <p>{item.intro}</p></>}
-
       {/* 엑티비티 */}
       {type === "subjActi" && <>
-        <StyledTitle style={{ color: "#3454d1" }} >{item.title}</StyledTitle>
+        <Title style={{ color: "#3454d1" }} >{item.title}</Title>
         <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
-        <Row style={{ height: "41px", gap: "5px" }}>
+        <Row style={{ height: "41px", gap: "5px", justifyContent: "flex-end" }}>
           {item.repeatInfoList && <StyledIconImg alt='반복형' src={recycleIcon} />}
           <StyledIconImg src={iconImg} alt={"받은좋아요"} />
           <p style={{ margin: "4px 0" }}>{item.likedCount ? item.likedCount : 0}</p>
         </Row>
-        <Row><MadeByTagText style={{ backgroundColor: "#3454d1b3" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</MadeByTagText></Row></>}
-
+        <Row style={{ justifyContent: "flex-end" }}><MadeByTagText style={{ backgroundColor: "#3454d1b3" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</MadeByTagText></Row></>}
       {/* 업어온 활동 */}
       {type === "copiedActi" && <>
-        <StyledTitle style={{ color: "#FF69B4" }} >{item.title}</StyledTitle>
+        <Title style={{ color: "#FF69B4" }} >{item.title}</Title>
         <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
-        <Row style={{ height: "75px", alignItems: 'flex-end' }}><MadeByTagText style={{ backgroundColor: "#FF69B4" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</MadeByTagText></Row></>}
-
+        <Row style={{ height: "75px", alignItems: "flex-end", justifyContent: "flex-end" }}><MadeByTagText style={{ backgroundColor: "#FF69B4" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</MadeByTagText></Row></>}
       {/* 퀴즈 활동 */}
       {type === "quizActi" && <>
-        <StyledTitle style={{ color: "#098a0f" }} >{item.title}</StyledTitle>
+        <Title style={{ color: "#098a0f" }} >{item.title}</Title>
         <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
         <Row style={{ height: "41px", justifyContent: "space-between" }}>
           <StyledText>{item?.quizInfo?.quizList?.length} 문제</StyledText>
@@ -64,13 +58,12 @@ const CardListItem = ({ item, onClick, type, styles }) => {
             <p style={{ margin: "4px 0" }}>{item.likedCount ? item.likedCount : 0}</p>
           </Row>
         </Row>
-        <Row><MadeByTagText style={{ backgroundColor: "#098a0f" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</MadeByTagText></Row></>}
-
+        <Row style={{ justifyContent: "flex-end" }}><MadeByTagText style={{ backgroundColor: "#098a0f" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</MadeByTagText></Row></>}
       {/* 퀴즈 세트 */}
       {type === "quiz" && <>
-        <StyledTitle style={{ color: "#3454d1" }} >{item.title}</StyledTitle>
+        <Title style={{ color: "#3454d1" }} >{item.title}</Title>
         <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
-        <StyledNumber>{item.quizList.length}</StyledNumber></>}
+        <StyledNumber style={{ margin: "-60px -15px" }}>{item.quizList.length}</StyledNumber></>}
     </Container >
   )
 }
@@ -87,12 +80,15 @@ const Container = styled.li`
     background-color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
   }
 `
+const Row = styled.div`
+  display: flex;
+`
 const StyledImg = styled.img`
   width: 45px;
   height: 45px;
   border-radius: 23px;
 `
-const StyledTitle = styled.h5`
+const Title = styled.h5`
   margin: 0 0 8px;
   font-weight: 700;
   overflow: hidden;
@@ -101,10 +97,6 @@ const StyledTitle = styled.h5`
 `
 const StyledText = styled.p`
   margin: 0;
-`
-const Row = styled.div`
-  display: flex;
-  justify-content: flex-end;
 `
 const MadeByTagText = styled.p`
   display: inline;
@@ -125,6 +117,5 @@ const StyledNumber = styled.p`
   font-size: 110px;
   text-align: right;
   color: rgb(52, 84, 209, 0.3);
-  margin: -60px -15px;
 `
 export default CardListItem

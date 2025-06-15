@@ -4,9 +4,59 @@ import styled from 'styled-components'
 //컴포넌트
 import CardListItem from './ListItem/CardListItem'
 import EmptyResult from '../EmptyResult'
+import PetImg from '../PetImg'
 //생성(240109) -> onClick 로직 분리(250122)
 const CardList = ({ dataList, type, onClick, selected }) => {
   const navigate = useNavigate();
+
+  //------카드 랜더링----------------------------------------------- 
+  //펫 카드
+  const PetCard = ({ item, onClick }) => {
+    return <Card $backgroundColor={`${item.petId === selected ? "rgba(52, 84, 209, 0.4)" : "white"}`} onClick={() => { onClick(item) }}>
+      <Row style={{ justifyContent: "space-between" }}>
+        <Column>
+          <PetImg path={item.path} subject={"none"} styles={{ width: "100px", height: "100px" }} />
+          <p style={{ margin: "5px 0", textAlign: "center" }}>lv{item.level.level} {item.name}</p>
+        </Column>
+        <Column style={{ justifyContent: "space-between" }}>
+          <BigNumber style={{ margin: "-35px 0" }}>{item.spec.hp + item.spec.atk + item.spec.def + item.spec.mat + item.spec.mdf + item.spec.spd}</BigNumber>
+          <p style={{ margin: "5px 0", textAlign: "center" }}>종합전투력</p>
+        </Column>
+      </Row>
+    </Card>
+  }
+  //몬스터 카드
+  const MonsterCard = ({ item, onClick }) => {
+    const { spec, exp, name, level, path } = item;
+    return <Card style={{ padding: "10px", }} $backgroundColor={`${level === selected ? "rgba(52, 84, 209, 0.4)" : "white"}`} onClick={() => { onClick(level) }}>
+      <Row style={{ justifyContent: "space-around" }}>
+        <Column>
+          <PetImg path={path} subject={"none"} styles={{ width: "100px", height: "100px" }} />
+          <Row style={{ justifyContent: "space-evenly" }}>
+            <Highlight>lv{level} </Highlight>
+            <BasicText style={{ paddingTop: "4px" }}>{name}</BasicText>
+          </Row>
+        </Column>
+        <Column style={{ justifyContent: "space-around" }}>
+          <BasicText>Status</BasicText>
+          <Row style={{ gap: "20px" }}>
+            <Column>
+              <BasicText>체력: {spec?.hp ?? "??"}</BasicText>
+              <BasicText>공격: {spec?.atk ?? "??"}</BasicText>
+              <BasicText>방어: {spec?.def ?? "??"}</BasicText>
+            </Column>
+            <Column>
+              <BasicText>마력: {spec?.mat ?? "??"}</BasicText>
+              <BasicText>지력: {spec?.mdf ?? "??"}</BasicText>
+              <BasicText>민첩: {spec?.spd ?? "??"}</BasicText>
+            </Column>
+          </Row>
+          <Highlight>획득 경험치: {exp}</Highlight>
+        </Column>
+      </Row>
+    </Card>
+  }
+
   return (
     <Container>
       <CardWrapper>
@@ -42,6 +92,10 @@ const CardList = ({ dataList, type, onClick, selected }) => {
         {(type === "quiz") && dataList?.map((item) => {
           return (<CardListItem key={item.id} item={item} onClick={() => { navigate('/quiz_setting', { state: item }) }} type={"quiz"} />)
         })}
+        {/*펫*/}
+        {(type === "pet") && dataList?.map((item) => (<PetCard key={item.petId} item={item} onClick={onClick} />))}
+        {/*몬스터*/}
+        {(type === "monster") && dataList?.map((item) => (<MonsterCard key={item.level} item={item} onClick={onClick} />))}
       </CardWrapper>
     </Container>
   )
@@ -64,5 +118,38 @@ const CardWrapper = styled.ul`
   width: 100%;
   display: flex;
   flex-wrap: wrap;
+`
+const Card = styled.li`
+  width: 280px;
+  height: 155px;
+  margin: 10px;
+  padding: 15px 25px;
+  border: 1.5px solid  rgb(120, 120, 120, 0.5) ;
+  border-radius: 15px;
+  cursor: pointer;
+  background-color: ${props => props.$backgroundColor || "white"};
+  &: hover {
+    background-color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
+  }
+`
+const Row = styled.div`
+  display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
+`
+const BasicText = styled.p`
+  margin: 0;
+  text-align: center;
+`
+const Highlight = styled(BasicText)`
+  color: #3454d1;
+  font-weight: 700;
+  font-size: larger;
+`
+const BigNumber = styled.p`
+  font-size: 110px;
+  text-align: right;
+  color: rgb(52, 84, 209, 0.3);
 `
 export default CardList

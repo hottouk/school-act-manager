@@ -22,7 +22,6 @@ const EvolutionModal = ({ show, onHide, info }) => {
     updateUserPetInfo(info.petId, nextMonster, info.submitItem).then(() => alert("진화 완료"))
     onHide();
   }
-
   //몬스터 찾기
   const findMonseters = () => {
     if (!info) return;
@@ -32,7 +31,6 @@ const EvolutionModal = ({ show, onHide, info }) => {
     setCurMonster(curMon);
     setNextMonster(nextMon);
   }
-
   //몬스터 이미지 다운로드
   const downloadImgList = () => {
     if (!curMonster || !nextMonster) return
@@ -49,35 +47,35 @@ const EvolutionModal = ({ show, onHide, info }) => {
       <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }}>진화</Modal.Header>
       <Modal.Body>
         <MonsterWrapper>
-          <StyledItem>
-            <StyledImg src={monImgList[0]} alt="현재 img" />
-            <StyledText>Lv{curMonster?.level.nextStepLv} {curMonster?.name}</StyledText>
+          <Column>
+            <PetImg src={monImgList[0]} alt="현재 img" />
+            <BasicText>Lv{curMonster?.level.nextStepLv} {curMonster?.name}</BasicText>
             <SpecWrapper>
-              <StyledText>체력: {curMonster?.spec.hp}</StyledText>
-              <StyledText>공격: {curMonster?.spec.atk}</StyledText>
-              <StyledText>방어: {curMonster?.spec.def}</StyledText>
-              <StyledText>마력: {curMonster?.spec.mat}</StyledText>
-              <StyledText>지력: {curMonster?.spec.mdf}</StyledText>
-              <StyledText>민첩: {curMonster?.spec.spd}</StyledText>
+              <BasicText>체력: {curMonster?.spec.hp}</BasicText>
+              <BasicText>공격: {curMonster?.spec.atk}</BasicText>
+              <BasicText>방어: {curMonster?.spec.def}</BasicText>
+              <BasicText>마력: {curMonster?.spec.mat}</BasicText>
+              <BasicText>지력: {curMonster?.spec.mdf}</BasicText>
+              <BasicText>민첩: {curMonster?.spec.spd}</BasicText>
             </SpecWrapper>
-          </StyledItem>
-          <StyledItem><ArrowBtn /></StyledItem>
-          <StyledItem>
-            <StyledImg src={monImgList[1]} alt="진화 img" />
-            <StyledText>Lv{nextMonster?.level.level} {nextMonster?.name} </StyledText>
+          </Column>
+          <Column><ArrowBtn /></Column>
+          <Column>
+            <PetImg src={monImgList[1]} alt="진화 img" />
+            <BasicText>Lv{nextMonster?.level.level} {nextMonster?.name} </BasicText>
             <SpecWrapper style={{ flexDirection: "column" }}>
-              <StyledText>체력: {nextMonster?.spec.hp}</StyledText>
-              <StyledText>공격: {nextMonster?.spec.atk}</StyledText>
-              <StyledText>방어: {nextMonster?.spec.def}</StyledText>
-              <StyledText>마력: {nextMonster?.spec.mat}</StyledText>
-              <StyledText>지력: {nextMonster?.spec.mdf}</StyledText>
-              <StyledText>민첩: {nextMonster?.spec.spd}</StyledText>
+              <BasicText>체력: {nextMonster?.spec.hp}</BasicText>
+              <BasicText>공격: {nextMonster?.spec.atk}</BasicText>
+              <BasicText>방어: {nextMonster?.spec.def}</BasicText>
+              <BasicText>마력: {nextMonster?.spec.mat}</BasicText>
+              <BasicText>지력: {nextMonster?.spec.mdf}</BasicText>
+              <BasicText>민첩: {nextMonster?.spec.spd}</BasicText>
             </SpecWrapper>
-          </StyledItem>
+          </Column>
         </MonsterWrapper>
         <SkillWrapper>
           {nextMonster?.skills.map((item) =>
-            <StyledText>스킬 습득: {item.name}</StyledText>
+            <BasicText>스킬 습득: {item.name}</BasicText>
           )}
         </SkillWrapper>
       </Modal.Body>
@@ -91,6 +89,11 @@ const EvolutionModal = ({ show, onHide, info }) => {
 
 const Row = styled.div`
   display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 `
 const MonsterWrapper = styled(Row)`
   justify-content: center;
@@ -109,18 +112,14 @@ const SkillWrapper = styled(Row)`
   border-radius: 10px;
   padding: 10px;
 `
-const StyledItem = styled(Row)`
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`
-const StyledImg = styled.img`
+
+const PetImg = styled.img`
   width: 100px;
   height: 100px;
   border: 1px solid rgba(120,120,120,0.5);
   border-radius: 15px;
 `
-const StyledText = styled.p`
+const BasicText = styled.p`
   margin: 0;
 `
 

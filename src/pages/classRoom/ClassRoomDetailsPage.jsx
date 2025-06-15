@@ -76,6 +76,7 @@ const ClassroomDetailsPage = () => {
   const [actiInfo, setActiInfo] = useState(null);
   //게임 구동 정보
   const [gameDetails, setGameDetails] = useState(null);
+  const [myPetList, setMyPetList] = useState(null);
   const [myPetDetails, setMyPetDetails] = useState(null);
   //게임 랭크 정보
   const [gameRankInfo, setGameRankInfo] = useState(null);
@@ -150,6 +151,7 @@ const ClassroomDetailsPage = () => {
     if (user.isTeacher || !myUserData) return;
     const { myPetList } = myUserData;
     const thisPet = myPetList.find(({ classId }) => classId === thisKlassId);
+    setMyPetList(myPetList);
     setMyPetDetails(thisPet);
   }
   //몬스터 클릭
@@ -215,7 +217,6 @@ const ClassroomDetailsPage = () => {
       navigate("/classRooms");
     }
   }
-
   return (<>
     <SubNav styles={{ padding: "10px" }}>
       {(user.uid === klassData?.uid) && <Select options={allSubjClassList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
@@ -270,7 +271,7 @@ const ClassroomDetailsPage = () => {
       show={isGameModal}
       onHide={() => setIsGameModal(false)}
       quizSetId={quizId}
-      myPetDetails={myPetDetails}
+      myPetList={myPetList}
       gameDetails={gameDetails}
     />}
     {/* 학생 정보 모달 */}
