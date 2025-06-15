@@ -9,7 +9,7 @@ import { monsterWaterList, monsterGrassList, monsterFireList, monsterNormalList 
 import questionMark from "../image/icon/question.png"
 
 //250212 수정
-const PetImg = ({ subject, step, onClick, path, styles }) => {
+const PetImg = ({ subject, step, onClick = () => { }, path, styles }) => {
   const width = styles?.width || "134px"
   const height = styles?.height || "134px"
   const margin = styles?.margin || "0"
@@ -17,10 +17,10 @@ const PetImg = ({ subject, step, onClick, path, styles }) => {
   useEffect(() => { getImage(); }, [subject])
   const [imgSrc, setImgSrc] = useState(null);
   const getImage = () => {
-    if (!subject) return;
     if (path) {
       fetchImgUrl(path, setImgSrc);
     } else {
+      if (!subject) return
       let pathList
       switch (subject) {
         case "영어":
@@ -42,7 +42,6 @@ const PetImg = ({ subject, step, onClick, path, styles }) => {
       }
     }
   };
-
   return (
     subject ? (<img src={imgSrc} alt="펫이미지" onClick={() => { onClick() }} style={{ width: width, height: height, margin: margin }} />)
       : <UnknownImg src={questionMark} alt="물음표" onClick={() => { onClick() }} style={{ width: width, height: height, margin: margin }} />

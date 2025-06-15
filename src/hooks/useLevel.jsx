@@ -60,8 +60,8 @@ const useLevel = () => {
   //몬스터 스펙 보정 수치 적용
   const getMonsterStat = (spec, level) => {
     if (!spec) return
-    let { hp, atk, def, spd, ...rest } = spec;
-    let statUp = getMonsterUpStat(level);
+    const { hp, atk, def, spd, ...rest } = spec;
+    const statUp = getMonsterUpStat(level);
     return { hp: hp + statUp.hp, atk: atk + statUp.atk, def: def + statUp.def, spd: spd + statUp.spd, ...rest, level };
   }
 

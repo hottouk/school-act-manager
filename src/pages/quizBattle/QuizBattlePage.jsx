@@ -13,7 +13,6 @@ import AnimatedProgressBar from '../../components/ProgressBar';
 import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg';
 import useFireBasic from '../../hooks/Firebase/useFireBasic';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
-import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
 import useBattleLogic from '../../hooks/Game/useBattleLogic';
 import useLevel from '../../hooks/useLevel';
 //img
@@ -21,25 +20,24 @@ import qustion_icon from '../../image/icon/question.png'
 import useFireActiData from '../../hooks/Firebase/useFireActiData';
 //Data
 import { skillList } from '../../data/skillList';
+import useMediaQuery from '../../hooks/useMediaQuery';
 
 //250111 생성
-const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame }) => {
+const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, onHide: exitGame }) => {
   //실시간 데이터
   const user = useSelector(({ user }) => user);
-  const { myUserData } = useFetchRtMyUserData();
-  const [myPetInfo, setMyPetInfo] = useState(null);
   const [monsterInfo, setMonsterInfo] = useState(null);
-
-  useEffect(() => { bindMyPetData(); }, [myPetInfo]);
-  useEffect(() => { fetchInitData(); }, [quizSetId, gameDetails, myPetDetails, myUserData])
-  const { gainXp, getEnmLevel, getEarnedXp, getMonsterStat } = useLevel();   //레벨 관련
+  useEffect(() => { bindMyPetData(); }, [myPetDetails]);
+  useEffect(() => { bindEnmData(); }, [monsterDetails]);
+  useEffect(() => { fetchQuizData(); }, [quizSetId])
+  const { gainXp, getEarnedXp } = useLevel();   //레벨 관련
   const { fetchImgUrl } = useFetchStorageImg(); //이미지 불러오기
   const { fetchDoc } = useFireBasic("quiz");
   const { updateUserPetGameInfo, updateUserArrayInfo } = useFireUserData();
   const { updateGameResult } = useFireActiData();
   const { getRandomStance, getSkillDamge } = useBattleLogic();
   const [quizList, setQuizList] = useState([]);
-  useEffect(() => { bindQuizData(); }, [quizList]);
+  useEffect(() => { bindQuizInfo(); }, [quizList]);
   //문제 준비
   const [frozenAnswerList, setFrozenAnswerList] = useState(quizList?.map((quizSet) => quizSet.split("#")[1]))
   const quizListRef = useRef(quizList?.map((quizSet) => quizSet.split("#")[0]))
@@ -62,16 +60,16 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   const [optionList, setOptionList] = useState([]);
   const [actionBall, setActionBall] = useState(0)
   //채점
-  const [marking, setMarking] = useState(null);              //문제 정오
-  const [correctNumber, setCorrectNumber] = useState(0);     //맞춘 개수
+  const [marking, setMarking] = useState(null);                      //문제 정오
+  const [correctNumber, setCorrectNumber] = useState(0);             //맞춘 개수
   const [incorrectList, setIncorrectList] = useState([]);            //틀린 문제 
   const [score, setScore] = useState(0);                             //현재 점수
-  //내 펫몬 정보 
   const [battleTurn, setBattleTurn] = useState(0)
   useEffect(() => {
     if (battleTurn === 0 || phase === "end") return
     setPhase(battleTurn === 4 ? "quiz" : "stance");
   }, [battleTurn])
+  //내 펫 정보 
   const [myStance, setMyStance] = useState(null);
   const [myHP, setMyHP] = useState(100);
   const [myCurHP, setMyCurHP] = useState(100);
@@ -82,7 +80,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   const [mySpd, setMySpd] = useState(1);
   const [mySkillList, setMySkillList] = useState([]);
   const [skillCooldowns, setSkillCooldowns] = useState({});
-  //상대 펫몬 정보
+  //상대 몬스터 정보
   const [enmLevel, setEnmLevel] = useState(1);
   const [enemyHP, setEnemyHP] = useState(100);
   const [enemyCurHP, setEnemyCurHP] = useState(100);
@@ -105,8 +103,6 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   useEffect(() => { bindRewardData(); }, [myWinCount])
   const [rewardPoint, setRewardPoint] = useState(null);      //승리 횟수에 따른 보상 시점
   const [reward, setReward] = useState('');                  //승리 횟수에 따른 보상 문구
-  // console.log("승리:", myWinCount, "기준:", rewardPoint, reward, myWinCount === rewardPoint)
-  const teacherPet = { spec: { atk: 80, def: 10, hp: 400, mat: 180, mdf: 55, spd: 55 }, path: "images/pet/pet_water_001_4.png", path_back: "images/pet/pet_water_001_4_back.png", level: { exp: 999, level: 100, nextLvXp: 1000, nextStepLv: 500 } }
   useEffect(() => { setMyWinCount(countWinRecord()) }, [myRecordList])
   //게임 종료
   useEffect(() => {
@@ -117,13 +113,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   const [result, setResult] = useState(null);
   useEffect(() => { finalizeGame(); }, [result])
   //모드
-  const [isMobile, setIsMobile] = useState((window.innerWidth <= 768))
-  useEffect(() => {
-    const handleResize = () => { setIsMobile(window.innerWidth <= 768) }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [])
-
+  const isMobile = useMediaQuery("(max-width: 767px)");
   //페이즈★
   useEffect(() => {
     switch (phase) {
@@ -169,30 +159,71 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
   }, [phase])
 
   //------함수부------------------------------------------------  
-  //초기 데이터 다운로드
-  const fetchInitData = () => {
-    if (!gameDetails || !quizSetId || !myUserData) return;
-    const { monster } = gameDetails
-    //실시간 데이터
-    let myPet
-    if (!user.isTeacher) { myPet = myUserData.myPetList.find((pet) => pet.petId === myPetDetails.petId) }
-    else { myPet = teacherPet }
-    setMyPetInfo(myPet)
-    setMonsterInfo(gameDetails.monster.step[0])
-    fetchImgUrl(monster.path, setEnmImg)
-    fetchImgUrl('images/battle_background.png', setBackground)
-    fetchImgUrl(myPet.path, setMyPetImg)
-    fetchImgUrl(myPet.path_back || myPet.path, setMyPetBackImg)
-    fetchDoc(quizSetId).then((quizSetInfo) => {
-      setQuizList(quizSetInfo.quizList)
-    });
+  //퀴즈 데이터 다운로드
+  const fetchQuizData = () => {
+    if (!quizSetId) return;
+    fetchImgUrl('images/battle_background.png', setBackground);
+    fetchDoc(quizSetId).then((quizSetInfo) => { setQuizList(quizSetInfo.quizList) });
   }
   //퀴즈 데이터 바인딩
-  const bindQuizData = () => {
+  const bindQuizInfo = () => {
     if (quizList.length === 0) return;
     quizListRef.current = quizList?.map((voca) => voca.split("#")[0]);
     answerListRef.current = quizList?.map((voca) => voca.split("#")[1]);
     setFrozenAnswerList(answerListRef.current)
+  }
+  //게임 초기화
+  const initGameInfo = () => {
+    qNumRef.current = 0;
+    setBattleTurn(0)
+    setCurQuiz('');
+    setCorrectNumber(0);
+    setIncorrectList([]);
+    setActionBall(0);
+    setScore(0);
+    quizListRef.current = (quizList?.map((voca) => voca.split("#")[0]));
+    answerListRef.current = (quizList?.map((voca) => voca.split("#")[1]));
+  }
+  //내 spec 바인딩
+  const bindMyPetData = () => {
+    if (!myPetDetails) return;
+    const teacherPet = { spec: { atk: 80, def: 10, hp: 400, mat: 180, mdf: 55, spd: 55 }, path: "images/pet/pet_water_001_4.png", path_back: "images/pet/pet_water_001_4_back.png", level: { exp: 999, level: 100, nextLvXp: 1000, nextStepLv: 500 } }
+    let { spec, skills, quizRecord, path, path_back } = myPetDetails;
+    if (user.isTeacher) { //교사 시험
+      spec = teacherPet.spec;
+      skills = [];
+      path = teacherPet.path;
+      path_back = teacherPet.path_back
+    }
+    fetchImgUrl(path, setMyPetImg);
+    fetchImgUrl(path_back || path, setMyPetBackImg);
+    setMyHP(Math.floor(spec.hp));
+    setMyCurHP(Math.floor(spec.hp));
+    setMyAttck(Math.floor(spec.atk));
+    setMyDef(Math.floor(spec.def));
+    setMyMatk(Math.floor(spec.mat));
+    setMyMdef(Math.floor(spec.mdf));
+    setMySpd(Math.floor(spec.spd));
+    setMySkillList(skills);
+    if (quizRecord) {
+      const key = gameDetails.id;
+      const thisRecordList = quizRecord[key] || [];
+      setMyRecordList(thisRecordList);
+    }
+  }
+  //적 spec 바인딩 -enmLevel
+  const bindEnmData = () => {
+    if (!monsterDetails) return
+    setMonsterInfo(monsterDetails);
+    const { spec, desc, path } = monsterDetails;
+    fetchImgUrl(path, setEnmImg);
+    setEnmLevel(monsterDetails.level);
+    setEnemyHP(spec.hp);
+    setEnemyCurHP(spec.hp);
+    setEmenyAttck(spec.atk);
+    setEnemyDef(spec.def);
+    setEnmSpd(spec.spd);
+    setMessage(desc);
   }
   //리워드 데이터 바인딩- myWinCount종속
   const bindRewardData = () => {
@@ -217,55 +248,6 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
     setRewardPoint(goalPoint);
     setReward(record);
   }
-  //게임 초기화
-  const initGameInfo = () => {
-    let { monster } = gameDetails;
-    qNumRef.current = 0;
-    setBattleTurn(0)
-    setCurQuiz('');
-    setCorrectNumber(0);
-    setIncorrectList([]);
-    setActionBall(0);
-    setScore(0);
-    setMessage(monster.step[0].desc);
-    quizListRef.current = (quizList?.map((voca) => voca.split("#")[0]));
-    answerListRef.current = (quizList?.map((voca) => voca.split("#")[1]));
-  }
-  //내 spec 바인딩
-  const bindMyPetData = () => {
-    if (!myPetInfo) return;
-    const { spec, skills, level, quizRecord } = myPetInfo;
-    setMyHP(Math.floor(spec.hp));
-    setMyCurHP(Math.floor(spec.hp));
-    setMyAttck(Math.floor(spec.atk));
-    setMyDef(Math.floor(spec.def));
-    setMyMatk(Math.floor(spec.mat));
-    setMyMdef(Math.floor(spec.mdf));
-    setMySpd(Math.floor(spec.spd));
-    setMySkillList(skills);
-    if (quizRecord) {
-      const key = gameDetails.id;
-      const thisRecordList = quizRecord[key] || [];
-      const enmLevel = level?.accExp ? getEnmLevel(level.accExp) : 1;
-      setMyRecordList(thisRecordList);
-      setEnmLevel(enmLevel);
-      bindEnmData(enmLevel);
-    } else {
-      setEnmLevel(1);
-      bindEnmData(1);
-    }
-  }
-
-  //적 spec 바인딩 -enmLevel
-  const bindEnmData = (level) => {
-    const enmSpec = getMonsterStat(monsterInfo.spec, level);
-    setEnemyHP(enmSpec.hp) //적 스펙
-    setEnemyCurHP(enmSpec.hp)
-    setEmenyAttck(enmSpec.atk)
-    setEnemyDef(enmSpec.def)
-    setEnmSpd(enmSpec.spd)
-  }
-
   //During
   //문제 출제★
   const generateQuestion = () => {
@@ -439,13 +421,12 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
       resolve();
     })
   }
-
   //공격 결과 계산
   const attackSequence = async (enemyStance, skill) => {
     let damge = 0;
     if (skill) {
       setIsMySkillAttack(prev => !prev);
-      damge = getSkillDamge(skill, myPetInfo.spec);
+      damge = getSkillDamge(skill, myPetDetails.spec);
     } else {
       setIsMyAttack(prev => !prev);
       damge = myAttck;
@@ -536,38 +517,37 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
       setMessage("내가 이길 수 있었는데..");
     }
   }
-
   //점수 계산 -result에 종속
   const finalizeGame = () => {
     if (!result || user.isTeacher) return;
     const today = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD' 형식
+    const { petId } = myPetDetails;
+    const { exp } = monsterDetails;
     let gameResult = { result, correct: correctNumber, enmLevel, name: user.name, uid: user.uid, actiId: gameDetails.id, date: today };
     switch (result) {
       case "Win":
         const winScore = score * 2;
-        const exp = getEarnedXp(enmLevel)
-        gameResult = { score: winScore, ...gameResult };
+        gameResult = { score: winScore, ...gameResult }
         setScore(winScore);
-        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, exp), gameResult);  //결과 기록
+        updateUserPetGameInfo(petId, gainXp(myPetDetails, exp), gameResult);  //결과 기록
         updateGameResult(gameDetails.id, gameResult);
         break;
       case "Draw":
-        gameResult = { score, ...gameResult };
-        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, enmLevel * 2), gameResult);  //결과 기록
+        gameResult = { score, ...gameResult }
+        updateUserPetGameInfo(petId, gainXp(myPetDetails, 5), gameResult);  //결과 기록
         updateGameResult(gameDetails.id, gameResult);
         break;
       case "Lose":
         const loseScore = score / 2;
-        gameResult = { score: loseScore, ...gameResult };
+        gameResult = { score: loseScore, ...gameResult }
         setScore(loseScore);
-        updateUserPetGameInfo(myPetInfo.petId, gainXp(myPetInfo, enmLevel), gameResult);  //결과 기록
+        updateUserPetGameInfo(petId, gainXp(myPetDetails, 3), gameResult);  //결과 기록
         updateGameResult(gameDetails.id, gameResult);
         break;
       default:
         break;
     }
   }
-
   //승리 기록 세기
   const countWinRecord = () => {
     return myRecordList.filter((item) => item.result === "Win").length;
@@ -599,29 +579,29 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, gameDetails, onHide: exitGame
       <Row>
         <Wrapper><StyledImg src={myPetImg || qustion_icon} alt="상태창" /></Wrapper>
         {!isMobile && <Wrapper style={{ width: "140px" }}>
-          <p>{myPetInfo?.name || "??"}</p>
-          <p style={{ margin: "0" }}>레벨: {myPetInfo?.level?.level || "??"}</p>
+          <p>{myPetDetails?.name || "??"}</p>
+          <p style={{ margin: "0" }}>레벨: {myPetDetails?.level?.level || "??"}</p>
         </Wrapper>}
         <Wrapper style={{ width: "240px" }}>
           <Row>
-            <p style={{ margin: "0" }}>체력: {myPetInfo?.spec.hp || "??"}</p>
-            <p>공격: {myPetInfo?.spec.atk || "??"}</p>
-            <p>방어: {myPetInfo?.spec.def ?? "??"}</p>
+            <p style={{ margin: "0" }}>체력: {myHP || "??"}</p>
+            <p>공격: {myAttck || "??"}</p>
+            <p>방어: {myDef ?? "??"}</p>
           </Row>
           <Row>
-            <p style={{ margin: "0" }}>마력: {myPetInfo?.spec.mat || "??"}</p>
-            <p style={{ margin: "0" }}>지력: {myPetInfo?.spec.mdf || "??"}</p>
-            <p style={{ margin: "0" }}>민첩: {myPetInfo?.spec.spd || "??"}</p>
+            <p style={{ margin: "0" }}>마력: {myMatk || "??"}</p>
+            <p style={{ margin: "0" }}>지력: {myMdef || "??"}</p>
+            <p style={{ margin: "0" }}>민첩: {mySpd || "??"}</p>
           </Row>
         </Wrapper>
-        {!isMobile && <Wrapper style={{ flexGrow: "1" }}><p style={{ margin: "0" }}>{myPetInfo?.desc || "??"}</p></Wrapper>}
+        {!isMobile && <Wrapper style={{ flexGrow: "1" }}><p style={{ margin: "0" }}>{myPetDetails?.desc || "??"}</p></Wrapper>}
       </Row>
-      <Row><AnimatedProgressBar levelInfo={myPetInfo?.level || "??"} /></Row>
+      <Row><AnimatedProgressBar levelInfo={myPetDetails?.level || "??"} /></Row>
     </StyledStatusUI >
     {!background && <Spinner variant="primary" />}
     {(background && phase !== "review") &&
       <PixiResponsiveStage isMobile={isMobile} phase={phase} background={background} message={message} quizListRef={quizListRef} curQuiz={curQuiz} marking={marking} score={score} actionBall={actionBall}
-        myPetImg={myPetImg} myPetInfo={myPetInfo} myHP={myHP} myCurHP={myCurHP} isMyAttack={isMyAttack} isMyDefense={isMyDefense} isMyRest={isMyRest} myPetBackImg={myPetBackImg} isMySkillAttack={isMySkillAttack}
+        myPetImg={myPetImg} myPetInfo={myPetDetails} myHP={myHP} myCurHP={myCurHP} isMyAttack={isMyAttack} isMyDefense={isMyDefense} isMyRest={isMyRest} myPetBackImg={myPetBackImg} isMySkillAttack={isMySkillAttack}
         enmImg={enmImg} monsterInfo={monsterInfo} enmLevel={enmLevel} enemyHP={enemyHP} enemyCurHP={enemyCurHP} enemyAttck={enemyAttck} enemyDef={enemyDef} enmSpd={enmSpd} isEnmAttack={isEnmAttack} isEnmDefense={isEnmDefense} isEnmRest={isEnmRest}
         isCountdown={isCountdown} setIsCountdown={setIsCountdown} setPhase={setPhase}
         result={result} correctNumber={correctNumber} rewardPoint={rewardPoint} countWinRecord={countWinRecord} exp={getEarnedXp(enmLevel)}
