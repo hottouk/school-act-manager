@@ -1,7 +1,8 @@
+//라이브러리
 import { Stage, Text } from '@pixi/react';
+//컴포넌트
 import Background from '../../components/Game/Background';
 import MessageUI from '../../components/Game/MessageUI';
-import qustion_icon from '../../image/icon/question.png'
 import PetSprite from '../../components/Game/PetSprite';
 import Countdown from '../../components/Game/Countdown';
 import HPBarUI from '../../components/Game/HPBarUI';
@@ -13,6 +14,9 @@ import BasicRest from '../../components/Game/Skills/BasicRest';
 import MarkingUI from '../../components/Game/MarkingUI';
 import BattleReport from '../../components/Game/BattleReport';
 import SkillAttack from '../../components/Game/Skills/SkillAttack';
+//이미지
+import qustion_icon from '../../image/icon/question.png'
+
 //250427 분리 확인
 const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef, curQuiz, marking, score, actionBall,
 	myPetImg, myPetInfo, myHP, myCurHP, isMyAttack, isMyDefense, isMyRest, myPetBackImg, isMySkillAttack,
@@ -111,7 +115,7 @@ const PixiResponsiveStage = ({ isMobile, phase, background, message, quizListRef
 			<BasicRest x={window.innerWidth * 0.5} y={window.innerHeight * 0.69} size={50} thick={15} movingPoint={900} trigger={isMyRest} />
 
 			{/* 종료 phase */}
-			{phase === "end" && <BattleReport x={0} y={100} result={result} correct={correctNumber} src={enmImg} score={score} winCount={rewardPoint - countWinRecord()} isMobile={isMobile} />}
+			{phase === "end" && <BattleReport x={0} y={100} result={result} correct={correctNumber} src={enmImg} score={score} winCount={rewardPoint - countWinRecord()} exp={exp} />}
 		</Stage>}
 	</>
 	)

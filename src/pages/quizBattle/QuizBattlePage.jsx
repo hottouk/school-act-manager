@@ -604,7 +604,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, 
         myPetImg={myPetImg} myPetInfo={myPetDetails} myHP={myHP} myCurHP={myCurHP} isMyAttack={isMyAttack} isMyDefense={isMyDefense} isMyRest={isMyRest} myPetBackImg={myPetBackImg} isMySkillAttack={isMySkillAttack}
         enmImg={enmImg} monsterInfo={monsterInfo} enmLevel={enmLevel} enemyHP={enemyHP} enemyCurHP={enemyCurHP} enemyAttck={enemyAttck} enemyDef={enemyDef} enmSpd={enmSpd} isEnmAttack={isEnmAttack} isEnmDefense={isEnmDefense} isEnmRest={isEnmRest}
         isCountdown={isCountdown} setIsCountdown={setIsCountdown} setPhase={setPhase}
-        result={result} correctNumber={correctNumber} rewardPoint={rewardPoint} countWinRecord={countWinRecord} exp={getEarnedXp(enmLevel)}
+        result={result} correctNumber={correctNumber} rewardPoint={rewardPoint} countWinRecord={countWinRecord} exp={monsterDetails.exp}
       />
     }
     {/* 리뷰 phase */}

@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
 import { useState } from 'react'
-import { gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg, gptRepeatRecMsg, gptPerfRecordMsg, gptTranslateMsg } from '../data/gptMsgDataList'
+import { gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg, gptRepeatRecMsg, gptPerfRecordMsg, gptTranslateMsg, gptExtractVocabMsg } from '../data/gptMsgDataList'
 
 //프롬프트 수정(240808)-> 모델 변경 가능(250520)
 const useChatGpt = () => {
@@ -156,6 +156,16 @@ const useChatGpt = () => {
     ]
     await playGpt(messages, "gpt-4o-mini");
   }
+  //행발
+  const extractVocab = async (text,) => {
+    let messages = [...gptExtractVocabMsg,
+    {
+      role: "user",
+      content: `[지문]: ${text}`
+    }
+    ]
+    await playGpt(messages, "gpt-4o-mini");
+  }
   // 공통 부분(gpt-4o-mini, gpt-4.1-mini)
   const playGpt = async (messages, model) => {
     setGptRes("loading");
@@ -173,7 +183,7 @@ const useChatGpt = () => {
     }
   }
 
-  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, askRepeatRecord, gptRes }
+  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, askRepeatRecord, extractVocab, gptRes }
 }
 
 export default useChatGpt

@@ -868,8 +868,57 @@ const gptRepeatRecMsg = [
     role: "assistant", content: "삶과 죽음에 관한 여러 연사들의 연설문을 7회 읽고 그 중 하나를 발췌하여 친구들 앞에서 영어로 발표함. 명확한 발음, 자연스러운 억양과 풍부한 표현력이 인상적인 연설이었음. 말하고자 하는 바를 머뭇거림이나 끊김 없이 유창하게 청중에게 전달함.^"
       + "삶과 죽음에 대해 강연을 듣고 인상 깊었던 하나를 택하여 영어로 외워 낭독하는 시간을 5회 가짐. 죽음은 모두에게 공평한 선물이라는 부분을 생생하게 전달함.^"
       + "삶과 죽음에 관한 연사들의 연설문을 3회 읽고 외워 그 중 일부분을 영어로 발표함."
-  }
+  }]
 
-
+//단어 추출 문구
+const gptExtractVocabMsg = [
+  //1. 대전제
+  {
+    role: "system", content: `당신은 교사임.
+    지문에서 학생들이 모를법한 어려워할 것 같은 단어를 추출하여 뜻과 함께 제공하는 것이 임무임.
+    [지문]을 제공하겠음. 어려운 단어의 원형과 의미를 함께 제공해주기 바람.
+    단어와 의미 사이의 구분자는 "#"으로 단어와 단어 사이의 구분자는 "^"로 통일바람.
+          
+    조건
+    1. 단어와 의미 사이에 "#" 구분자를 사용 바람. ex) apple#사과^role#역할^conscious#의식적인
+    2. 한 지문에 최소 1개에서 최대 10개정도의 단어와 의미쌍을 제공 바람.
+    3. 단어는 원형으로 제공할 것
+  `
+  },
+  //2. 예시
+  //예시1
+  {
+    role: "user", content: `[지문]: Winning turns on a self-conscious awareness that others are watching. 
+    It’s a lot easier to move under the radar when no one knows you and no one is paying attention. You can mess up and be rough and get dirty because no one even knows you’re there.
+    But as soon as you start to win, and others start to notice, you’re suddenly aware that you’re being observed. You’re being judged. You worry that others will discover your flaws and weaknesses, 
+    and you start hiding your true personality, so you can be a good role model and good citizen and a leader that others can respect. 
+    There is nothing wrong with that. But if you do it at the expense of being who you really are, making decisions that please others instead of pleasing yourself,
+    you’re not going to be in that position very long. When you start apologizing for who you are, you stop growing and you stop winning. Permanently.
+` },
+  {
+    role: "assistant", content: `awareness#인식^expense#비용, 희생^please#기쁘게하다^permanently#영원히, 영구히^personality#성격^mess up#망치다, 더럽히다`
+  }, //예시2
+  {
+    role: "user", content: `[지문]: Human beings like certainty. This liking stems from our ancient ancestors ① who needed to survive alongside saber-toothed tigers and poisonous berries. 
+    Our brains evolved to help us attend to threats, keep away from ② them, and remain alive afterward. In fact, we learned that the more ③ certain we were about something, the better chance we had of making the right choice. 
+    Is this berry the same shape as last time? The same size? If I know for certain it ④ is, my brain will direct me to eat it because I know it’s safe. And if I’m uncertain, 
+    my brain will send out a danger alert to protect me. The dependence on certainty all those millennia ago ensured our survival to the present day, and the danger-alert system continues to protect us. 
+    This is achieved by our brains labeling new, vague, or unpredictable everyday events and experiences as uncertain. Our brains then ⑤ generating sensations, thoughts, 
+    and action plans to keep us safe from the uncertain element, and we live to see another day.
+` },
+  {
+    role: "assistant", content: `stem from#유래되다^certainty#확실성^ancestor#조상^evolve#진화하다^threat#위협^dependence#의존^unpredictable#예측할 수 없는^sensation#감각^vague#모호한^alert#경고, 주의^labeling#표기하기, 분류하기`
+  }, //예시3
+  {
+    role: "user", content: `[지문]: Robert Blattberg and Steven Hoch noted that, in a changing environment, it is not clear that consistency is always a virtue
+     and that one of the advantages of humanjudgment is the ability to detect change.Thus, in changing environments, it might be ① advantageous to combine human judgment
+      and statistical models.Blattberg and Hoch examined this possibility by having supermarket managers forecast demand for certain products and then creating a composite forecast
+       by averaging these judgments with the forecasts of statistical models based on ② past data.The logic was that statistical models ③ deny stable conditions 
+       and therefore cannot account for the effects on demand of novel events such as actions taken by competitors or the introduction of new products. 
+       Humans, however, can ④ incorporate these novel factors in their judgments.The composite ─ or average of human judgments and statistical models ─ proved to be more ⑤ accurate than either the statistical models or the managers working alone.
+` },
+  {
+    role: "assistant", content: `consistency#일관성^virtue#미덕, 장점^advantageous#유리한^composite#복합체, 합성물^forecast#예측하다^deny#부정하다, 거부하다^stable#안정된^incorporate#포함하다, 통합하다^accurate#정확한^judgment#판단`
+  },
 ]
-export { gptBehaviorMsg, gptSubjectDetailsMsg, gptHomeroomDetailMsg, gptPersonalOnReportMsg, gptPersonalOnTraitMsg, gptExtraRecordMsg, gptPerfRecordMsg, gptTranslateMsg, gptRepeatRecMsg }
+export { gptBehaviorMsg, gptSubjectDetailsMsg, gptHomeroomDetailMsg, gptPersonalOnReportMsg, gptPersonalOnTraitMsg, gptExtraRecordMsg, gptPerfRecordMsg, gptTranslateMsg, gptRepeatRecMsg, gptExtractVocabMsg }
