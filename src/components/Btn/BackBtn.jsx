@@ -2,9 +2,9 @@ import { useNavigate } from "react-router-dom";
 import back_icon from "../../image/icon/back_icon.png"
 import styled from 'styled-components';
 
-//2024.12.06 생성
+//생성(241206)
 const BackBtn = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   return (
     <StyledImg src={back_icon} alt="뒤로 가기" onClick={() => { navigate(-1) }} />
   )

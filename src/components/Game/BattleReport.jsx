@@ -1,9 +1,11 @@
 import React from 'react'
 import { Text, Container, Graphics } from '@pixi/react'
 import PetSprite from './PetSprite';
+import useMediaQuery from '../../hooks/useMediaQuery';
 
 //250112 생성 -> 모바일(250213)
-const BattleReport = ({ isMobile, result, correct, src, x, y, score, winCount, exp }) => {
+const BattleReport = ({ result, correct, src, x, y, score, winCount, exp }) => {
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const titleFontSize = isMobile ? 35 : 55;
   const width = isMobile ? window.innerWidth : 500;
   const height = isMobile ? 600 : 550;

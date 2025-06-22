@@ -115,8 +115,8 @@ const GameModal = ({ show, onHide, quizSetId, myPetList, gameDetails }) => {
       <Modal.Body>
         {/* 준비 */}
         {(step !== "start") && <><TitleText>펫 선택</TitleText>
-          {(isMobile && step === 1) && myPetList.map((pet, index) => <PetBubble pet={pet} index={index} />)}
-          {(isMobile && step === 2) && monsterList.map((mon, index) => <MonBubble mon={mon} index={index} />)}
+          {(isMobile && step === 1) && myPetList.map((pet, index) => <PetBubble key={pet.petId} pet={pet} index={index} />)}
+          {(isMobile && step === 2) && monsterList.map((mon, index) => <MonBubble key={index} mon={mon} index={index} />)}
           {!isMobile && <>
             <CardList dataList={myPetList} onClick={setSelectedPet} selected={selectedPet?.petId} type={"pet"} />
             <AnimMaxHightOpacity isVisible={selectedPet}>

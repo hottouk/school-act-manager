@@ -19,7 +19,7 @@ const CardList = ({ dataList, type, onClick, selected }) => {
           <p style={{ margin: "5px 0", textAlign: "center" }}>lv{item.level.level} {item.name}</p>
         </Column>
         <Column style={{ justifyContent: "space-between" }}>
-          <BigNumber style={{ margin: "-35px 0" }}>{item.spec.hp + item.spec.atk + item.spec.def + item.spec.mat + item.spec.mdf + item.spec.spd}</BigNumber>
+          <BigNumber style={{ margin: "-35px 0" }}>{Math.floor(item.spec.hp + item.spec.atk + item.spec.def + item.spec.mat + item.spec.mdf + item.spec.spd)}</BigNumber>
           <p style={{ margin: "5px 0", textAlign: "center" }}>종합전투력</p>
         </Column>
       </Row>

@@ -5,7 +5,7 @@ primaryWhite #efefef,
 /* royalRed #9b0c24
 모달 헤더 스타일 : style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }}
 모달 확인 버튼: styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }}
-
+red: #9b0c24;
 grey #949192;
 Green #00a86b;
 Pink #FF69B4;
@@ -21,4 +21,9 @@ default w134;
 icon size
 width: 45px;
 height: 45px;
+
+MarginalText
+  color: rgb(120, 120, 120)
+  text-decoration: underline;
+  cursor: pointer;
 */

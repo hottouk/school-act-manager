@@ -50,6 +50,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   //진입 경로
   const location = useLocation();
   useEffect(() => { fetchDataByLocation() }, [location, selectedSubj]);
+  //페이지네이션
   const itemsPerPage = 30;
   const [currentPage, setCurrentPage] = useState(1);
   const [pageData, setPageData] = useState(_allActiList?.slice(0, itemsPerPage));
