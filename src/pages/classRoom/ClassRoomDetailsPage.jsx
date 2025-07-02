@@ -28,7 +28,6 @@ import GameRankModal from '../../components/Modal/GameRankModal.jsx';
 //hooks
 import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData.jsx';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData.jsx';
-import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData.jsx';
 import useFireUserData from '../../hooks/Firebase/useFireUserData.jsx';
 import useFireActiData from '../../hooks/Firebase/useFireActiData.jsx';
 import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
@@ -52,7 +51,6 @@ const ClassroomDetailsPage = () => {
   const { updateClassroom, deleteKlassroomArrayInfo, copyKlassroom } = useFireClassData();
   const { getSubjKlassActiList } = useFireActiData();
   //실시간 데이터
-  const { myUserData } = useFetchRtMyUserData();
   const { klassData } = useFetchRtClassroomData(thisKlassId);                                                 //클래스 기본 data
   const { studentDataList } = useFetchRtMyStudentData("classRooms", thisKlassId, "students", "studentNumber") //학생 실시간 data
   useEffect(() => {                                                                                           //애니메이션 처리 및 데이터 바인딩
@@ -63,7 +61,6 @@ const ClassroomDetailsPage = () => {
     bindKlassData();
     setTimeout(() => setIsVisible(true), 200);
   }, [thisKlassId, klassData, studentDataList])
-  useEffect(() => { fetchPetData(); }, [myUserData, thisKlassId])//마이 펫 바인딩
   const [_title, setTitle] = useState('');
   const [_intro, setIntro] = useState('');
   const [_notice, setNotice] = useState('');
@@ -76,8 +73,6 @@ const ClassroomDetailsPage = () => {
   const [actiInfo, setActiInfo] = useState(null);
   //게임 구동 정보
   const [gameDetails, setGameDetails] = useState(null);
-  const [myPetList, setMyPetList] = useState(null);
-  const [myPetDetails, setMyPetDetails] = useState(null);
   //게임 랭크 정보
   const [gameRankInfo, setGameRankInfo] = useState(null);
   //모드
@@ -145,14 +140,6 @@ const ClassroomDetailsPage = () => {
   //클래스 이동
   const moveKlass = (event) => {
     navigate(`/classrooms/${event.value.id}`, { state: { ...event.value } })
-  }
-  //펫 정보 불러오기(학생 전용)
-  const fetchPetData = () => {
-    if (user.isTeacher || !myUserData) return;
-    const { myPetList } = myUserData;
-    const thisPet = myPetList.find(({ classId }) => classId === thisKlassId);
-    setMyPetList(myPetList);
-    setMyPetDetails(thisPet);
   }
   //몬스터 클릭
   const handleMonsterOnClick = (item) => {
@@ -238,7 +225,7 @@ const ClassroomDetailsPage = () => {
           <MainSelector isMobile={isMobile} type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
         </MainPanel>}
         {/* 퀴즈 게임부 */}
-        <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} myPetDetails={myPetDetails} onClick={handleMonsterOnClick} smallBtnOnClick={handleRankOnClick} />
+        <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} onClick={handleMonsterOnClick} smallBtnOnClick={handleRankOnClick} />
         {/* 학생 상세 보기*/}
         <MainPanel>
           <TitleText>학생 상세히 보기</TitleText>
@@ -271,7 +258,6 @@ const ClassroomDetailsPage = () => {
       show={isGameModal}
       onHide={() => setIsGameModal(false)}
       quizSetId={quizId}
-      myPetList={myPetList}
       gameDetails={gameDetails}
     />}
     {/* 학생 정보 모달 */}

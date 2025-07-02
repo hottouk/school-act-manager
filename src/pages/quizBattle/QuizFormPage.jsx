@@ -220,7 +220,10 @@ const QuizFormPage = () => {
             <Row style={{ justifyContent: "center" }}><Pagenation totalItems={_quizList?.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} /></Row>
           </AnimMaxHightOpacity>
         </fieldset>
-        {!quizSetInfo && <Row style={{ justifyContent: "center" }}><MainBtn type="submit">세트 저장</MainBtn></Row>}
+        {!quizSetInfo && <Row style={{ justifyContent: "center", gap: "40px", }}>
+          <MainBtn type="submit">세트 저장</MainBtn>
+          <MainBtn type="button" onClick={() => { setIsGptModal(true); }}>스마트 단어 추가</MainBtn>
+        </Row>}
         {quizSetInfo && <Row style={{ justifyContent: "center", gap: "40px", margin: "10px 0" }}>
           {!isModifying && <MainBtn type="button" onClick={() => { setIsModifying(true) }}>세트 수정</MainBtn>}
           {!isModifying && <MainBtn type="button" onClick={handleDeleteOnClick}>세트 삭제</MainBtn>}
@@ -234,7 +237,8 @@ const QuizFormPage = () => {
       show={isGptModal}
       onHide={() => { setIsGptModal(false); }}
       padNumber={padNumber}
-      setQuizList={setQuizList} />
+      setQuizList={setQuizList}
+      setIsVocabShow={setIsVocabShow} />
   </>
   )
 }

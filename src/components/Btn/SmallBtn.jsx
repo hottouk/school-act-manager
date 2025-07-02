@@ -3,7 +3,6 @@ import styled from 'styled-components'
 
 //2024.07.26 샘플
 const SmallBtn = ({ id, btnColor, hoverBtnColor, btnOnClick, onClick, btnName, fontColor, children }) => {
-  //SearchBar에 사용
   return (
     <StyledButton
       type="button"

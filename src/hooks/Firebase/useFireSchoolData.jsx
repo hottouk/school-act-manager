@@ -7,12 +7,16 @@ const useFireSchoolData = () => {
   const { setData } = useFireBasic("school");
   const col = collection(db, "school")
 
-  //학교 데이터 검색
+  //01. 학교 데이터 검색
   const fetchSchoolByCode = async (code) => {
     const schoolDoc = doc(col, code);
-    const schoolSnapshot = await getDoc(schoolDoc);
+    const schoolSnapshot = await getDoc(schoolDoc).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireSchoolData_01),${error}`)
+      console.log(error);
+    })
     return schoolSnapshot.data();
   }
+  
   //학교 검색(250218)
   const searchSchoolByField = async (field, value) => {
     try {

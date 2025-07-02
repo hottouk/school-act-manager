@@ -1,5 +1,4 @@
 //라이브러리
-import React from 'react'
 import styled from 'styled-components'
 //컴포넌트
 import EmptyResult from '../../components/EmptyResult'
@@ -9,7 +8,7 @@ import Container from '../../components/MainPanel'
 import PetImg from '../../components/PetImg'
 
 //로직 분리(250204) -> 모바일(250213)
-const KlassQuizSection = ({ isMobile, quizList, klassData, myPetDetails, onClick, smallBtnOnClick }) => {
+const KlassQuizSection = ({ isMobile, quizList, klassData, onClick, smallBtnOnClick }) => {
   return (
     <Container>
       <TitleText>퀴즈 게임</TitleText>
@@ -23,8 +22,7 @@ const KlassQuizSection = ({ isMobile, quizList, klassData, myPetDetails, onClick
         <Row><ArrowBtn direction="right" /></Row>
         <PetImg subject={klassData.subject} step={3} onClick={() => { }} />
       </PetImgWrapper>}
-      {isMobile && <PetImgWrapper><PetImg subject={klassData.subject} path={myPetDetails?.path} onClick={() => { }} /></PetImgWrapper>}
-      <BoldText style={{ marginTop: "10px" }}>vs</BoldText>
+      {!isMobile && <BoldText style={{ marginTop: "10px" }}>vs</BoldText>}
       {/* 단어 게임부 */}
       <GameMonListWrapper>
         {quizList.length === 0 && < EmptyResult comment="등록된 단어 게임이 없습니다." />}

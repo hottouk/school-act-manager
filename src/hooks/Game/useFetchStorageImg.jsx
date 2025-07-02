@@ -1,5 +1,5 @@
 import { getDownloadURL, getStorage, ref } from 'firebase/storage'
-//25.01.17
+//생성(250117)
 const useFetchStorageImg = () => {
   const storage = getStorage();
   //path 추출
@@ -13,14 +13,15 @@ const useFetchStorageImg = () => {
   const fetchImgUrlList = async (pathList, setter) => {
     if (!pathList || !setter) return
     pathList?.forEach((path) => {
+      if (!path) return
       const cachedUrl = sessionStorage.getItem(path);
       if (cachedUrl) { //캐싱
         setter(prev => [...prev, cachedUrl])
       } else { //다운
         let imgRef = ref(storage, path)
         getDownloadURL(imgRef).then((url) => {
-          setter(prev => [...prev, url])
-          sessionStorage.setItem(path, url)
+          setter(prev => [...prev, url]);
+          sessionStorage.setItem(path, url);
         })
       }
     })
@@ -28,14 +29,18 @@ const useFetchStorageImg = () => {
 
   //이미지 하나 가져오기
   const fetchImgUrl = async (path, setter) => {
-    if (!path || !setter) return
+    if (!path) return
     const cachedUrl = sessionStorage.getItem(path);
-    if (cachedUrl) { setter(cachedUrl); }
+    if (cachedUrl) {
+      if (!setter) { return cachedUrl }
+      else { setter(cachedUrl); }
+    }
     else {
       const imgRef = ref(storage, path)
       getDownloadURL(imgRef).then((url) => {
-        setter(url);
         sessionStorage.setItem(path, url);
+        if (!setter) { return url }
+        else { setter(url); }
       })
     }
   }

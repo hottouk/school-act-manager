@@ -15,14 +15,14 @@ import xImage from '../../image/icon/x_btn.png';
 import MidBtn from '../Btn/MidBtn';
 
 //생성(240719) --> 6개로 수정(241123) --> 디자인정리(250210)
-const AddExtraRecModal = (props) => {
+const AddExtraRecModal = ({ acti, onHide, show, setList }) => {
+  const { updateActi } = useFireActiData();
+  const { fetchDoc } = useFetchFireData();
   //ex record
   const [_extraRecList, setExtraRecList] = useState(['']); // 초기 입력 필드 하나를 설정; 얘가 늘어나면 input text개수 알아서 늘어남.
   //데이터 통신
-  const { updateActi } = useFireActiData();
-  const { fetchDoc } = useFetchFireData();
   useEffect(() => {
-    fetchDoc("activities", props.acti.id).then((acti) => {
+    fetchDoc("activities", acti.id).then((acti) => {
       if (acti.extraRecordList && acti.extraRecordList.length > 1) { // 한 개는 기본 문구
         const recList = acti.extraRecordList;
         const initialFieldList = recList.slice(0, -1);
@@ -30,7 +30,7 @@ const AddExtraRecModal = (props) => {
       } else { setExtraRecList(['']) }
     }
     )
-  }, [props])
+  }, [acti])
   //gpt
   const { askExtraRecord, gptAnswer, gptRes } = useChatGpt();
   //문구 textarea에 넣기
@@ -41,7 +41,6 @@ const AddExtraRecModal = (props) => {
 
   //------함수부------------------------------------------------  
   const handleKeyDown = (index, event) => { //textarea 내 tab 키
-    event.preventDefault();
     if (event.key === 'Tab' && index === _extraRecList.length - 1) addInputField();
   };
   // n개의 새로운 빈 입력 필드를 추가
@@ -64,7 +63,7 @@ const AddExtraRecModal = (props) => {
   //gpt -> 배열
   const splitGptAnswers = (gptAnswers) => { return gptAnswers.split('^'); };
   //gpt 요청 버튼
-  const handleGptClick = async () => { await askExtraRecord(props.acti.record); };
+  const handleGptClick = async () => { await askExtraRecord(acti.record); };
   //삭제 버튼
   const handleDeleteOnClick = (index) => {
     const newArr = _extraRecList.filter((_, i) => { return i !== index });
@@ -74,26 +73,26 @@ const AddExtraRecModal = (props) => {
   const handleConfirm = () => {
     const confirm = window.confirm("추가 문구를 저장하시겠습니까?")
     if (confirm) {
-      const extraRecordList = [..._extraRecList, props.acti.record]
-      props.setExtraRecList(extraRecordList)  // 외부 문구 list 셋 
+      const extraRecordList = [..._extraRecList, acti.record]
+      setList(extraRecordList)  // 외부 문구 list 셋 
       const modifiedActi = { extraRecordList }; // firedata 업데이트 위한 객체화
-      updateActi(modifiedActi, props.acti.id);
+      updateActi(modifiedActi, acti.id);
     }
-    props.onHide();
+    onHide();
   };
 
   return (
     <Modal
       size='lg'
-      show={props.show}
-      onHide={props.onHide}
+      show={show}
+      onHide={onHide}
       backdrop="static"
     >
       <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>돌려쓰기 문구 관리</Modal.Header>
       <Modal.Body style={{ backgroundColor: "#efefef" }}>
         <CurWrapper>
           <AchivTap $top={-28}>현재 문구</AchivTap>
-          <StyledCurRec>{props.acti.record}</StyledCurRec>
+          <StyledCurRec>{acti.record}</StyledCurRec>
         </CurWrapper>
         <GridContainer>
           <TableHeaderWrapper>
@@ -126,7 +125,7 @@ const AddExtraRecModal = (props) => {
           </Row>}
       </Modal.Body>
       <Modal.Footer style={{ backgroundColor: "#efefef" }} >
-        <ModalBtn onClick={() => { props.onHide() }}>취소</ModalBtn>
+        <ModalBtn onClick={() => { onHide() }}>취소</ModalBtn>
         <ModalBtn styles={{ btnColor: "rgba(52, 84, 209, 0.8)", hoverColor: "#3454d1" }} onClick={handleConfirm}>저장</ModalBtn>
       </Modal.Footer>
     </Modal >

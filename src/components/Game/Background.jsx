@@ -1,5 +1,5 @@
 import { Graphics, Sprite } from '@pixi/react'
-const Background = ({ src, x, y, width, height }) => {
+const Background = ({ src, x=0, y=0, width = 1200, height = 900 }) => {
   // 임시 그리드 그리기 (50px 간격) 
   const drawGrid = (g) => {
     const gridSize = 50;
@@ -25,10 +25,9 @@ const Background = ({ src, x, y, width, height }) => {
     g.endFill();
   }
   return (<>
-    <Sprite image={src} x={x} y={y} width={width} height={height} />
-    <Graphics draw={drawFilter} />
-    <Graphics draw={drawGrid} />
-
+    <Sprite image={src} x={x} y={y} width={width} height={height} eventMode="none" />
+    <Graphics draw={drawFilter} eventMode="none" />
+    {/* <Graphics draw={drawGrid} eventMode="none" /> */}
   </>)
 }
 

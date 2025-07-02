@@ -1,6 +1,8 @@
+//라이브러리
 import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-//bootstrap css
+import { useSelector } from 'react-redux';
+import { Helmet } from "react-helmet";
 import 'bootstrap/dist/css/bootstrap.min.css';
 //로그인
 import LoginPage from './pages/login/LoginPage';
@@ -25,17 +27,18 @@ import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassroomFormPage from './pages/classSetting/ClassroomFormPage';
 import WhatsNewPage from './pages/main/WhatsNewPage';
 import MySchoolPage from './pages/school/MySchoolPage';
-import { useSelector } from 'react-redux';
-import { Helmet } from "react-helmet";
 //단어 배틀
 import QuizFormPage from './pages/quizBattle/QuizFormPage';
+import QuizActiFormPage from './pages/quizBattle/QuizActiFormPage';
+import QuizMainPage from './pages/quizBattle/QuizMainPage';
 //관리자
 import MasterPage from './pages/main/MasterPage';
 import Lab from './pages/lab/Lab';
 import HomeSeatChange from './pages/homeroom/HomeSeatChangePage';
-import QuizMainPage from './pages/quizBattle/QuizMainPage';
-import QuizActiFormPage from './pages/quizBattle/QuizActiFormPage';
+//학교
 import SchoolMainPage from './pages/school/SchoolMainPage';
+//상점
+import ShopMainPage from './pages/shop/ShopMainPage';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -85,6 +88,7 @@ function App() {
           <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
           {/* 학교 */}
           <Route path="/school" element={uid ? <SchoolMainPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/store" element={uid ? <ShopMainPage /> : <Navigate replace={true} to='/' />} />
           {/* 새소식 관리 */}
           <Route path="/news" element={uid ? <WhatsNewPage /> : <Navigate replace={true} to='/' />} />
           {/* 로그인/회원가입 */}

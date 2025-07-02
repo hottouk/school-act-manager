@@ -12,7 +12,7 @@ const CardList = ({ dataList, type, onClick, selected }) => {
   //------카드 랜더링----------------------------------------------- 
   //펫 카드
   const PetCard = ({ item, onClick }) => {
-    return <Card $backgroundColor={`${item.petId === selected ? "rgba(52, 84, 209, 0.4)" : "white"}`} onClick={() => { onClick(item) }}>
+    return <Card $backgroundColor={`${item.petId === selected?.petId ? "rgba(52, 84, 209, 0.4)" : "white"}`} onClick={() => { onClick(item) }}>
       <Row style={{ justifyContent: "space-between" }}>
         <Column>
           <PetImg path={item.path} subject={"none"} styles={{ width: "100px", height: "100px" }} />

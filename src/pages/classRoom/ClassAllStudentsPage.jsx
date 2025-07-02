@@ -206,13 +206,13 @@ const Header = styled.div`
   }
 `
 const StyledGridItem = styled(Row)`
-  background-color: #efefef;
-  padding: 10px;
-  color: black;
-  border: 1px solid #ddd;
-  border-radius: 5px;
   display: flex;
   justify-content: center;
+  color: black;
+  background-color: #efefef;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   align-items: center;
   &.left-align { 
     text-align: left;

@@ -11,7 +11,7 @@ import CircularBtn from '../../Btn/CircularBtn';
 import useChatGpt from '../../../hooks/useChatGpt';
 
 //생성(250616)
-const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList }) => {
+const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow }) => {
   //지문
   const [text, setText] = useState('');
   //gpt
@@ -73,6 +73,7 @@ const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList }) => {
     const result = checkVacant(vocabList);
     if (!result) return
     setQuizList((prev) => { return [...prev, ...vocabList] });
+    setIsVocabShow(true);
     onHide();
   }
   return (

@@ -3,9 +3,6 @@ primaryWhite #efefef,
 /* royalBlue #3454d1; */
 /* = rgba(52, 84, 209, 0.8) hover는 투명도 1로 */
 /* royalRed #9b0c24
-모달 헤더 스타일 : style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }}
-모달 확인 버튼: styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }}
-red: #9b0c24;
 grey #949192;
 Green #00a86b;
 Pink #FF69B4;
@@ -26,4 +23,11 @@ MarginalText
   color: rgb(120, 120, 120)
   text-decoration: underline;
   cursor: pointer;
-*/
+//스타일
+const dotStyle = { dotColor: "#3454d1", width: "50%" }
+모달 헤더 스타일 : style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }}
+모달 확인 버튼: styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }}
+선택 색깔: "rgba(52, 84, 209, 0.4)"
+//오늘 날짜
+const assignedDate = new Date().toISOString().split('T')[0];
+ */

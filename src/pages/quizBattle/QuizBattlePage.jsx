@@ -21,16 +21,17 @@ import useFireActiData from '../../hooks/Firebase/useFireActiData';
 //Data
 import { skillList } from '../../data/skillList';
 import useMediaQuery from '../../hooks/useMediaQuery';
-
 //250111 생성
-const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, onHide: exitGame }) => {
-  //실시간 데이터
+const QuizBattlePage = ({ quizSetId, selectedPet, monsterDetails, gameDetails, onHide: exitGame }) => {
   const user = useSelector(({ user }) => user);
-  const [monsterInfo, setMonsterInfo] = useState(null);
+  //펫 데이터
+  useEffect(() => { setMyPetDetails(selectedPet); }, [selectedPet])
+  const [myPetDetails, setMyPetDetails] = useState(null);
   useEffect(() => { bindMyPetData(); }, [myPetDetails]);
   useEffect(() => { bindEnmData(); }, [monsterDetails]);
+  const [monsterInfo, setMonsterInfo] = useState(null);
   useEffect(() => { fetchQuizData(); }, [quizSetId])
-  const { gainXp, getEarnedXp } = useLevel();   //레벨 관련
+  const { gainXp } = useLevel();   //레벨 관련
   const { fetchImgUrl } = useFetchStorageImg(); //이미지 불러오기
   const { fetchDoc } = useFireBasic("quiz");
   const { updateUserPetGameInfo, updateUserArrayInfo } = useFireUserData();
@@ -79,9 +80,11 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, 
   const [myMdef, setMyMdef] = useState(0);
   const [mySpd, setMySpd] = useState(1);
   const [mySkillList, setMySkillList] = useState([]);
+  const [myLevel, setMyLevel] = useState(myPetDetails?.level.exp ?? 0);
   const [skillCooldowns, setSkillCooldowns] = useState({});
   //상대 몬스터 정보
   const [enmLevel, setEnmLevel] = useState(1);
+  const [enmExp, setEnmExp] = useState(3);
   const [enemyHP, setEnemyHP] = useState(100);
   const [enemyCurHP, setEnemyCurHP] = useState(100);
   const [enemyAttck, setEmenyAttck] = useState(20);
@@ -159,7 +162,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, 
   }, [phase])
 
   //------함수부------------------------------------------------  
-  //퀴즈 데이터 다운로드
+  //퀴즈 데이터 
   const fetchQuizData = () => {
     if (!quizSetId) return;
     fetchImgUrl('images/battle_background.png', setBackground);
@@ -188,7 +191,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, 
   const bindMyPetData = () => {
     if (!myPetDetails) return;
     const teacherPet = { spec: { atk: 80, def: 10, hp: 400, mat: 180, mdf: 55, spd: 55 }, path: "images/pet/pet_water_001_4.png", path_back: "images/pet/pet_water_001_4_back.png", level: { exp: 999, level: 100, nextLvXp: 1000, nextStepLv: 500 } }
-    let { spec, skills, quizRecord, path, path_back } = myPetDetails;
+    let { spec, skills, quizRecord, path, path_back, level } = myPetDetails;
     if (user.isTeacher) { //교사 시험
       spec = teacherPet.spec;
       skills = [];
@@ -204,6 +207,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, 
     setMyMatk(Math.floor(spec.mat));
     setMyMdef(Math.floor(spec.mdf));
     setMySpd(Math.floor(spec.spd));
+    setMyLevel(level);
     setMySkillList(skills);
     if (quizRecord) {
       const key = gameDetails.id;
@@ -522,20 +526,24 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, 
     if (!result || user.isTeacher) return;
     const today = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD' 형식
     const { petId } = myPetDetails;
-    const { exp } = monsterDetails;
+    const { exp: enmExp } = monsterDetails;
     let gameResult = { result, correct: correctNumber, enmLevel, name: user.name, uid: user.uid, actiId: gameDetails.id, date: today };
     switch (result) {
       case "Win":
         const winScore = score * 2;
         gameResult = { score: winScore, ...gameResult }
         setScore(winScore);
-        updateUserPetGameInfo(petId, gainXp(myPetDetails, exp), gameResult);  //결과 기록
+        updateUserPetGameInfo(petId, gainXp(myPetDetails, enmExp), gameResult);  //결과 기록
         updateGameResult(gameDetails.id, gameResult);
+        setMyLevel((prev) => { return { ...prev, exp: prev.exp + enmExp } });
+        setEnmExp(enmExp);
         break;
       case "Draw":
         gameResult = { score, ...gameResult }
         updateUserPetGameInfo(petId, gainXp(myPetDetails, 5), gameResult);  //결과 기록
         updateGameResult(gameDetails.id, gameResult);
+        setMyLevel((prev) => { return { ...prev, exp: prev.exp + 5 } });
+        setEnmExp(5);
         break;
       case "Lose":
         const loseScore = score / 2;
@@ -543,6 +551,8 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, 
         setScore(loseScore);
         updateUserPetGameInfo(petId, gainXp(myPetDetails, 3), gameResult);  //결과 기록
         updateGameResult(gameDetails.id, gameResult);
+        setMyLevel((prev) => { return { ...prev, exp: prev.exp + 3 } });
+        setEnmExp(3);
         break;
       default:
         break;
@@ -596,7 +606,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, 
         </Wrapper>
         {!isMobile && <Wrapper style={{ flexGrow: "1" }}><p style={{ margin: "0" }}>{myPetDetails?.desc || "??"}</p></Wrapper>}
       </Row>
-      <Row><AnimatedProgressBar levelInfo={myPetDetails?.level || "??"} /></Row>
+      <Row><AnimatedProgressBar levelInfo={myLevel} /></Row>
     </StyledStatusUI >
     {!background && <Spinner variant="primary" />}
     {(background && phase !== "review") &&
@@ -604,7 +614,7 @@ const QuizBattlePage = ({ quizSetId, myPetDetails, monsterDetails, gameDetails, 
         myPetImg={myPetImg} myPetInfo={myPetDetails} myHP={myHP} myCurHP={myCurHP} isMyAttack={isMyAttack} isMyDefense={isMyDefense} isMyRest={isMyRest} myPetBackImg={myPetBackImg} isMySkillAttack={isMySkillAttack}
         enmImg={enmImg} monsterInfo={monsterInfo} enmLevel={enmLevel} enemyHP={enemyHP} enemyCurHP={enemyCurHP} enemyAttck={enemyAttck} enemyDef={enemyDef} enmSpd={enmSpd} isEnmAttack={isEnmAttack} isEnmDefense={isEnmDefense} isEnmRest={isEnmRest}
         isCountdown={isCountdown} setIsCountdown={setIsCountdown} setPhase={setPhase}
-        result={result} correctNumber={correctNumber} rewardPoint={rewardPoint} countWinRecord={countWinRecord} exp={monsterDetails.exp}
+        result={result} correctNumber={correctNumber} rewardPoint={rewardPoint} countWinRecord={countWinRecord} exp={enmExp}
       />
     }
     {/* 리뷰 phase */}

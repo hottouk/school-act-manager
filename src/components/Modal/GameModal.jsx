@@ -11,21 +11,34 @@ import MainBtn from '../Btn/MainBtn'
 import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useLevel from '../../hooks/useLevel'
+import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData'
 
-const GameModal = ({ show, onHide, quizSetId, myPetList, gameDetails }) => {
+const GameModal = ({ show, onHide, quizSetId, gameDetails }) => {
   useEffect(() => { bindEnmData(); }, [gameDetails])
   const [step, setStep] = useState(1);
+  //내 펫 리스트
+  const { myUserData } = useFetchRtMyUserData();
+  useEffect(() => { fetchPetListData(); }, [myUserData])
+  const [myPetList, setMyPetList] = useState([]);
   const [petImgList, setPetImgList] = useState([]);
+  const { fetchImgUrl, fetchImgUrlList } = useFetchStorageImg();
+  useEffect(() => { downloadImgList(); }, [myPetList, gameDetails]);
   const [selectedPet, setSelectedPet] = useState(null);
-  const { fetchImgUrlList } = useFetchStorageImg();
-  useEffect(() => { downloadImgList(); }, [myPetList]);
-  //레벨 관련
-  const { getEarnedXp, getMonsterStat } = useLevel();
+  //몬스터 리스트
+  const [monImg, setMonImg] = useState(null);
   const [monsterList, setMonsterList] = useState(null);
-  const [selectedLv, setSeletedLv] = useState(1); //적 레벨
+  const { getEarnedXp, getMonsterStat } = useLevel();
+  const [selectedLv, setSeletedLv] = useState(1);     //적 레벨
   useEffect(() => { bindEnmData(); }, [selectedLv]);
   const isMobile = useMediaQuery("(max-width: 767px)");
   //------함수부------------------------------------------------------ 
+  //펫 리스트 데이터
+  const fetchPetListData = () => {
+    if (!myUserData || myUserData?.isTeacher) return
+    const { myPetList: petList } = myUserData;
+    setMyPetList(petList);
+  }
+  //적 리스트 데이터
   const bindEnmData = () => {
     if (!gameDetails) return
     const { monster } = gameDetails;
@@ -40,12 +53,13 @@ const GameModal = ({ show, onHide, quizSetId, myPetList, gameDetails }) => {
     })
     setMonsterList(list);
   }
-  //몬스터 이미지 다운로드
+  //이미지 다운로드
   const downloadImgList = () => {
     if (!myPetList || !gameDetails) return
     const { monster } = gameDetails;
     const petPathList = myPetList.map(pet => pet.path);
-    fetchImgUrlList([...petPathList, monster.path], setPetImgList);
+    fetchImgUrlList([...petPathList,], setPetImgList);
+    fetchImgUrl(monster.path, setMonImg);
   }
   //체크
   const check = () => {
@@ -88,6 +102,7 @@ const GameModal = ({ show, onHide, quizSetId, myPetList, gameDetails }) => {
   }
   const PetBubble = ({ pet, index }) => {
     const { petId, level, name, spec } = pet;
+    console.log(petImgList)
     return <MonsterWrapper key={petId} onClick={() => { petBubbleOnClick(pet) }}>
       <Column style={{ margin: "0 15px" }}>
         <PetImg src={petImgList[index]} alt="현재 img" />
@@ -100,7 +115,7 @@ const GameModal = ({ show, onHide, quizSetId, myPetList, gameDetails }) => {
     const { level, name, spec, exp } = mon;
     return <MonsterWrapper key={index} onClick={() => { monBubbleOnClick(level) }}>
       <Column style={{ margin: "0 15px" }}>
-        <PetImg src={petImgList[petImgList.length - 1]} alt="현재 img" />
+        <PetImg src={monImg} alt="현재 img" />
         <BasicText>Lv{level} {name}</BasicText>
       </Column>
       <SpecSection spec={spec} />
@@ -118,7 +133,7 @@ const GameModal = ({ show, onHide, quizSetId, myPetList, gameDetails }) => {
           {(isMobile && step === 1) && myPetList.map((pet, index) => <PetBubble key={pet.petId} pet={pet} index={index} />)}
           {(isMobile && step === 2) && monsterList.map((mon, index) => <MonBubble key={index} mon={mon} index={index} />)}
           {!isMobile && <>
-            <CardList dataList={myPetList} onClick={setSelectedPet} selected={selectedPet?.petId} type={"pet"} />
+            <CardList dataList={myPetList} onClick={setSelectedPet} selected={selectedPet} type={"pet"} />
             <AnimMaxHightOpacity isVisible={selectedPet}>
               <h1 style={{ fontWeight: "bold", textAlign: "center" }}>VS</h1>
               <TitleText>적 레벨 선택</TitleText>
@@ -129,7 +144,7 @@ const GameModal = ({ show, onHide, quizSetId, myPetList, gameDetails }) => {
             <MainBtn onClick={startBtnOnClick}>게임 시작</MainBtn>
           </Row></>}
         {/* 시작 */}
-        {(step === "start") && <QuizBattlePage quizSetId={quizSetId} myPetDetails={selectedPet} monsterDetails={monsterList[selectedLv - 1]} gameDetails={gameDetails} onHide={onHide} />}
+        {(step === "start") && <QuizBattlePage quizSetId={quizSetId} selectedPet={selectedPet} monsterDetails={monsterList[selectedLv - 1]} gameDetails={gameDetails} onHide={onHide} />}
       </Modal.Body>
     </Modal>
   )
@@ -169,5 +184,4 @@ const Highlight = styled(BasicText)`
   font-weight: 700;
   font-size: larger;
 `
-
 export default GameModal

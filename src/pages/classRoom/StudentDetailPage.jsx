@@ -55,7 +55,6 @@ const StudentDetailPage = () => {
   const [nthStudent, setNthStudent] = useState(null);
   const [_writtenName, setWrittenName] = useState('미등록');
   const [_actiList, setActiList] = useState(null);
-  const [_addOnActi, setAddOnActi] = useState(null);
   const [isMaster, setIsMaster] = useState(false);
   //GPT 모달
   const [isGptShown, setIsGptShown] = useState(false);
@@ -145,18 +144,11 @@ const StudentDetailPage = () => {
       setActiList(newActiList);
     } else { window.alert(result.msg); };
   }
-  //활동 추가 셀렉터 변경
-  const handleAddOnSelectOnChange = (event) => {
-    const result = check(event);
-    if (result.isValid) {
-      const assignedDate = new Date().toISOString().split('T')[0];
-      const { byte, studentDoneList, particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, ...rest } = event.value;
-      setAddOnActi({ ...rest, assignedDate });
-    } else { window.alert(result.msg); };
-  }
-  //활동 추가
+  //임의 활동 추가
   const handleAddActiOnClick = () => {
-    const newList = [..._actiList, _addOnActi];
+    const assignedDate = new Date().toISOString().split('T')[0];
+    const newActiItem = { title: "임의추가", record: '', uid: user.uid, assignedDate, madeBy: user.name }
+    const newList = [..._actiList, newActiItem];
     setActiList(newList);
   }
   //textarea 변경 (gpt, 수기 변경)
@@ -232,7 +224,7 @@ const StudentDetailPage = () => {
         {!isMobile && <GridItem>{index + 1}</GridItem>}
         <GridItem style={{ flexDirection: "column" }}>
           {title}
-          {repeatTimes && <span style={{ fontWeight: "bold", color:"#3454d1" }}>{repeatTimes}회 반복</span>}
+          {repeatTimes && <span style={{ fontWeight: "bold", color: "#3454d1" }}>{repeatTimes}회 반복</span>}
         </GridItem>
         <GridItem className="left-align"><span>{record}</span></GridItem>
         {!isMobile && <GridItem>{assignedDate || '없음'}</GridItem>}
@@ -245,7 +237,7 @@ const StudentDetailPage = () => {
     <SubNav styles={{ padding: "10px" }}>
       {user.isTeacher && <Select
         placeholder="학생 바로 이동"
-        options={allStudentList.map((student) => { return { label: `${student.studentNumber} ${student.writtenName || '미등록'}`, value: student.id, key: student.id } })}
+        options={allStudentList.map((student) => ({ label: `${student.studentNumber} ${student.writtenName || '미등록'}`, value: student.id }))}
         onChange={(event) => { moveStudent(allStudentList.find((student) => student.id === event.value)) }}
         isDisabled={isModifying}
       />}
@@ -272,8 +264,8 @@ const StudentDetailPage = () => {
                 {!_actiList || _actiList.length === 0
                   ? <GridItem style={{ gridColumn: "1/7" }}>활동이 없어요ㅠㅠ</GridItem>
                   : _actiList.map((item, index) => {
-                    const { record, perfRecordList, uid } = item;
-                    return <React.Fragment key={item.id}>
+                    const { record, perfRecordList, uid, id } = item;
+                    return <React.Fragment key={id}>
                       {/* 열람 */}
                       {(!isModifying || (isModifying && user.uid !== uid && user.userStatus !== "master")) && <ActiRow item={item} index={index} />}
                       {/* 수정 */}
@@ -322,9 +314,6 @@ const StudentDetailPage = () => {
                   })}
                 {isModifying && <GridRow>
                   <GridItem style={{ gridColumn: "1/7", gap: "20px" }} >
-                    <Select
-                      options={allActivityList.map((item) => { return { label: item.title, value: item } })}
-                      onChange={handleAddOnSelectOnChange} />
                     <SmallBtn onClick={handleAddActiOnClick}>추가</SmallBtn>
                   </GridItem>
                 </GridRow>}
