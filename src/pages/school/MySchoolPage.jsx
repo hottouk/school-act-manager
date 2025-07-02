@@ -299,10 +299,6 @@ const Container = styled.div`
 const Row = styled.div`
   display: flex;
 `
-const Wrapper = styled(Row)`
-  margin: 0 auto;
-  width: 80%;
-`
 const TabWrapper = styled.div`
   position: relative;
 `

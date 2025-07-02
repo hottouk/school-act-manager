@@ -244,11 +244,11 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
           <FormHeader>{state ? <legend>{_selectedSubjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}</FormHeader>
           <fieldset style={{ padding: "2px" }}>
             <Row style={{ justifyContent: "space-between", margin: "13px 0" }}>
-              <DotTitle title={"활동 제목"} styles={{ dotColor: "#3454d1;" }} />
+              <DotTitle title={"활동 제목"} styles={{ dotColor: "#3454d1" }} />
               <StyledInput className="act_title" id="act_title" type="text" required onChange={handleOnChange} value={_title} disabled={!isModified} placeholder="ex)포도당 산화 환원 실험" />
             </Row>
             <Row style={{ marginBottom: "13px" }}>
-              <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
+              <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1" }} />
               <SubjectSelects sort={sort}
                 selectedGroup={_selectedSubjGroup} selectedDetail={_selectedSubjDetail}
                 setSelectedGroup={setSelectedSubjGroup} setSelectedDetail={setSelectedSubjDetail}
@@ -369,7 +369,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
         show={isExtraRecModalShown}
         onHide={() => setIsExtraRecModalShown(false)}
         acti={state.acti}
-        setExtraRecList={setExtraRecList} //부모 컴포넌트에 변경 data 반영
+        setList={setExtraRecList} //부모 컴포넌트에 변경 data 반영
       />}
     {state &&
       < AddPerfRecModal

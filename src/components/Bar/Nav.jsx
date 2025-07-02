@@ -69,6 +69,8 @@ const Nav = () => {
           <span>나의 학교</span></Link></li>
         {/* {user.isMaster && <li id="lab_btn" ><Link to="/lab"><Icon className="fa-solid fa-khanda"></Icon>
           <span>실험실</span></Link></li>} */}
+        <li><Link to="/store"><Icon className="fa-solid fa-store"></Icon>
+          <span>상점</span></Link></li>
         {user.isMaster && <li id="master_btn" ><Link to="/master"><Icon className="fa-solid fa-key"></Icon>
           <span>마스터</span></Link></li>}
         <NewsWrapper >
@@ -91,6 +93,8 @@ const Nav = () => {
           <span>참여 클래스</span></Link></li>
         <li><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon>
           <span>나의 학교</span></Link></li>
+        <li><Link to="/store"><Icon className="fa-solid fa-store"></Icon>
+          <span>상점</span></Link></li>
         <NewsWrapper>
           {isNew && <NewIcon><Badge bg="danger">new</Badge></NewIcon>}
           <Link to="/news" ><Icon className="fa-solid fa-bell" /></Link>

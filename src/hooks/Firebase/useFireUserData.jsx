@@ -1,42 +1,89 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { collection, doc, getDoc, runTransaction, updateDoc, arrayUnion, arrayRemove, getDocFromCache, getDocFromServer, setDoc, } from 'firebase/firestore'
+import { collection, doc, getDoc, runTransaction, updateDoc, arrayUnion, arrayRemove, getDocFromCache, getDocFromServer, setDoc, onSnapshot, } from 'firebase/firestore'
 import { appFireStore } from '../../firebase/config'
 import { setUserPersonalInfo } from '../../store/userSlice'
 
 //user collection 함수 모음
 const useFireUserData = () => {
-  const user = useSelector(({ user }) => user)
+  const user = useSelector(({ user }) => user);
   const db = appFireStore;
   const col = collection(db, "user");
   const dispatcher = useDispatch();
-  //1. 유저 정보 하나
+
+  //1. 유저 정보 하나 가져오기
   const fetchUserData = async (id) => {
     const userDoc = doc(col, id);
     const userSnapshot = await getDoc(userDoc).catch((error) => {
-      alert(`관리자에게 문의하세요(useFireUserData_01),${error}`);
+      alert(`관리자에게 문의하세요(useFireUserData_01), ${error}`);
       console.log(error);
     })
     return userSnapshot.data();
   }
-  //유저 기본 업데이트(250217)
-  const updateUserInfo = async (field, info) => {
-    const userDocRef = doc(col, user.uid);
-    try {
-      setDoc(userDocRef, { [field]: info }, { merge: true });
-    } catch (error) {
-      window.alert(error);
-      console.log(error);
-    }
+  //1-1. 유저 정보 하나 구독
+  const subscribeUserData = (id, callback) => {
+    if (!id) return
+    const userDoc = doc(col, id);
+    const unsubscribe = onSnapshot(userDoc, (snapshot) => {
+      if (snapshot.exists()) { callback(snapshot.data()); }
+      else { callback(null); }
+    })
+    return () => unsubscribe();
   }
-  //유저 배열형 정보 추가(250127)
-  const updateUserArrayInfo = async (id, field, info) => {
-    const userDocRef = doc(col, id);
-    try {
-      await setDoc(userDocRef, { [field]: arrayUnion(info) }, { merge: true });
-    } catch (error) {
-      window.alert(error);
+
+  //2. 유저 기본 업데이트(250217)
+  const updateUserInfo = async (field, info, otherId) => {
+    let userDoc = doc(col, user.uid);
+    if (otherId) { userDoc = doc(col, otherId); }
+    else { userDoc = doc(col, user.uid); }
+    await setDoc(userDoc, { [field]: info }, { merge: true }).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireUserData_02), ${error}`);
       console.log(error);
-    }
+    })
+  }
+
+  //3. 유저 배열형 정보 추가(250127)
+  const updateUserArrayInfo = async (id, field, info) => {
+    const userDoc = doc(col, id);
+    await setDoc(userDoc, { [field]: arrayUnion(info) }, { merge: true }).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireUserData_03), ${error}`);
+      console.log(error);
+    })
+  }
+
+  //4. 유저 배열형 정보 삭제(250201)
+  const deleteUserArrayInfo = async (id, field, info) => {
+    const userDoc = doc(col, id);
+    await updateDoc(userDoc, { [field]: arrayRemove(info) }).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireUserData_04), ${error}`);
+      console.log(error);
+    })
+  }
+
+  //5. 학생 샵 아이템 구매(250630)
+  const purchaseShopItem = async (student, rira, item, quantity, teacherId) => {
+    const { title, price, stock, order } = item;
+    const userDoc = doc(col, user.uid);
+    const teacherDoc = doc(col, teacherId);
+    await runTransaction(db, async (transaction) => {
+      //1. 교사 데이터 읽기
+      const teacherSnapshot = await transaction.get(teacherDoc);
+      if (!teacherSnapshot.exists()) throw new Error("Error: 교사 데이터를 읽어올 수 없습니다.");
+      const teacherData = teacherSnapshot.data();
+      const { rira: tRira, shopItemList, name } = teacherData;
+      //2. 편집
+      const trade = { teacher: name, student, title, quantity, stock: stock - quantity, cost: quantity * price }
+      const arr = shopItemList.map((ele) => {
+        if (ele.order === order) { return { ...ele, stock: stock - quantity } }
+        else { return ele }
+      });
+      //학생 리라 정산 및 아이템 배달
+      transaction.update(userDoc, { purchasedItemList: arrayUnion(trade), rira: rira - price * quantity });
+      //교사 리라 정산 및 명세서 배달
+      transaction.update(teacherDoc, { soldItemList: arrayUnion(trade), rira: tRira + price * quantity, shopItemList: arr });
+    }).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireUserData_05), ${error}`);
+      console.log(error);
+    })
   }
 
   //내 정보 창에서 정보 변경(250223)
@@ -49,17 +96,6 @@ const useFireUserData = () => {
         window.alert(err)
         console.log(err)
       })
-  }
-
-  //유저 배열형 정보 삭제(250201)
-  const deleteUserArrayInfo = async (id, field, info) => {
-    const userDocRef = doc(col, id)
-    try {
-      await updateDoc(userDocRef, { [field]: arrayRemove(info) })
-    } catch (error) {
-      window.alert(error);
-      console.log(error);
-    }
   }
 
   //해당 유저 펫 업데이트(250127) 게임
@@ -83,7 +119,7 @@ const useFireUserData = () => {
           return pet                                                      //나머지 pet 유지
         });
         transaction.update(userDocRef, { myPetList: updatedPetList });
-      });
+      })
     } catch (error) {
       console.log(error);
       window.alert(error);
@@ -138,7 +174,7 @@ const useFireUserData = () => {
   }
 
 
-  return ({ fetchUserData, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo })
+  return ({ fetchUserData, subscribeUserData, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem })
 }
 
 export default useFireUserData
