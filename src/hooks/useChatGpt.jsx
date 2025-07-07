@@ -1,11 +1,16 @@
 import OpenAI from 'openai'
 import { useState } from 'react'
-import { gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg, gptRepeatRecMsg, gptPerfRecordMsg, gptTranslateMsg, gptExtractVocabMsg } from '../data/gptMsgDataList'
+//데이터
+import {
+  gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg,
+  gptRepeatRecMsg, gptPerfRecordMsg, gptTranslateMsg, gptExtractVocabMsg, gptPersonalKeywordsMsg
+} from '../data/gptMsgDataList'
 
 //프롬프트 수정(240808)-> 모델 변경 가능(250520)
 const useChatGpt = () => {
   const openai = new OpenAI({ apiKey: process.env.REACT_APP_OPENAI_API_KEY, dangerouslyAllowBrowser: true })
   const [gptAnswer, setGptAnswer] = useState('');
+  const [gptProgress, setGptProgress] = useState({ current: 0, total: 0 });
   const [gptRes, setGptRes] = useState(null);
 
   //교과 과세특 
@@ -96,9 +101,48 @@ const useChatGpt = () => {
         기존 문구에 '[]'가 있다면 대괄호를 뺴고 이 부분에 활동 보고서 요약본을 넣어 기존 문구와 유기적으로 연결되도록 작성 바람. 
         또한, "학생은~" 과 같은 주어를 사용하면 안됨. "학생은~"을 생략하고 "성실한 수업 태도를 일관되게 보여줌." 로 써주어야 함.
         반드시 '~음', '~펼침', '~임', '~함', '~됨','~됨'등으로 끝나는 명사형 종결어미를 사용하여 문장을 끝맺어야 함`
-    },
-    ]
+    }]
     await playGpt(messages, "o4-mini");
+  }
+  //보고서 키워드 기반 개별화
+  const askPersonalizeOnKeywords = async ({ record, keywords, keywordList }) => {
+    const getMessage = (_record, _keywrods) => {
+      return [...gptPersonalKeywordsMsg,
+      {
+        role: "user",
+        content: `활동 문구: ${_record}
+        아래는 위의 활동을 한 학생이 활동 결과의 키워드입니다.
+        
+        활동 키워드: ${_keywrods}
+        이 키워드를 기반으로 기존 문구와 혼합하여 기존 문구보다 1.2배 분량정도 되는 새로운 문구를 작성 바람. 
+        기존 문구에 '{/* */}'라는 기호가 있다면 이 기호를 제거하고 이 부분에 키워드를 넣어 기존 문구와 유기적으로 연결되도록 작성 바람.
+        예를 들어 기존 문구에 {/*주제*/},{/*주장*/} 이라는 부분이 있고 활동보고서 키워드가 '무역 분쟁','무역 분쟁은 자유 경쟁에 의한 것이므로 간섭하면 안됨' 주어진다면
+        {/*주제*/}에서 '{/* */}'기호를 제거한 후, 순서대로 첫번째 키워드 '무역 분쟁'을 넣어 문구를 작성바람.
+        마찬가지로 {/*주장*/}에서 '{/* */}'기호를 제거한 후, 순서대로 두번째 키워드 '무역 분쟁은 자유 경쟁에 의한 것이므로 간섭하면 안됨'를 넣어 문구를 작성 바람.
+        또한, "학생은~" 과 같은 주어를 사용하면 안됨. "학생은~"을 생략하고 "성실한 수업 태도를 일관되게 보여줌." 로 써주어야 함.
+        반드시 '~음', '~펼침', '~임', '~함', '~됨','~됨'등으로 끝나는 명사형 종결어미를 사용하여 문장을 끝맺어야 함`
+      }]
+    }
+    if (!keywordList) { await playGpt(getMessage(record, keywords), "o4-mini"); } //개별
+    else {
+      const answerList = [];
+      const total = keywordList.length;
+      setGptProgress({ current: 0, total });
+      setGptRes("loading");
+      for (let i = 0; i < total; i++) {
+        const { index, record, keywords } = keywordList[i];
+        const completion = await openai.chat.completions.create({
+          messages: getMessage(record, keywords),
+          model: "gpt-4o-mini",
+          temperature: 1.0,
+        });
+        answerList.push({ index, answer: completion.choices[0]?.message?.content || "[응답 없음]" });
+        setGptProgress({ current: i + 1, total }); // ✅ 진행률 업데이트
+      }
+      setGptRes("complete");
+      setGptProgress({ current: 0, total });
+      return answerList
+    } //반복
   }
   //타이핑 기반 개별화
   const askPersonalizeOnTyping = async (record, report) => {
@@ -156,7 +200,7 @@ const useChatGpt = () => {
     ]
     await playGpt(messages, "gpt-4o-mini");
   }
-  //행발
+  //단어
   const extractVocab = async (text,) => {
     let messages = [...gptExtractVocabMsg,
     {
@@ -166,7 +210,9 @@ const useChatGpt = () => {
     ]
     await playGpt(messages, "gpt-4o-mini");
   }
-  // 공통 부분(gpt-4o-mini, gpt-4.1-mini)
+
+
+  //실행(gpt-4o-mini, gpt-4.1-mini)
   const playGpt = async (messages, model) => {
     setGptRes("loading");
     const completion = await openai.chat.completions.create({
@@ -182,8 +228,10 @@ const useChatGpt = () => {
       setGptRes("complete")
     }
   }
-
-  return { gptAnswer, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, askRepeatRecord, extractVocab, gptRes }
+  return {
+    gptAnswer, gptProgress, gptRes, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askPersonalizeOnKeywords,
+    askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, askRepeatRecord, extractVocab,
+  }
 }
 
 export default useChatGpt

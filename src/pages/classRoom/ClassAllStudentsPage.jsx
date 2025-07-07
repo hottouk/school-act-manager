@@ -11,13 +11,13 @@ import BackBtn from "../../components/Btn/BackBtn"
 import PrintBtn from "../../components/Btn/PrintBtn"
 //hooks
 import useGetByte from "../../hooks/useGetByte"
-import useAddUpdFireData from "../../hooks/Firebase/useAddUpdFireData"
 import useClientHeight from "../../hooks/useClientHeight"
 import useFetchRtMyStudentData from "../../hooks/RealTimeData/useFetchRtMyStudentListData"
 //이미지
 import recycleIcon from "../../image/icon/recycle_icon.png"
+import useFirePetData from "../../hooks/Firebase/useFirePetData"
 
-//2024.10.27(실시간 학생 데이터로 변경, writtenName, accRecord useState로 관리, transition 추가)
+//최근 업데이트(241027)
 const ClassAllStudents = () => {
   //교사 인증
   const user = useSelector(({ user }) => user);
@@ -27,48 +27,57 @@ const ClassAllStudents = () => {
   const navigate = useNavigate();
   const classId = params.id
   //학생 정보 데이터 통신
-  const { studentDataList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber")
+  const { studentDataList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber");
+  const [_studentList, setStudentList] = useState([]);
+  useEffect(() => { setStudentList(studentDataList); }, [studentDataList]);
   //학생 속성
-  const { updateStudent } = useAddUpdFireData("classRooms")
+  const { updatePetInfo } = useFirePetData();
   const { getByteLengthOfString } = useGetByte();
-  const [newName, setNewName] = useState('')
-  const [newAccRecord, setNewAccRecord] = useState('')
   //현재 행 수정
-  const [thisModifying, setThisModifying] = useState('')
-  //ref
-  const textAreaRef = useRef({})
+  const [thisModifying, setThisModifying] = useState('');
   //에니메이션
   const [isVisible, setIsVisible] = useState(false)
-  //css
-  const clientHeight = useClientHeight(document.documentElement)
   //인쇄
   const printRef = useRef({});
   const handlePrint = useReactToPrint({ contentRef: printRef });
+  //css
+  const clientHeight = useClientHeight(document.documentElement)
+  const nameFontStyle = { cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }
 
-  //------함수부------------------------------------------------  
-  //수정
-  const handleModifyingBtn = (key, name, record) => {
-    setThisModifying(key)
-    setNewName(name)
-    setNewAccRecord(record)
+  //------함수부------------------------------------------------
+  //실시간 acc
+  const getAccRec = (list) => { return list?.reduce((acc, cur) => acc + cur.record, '') }
+  //수정 버튼
+  const handleEditOnClick = (key, index) => {
+    setThisModifying(key);
+    setStudentList((prev) => {
+      const list = [...prev];
+      const { actList } = list[index];
+      const assignedDate = new Date().toISOString().split('T')[0];
+      actList.push({ title: "임의기록", id: "random" + assignedDate, record: "", uid: user.uid, assignedDate });
+      return list
+    })
   }
-  //저장
-  const handleSaveBtn = (key) => {
-    updateStudent({ accRecord: newAccRecord, writtenName: newName }, classId, key); //데이터 통신       
+  //취소 버튼
+  const handleCacncelOnClick = (key, index) => {
     setThisModifying('');
-    setNewName('');
-    setNewAccRecord('');
+    setStudentList((prev) => {
+      const list = [...prev];
+      const { actList } = list[index];
+      actList.splice(actList.length - 1, 1);
+      return list
+    })
   }
-  //활동 순서 랜덤 섞기
-  const handleShuffleBtnOnClick = (id) => {
-    let _student = studentDataList.find(student => student.id === id)
-    let _actiList = _student.actList
-    let newAccRec = (_actiList && _actiList.length > 0)
-      ? shuffleOrder(_actiList).map(acti => { return acti.record }).join(" ")
-      : ''
-    textAreaRef.current.value = newAccRec;
-    setNewAccRecord(newAccRec)
+  //활동 문구 변경
+  const handleActiRecordOnChage = (event, index, subIndex) => {
+    setStudentList((prev) => {
+      const list = [...prev];
+      const { actList } = list[index];
+      actList[subIndex].record = event.target.value;
+      return list
+    })
   }
+  //순서 섞기
   const shuffleOrder = (list) => {
     if (list && list.length > 1) {
       for (let i = list.length - 1; i > 0; i--) {//랜덤 섞기
@@ -78,18 +87,33 @@ const ClassAllStudents = () => {
     }
     return list
   }
-  //활동 순서 전원 섞기
-  const handleShuffleAllBtnOnClick = () => {
-    if (window.confirm("이 단계에서 추가로 작성한 기록은 모두 사라집니다. 진행하시겠습니까?")) {
-      studentDataList.map((student) => {
-        let _actiList = student.actList
-        let accRecord = (_actiList && _actiList.length > 0)
-          ? shuffleOrder(_actiList).map(acti => { return acti.record }).join(" ")
-          : ''
-        updateStudent({ accRecord }, classId, student.id);//데이터 통신
-        return null;
-      })
+  //활동 순서 섞기
+  const handleShuffleBtnOnClick = (index) => {
+    const { actList } = _studentList[index];
+    if (actList[actList.length - 1].record === '') {
+      alert("빈 칸을 채우세요");
+      return
     }
+    setStudentList((prev) => {
+      const list = [...prev];
+      const { actList } = list[index];
+      shuffleOrder(actList);
+      return list
+    })
+  }
+  //저장 버튼
+  const handleSaveBtn = (index) => {
+    const { id: petId, actList } = _studentList[index];
+    updatePetInfo(classId, petId, { accRecord: getAccRec(actList), actList });
+    setThisModifying('');
+  }
+  //전체 활동 순서 섞기
+  const handleShuffleAllBtnOnClick = () => {
+    _studentList.forEach((student) => {
+      const { actList, id } = student;
+      shuffleOrder(actList);
+      updatePetInfo(classId, id, { accRecord: getAccRec(actList), actList },);
+    })
   }
 
   return (
@@ -97,8 +121,8 @@ const ClassAllStudents = () => {
       <SubNav>
         <p>※수정은 PC에서 가능함</p>
         <BackBtn />
-        {user.userStatus === "master" && <StyledShfBtn $wid="45" src={recycleIcon} alt="섞기 버튼" onClick={() => { handleShuffleAllBtnOnClick() }} />}
-        <ExportAsExcel allStudentList={studentDataList} />
+        {user.userStatus === "master" && <StyledShfBtn $wid="45" src={recycleIcon} alt="섞기 버튼" onClick={handleShuffleAllBtnOnClick} />}
+        <ExportAsExcel allStudentList={_studentList} />
         <PrintBtn onClick={() => { handlePrint() }} />
       </SubNav>
       <GridContainer ref={printRef}>
@@ -110,36 +134,40 @@ const ClassAllStudents = () => {
           <Header>Byte</Header>
           <Header>수정</Header>
         </TableHeaderWrapper>
-        {(studentDataList && studentDataList.length > 0) && studentDataList.map((student, index) => {
-          let key = student.id
-          let isModifying = (thisModifying === key)
-          let studentNumber = student.studentNumber
-          let name = (student.writtenName || "미등록")
-          let record = (student.accRecord || "기록 없음")
-          let bytes = ((record !== '기록 없음') ? getByteLengthOfString(record) : 0)
+        {_studentList?.length > 0 && _studentList.map((student, index) => {
+          const { id, studentNumber, writtenName, actList } = student;
+          const key = id;
+          const accRecord = getAccRec(actList);
+          const isModifying = (thisModifying === key);
+          const bytes = (accRecord ? getByteLengthOfString(accRecord) : 0);
 
-          return <React.Fragment key={key}>
-            <StyledGridItem>{index + 1}</StyledGridItem>     {/* 연번 */}
-            <StyledGridItem>{studentNumber}</StyledGridItem> {/* 학번 */}
-            {/* 3열 */}
-            <StyledGridItem>
-              <p onClick={() => { navigate(`/classrooms/${classId}/${key}`) }} style={{ cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}>{name}</p>
-            </StyledGridItem>
-            <StyledGridItem style={{ justifyContent: "flex-start" }}>
-              {!isModifying
-                ? record
-                : <StyledTextArea defaultValue={record}
-                  ref={(ele) => { return textAreaRef.current = ele }}
-                  onChange={(event) => { setNewAccRecord(event.target.value) }} />}
-            </StyledGridItem>
-            <StyledGridItem>{bytes}</StyledGridItem>
-            <StyledGridItem>
-              {(!isModifying && user.userStatus === "master") && <SmallBtn id="modi_btn" btnOnClick={() => { handleModifyingBtn(key, name, record) }} btnName="수정" btnColor="#3454d1" hoverBtnColor="blue" />}
-              {isModifying && <BtnWrapper> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(key) }} btnName="저장" btnColor="#3454d1" />
-                <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(key) }} btnName="섞기" btnColor="#9b0c24" hoverBtnColor="red" />
+          return <React.Fragment key={index + id}>
+            <GridItem>{index + 1}</GridItem>     {/* 연번 */}
+            <GridItem>{studentNumber}</GridItem> {/* 학번 */}
+            <GridItem>                           {/* 이름 */}
+              <p onClick={() => { navigate(`/classrooms/${classId}/${key}`) }} style={nameFontStyle}>{writtenName || "미등록"}</p>
+            </GridItem>
+            <GridItem style={{ justifyContent: "flex-start" }}>
+              {!isModifying && accRecord}
+              {isModifying && <Column style={{ width: "100%", gap: "5px" }}>
+                {actList.map((acti, actiIndex) => {
+                  const { record, id } = acti;
+                  return <Textarea key={actiIndex + id}
+                    placeholder="이 곳에 새로운 활동을 기록하세요"
+                    value={record}
+                    onChange={(event) => { handleActiRecordOnChage(event, index, actiIndex) }} />
+                })}
+              </Column>}
+            </GridItem>
+            <GridItem>{bytes}</GridItem>        {/* 바이트 */}
+            <GridItem>
+              {(!isModifying && user.userStatus === "master") && <SmallBtn id="modi_btn" btnOnClick={() => { handleEditOnClick(key, index); }} btnName="수정" btnColor="#3454d1" hoverBtnColor="blue" />}
+              {isModifying && <BtnWrapper> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(index); }} btnName="저장" btnColor="#3454d1" hoverBtnColor="blue" />
+                <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(index); }} hoverBtnColor="blue">섞기</SmallBtn>
+                <SmallBtn btnOnClick={() => { handleCacncelOnClick(key, index) }} btnColor="#9b0c24" hoverBtnColor="red">취소</SmallBtn>
               </BtnWrapper>
               }
-            </StyledGridItem>
+            </GridItem>
           </React.Fragment>
         })}
       </GridContainer >
@@ -160,6 +188,9 @@ const Container = styled.main`
 `
 const Row = styled.div`
   display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
 `
 const StyledShfBtn = styled.img`
   display: flex;
@@ -205,7 +236,7 @@ const Header = styled.div`
     border-top-right-radius: 5px;
   }
 `
-const StyledGridItem = styled(Row)`
+const GridItem = styled(Row)`
   display: flex;
   justify-content: center;
   color: black;
@@ -223,10 +254,9 @@ const BtnWrapper = styled.div`
   flex-direction: column;
   gap: 7px;
 `
-const StyledTextArea = styled.textarea`
-  display: block;
+const Textarea = styled.textarea`
   width: 100%;
-  height: 100%;
+  height: 5rem;
   border-radius: 10px;
 `
 export default ClassAllStudents
