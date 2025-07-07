@@ -62,9 +62,8 @@ const AddPerfRecModal = ({ show, onHide, acti, setPerfRecList }) => {
     }
     onHide();
   }
-
   //개별화 틀 클릭
-  const handleBtnOnClick = (index) => {
+  const handlePersonalizeOnClick = (index) => {
     let template = '{/*개별 변경 사항을 입력하세요*/}';
     let textarea = textareaRef.current[index];
     // 현재 커서 위치 가져오기
@@ -79,7 +78,6 @@ const AddPerfRecModal = ({ show, onHide, acti, setPerfRecList }) => {
     textarea.setSelectionRange(cursorPosition, cursorPosition + 15);
     textarea.focus();
   }
-
   return (
     <Modal
       size="lg"
@@ -106,7 +104,7 @@ const AddPerfRecModal = ({ show, onHide, acti, setPerfRecList }) => {
                 onChange={(e) => { handleInputOnChange(e, index) }}
               />
               <Row style={{ justifyContent: "space-between" }}>
-                <ClickableText onClick={() => { handleBtnOnClick(index) }}>개별화 틀 삽입</ClickableText>
+                <ClickableText onClick={() => { handlePersonalizeOnClick(index) }}>개별화 틀 삽입</ClickableText>
                 <ByteCalculator str={_textareaValueList[index]} styles={{ isTotalByteHide: true }} />
               </Row>
             </TextareaWrapper>

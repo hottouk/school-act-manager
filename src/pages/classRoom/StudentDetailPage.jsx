@@ -147,7 +147,7 @@ const StudentDetailPage = () => {
   //임의 활동 추가
   const handleAddActiOnClick = () => {
     const assignedDate = new Date().toISOString().split('T')[0];
-    const newActiItem = { title: "임의추가", record: '', uid: user.uid, assignedDate, madeBy: user.name }
+    const newActiItem = { title: "임의기록", record: '', id: "random" + assignedDate, uid: user.uid, assignedDate, madeBy: user.name }
     const newList = [..._actiList, newActiItem];
     setActiList(newList);
   }
@@ -265,7 +265,7 @@ const StudentDetailPage = () => {
                   ? <GridItem style={{ gridColumn: "1/7" }}>활동이 없어요ㅠㅠ</GridItem>
                   : _actiList.map((item, index) => {
                     const { record, perfRecordList, uid, id } = item;
-                    return <React.Fragment key={id}>
+                    return <React.Fragment key={id || index}>
                       {/* 열람 */}
                       {(!isModifying || (isModifying && user.uid !== uid && user.userStatus !== "master")) && <ActiRow item={item} index={index} />}
                       {/* 수정 */}

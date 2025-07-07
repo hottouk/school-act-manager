@@ -1,5 +1,5 @@
 //라이브러리
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
@@ -86,6 +86,8 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   //css 및 에니
   const clientHeight = useClientHeight(document.documentElement)
   const [isVisible, setIsVisible] = useState(false)
+  //개별화 함수
+  const textareaRef = useRef({});
 
   //------함수부------------------------------------------------  
   //데이터 초기화
@@ -181,6 +183,22 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
       window.alert('과목을 입력해주세요')
     }
   }
+  //개별화 틀 클릭
+  const handlePersonalizeOnClick = (index) => {
+    let template = '{/*개별 변경 사항을 입력하세요*/}';
+    let textarea = textareaRef.current
+    // 현재 커서 위치 가져오기
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    // 템플릿 추가
+    let textBefore = textarea.value.substring(0, start); //0부터 커서 전까지 텍스트 추출
+    let textAfter = textarea.value.substring(end);       //커서 뒤부터 끝까지 텍스트 추출
+    textarea.value = textBefore + template + textAfter;
+    // 템플릿 내 커서를 '...' 위치로 이동
+    let cursorPosition = start + 3; // '{/* ... */}'에서 '...'의 시작 위치
+    textarea.setSelectionRange(cursorPosition, cursorPosition + 15);
+    textarea.focus();
+  }
   //버튼 클릭
   const handleBtnClick = (event) => {
     event.preventDefault();
@@ -257,9 +275,19 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
             {/* 활동 설명 */}
             <CommonTextArea id="act_content" title="활동 설명" onChange={handleOnChange} value={_content} disabled={!isModified}
               placeholder={"ex)포도당 환원 실험에 참여하여 원리를 모둠 보고서로 작성하는 활동."} />
-            <CommonTextArea id="acti_record" title="생기부 문구" onChange={handleOnChange} value={_record} disabled={!isModified} required
-              placeholder={"직접 쓰지 마시고 gpt 버튼 클릭! 직접 작성도 가능함."} />
-            <ByteCalculator handleOnConhange={handleOnChange} str={_record} />
+            <Text>생기부 문구 </Text>
+            <Textarea
+              value={_record}
+              onChange={(event) => { setRecord(event.target.value) }}
+              placeholder={"직접 쓰지 마시고 gpt 버튼 클릭! 직접 작성도 가능함."}
+              ref={textareaRef}
+              required
+              disabled={!isModified}
+            />
+            <Row style={{ justifyContent: "space-between" }}>
+              <ClickableText onClick={() => { handlePersonalizeOnClick() }}>개별화 틀 삽입</ClickableText>
+              <ByteCalculator handleOnConhange={handleOnChange} str={_record} />
+            </Row>
             {/* 날짜_담임반 전용 */}
             <Row style={{ marginBottom: "13px" }}>{sort === "homeroom" && <DotTitle title={"날짜 정보 ▼"} onClick={() => { setIsDateShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}</Row>
             <AnimMaxHightOpacity isVisible={isDateShown}>
@@ -424,6 +452,25 @@ const StyledForm = styled.form`
 `
 const Row = styled.div`
   display: flex;
+`
+const Text = styled.p`
+  margin: 0;
+`
+const ClickableText = styled.p`
+  cursor: pointer;
+  color:rgba(58, 58, 58, 0.8);
+  font-weight: bold;
+  text-decoration: underline;
+  &: hover { color: #3454d1; }
+`
+const Textarea = styled.textarea`
+  width: 100%;
+  height: 75px;
+  padding: 5px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 10px;
+  overflow-y: scroll;
 `
 const StyledInput = styled.input`
   height: 35px;

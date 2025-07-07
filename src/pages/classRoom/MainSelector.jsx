@@ -99,8 +99,8 @@ const MainSelector = ({ isMobile, type, studentList, actiList, classId, setIsPer
         </AccWrapper>
         <BtnWrapper>
           <MainBtn onClick={() => { setIsCompleteModalShow(true) }}>선택 완료</MainBtn>
-          {(setIsPerfModalShow && !isMobile) && <MainBtn onClick={() => { setIsPerfModalShow(true) }}>수행 평가 관리</MainBtn>}
-          {!isMobile && <MainBtn onClick={() => { navigate('allStudents') }} >반 전체 세특 보기</MainBtn>}
+          {(setIsPerfModalShow && !isMobile) && <MainBtn onClick={() => { setIsPerfModalShow(true) }}>활동별 보기</MainBtn>}
+          {!isMobile && <MainBtn onClick={() => { navigate('allStudents') }} >전체 세특 보기</MainBtn>}
         </BtnWrapper>
       </Container>
       {/* 선택 완료 모달 */}

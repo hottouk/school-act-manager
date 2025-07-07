@@ -48,7 +48,7 @@ const ClassMain = () => {
         </Wrapper>
       </LandingBg>
       <WhiteBg>
-        <SubTitleText>{2277}명의 선생님, {231}명의 학생이 이용중!!</SubTitleText>
+        <SubTitleText>{2407}명의 선생님, {234}명의 학생이 이용중!!</SubTitleText>
       </WhiteBg>
       <Row style={{ justifyContent: "center" }}>
         <HorizontalBannerAd />
