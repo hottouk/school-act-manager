@@ -79,15 +79,10 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     setSelectedActi(null);
     setReplaceList({});
   }
-  //옵션 랜더링
+  //활동 셀렉터 옵션
   const renderOptions = () => {
     const options = []
-    actiList.forEach(acti => {
-      options.push({
-        label: acti.title, value: acti.record, title: acti.title, perfRecordList: acti.perfRecordList, id: acti.id,
-        uid: acti.uid, record: acti.record, subject: acti.subject, scores: acti.scores, money: acti.money,
-      }) //필요 속성들 재구성
-    })
+    actiList.forEach(acti => { options.push({ label: acti.title, value: acti.record, ...acti }) })
     setOptionList([...options])
   }
   //활동 셀렉터
@@ -103,31 +98,46 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       })
     }
   }
+  //활동 셀렉터 옵션
+  const getRecOptionList = () => {
+    if (!selectedActi) return
+    const { record, perfRecordList, extraRecordList, repeatInfoList } = selectedActi;
+    const optionList = [{ label: "기본 문구", value: record }];
+    if (perfRecordList) achivList.forEach((item, index) => { optionList.push({ label: item, value: perfRecordList[index] }); });
+    if (extraRecordList) extraRecordList.forEach((item, index) => { optionList.push({ label: `랜덤문구${index}`, value: item }); });
+    if (repeatInfoList) repeatInfoList.forEach((item) => {
+      const { times, record } = item;
+      optionList.push({ label: `${times}회 반복문구`, value: record });
+    });
+    return optionList
+  }
+  //성취도 셀렉터
+  const handleAchivOnChange = (event) => {
+    const record = event.value;
+    const lastNumber = Object.keys(perfRecord).length;
+    for (let i = 0; i < lastNumber; i++) {
+      setPerfRecord((prev) => { return { ...prev, [i]: record } });
+      setPerfTempRecord((prev) => { return { ...prev, [i]: record } });
+    }
+  }
   //이중 객체 생성
   const createMatrix = (list, initVal) => {
     let matrix = {}
     list?.forEach((_, index) => matrix[index] = initVal);
     return matrix
   }
-  //성취도 셀렉터
-  const handleAchivOnChange = (event) => {
-    const achivIndex = event.value;
-    const achivRec = selectedActi?.perfRecordList[achivIndex] ?? '';
-    const lastNumber = Object.keys(perfRecord).length;
-    for (let i = 0; i < lastNumber; i++) {
-      setPerfRecord((prev) => { return { ...prev, [i]: achivRec } });
-      setPerfTempRecord((prev) => { return { ...prev, [i]: achivRec } });
+  //라디오 버튼
+  const handleRadioOnChange = (event, index, subIndex) => {
+    let record;
+    switch (event.target.id) {
+      case "achiv":
+        record = selectedActi?.perfRecordList[subIndex];
+        break;
+      default:
+        record = event.target.value;
     }
-  }
-  //성취도 라디오 버튼
-  const handleRadioOnChange = (index, subIndex) => {
-    if (selectedActi) {
-      let record = selectedActi?.perfRecordList[subIndex]
-      setPerfRecord((prev) => { return { ...prev, [index]: record } })
-      setPerfTempRecord((prev) => { return { ...prev, [index]: record } })
-    } else {
-      window.alert("수행 평가를 먼저 선택하세요.")
-    }
+    setPerfRecord((prev) => { return { ...prev, [index]: record } });
+    setPerfTempRecord((prev) => { return { ...prev, [index]: record } });
   }
   //개별화 부분 text 변경 시
   const handleInputOnChange = (event, index, subIndex) => {
@@ -196,11 +206,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     let result = matches?.map(match => match.slice(3, -3).trim()) ?? []
     setExtractResult((prev) => { return { ...prev, [index]: result } })
   }
-  //성취도 셀렉터 option
-  const getAchivOptionList = () => {
-    const achivOptionList = achivList.map((achiv, index) => ({ label: achiv, value: index }));
-    return achivOptionList
-  }
+
   //ocr 셀렉터 option
   const getOcrOptionList = () => {
     const ocrOptionList = ocrList.map((ocrText, index) => ({ label: `페이지 ${index + 1}: ${ocrText.slice(0, 10)}...`, value: ocrText }));
@@ -342,10 +348,10 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
           options={optionList}
           placeholder="활동을 선택해주세요."
         />
-        {selectedActi?.perfRecordList && <Select
+        {selectedActi && <Select
           onChange={(event) => { handleAchivOnChange(event) }}
-          options={getAchivOptionList()}
-          placeholder="성취도를 선택해주세요."
+          options={getRecOptionList()}
+          placeholder="일괄 입력할 문구를 선택하세요."
         />}
       </SubNav>
       {selectedActi && <SubNav styles={{ padding: "5px", }}>
@@ -372,30 +378,55 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
             <Header>학번</Header>
             <Header>이름</Header>
             <Header>성취도</Header>
+            <Header>문구</Header>
+            <Header>반복</Header>
             <Header>개별화</Header>
             <Header>문구</Header>
             <Header>바이트</Header>
           </TableHeaderWrapper>
           {(studentList?.length > 0) && studentList.map((student, index) => {
-            const key = student.id
-            const studentNumber = student.studentNumber
-            const name = (student.writtenName || "미등록")
+            const key = student.id;
+            const studentNumber = student.studentNumber;
+            const name = (student.writtenName || "미등록");
             return <React.Fragment key={key}>
               <GridItem>{index + 1}</GridItem>     {/* 연번 */}
               <GridItem>{studentNumber}</GridItem> {/* 학번 */}
               <GridItem>{name}</GridItem>          {/* 이름 */}
               <GridItem> {/* 성취도 */}
-                {selectedActi?.perfRecordList && <FormWrapper>{achivList.map((val, subIndex) => {
-                  return <label key={`${index}${subIndex}`}>
-                    <input
-                      type="radio"
-                      ref={(ele) => radioRef.current[`${index}-${val}`] = ele}
-                      name="achivement"
-                      value={val}
-                      onChange={() => { handleRadioOnChange(index, subIndex) }}
-                      disabled={gptRes === "loading"} />
-                    {val}</label>
-                })}</FormWrapper>}
+                {selectedActi?.perfRecordList && <RadioWrapper>{achivList.map((achiv, subIndex) => {
+                  return <label key={`a${index}${subIndex}`}><input type="radio" ref={(ele) => radioRef.current[`${index}-${achiv}`] = ele}
+                    id='achiv'
+                    name="record"
+                    value={achiv}
+                    onChange={(event) => { handleRadioOnChange(event, index, subIndex) }}
+                    disabled={gptRes === "loading"} /> {achiv}</label>
+                })}</RadioWrapper>}
+              </GridItem>
+              <GridItem> {/* 랜덤 */}
+                {selectedActi && <RadioWrapper>
+                  <label ><input type="radio" id='random' name="record"
+                    value={selectedActi.record}
+                    onChange={(event) => { handleRadioOnChange(event, index, undefined) }}
+                    disabled={gptRes === "loading"} /> 기본문구</label>
+                  {selectedActi.extraRecordList?.map((item, subIndex) => {
+                    return <label key={`r${index}${subIndex}`}><input
+                      type="radio" id='random' name="record"
+                      value={item}
+                      onChange={(event) => { handleRadioOnChange(event, index, subIndex) }}
+                      disabled={gptRes === "loading"} /> {`랜덤 ${subIndex + 1}`}</label>
+                  })}</RadioWrapper>}
+              </GridItem>
+              <GridItem> {/* 반복 */}
+                {selectedActi && <RadioWrapper>
+                  {selectedActi.repeatInfoList?.map((item, subIndex) => {
+                    const { times, record } = item;
+                    return <label key={`r${index}${subIndex}`}><input
+                      type="radio" id='repeat' name="record"
+                      value={record}
+                      onChange={(event) => { handleRadioOnChange(event, index, subIndex) }}
+                      disabled={gptRes === "loading"} /> {`${times}회 반복`}</label>
+                  })}
+                </RadioWrapper>}
               </GridItem>
               {/* 개별화 */}
               <GridItem>
@@ -450,7 +481,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
 const GridContainer = styled.div`
   margin: 20px auto;
   display: grid;
-  grid-template-columns: 70px 100px 100px 120px 300px 600px 70px;
+  grid-template-columns: 70px 100px 100px 120px 120px 120px 300px 600px 70px;
   justify-content: center;
 `
 const Row = styled.div`
@@ -490,8 +521,9 @@ const GridItem = styled.div`
     text-align: left;
   }
 `
-const FormWrapper = styled.form`
+const RadioWrapper = styled.div`
   display: flex;
+  flex-direction: column;
   gap: 10px;
 `
 const ExtractWrapper = styled.div`
@@ -522,6 +554,7 @@ const Textarea = styled.textarea`
   width: 100%;
   border: none;
   border-radius: 10px;
-  height: 150px;
+  min-height: 150px;
+  height: 100%;
 `
 export default PerfModal
