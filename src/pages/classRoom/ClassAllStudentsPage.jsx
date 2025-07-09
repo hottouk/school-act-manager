@@ -52,9 +52,9 @@ const ClassAllStudents = () => {
     setThisModifying(key);
     setStudentList((prev) => {
       const list = [...prev];
-      const { actList } = list[index];
+      let { actList } = list[index];
       const assignedDate = new Date().toISOString().split('T')[0];
-      actList.push({ title: "임의기록", id: "random" + assignedDate, record: "", uid: user.uid, assignedDate });
+      actList?.push({ title: "임의기록", id: "random" + assignedDate, record: "", uid: user.uid, assignedDate });
       return list
     })
   }
@@ -64,10 +64,19 @@ const ClassAllStudents = () => {
     setStudentList((prev) => {
       const list = [...prev];
       const { actList } = list[index];
-      actList.splice(actList.length - 1, 1);
+      actList?.splice(actList.length - 1, 1);
       return list
     })
   }
+  //추가 버튼
+  const handleNewOnClick = (key, index) => {
+    const { id: petId } = _studentList[index];
+    const assignedDate = new Date().toISOString().split('T')[0];
+    const newActi = { title: "임의기록", id: "random" + assignedDate, record: "", uid: user.uid, assignedDate };
+    updatePetInfo(classId, petId, { actList: [newActi] });
+    setThisModifying(key);
+  }
+
   //활동 문구 변경
   const handleActiRecordOnChage = (event, index, subIndex) => {
     setStudentList((prev) => {
@@ -150,7 +159,7 @@ const ClassAllStudents = () => {
             <GridItem style={{ justifyContent: "flex-start" }}>
               {!isModifying && accRecord}
               {isModifying && <Column style={{ width: "100%", gap: "5px" }}>
-                {actList.map((acti, actiIndex) => {
+                {actList?.map((acti, actiIndex) => {
                   const { record, id } = acti;
                   return <Textarea key={actiIndex + id}
                     placeholder="이 곳에 새로운 활동을 기록하세요"
@@ -161,10 +170,12 @@ const ClassAllStudents = () => {
             </GridItem>
             <GridItem>{bytes}</GridItem>        {/* 바이트 */}
             <GridItem>
-              {(!isModifying && user.userStatus === "master") && <SmallBtn id="modi_btn" btnOnClick={() => { handleEditOnClick(key, index); }} btnName="수정" btnColor="#3454d1" hoverBtnColor="blue" />}
-              {isModifying && <BtnWrapper> <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(index); }} btnName="저장" btnColor="#3454d1" hoverBtnColor="blue" />
+              {(!isModifying && user.userStatus === "master" && actList) && <SmallBtn btnOnClick={() => { handleEditOnClick(key, index); }} btnColor="#3454d1" hoverBtnColor="blue">수정</SmallBtn>}
+              {(!isModifying && !actList) && <SmallBtn btnOnClick={() => { handleNewOnClick(key, index); }} btnColor="#3454d1" hoverBtnColor="blue">추가</SmallBtn>}
+              {isModifying && <BtnWrapper>
+                <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(index); }} btnName="저장" btnColor="#3454d1" hoverBtnColor="blue" />
                 <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(index); }} hoverBtnColor="blue">섞기</SmallBtn>
-                <SmallBtn btnOnClick={() => { handleCacncelOnClick(key, index) }} btnColor="#9b0c24" hoverBtnColor="red">취소</SmallBtn>
+                <SmallBtn btnOnClick={() => { handleCacncelOnClick(key, index); }} btnColor="#9b0c24" hoverBtnColor="red">취소</SmallBtn>
               </BtnWrapper>
               }
             </GridItem>

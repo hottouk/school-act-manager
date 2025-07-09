@@ -185,8 +185,8 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   }
   //개별화 틀 클릭
   const handlePersonalizeOnClick = (index) => {
-    let template = '{/*개별 변경 사항을 입력하세요*/}';
-    let textarea = textareaRef.current
+    const template = '{/*개별 변경 사항을 입력하세요*/}';
+    const textarea = textareaRef.current
     // 현재 커서 위치 가져오기
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
