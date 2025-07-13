@@ -1,15 +1,16 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const MidBtn = (props) => {
+const MidBtn = ({ id, onClick, btnColor, fontColor, hoverBtnColor, children, disabled }) => {
   return (
     <StyledBtn
-      id={props.id}
-      onClick={props.onClick}
-      $backgroundColor={props.btnColor || "#3454d1"}
-      $fontColor={props.fontColor || "#fff"}
-      $hoverBackgroundColor={props.hoverBtnColor || "#1366d6"}
-    >{props.children || "샘플"}</StyledBtn>
+      id={id}
+      onClick={onClick}
+      disabled={disabled || false}
+      $backgroundColor={btnColor || "#3454d1"}
+      $fontColor={fontColor || "#fff"}
+      $hoverBackgroundColor={hoverBtnColor || "#1366d6"}
+    >{!disabled && (children || "샘플")}</StyledBtn>
   )
 }
 

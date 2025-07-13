@@ -3,7 +3,6 @@ import styled from 'styled-components'
 //이미지
 import iconImg from '../../../image/icon/like_icon.png'
 import unknownIcon from '../../../image/icon/unkown_icon.png'
-import recycleIcon from '../../../image/icon/recycle_icon.png'
 //생성(250118)
 const CardListItem = ({ item, onClick, type, styles }) => {
   const hoverColor = styles?.hoverColor
@@ -32,16 +31,6 @@ const CardListItem = ({ item, onClick, type, styles }) => {
           <h5 style={{ color: "#3454d1" }}>{item.grade}</h5><span>학년</span>
           <h5 style={{ color: "#3454d1" }}>{item.classNumber}</h5><span>반</span></Row>
         <p>{item.intro}</p></>}
-      {/* 엑티비티 */}
-      {type === "subjActi" && <>
-        <Title style={{ color: "#3454d1" }} >{item.title}</Title>
-        <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
-        <Row style={{ height: "41px", gap: "5px", justifyContent: "flex-end" }}>
-          {item.repeatInfoList && <StyledIconImg alt='반복형' src={recycleIcon} />}
-          <StyledIconImg src={iconImg} alt={"받은좋아요"} />
-          <p style={{ margin: "4px 0" }}>{item.likedCount ? item.likedCount : 0}</p>
-        </Row>
-        <Row style={{ justifyContent: "flex-end" }}><MadeByTagText style={{ backgroundColor: "#3454d1b3" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</MadeByTagText></Row></>}
       {/* 업어온 활동 */}
       {type === "copiedActi" && <>
         <Title style={{ color: "#FF69B4" }} >{item.title}</Title>

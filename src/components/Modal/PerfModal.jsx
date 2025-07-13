@@ -30,40 +30,27 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   const [achivList] = useState(["상", "중", "하", "최하"]);
   //pdf
   const { uploadFile, findFile } = useFireStorage();
-  const radioRef = useRef({});
-  const inputRef = useRef({});
   const inputFileRef = useRef({});
   const { getByteLengthOfString } = useGetByte();
   const { writePerfRecDataOnDB } = useAcc();
   const { askPersonalizeOnTyping, translateEngtoKorean, askPersonalizeOnKeywords, gptRes, gptProgress, gptAnswer } = useChatGpt();
-
-  //gpt answer 임시 구분.
+  //gpt answer
   const [isTranslate, setIsTranslate] = useState(false);
-  useEffect(() => {//★★★//
-    if (isTranslate) { setStudentOcr((prev) => ({ ...prev, [gptLoadingIndex]: gptAnswer })); }
-    else { setPerfRecord((prev) => ({ ...prev, [gptLoadingIndex]: gptAnswer })); }
-    setGptLoadingIndex(null);
-    setIsTranslate(false);
-  }, [gptAnswer])
+  useEffect(() => { bindGptAnswer(); }, [gptAnswer]);
   //수행 문구
-  const [perfTempRecord, setPerfTempRecord] = useState(); //todo 제거하기
-  const [perfRecord, setPerfRecord] = useState();
+  const [perfRecord, setPerfRecord] = useState(null);
   useEffect(() => {
-    if (perfTempRecord) {
-      let lastNumber = Object.keys(perfTempRecord).length
-      for (let i = 0; i < lastNumber; i++) {
-        let rec = perfTempRecord[i]
-        extractContent(rec, i)
-      }
-    }
-  }, [perfTempRecord]);
-  const [extractResult, setExtractResult] = useState(null);
-  const [studentOcr, setStudentOcr] = useState();
-  //개별화 대체
+    if (!perfRecord) return;
+    const last = Object.keys(perfRecord).length;
+    for (let i = 0; i < last; i++) { extractContent(perfRecord[i], i); }
+  }, [perfRecord]);
+  //개별화
+  const [personalValue, setPersoanlValue] = useState(null);
+  const [extractedList, setExtractedList] = useState(null);
   const [replaceList, setReplaceList] = useState({});
   //pdf OCR
   const [pdfFile, setPdfFile] = useState(null);
-  const [gptLoadingIndex, setGptLoadingIndex] = useState(null);
+  const [thisIndex, setThisIndex] = useState(null);
   const [loadingStage, setLoadingStage] = useState(null);
   const [ocrList, setOcrList] = useState([]);
   const [selectedOcr, setSelectedOcr] = useState(null);
@@ -73,11 +60,16 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   //초기화
   const initData = () => {
     setPerfRecord(createMatrix(studentList, ''));
-    setPerfTempRecord(createMatrix(studentList, ''));
-    setExtractResult(createMatrix(studentList, []));
-    setStudentOcr(createMatrix(studentList, ''));
+    setPersoanlValue(createMatrix(studentList, ''));
+    setExtractedList(createMatrix(studentList, []));
     setSelectedActi(null);
     setReplaceList({});
+  }
+  //이중 객체 생성
+  const createMatrix = (list, initVal) => {
+    let matrix = {}
+    list?.forEach((_, index) => matrix[index] = initVal);
+    return matrix
   }
   //활동 셀렉터 옵션
   const renderOptions = () => {
@@ -93,7 +85,6 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
         const actiList = student.actList?.filter((acti) => acti.id === perfId) ?? null;
         const record = actiList?.length > 0 ? actiList[0].record : '';
         setSelectedActi(event);
-        setPerfTempRecord((prev) => { return { ...prev, [i]: record } });
         setPerfRecord((prev) => { return { ...prev, [i]: record } });
       })
     }
@@ -117,14 +108,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     const lastNumber = Object.keys(perfRecord).length;
     for (let i = 0; i < lastNumber; i++) {
       setPerfRecord((prev) => { return { ...prev, [i]: record } });
-      setPerfTempRecord((prev) => { return { ...prev, [i]: record } });
     }
-  }
-  //이중 객체 생성
-  const createMatrix = (list, initVal) => {
-    let matrix = {}
-    list?.forEach((_, index) => matrix[index] = initVal);
-    return matrix
   }
   //라디오 버튼
   const handleRadioOnChange = (event, index, subIndex) => {
@@ -137,9 +121,16 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
         record = event.target.value;
     }
     setPerfRecord((prev) => { return { ...prev, [index]: record } });
-    setPerfTempRecord((prev) => { return { ...prev, [index]: record } });
   }
-  //개별화 부분 text 변경 시
+  //gpt 값 받아오기
+  const bindGptAnswer = () => {
+    if (gptAnswer === '') return
+    if (isTranslate) { setPersoanlValue((prev) => ({ ...prev, [thisIndex]: gptAnswer })); }
+    else { setPerfRecord((prev) => ({ ...prev, [thisIndex]: gptAnswer })); }
+    setThisIndex(null);
+    setIsTranslate(false);
+  }
+  //개별화 input
   const handleInputOnChange = (event, index, subIndex) => {
     const { value } = event.target;
     setReplaceList((prev) => {
@@ -152,18 +143,26 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   //변경 버튼
   const handleChangeBtnOnClick = (index) => {
     const text = perfRecord[index];
-    const altList = (replaceList[index]);
+    const altList = replaceList[index];
     const replaced = replacePlaceholders(text, altList);
     setPerfRecord((prev) => { return { ...prev, [index]: replaced } });
   }
-  //GPT 버튼
+  //개별화 부분 변경
+  const replacePlaceholders = (text, replaceList) => {
+    if (!replaceList) { window.alert("빈칸을 채워주세요.") } else {
+      let index = 0;
+      return text.replace(/\{\/\*.*?\*\/\}/g, () => replaceList[index++] || '');
+    }
+  }
+  //개별화 gpt
   const handleChangeGptBtnOnClick = (index) => {
     const record = perfRecord[index];
     const keywords = replaceList[index].join(',');
-    setGptLoadingIndex(index); //스피너 작동
-    askPersonalizeOnKeywords({ record, keywords });
+    setLoadingStage("⏳통합중...");
+    setThisIndex(index);
+    askPersonalizeOnKeywords({ record, keywords }).finally(() => { setLoadingStage(null); });
   }
-  //개별화 체크
+  //체크 개별화 빈칸
   const checkReplaceHolder = () => {
     let result = "pass";
     let keywordList = Object.entries(replaceList);
@@ -171,7 +170,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     else {
       keywordList = keywordList.map((item) => {
         const index = item[0];
-        for (let i = 0; i < extractResult[index].length; i++) { if (!item[1][i]) result = "notEqual" }
+        for (let i = 0; i < extractedList[index].length; i++) { if (!item[1][i]) result = "notEqual" }
         const record = perfRecord[index];
         const keywords = item[1].join(',');
         return { index, record, keywords }
@@ -179,34 +178,89 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     }
     return { keywordList, result }
   }
-  //전체 gpt
-  const getAllPersonalizedOnClick = async () => {
+  //전체 개별화 gpt
+  const handleAllPersonalizedOnClick = () => {
     const { keywordList, result } = checkReplaceHolder();
-    if (result === "noInput") { alert("입력 값이 없습니다.") }
-    else if (result === "notEqual") { alert("빈 칸이 있어요. 채워주세요.") }
+    if (result === "noInput") { alert("입력 값이 없습니다."); }
+    else if (result === "notEqual") { alert("빈 칸이 있어요. 채워주세요."); }
     else {
-      askPersonalizeOnKeywords({ keywordList }).then((answerList) => {
-        for (const answer of answerList) {
-          const { answer: gptAnswer, index } = answer;
-          setPerfRecord((prev) => ({ ...prev, [index]: gptAnswer }));
-        }
-      });
+      setLoadingStage("⏳반복중...");
+      askPersonalizeOnKeywords({ keywordList })
+        .then((answerList) => { bindGptListData(answerList, setPerfRecord); })
+        .finally(() => { setLoadingStage(null); });
     }
   }
-  //개별화 부분 대체
-  const replacePlaceholders = (text, replaceList) => {
-    if (!replaceList) { window.alert("빈칸을 채워주세요.") } else {
-      let index = 0;
-      return text.replace(/\{\/\*.*?\*\/\}/g, () => replaceList[index++] || '');
+  //개별화 문구
+  const handlePersonalTextOnChange = (event, index) => {
+    const { value } = event.target;
+    setPersoanlValue((prev) => ({ ...prev, [index]: value }));
+  }
+  //gpt 번역
+  const handleTranslateOnClick = (index) => {
+    setIsTranslate(true);
+    setThisIndex(index);
+    setLoadingStage("⏳번역중...");
+    const text = personalValue[index];
+    translateEngtoKorean({ text }).finally(() => { setLoadingStage(null); });
+  }
+  //전체 번역
+  const handleAllTranslateOnClick = () => {
+    let textList = Object.entries(personalValue);
+    textList = textList.filter((item) => { return item[1] !== '' }).map((item) => ({ index: item[0], text: item[1] }));
+    if (textList.length !== 0) {
+      setLoadingStage("⏳반복중...");
+      translateEngtoKorean({ textList })
+        .then((answerList) => { bindGptListData(answerList, setPersoanlValue) })
+        .finally(() => { setLoadingStage(null); });
+    }
+    else { alert("번역할 텍스트가 없습니다."); }
+  }
+  //gpt ocr + 문구 적용
+  const handleOcrGptOnClilck = (index) => {
+    if (perfRecord[index] !== '' && personalValue[index] !== '') {
+      setThisIndex(index);
+      setLoadingStage("⏳통합중...");
+      askPersonalizeOnTyping({ record: perfRecord[index], report: personalValue[index] }).finally(() => { setLoadingStage(null); });
+    } else { alert("활동 문구가 없습니다."); }
+  }
+  //문구 빈칸 체크
+  const checkRecordHolder = () => {
+    let result = "pass";
+    let reportList = Object.entries(personalValue).filter((item) => item[1] !== '');
+    if (reportList.length === 0) result = "noData";
+    reportList = reportList.filter((item) => item[1] !== '').map((item) => {
+      const index = item[0];
+      const record = perfRecord[index];
+      if (record === '') result = "noInput";
+      return { index: item[0], report: item[1], record }
+    });
+    return { reportList, result }
+  }
+  //전체 gpt ocr + 문구 적용
+  const handleAllOcrGptOnClilck = () => {
+    const { reportList, result } = checkRecordHolder();
+    if (result === "noInput") { alert("문구가 빈 곳이 있습니다."); }
+    else if (result === "noData") { alert("통합할 데이터가 없습니다."); }
+    else {
+      setLoadingStage("⏳반복중...");
+      askPersonalizeOnTyping({ reportList })
+        .then((answerList) => { bindGptListData(answerList, setPerfRecord) })
+        .finally(() => { setLoadingStage(null); });
+    }
+  }
+  //gpt 전체 데이터 바인딩
+  const bindGptListData = (list, setter) => {
+    for (const item of list) {
+      const { answer: gptAnswer, index } = item;
+      setter((prev) => ({ ...prev, [index]: gptAnswer }));
     }
   }
   //특정 기호, {/*  */} 사이의 문자열 추출
   const extractContent = (text, index) => {
     let matches = text.match(/\{\/\*\s*(.*?)\s*\*\/\}/g); //정규식
     let result = matches?.map(match => match.slice(3, -3).trim()) ?? []
-    setExtractResult((prev) => { return { ...prev, [index]: result } })
+    setExtractedList((prev) => { return { ...prev, [index]: result } })
   }
-
   //ocr 셀렉터 option
   const getOcrOptionList = () => {
     const ocrOptionList = ocrList.map((ocrText, index) => ({ label: `페이지 ${index + 1}: ${ocrText.slice(0, 10)}...`, value: ocrText }));
@@ -214,12 +268,11 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   }
   //최종 바이트 get
   const getByte = (index) => {
-    const text = perfRecord[index]
+    const text = perfRecord[index];
     if (typeof (text) == "string") {
       return getByteLengthOfString(text)
     } else { return 0 }
   }
-
   //------OCR------------------------------------------------  
   //pdf 선택 버튼
   const handleFileOnClick = () => {
@@ -292,31 +345,14 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   };
   //ocr 삽입
   const handleOcrInsertOnClick = (index) => {
-    setStudentOcr((prev) => { return { ...prev, [index]: selectedOcr.value } });
+    if (!selectedOcr) return;
+    setPersoanlValue((prev) => { return { ...prev, [index]: selectedOcr.value } });
     setSelectedOcr(null);
-  }
-  //ocr text 수정
-  const handleOcrTextOnChange = (event, index) => {
-    const { value } = event.target;
-    setStudentOcr((prev) => { return { ...prev, [index]: value } })
   }
   //문구 text 수정
   const handlePerfRecordOnChange = (event, index) => {
     const { value } = event.target;
     setPerfRecord((prev) => { return { ...prev, [index]: value } });
-  }
-  //ocr 제거
-  const handleOcrRemoveOnClick = (index) => { setStudentOcr((prev) => { return { ...prev, [index]: '' } }) }
-  //gpt ocr + 문구 적용
-  const handleOcrGptOnClilck = (index) => {
-    setGptLoadingIndex(index); //스피너 작동
-    askPersonalizeOnTyping(perfRecord[index], studentOcr[index])
-  }
-  //gpt 번역
-  const handleTranslateOnClick = (index) => {
-    setIsTranslate(true);
-    setGptLoadingIndex(index); //스피너 작동
-    translateEngtoKorean(studentOcr[index]);
   }
   //최종 저장 확인 버튼
   const saveBtnOnClick = () => {
@@ -333,7 +369,6 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     initData();
     onHide();
   }
-
   return (
     <Modal
       show={show}
@@ -348,29 +383,36 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
           options={optionList}
           placeholder="활동을 선택해주세요."
         />
-        {selectedActi && <Select
-          onChange={(event) => { handleAchivOnChange(event) }}
-          options={getRecOptionList()}
-          placeholder="일괄 입력할 문구를 선택하세요."
-        />}
-      </SubNav>
-      {selectedActi && <SubNav styles={{ padding: "5px", }}>
-        {gptRes !== "loading" && <>
-          <MidBtn type="button" onClick={getAllPersonalizedOnClick}>전체 개별화</MidBtn>
+        {selectedActi && <>
+          <Select
+            onChange={(event) => { handleAchivOnChange(event) }}
+            options={getRecOptionList()}
+            placeholder="일괄 입력할 문구를 선택하세요." />
           <MidBtn type="button" onClick={handleFileOnClick}>📁 PDF 선택</MidBtn>
-          <span style={{ marginTop: "5px" }}>{loadingStage || pdfFile?.name || "파일 없음"}</span>
+          <span style={{ marginTop: "5px" }}>{pdfFile?.name || "파일 없음"}</span>
+          {/* 안보이는 업로드 버튼 */}
+          <input type='file' ref={inputFileRef} onChange={handleFileOnChange} accept="application/pdf" style={{ display: "none" }} />
+          {(pdfFile && ocrStage === 0) && <SmallBtn onClick={handleUploadOnClick} disabled={loadingStage !== null}>업로드</SmallBtn>}{/* 업로드 부속 */}
+          {ocrStage === 1 && <SmallBtn onClick={postExtractText} disabled={loadingStage !== null}>추출</SmallBtn>}
+          {ocrStage === 2 && <SmallBtn onClick={handleGetOcrResults} disabled={loadingStage !== null}>다운로드</SmallBtn>}
+          {(ocrList?.length !== 0 && ocrStage === 3) && <Select
+            onChange={(event) => { setSelectedOcr(event) }}
+            options={getOcrOptionList()}
+            placeholder="ocr 결과를 선택해주세요." />}
         </>}
-        {gptRes === "loading" && <Row style={{ width: "30%" }}><AnimatedProgressBar gptProgress={gptProgress} /></Row>}
-        <input type='file' ref={inputFileRef} onChange={handleFileOnChange} accept="application/pdf" style={{ display: "none" }} />
-        {(pdfFile && ocrStage === 0) && <MidBtn onClick={handleUploadOnClick}>업로드</MidBtn>}
-        {ocrStage === 1 && <MidBtn onClick={postExtractText}>추출</MidBtn>}
-        {ocrStage === 2 && <MidBtn onClick={handleGetOcrResults}>다운로드</MidBtn>}
-        {(ocrList?.length !== 0 && ocrStage === 3) && <Select
-          onChange={(event) => { setSelectedOcr(event) }}
-          options={getOcrOptionList()}
-          placeholder="ocr 결과를 선택해주세요." />}
-        {loadingStage && <Spinner />}
-      </SubNav>}
+      </SubNav>
+      <SubNav styles={{ padding: "5px", }}>
+        {!loadingStage && <>
+          <MidBtn type="button" onClick={handleAllPersonalizedOnClick}>전체 개별화</MidBtn>
+          <MidBtn type="button" onClick={handleAllTranslateOnClick}>전체 번역</MidBtn>
+          <MidBtn type="button" onClick={handleAllOcrGptOnClilck}>전체 통합</MidBtn>
+        </>}
+        {loadingStage && <>
+          <span style={{ marginTop: "5px" }}>{loadingStage}</span>
+          <Spinner />
+          {loadingStage === "⏳반복중..." && <Row style={{ width: "30%" }}><AnimatedProgressBar gptProgress={gptProgress} /></Row>}
+        </>}
+      </SubNav>
       <Modal.Body>
         <GridContainer>
           <TableHeaderWrapper>
@@ -394,7 +436,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
               <GridItem>{name}</GridItem>          {/* 이름 */}
               <GridItem> {/* 성취도 */}
                 {selectedActi?.perfRecordList && <RadioWrapper>{achivList.map((achiv, subIndex) => {
-                  return <label key={`a${index}${subIndex}`}><input type="radio" ref={(ele) => radioRef.current[`${index}-${achiv}`] = ele}
+                  return <label key={`a${index}${subIndex}`}
+                  ><input type="radio"
                     id='achiv'
                     name="record"
                     value={achiv}
@@ -430,36 +473,38 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
               </GridItem>
               {/* 개별화 */}
               <GridItem>
-                <ExtractWrapper>
-                  {extractResult[index]?.length > 0 && extractResult[index].map((result, subIndex) => {
-                    //place홀더 개수에 따라 input 생성
-                    return (<React.Fragment key={`${result}${subIndex}`}>
-                      <p>{result}</p>
-                      <TextInput
-                        type="text"
-                        ref={(ele) => inputRef.current[`${index}-${subIndex}`] = ele}
-                        onChange={(event) => { handleInputOnChange(event, index, subIndex) }}
-                        disabled={gptRes === "loading"}
-                      />
-                    </React.Fragment>)
-                  })}
-                  {(extractResult[index]?.length > 0 && !gptLoadingIndex) && <Row style={{ gap: "10px" }}>
-                    <SmallBtn onClick={() => { handleChangeBtnOnClick(index) }} disabled={gptRes === "loading"}>변경</SmallBtn>
-                    <SmallBtn onClick={() => { handleChangeGptBtnOnClick(index) }} disabled={gptRes === "loading"}>GPT</SmallBtn>
-                  </Row>}
-                  {(studentOcr[index] !== '' && !gptLoadingIndex) && <>
-                    <Textarea
-                      value={studentOcr[index]}
-                      onChange={(event) => { handleOcrTextOnChange(event, index) }} />
-                    {!gptLoadingIndex && <Row style={{ gap: "10px" }}>
-                      <MidBtn onClick={() => { handleOcrGptOnClilck(index) }}>통합</MidBtn>
-                      <MidBtn onClick={() => { handleTranslateOnClick(index) }}>한국말로</MidBtn>
-                      <MidBtn onClick={() => { handleOcrRemoveOnClick(index) }}>제거</MidBtn>
+                {(extractedList[index]?.length > 0)
+                  ? <ExtractWrapper>
+                    {extractedList[index].map((result, subIndex) => {
+                      //place홀더 개수에 따라 input 생성
+                      return (<React.Fragment key={`${result}${subIndex}`}>
+                        <p>{result}</p>
+                        <InputText
+                          type="text"
+                          onChange={(event) => { handleInputOnChange(event, index, subIndex) }}
+                          disabled={gptRes === "loading"} />
+                      </React.Fragment>)
+                    })}
+                    {!thisIndex && <Row style={{ gap: "10px", justifyContent: "center" }}>
+                      <SmallBtn onClick={() => { handleChangeBtnOnClick(index) }} disabled={gptRes === "loading"}>변경</SmallBtn>
+                      <SmallBtn onClick={() => { handleChangeGptBtnOnClick(index) }} disabled={gptRes === "loading"}>통합</SmallBtn>
                     </Row>}
-                  </>}
-                  {gptLoadingIndex === index && <Row style={{ marginTop: "10px" }}><Spinner /></Row>}
-                  {(selectedOcr && perfRecord[index] !== '') && <Row><MidBtn onClick={() => { handleOcrInsertOnClick(index) }}>OCR 추가</MidBtn></Row>}
-                </ExtractWrapper>
+                  </ExtractWrapper>
+                  : <Column>
+                    <Textarea
+                      $clickable={selectedOcr ? true : false}
+                      value={personalValue[index]}
+                      onChange={(event) => { handlePersonalTextOnChange(event, index); }}
+                      onClick={() => { handleOcrInsertOnClick(index); }}
+                      disabled={gptRes === "loading"}
+                    />
+                    {(personalValue[index] !== '') &&
+                      <Row style={{ gap: "10px", justifyContent: "center", marginTop: "10px" }}>
+                        <SmallBtn onClick={() => { handleTranslateOnClick(index) }} disabled={gptRes === "loading"}>번역</SmallBtn>
+                        <SmallBtn onClick={() => { handleOcrGptOnClilck(index) }} disabled={gptRes === "loading"}>통합</SmallBtn>
+                      </Row>}
+                  </Column>
+                }
               </GridItem>
               {/* 문구 */}
               <GridItem><Textarea value={perfRecord[index]} onChange={(event) => { handlePerfRecordOnChange(event, index) }} disabled={gptRes === "loading"} /></GridItem>
@@ -481,12 +526,15 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
 const GridContainer = styled.div`
   margin: 20px auto;
   display: grid;
-  grid-template-columns: 70px 100px 100px 120px 120px 120px 300px 600px 70px;
+  grid-template-columns: 70px 100px 100px 120px 120px 120px 400px 600px 70px;
   justify-content: center;
 `
 const Row = styled.div`
   display: flex;
-  justify-content: center;
+`
+const Column = styled(Row)`
+  flex-direction: column;
+  height: 100%;
 `
 // lastChild의 범위를 명확하게 하기 위함.
 const TableHeaderWrapper = styled.div` 
@@ -499,15 +547,8 @@ const Header = styled.div`
   padding: 10px;
   font-weight: bold;
   justify-content: center;
-  &: first-child {
-    border-top-left-radius: 5px;
-  }
-  &: last-child {
-    border-top-right-radius: 5px;
-  }
-`
-const TextInput = styled.input`
-  border: none;
+  &: first-child { border-top-left-radius: 5px;  }
+  &: last-child { border-top-right-radius: 5px;  }
 `
 const GridItem = styled.div`
   background-color: #efefef;
@@ -516,10 +557,10 @@ const GridItem = styled.div`
   border: 1px solid #ddd;
   border-radius: 5px;
   text-align: center;
-  
-  &.left-align {
-    text-align: left;
-  }
+  &.left-align { text-align: left; }
+`
+const InputText = styled.input`
+  border: none;
 `
 const RadioWrapper = styled.div`
   display: flex;
@@ -552,9 +593,11 @@ const BtnWrapper = styled.div`
 `
 const Textarea = styled.textarea`
   width: 100%;
+  height: 100%;
   border: none;
   border-radius: 10px;
   min-height: 150px;
-  height: 100%;
+  background-color: ${({ $clickable }) => { return $clickable ? "rgba(52,84,209,0.3)" : "white" }};
+  cursor: ${({ $clickable }) => { return $clickable ? "pointer" : "auto" }};;
 `
 export default PerfModal
