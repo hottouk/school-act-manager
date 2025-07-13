@@ -5,8 +5,14 @@ import styled from 'styled-components'
 import CardListItem from './ListItem/CardListItem'
 import EmptyResult from '../EmptyResult'
 import PetImg from '../PetImg'
+//아이콘
+import iconImg from '../../image/icon/like_icon.png'
+import recycleIcon from '../../image/icon/recycle_icon.png'
+import { useSelector } from 'react-redux'
+
 //생성(240109) -> onClick 로직 분리(250122)
 const CardList = ({ dataList, type, onClick, selected }) => {
+  const user = useSelector(({ user }) => user)
   const navigate = useNavigate();
 
   //------카드 랜더링----------------------------------------------- 
@@ -56,6 +62,25 @@ const CardList = ({ dataList, type, onClick, selected }) => {
       </Row>
     </Card>
   }
+  //과목 활동 카드
+  const SubjectActiCard = ({ item, onClick }) => {
+    const { title, subject, subjDetail, repeatInfoList, likedCount, madeBy, uid } = item;
+    const maskedName = (name) => {
+      if (!uid || uid === user.uid) return name
+      if (name.length < 2) return name
+      return name[0] + '○' + name.slice(2);
+    };
+    return <Card onClick={() => { onClick(item); }}>
+      <Title style={{ color: "#3454d1" }} >{title}</Title>
+      <p style={{ margin: "5px 0" }}>{subject}-{subjDetail ? subjDetail : ''}</p>
+      <Row style={{ height: "41px", gap: "5px", justifyContent: "flex-end" }}>
+        {repeatInfoList && <IconImg alt='반복형' src={recycleIcon} />}
+        <IconImg src={iconImg} alt={"받은좋아요"} />
+        <p style={{ margin: "4px 0" }}>{likedCount ? likedCount : 0}</p>
+      </Row>
+      <Row style={{ justifyContent: "flex-end" }}><TagText style={{ backgroundColor: "#3454d1b3" }}>by {madeBy ? `${maskedName(madeBy)} 선생님` : "어떤 선생님"}</TagText></Row>
+    </Card >
+  }
 
   return (
     <Container>
@@ -77,9 +102,7 @@ const CardList = ({ dataList, type, onClick, selected }) => {
           return (<CardListItem key={item.id} item={item} onClick={onClick} type={"homeroom"} />)
         })}
         {/* 교과활동 */}
-        {type === "activity" && dataList?.map((item) => {
-          return (<CardListItem key={item.id} item={item} onClick={onClick} type={"subjActi"} />)
-        })}
+        {type === "activity" && dataList?.map((item) => (<SubjectActiCard item={item} onClick={onClick} />))}
         {/* 업어온 활동 */}
         {type === "copiedActi" && dataList?.map((item) => {
           return (<CardListItem key={item.id} item={item} onClick={() => { navigate(`/activities/${item.id}`, { state: { acti: item } }) }} type={"copiedActi"} styles={{ hoverColor: "rgba(255, 105, 180, 0.2)" }} />)
@@ -101,55 +124,77 @@ const CardList = ({ dataList, type, onClick, selected }) => {
   )
 }
 const Container = styled.div`
-  border-top: 1px solid rgba(120, 120, 120, 0.5);;
-  border-bottom: 1px solid rgba(120, 120, 120, 0.5);
-  margin: 5px auto 5px;
-  list-style: none;
-  @media screen and (max-width: 767px){
-    flex-direction: column;
+    border-top: 1px solid rgba(120, 120, 120, 0.5);;
+    border-bottom: 1px solid rgba(120, 120, 120, 0.5);
+    margin: 5px auto 5px;
+    list-style: none;
+    @media screen and (max-width: 767px){
+      flex - direction: column;
     align-items: center;
-    padding: 0;  
+    padding: 0;
     border: none;
     border-top: 1px solid #3454d1;
     border-bottom: 1px solid #3454d1;
   }
-`
+    `
 const CardWrapper = styled.ul`
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-`
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    `
 const Card = styled.li`
-  width: 280px;
-  height: 155px;
-  margin: 10px;
-  padding: 15px 25px;
-  border: 1.5px solid  rgb(120, 120, 120, 0.5) ;
-  border-radius: 15px;
-  cursor: pointer;
-  background-color: ${props => props.$backgroundColor || "white"};
-  &: hover {
-    background-color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
+    width: 280px;
+    height: 155px;
+    margin: 10px;
+    padding: 15px 25px;
+    border: 1.5px solid  rgb(120, 120, 120, 0.5) ;
+    border-radius: 15px;
+    cursor: pointer;
+    background-color: ${props => props.$backgroundColor || "white"};
+    &: hover {
+      background - color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
   }
-`
+    `
 const Row = styled.div`
-  display: flex;
-`
+    display: flex;
+    `
 const Column = styled(Row)`
-  flex-direction: column;
-`
+    flex-direction: column;
+    `
 const BasicText = styled.p`
-  margin: 0;
-  text-align: center;
-`
+    margin: 0;
+    text-align: center;
+    `
+const Title = styled.h5`
+    margin: 0 0 8px;
+    font-weight: 700;
+    overflow: hidden;
+    white-space: nowrap;   /* 텍스트를 한 줄로 표시 */
+    text-overflow: ellipsis;
+    `
 const Highlight = styled(BasicText)`
-  color: #3454d1;
-  font-weight: 700;
-  font-size: larger;
-`
+    color: #3454d1;
+    font-weight: 700;
+    font-size: larger;
+    `
 const BigNumber = styled.p`
-  font-size: 110px;
-  text-align: right;
-  color: rgb(52, 84, 209, 0.3);
+    font-size: 110px;
+    text-align: right;
+    color: rgb(52, 84, 209, 0.3);
+    `
+const IconImg = styled.img`
+    width: 30px;
+    height: 30px;
+    margin-bottom: 7px;
+    padding: 1px;
+    border: 1px solid rgb(120, 120, 120, 0.5);
+    border-radius: 30px;
+    `
+const TagText = styled.p`
+  display: inline;
+  color: white;
+  padding: 3px;
+  border-radius: 5px;
+  margin-bottom: 4px
 `
 export default CardList

@@ -106,7 +106,7 @@ const useChatGpt = () => {
   }
   //보고서 키워드 기반 개별화
   const askPersonalizeOnKeywords = async ({ record, keywords, keywordList }) => {
-    const getMessage = (_record, _keywrods) => {
+    const getMessages = (_record, _keywrods) => {
       return [...gptPersonalKeywordsMsg,
       {
         role: "user",
@@ -123,8 +123,8 @@ const useChatGpt = () => {
         반드시 '~음', '~펼침', '~임', '~함', '~됨','~됨'등으로 끝나는 명사형 종결어미를 사용하여 문장을 끝맺어야 함`
       }]
     }
-    if (!keywordList) { await playGpt(getMessage(record, keywords), "o4-mini"); } //개별
-    else {
+    if (!keywordList) { await playGpt(getMessages(record, keywords), "o4-mini"); } //개별
+    else {                                                                        //다수 반복
       const answerList = [];
       const total = keywordList.length;
       setGptProgress({ current: 0, total });
@@ -132,7 +132,7 @@ const useChatGpt = () => {
       for (let i = 0; i < total; i++) {
         const { index, record, keywords } = keywordList[i];
         const completion = await openai.chat.completions.create({
-          messages: getMessage(record, keywords),
+          messages: getMessages(record, keywords),
           model: "gpt-4o-mini",
           temperature: 1.0,
         });
@@ -145,33 +145,75 @@ const useChatGpt = () => {
     } //반복
   }
   //타이핑 기반 개별화
-  const askPersonalizeOnTyping = async (record, report) => {
-    const messages = [...gptPersonalOnReportMsg,
-    {
-      role: "user",
-      content: `기존 문구: ${record}
+  const askPersonalizeOnTyping = async ({ record, report, reportList }) => {
+    const getMessages = (_record, _report) => {
+      return [...gptPersonalOnReportMsg,
+      {
+        role: "user",
+        content: `기존 문구: ${_record}
         아래는 위의 활동을 한 학생이 활동 후에 작성한 결과 보고서입니다.
         
-        활동 보고서: ${report}
+        활동 보고서: ${_report}
         활동 보고서를 핵심만 요약하고 기존 문구와 혼합하여 기존 문구보다 1.2배 분량정도 되는 문구를 작성 바람. 
         기존 문구에 '[]'가 있다면 대괄호를 뺴고 이 부분에 활동 보고서 요약본을 넣어 기존 문구와 유기적으로 연결되도록 작성 바람. 
         단, 결과 보고서는 학생의 손글씨를 기반으로 하였으므로 오타가 있을 수 있음. 오타가 있다면 맥락에 맞게 적절히 수정 바람.
         또한, "학생은~" 과 같은 주어를 사용하면 안됨. "학생은~"을 생략하고 "성실한 수업 태도를 일관되게 보여줌." 로 써주어야 함.
         반드시 '~음', '~펼침', '~임', '~함', '~됨','~됨'등으로 끝나는 명사형 종결어미를 사용하여 문장을 끝맺어야 함`
-    },
-    ]
-    await playGpt(messages, "o4-mini");
+      },
+      ]
+    }
+    if (!reportList) { await playGpt(getMessages(record, report), "o4-mini"); } //개별
+    else {                                                                      //다수 반복
+      const answerList = [];
+      const total = reportList.length;
+      setGptProgress({ current: 0, total });
+      setGptRes("loading");
+      for (let i = 0; i < total; i++) {
+        const { index, report, record } = reportList[i];
+        const completion = await openai.chat.completions.create({
+          messages: getMessages(record, report),
+          model: "o4-mini",
+          temperature: 1.0,
+        });
+        answerList.push({ index, answer: completion.choices[0]?.message?.content || "[응답 없음]" });
+        setGptProgress({ current: i + 1, total }); // ✅ 진행률 업데이트
+      }
+      setGptRes("complete");
+      setGptProgress({ current: 0, total });
+      return answerList
+    }
   }
   //한국말 번역
-  const translateEngtoKorean = async (text) => {
-    const message = [
-      ...gptTranslateMsg,
-      {
-        role: "user",
-        content: `${text},
+  const translateEngtoKorean = async ({ text, textList }) => {
+    const getMessage = (_text) => {
+      return [
+        ...gptTranslateMsg,
+        {
+          role: "user",
+          content: `${_text},
         위의 문장을 자연스러운 한국말로 번역해주세요.`
-      },]
-    await playGpt(message, "o4-mini");
+        }]
+    }
+    if (!textList) { await playGpt(getMessage(text), "o4-mini"); } //개별
+    else {                                                         //다수 반복
+      const answerList = [];
+      const total = textList.length;
+      setGptProgress({ current: 0, total });
+      setGptRes("loading");
+      for (let i = 0; i < total; i++) {
+        const { index, text } = textList[i];
+        const completion = await openai.chat.completions.create({
+          messages: getMessage(text),
+          model: "gpt-4o-mini",
+          temperature: 1.0,
+        });
+        answerList.push({ index, answer: completion.choices[0]?.message?.content || "[응답 없음]" });
+        setGptProgress({ current: i + 1, total }); // ✅ 진행률 업데이트
+      }
+      setGptRes("complete");
+      setGptProgress({ current: 0, total });
+      return answerList
+    }
   }
   //행발
   const askBehavioralOp = async (specList) => {
