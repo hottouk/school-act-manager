@@ -360,7 +360,6 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       if (window.confirm("저장하시겠습니까?")) {
         writePerfRecDataOnDB(studentList, classId, selectedActi, perfRecord);
         initData();
-        onHide();
       }
     } else { window.alert("선택된 수행평가가 없습니다.") }
   }
@@ -515,7 +514,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       </Modal.Body >
       <Modal.Footer>
         <BtnWrapper>
-          <ModalBtn onClick={() => { cancelBtnOnClick(); }}>취소</ModalBtn>
+          <ModalBtn onClick={() => { cancelBtnOnClick(); }}>닫기</ModalBtn>
           <ModalBtn onClick={() => { saveBtnOnClick() }} styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} >저장</ModalBtn>
         </BtnWrapper>
       </Modal.Footer>

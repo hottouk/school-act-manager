@@ -25,7 +25,7 @@ import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroo
 //img
 import deskIcon from '../../image/icon/desk_icon.png'
 
-//2024.10.22 생성 -> 250211 게시판 추가
+//생성(241022)->게시판 추가(250211)
 const HomeroomDetailsPage = () => {
   //교사 인증
   const { log } = useClassAuth();

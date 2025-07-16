@@ -16,6 +16,7 @@ import useFetchRtMyStudentData from "../../hooks/RealTimeData/useFetchRtMyStuden
 //이미지
 import recycleIcon from "../../image/icon/recycle_icon.png"
 import useFirePetData from "../../hooks/Firebase/useFirePetData"
+import MidBtn from "../../components/Btn/MidBtn"
 
 //최근 업데이트(241027)
 const ClassAllStudents = () => {
@@ -29,6 +30,7 @@ const ClassAllStudents = () => {
   //학생 정보 데이터 통신
   const { studentDataList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber");
   const [_studentList, setStudentList] = useState([]);
+  const [_origin, setOrigin] = useState(null);
   useEffect(() => { setStudentList(studentDataList); }, [studentDataList]);
   //학생 속성
   const { updatePetInfo } = useFirePetData();
@@ -46,37 +48,28 @@ const ClassAllStudents = () => {
 
   //------함수부------------------------------------------------
   //실시간 acc
-  const getAccRec = (list) => { return list?.reduce((acc, cur) => acc + cur.record, '') }
+  const getAccRec = (list) => { return list?.reduce((acc, cur) => acc + " " + cur.record, '') }
   //수정 버튼
-  const handleEditOnClick = (key, index) => {
+  const handleEditOnClick = (key) => {
+    setOrigin(JSON.parse(JSON.stringify(_studentList))); //깊은 복사(배열은 메모리 참조)
     setThisModifying(key);
+  }
+  //추가 버튼
+  const handleAddActiOnClick = (index) => {
     setStudentList((prev) => {
       const list = [...prev];
-      let { actList } = list[index];
+      const { actList } = list[index];
       const assignedDate = new Date().toISOString().split('T')[0];
-      actList?.push({ title: "임의기록", id: "random" + assignedDate, record: "", uid: user.uid, assignedDate });
+      const newActi = { title: "임의기록", id: "random" + assignedDate, record: "", uid: user.uid, assignedDate }
+      actList?.push(newActi);
       return list
     })
   }
   //취소 버튼
-  const handleCacncelOnClick = (key, index) => {
+  const handleCacncelOnClick = () => {
     setThisModifying('');
-    setStudentList((prev) => {
-      const list = [...prev];
-      const { actList } = list[index];
-      actList?.splice(actList.length - 1, 1);
-      return list
-    })
+    setStudentList(JSON.parse(JSON.stringify(_origin))); //깊은 복사
   }
-  //추가 버튼
-  const handleNewOnClick = (key, index) => {
-    const { id: petId } = _studentList[index];
-    const assignedDate = new Date().toISOString().split('T')[0];
-    const newActi = { title: "임의기록", id: "random" + assignedDate, record: "", uid: user.uid, assignedDate };
-    updatePetInfo(classId, petId, { actList: [newActi] });
-    setThisModifying(key);
-  }
-
   //활동 문구 변경
   const handleActiRecordOnChage = (event, index, subIndex) => {
     setStudentList((prev) => {
@@ -153,9 +146,7 @@ const ClassAllStudents = () => {
           return <React.Fragment key={index + id}>
             <GridItem>{index + 1}</GridItem>     {/* 연번 */}
             <GridItem>{studentNumber}</GridItem> {/* 학번 */}
-            <GridItem>                           {/* 이름 */}
-              <p onClick={() => { navigate(`/classrooms/${classId}/${key}`) }} style={nameFontStyle}>{writtenName || "미등록"}</p>
-            </GridItem>
+            <GridItem><p onClick={() => { navigate(`/classrooms/${classId}/${key}`) }} style={nameFontStyle}>{writtenName || "미등록"}</p></GridItem>   {/* 이름 */}
             <GridItem style={{ justifyContent: "flex-start" }}>
               {!isModifying && accRecord}
               {isModifying && <Column style={{ width: "100%", gap: "5px" }}>
@@ -166,16 +157,16 @@ const ClassAllStudents = () => {
                     value={record}
                     onChange={(event) => { handleActiRecordOnChage(event, index, actiIndex) }} />
                 })}
+                <Row style={{ justifyContent: "center" }}><MidBtn onClick={() => { handleAddActiOnClick(index) }}>추가</MidBtn></Row>
               </Column>}
             </GridItem>
             <GridItem>{bytes}</GridItem>        {/* 바이트 */}
             <GridItem>
-              {(!isModifying && user.userStatus === "master" && actList) && <SmallBtn btnOnClick={() => { handleEditOnClick(key, index); }} btnColor="#3454d1" hoverBtnColor="blue">수정</SmallBtn>}
-              {(!isModifying && !actList) && <SmallBtn btnOnClick={() => { handleNewOnClick(key, index); }} btnColor="#3454d1" hoverBtnColor="blue">추가</SmallBtn>}
+              {(!isModifying && user.userStatus === "master") && <SmallBtn btnOnClick={() => { handleEditOnClick(key); }} btnColor="#3454d1" hoverBtnColor="blue">수정</SmallBtn>}
               {isModifying && <BtnWrapper>
-                <SmallBtn id="save_btn" btnOnClick={() => { handleSaveBtn(index); }} btnName="저장" btnColor="#3454d1" hoverBtnColor="blue" />
-                <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(index); }} hoverBtnColor="blue">섞기</SmallBtn>
-                <SmallBtn btnOnClick={() => { handleCacncelOnClick(key, index); }} btnColor="#9b0c24" hoverBtnColor="red">취소</SmallBtn>
+                {actList && <SmallBtn btnOnClick={() => { handleSaveBtn(index); }} btnColor="#3454d1" hoverBtnColor="blue">저장</SmallBtn>}
+                {actList && <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(index); }} hoverBtnColor="blue">섞기</SmallBtn>}
+                <SmallBtn btnOnClick={() => { handleCacncelOnClick(); }} btnColor="#9b0c24" hoverBtnColor="red">취소</SmallBtn>
               </BtnWrapper>
               }
             </GridItem>

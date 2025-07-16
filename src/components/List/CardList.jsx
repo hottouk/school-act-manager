@@ -102,7 +102,7 @@ const CardList = ({ dataList, type, onClick, selected }) => {
           return (<CardListItem key={item.id} item={item} onClick={onClick} type={"homeroom"} />)
         })}
         {/* 교과활동 */}
-        {type === "activity" && dataList?.map((item) => (<SubjectActiCard item={item} onClick={onClick} />))}
+        {type === "activity" && dataList?.map((item) => (<SubjectActiCard key={item.id} item={item} onClick={onClick} />))}
         {/* 업어온 활동 */}
         {type === "copiedActi" && dataList?.map((item) => {
           return (<CardListItem key={item.id} item={item} onClick={() => { navigate(`/activities/${item.id}`, { state: { acti: item } }) }} type={"copiedActi"} styles={{ hoverColor: "rgba(255, 105, 180, 0.2)" }} />)
