@@ -6,9 +6,11 @@ import QuizMonListItem from '../../components/List/ListItem/QuizMonListItem'
 import ArrowBtn from '../../components/Btn/ArrowBtn'
 import Container from '../../components/MainPanel'
 import PetImg from '../../components/PetImg'
+import MidBtn from '../../components/Btn/MidBtn'
+import PlusBtn from '../../components/Btn/PlusBtn'
 
 //로직 분리(250204) -> 모바일(250213)
-const KlassQuizSection = ({ isMobile, quizList, klassData, onClick, smallBtnOnClick }) => {
+const KlassQuizSection = ({ isMobile, quizList, klassData, onClick, setIsAddQuizModal }) => {
   return (
     <Container>
       <TitleText>퀴즈 게임</TitleText>
@@ -25,10 +27,11 @@ const KlassQuizSection = ({ isMobile, quizList, klassData, onClick, smallBtnOnCl
       {!isMobile && <BoldText style={{ marginTop: "10px" }}>vs</BoldText>}
       {/* 단어 게임부 */}
       <GameMonListWrapper>
-        {quizList.length === 0 && < EmptyResult comment="등록된 단어 게임이 없습니다." />}
-        {quizList.length !== 0 && quizList.map((item) => {
-          return <QuizMonListItem key={item.id} item={item} onClick={onClick} smallBtnOnClick={smallBtnOnClick} />
-        })}
+        {quizList.length === 0 && <Column style={{ margin: "20px auto" }}><EmptyResult comment="등록된 단어 게임이 없습니다." /><MidBtn onClick={() => { setIsAddQuizModal(true); }}>추가</MidBtn></Column>}
+        {quizList.length !== 0 && <Row style={{ gap: "10px" }}>
+          {quizList.map((item) => <QuizMonListItem key={item.id} item={item} onClick={onClick} />)}
+          <PlusBtn onClick={() => { setIsAddQuizModal(true); }} /></Row>
+        }
       </GameMonListWrapper>
     </Container>
   )
@@ -37,6 +40,9 @@ const KlassQuizSection = ({ isMobile, quizList, klassData, onClick, smallBtnOnCl
 const Row = styled.div` 
   display: flex;
   align-items: center;
+`
+const Column = styled(Row)`
+  flex-direction: column;
 `
 const BoldText = styled.h2`
   color; #3a3a3a;
@@ -68,6 +74,7 @@ const PetImgWrapper = styled.div`
 `
 const GameMonListWrapper = styled.ul`
   display: flex;
+  align-items: center;
   gap: 15px;
   border-top: 1px solid rgb(120, 120, 120, 0.5);
   border-bottom: 1px solid rgb(120, 120, 120, 0.5);

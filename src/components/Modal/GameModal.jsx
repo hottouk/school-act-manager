@@ -12,13 +12,18 @@ import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useLevel from '../../hooks/useLevel'
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData'
-
-const GameModal = ({ show, onHide, quizSetId, gameDetails }) => {
-  useEffect(() => { bindEnmData(); }, [gameDetails])
+import { useSelector } from 'react-redux'
+import useFireClassData from '../../hooks/Firebase/useFireClassData'
+//UI 추가(250720)
+const GameModal = ({ show, onHide, quizSetId, gameDetails, setIsQuizRankModal, klassId }) => {
+  useEffect(() => { bindEnmData(); }, [gameDetails]);
+  //준비
+  const user = useSelector(({ user }) => user);
   const [step, setStep] = useState(1);
+  const { deleteKlassroomArrayInfo } = useFireClassData();
   //내 펫 리스트
   const { myUserData } = useFetchRtMyUserData();
-  useEffect(() => { fetchPetListData(); }, [myUserData])
+  useEffect(() => { fetchPetListData(); }, [myUserData]);
   const [myPetList, setMyPetList] = useState([]);
   const [petImgList, setPetImgList] = useState([]);
   const { fetchImgUrl, fetchImgUrlList } = useFetchStorageImg();
@@ -28,8 +33,9 @@ const GameModal = ({ show, onHide, quizSetId, gameDetails }) => {
   const [monImg, setMonImg] = useState(null);
   const [monsterList, setMonsterList] = useState(null);
   const { getEarnedXp, getMonsterStat } = useLevel();
-  const [selectedLv, setSeletedLv] = useState(1);     //적 레벨
+  const [selectedLv, setSeletedLv] = useState(1);     //적 레벨 선택
   useEffect(() => { bindEnmData(); }, [selectedLv]);
+  //모바일
   const isMobile = useMediaQuery("(max-width: 767px)");
   //------함수부------------------------------------------------------ 
   //펫 리스트 데이터
@@ -66,19 +72,28 @@ const GameModal = ({ show, onHide, quizSetId, gameDetails }) => {
     if (selectedLv && selectedPet) return true
     return false;
   }
-  //펫버블 클릭
+  //펫버블
   const petBubbleOnClick = (pet) => {
     setSelectedPet(pet);
     setStep(2);
   }
+  //몬스터
   const monBubbleOnClick = (level) => {
     setSeletedLv(level);
     setStep("start")
   }
-  //버튼 클릭
+  //시작
   const startBtnOnClick = () => {
     if (check()) { setStep("start"); }
     else { alert("펫과 몬스터를 모두 선택해주세요."); }
+  }
+
+  const deleteBtnOnClick = () => {
+    const confirm = window.confirm("이 퀴즈를 클래스에스 등록 해제하시겠습니까?");
+    if (confirm) {
+      deleteKlassroomArrayInfo(klassId, "addedQuizIdList", gameDetails.id);
+      onHide();
+    }
   }
   //------랜더링-------------------------------------------------------
   const SpecSection = ({ spec, style }) => {
@@ -102,7 +117,6 @@ const GameModal = ({ show, onHide, quizSetId, gameDetails }) => {
   }
   const PetBubble = ({ pet, index }) => {
     const { petId, level, name, spec } = pet;
-    console.log(petImgList)
     return <MonsterWrapper key={petId} onClick={() => { petBubbleOnClick(pet) }}>
       <Column style={{ margin: "0 15px" }}>
         <PetImg src={petImgList[index]} alt="현재 img" />
@@ -140,8 +154,15 @@ const GameModal = ({ show, onHide, quizSetId, gameDetails }) => {
               <CardList dataList={monsterList} onClick={setSeletedLv} selected={selectedLv} type={"monster"} />
             </AnimMaxHightOpacity>
           </>}
-          <Row style={{ justifyContent: "center", marginTop: "20px" }}>
-            <MainBtn onClick={startBtnOnClick}>게임 시작</MainBtn>
+          <Row style={{ justifyContent: "center", marginTop: "20px", gap: "30px" }}>
+            {user.isTeacher ? <>
+              <MainBtn onClick={() => { setIsQuizRankModal(true); }}>순위 보기</MainBtn>
+              <MainBtn onClick={() => { deleteBtnOnClick(); }}>등록 취소</MainBtn>
+            </> : <>
+              <MainBtn onClick={() => { }}>멀티플레이</MainBtn>
+              <MainBtn onClick={startBtnOnClick}>게임 시작</MainBtn>
+            </>}
+
           </Row></>}
         {/* 시작 */}
         {(step === "start") && <QuizBattlePage quizSetId={quizSetId} selectedPet={selectedPet} monsterDetails={monsterList[selectedLv - 1]} gameDetails={gameDetails} onHide={onHide} />}

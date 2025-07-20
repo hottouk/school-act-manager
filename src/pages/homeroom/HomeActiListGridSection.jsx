@@ -7,9 +7,11 @@ import ByteCalculator from '../../components/Etc/ByteCalculator';
 import SmallBtn from '../../components/Btn/SmallBtn';
 //img
 import x_btn from '../../image/icon/x_btn.png';
+import { useSelector } from 'react-redux';
 
 //생성(250223)
 const HomeActiListGridSection = ({ isModifying, list, setList, allActiList }) => {
+	const user = useSelector(({ user }) => user);
 	const selectRef = useRef({});
 	const [_addOnActi, setAddOnActi] = useState(null);
 
@@ -26,7 +28,7 @@ const HomeActiListGridSection = ({ isModifying, list, setList, allActiList }) =>
 			return newActiList;
 		});
 	};
-	//체크:기존 활동과 중복된 활동이 아닌 경우만 true
+	//셀렉터 체크
 	const check = (event) => {
 		if ((list.findIndex(({ id }) => id === event.value.id)) === -1) { return { isValid: true, msg: "같은 활동 없음" } }
 		else { return { isValid: false, msg: "중복된 활동입니다." } }
@@ -43,18 +45,13 @@ const HomeActiListGridSection = ({ isModifying, list, setList, allActiList }) =>
 			setList(newActiList);
 		} else { window.alert(result.msg) }
 	}
-	//활동 추가 셀렉터 변경
-	const handleAddOnSelectOnChange = (event) => {
-		const result = check(event);
-		if (result.isValid) {
-			const assignedDate = new Date().toISOString().split('T')[0];
-			const { byte, studentDoneList, particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, ...rest } = event.value;
-			setAddOnActi({ ...rest, assignedDate });
-		} else { window.alert(result.msg) }
-	}
 	//활동 추가
-	const addActiOnClick = () => {
-		const newList = [...list, _addOnActi];
+	const handleAddActiOnClick = () => {
+		const assignedDate = new Date().toISOString().split('T')[0];
+		const newActiItem = { title: "임의기록", record: '', id: "random" + assignedDate, uid: user.uid, assignedDate, madeBy: user.name }
+		let newList
+		if (list) { newList = [...list, newActiItem]; }
+		else { newList = [newActiItem] }
 		setList(newList);
 	}
 	//textarea 변경1 (gpt, 수기 변경)
@@ -94,12 +91,11 @@ const HomeActiListGridSection = ({ isModifying, list, setList, allActiList }) =>
 							<GridRow>
 								<GridItem>{index + 1}</GridItem>
 								<GridItem>{title}</GridItem>
-								<GridItem style={{ textAlign: "" }}>{record}</GridItem>
+								<GridItem className='left-align'>{record}</GridItem>
 								<GridItem>{assignedDate || "없음"}</GridItem>
 								<GridItem>{madeBy}</GridItem>
 								<GridItem><ByteCalculator str={record} styles={{ isTotalByteHide: true }} /></GridItem>
 							</GridRow>}
-
 						{/* 수정 */}
 						{isModifying && <GridRow>
 							{/* 순서  */}
@@ -117,7 +113,7 @@ const HomeActiListGridSection = ({ isModifying, list, setList, allActiList }) =>
 									onChange={(event) => { handleSelectOnChange(event, index) }} />
 							</GridItem>
 							{/* 문구 */}
-							<GridItem style={{ textAlign: "left" }}>
+							<GridItem>
 								<StyledTextarea
 									value={list[index].record}
 									onChange={(event) => handleTextareaOnChange(event, index)} />
@@ -133,10 +129,7 @@ const HomeActiListGridSection = ({ isModifying, list, setList, allActiList }) =>
 				})}
 			{isModifying && <GridRow>
 				<GridItem style={{ gridColumn: "1/7", gap: "20px" }} >
-					<Select
-						options={allActiList?.map((item) => { return { label: item.title, value: item } })}
-						onChange={handleAddOnSelectOnChange} />
-					<SmallBtn onClick={addActiOnClick}>추가</SmallBtn>
+					<SmallBtn onClick={handleAddActiOnClick}>추가</SmallBtn>
 				</GridItem>
 			</GridRow>}
 		</GridBotContainer>
@@ -179,6 +172,11 @@ const GridItem = styled.div`
   text-align: center;
   justify-content: center;
   align-items: center;
+	&.left-align { 
+    text-align: left;
+    justify-content: flex-start;
+    overflow-y: scroll;
+  }
 `
 const StyledTextarea = styled.textarea`
   width: 95%;

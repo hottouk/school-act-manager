@@ -1,25 +1,24 @@
-import React, { useEffect, useState } from 'react'
+//라이브러리
+import { useEffect, useState } from 'react'
 import styled from 'styled-components'
+//hooks
 import useFetchStorageImg from '../../../hooks/Game/useFetchStorageImg'
+//이미지
 import question_icon from '../../../image/icon/question.png'
-import SmallBtn from '../../Btn/SmallBtn'
-
-const QuizMonListItem = ({ item, onClick, smallBtnOnClick }) => {
+//정비(250720)
+const QuizMonListItem = ({ item, onClick }) => {
   useEffect(() => { fetchImgUrl(monster.path, setMonImg) }, [item])
-  const { monster } = item
-  const { step } = monster
+  const { monster, content, title } = item;
+  const { step } = monster;
   const { fetchImgUrl } = useFetchStorageImg();
   const [monImg, setMonImg] = useState([]);
   return (
     <Container>
       {monImg && <MonsterImg src={monImg || question_icon} onClick={() => { onClick(item) }} />}
       <TextWrapper>
-        <StyledTitle>{item.title}</StyledTitle>
-        <Row>
-          <StyledText style={{ fontSize: "17px" }}>{`${step[0].name}`}</StyledText>
-          <SmallBtn onClick={() => { smallBtnOnClick(item) }}>순위</SmallBtn>
-        </Row>
-        <StyledText>{item.content}</StyledText>
+        <Title>{title}</Title>
+        <Row><BasicText style={{ fontSize: "17px" }}>{`${step[0].name}`}</BasicText></Row>
+        <BasicText>{content}</BasicText>
       </TextWrapper>
     </Container>
   )
@@ -41,11 +40,11 @@ const TextWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  white-space: nowrap;  /* 텍스트를 한 줄로 유지 */
-  overflow: hidden;     /* 넘치는 텍스트 숨기기 */
-  text-overflow: ellipsis; /* 넘치는 텍스트를 생략(...) 처리 */
+  white-space: nowrap;      /* 텍스트를 한 줄로 유지 */
+  overflow: hidden;         /* 넘치는 텍스트 숨기기 */
+  text-overflow: ellipsis;  /* 넘치는 텍스트를 생략(...) 처리 */
 `
-const StyledTitle = styled.h5`
+const Title = styled.h5`
   font-weight: bold;
   color: #3454d1;
 `
@@ -59,7 +58,7 @@ const MonsterImg = styled.img`
     background-color: orange;
   }
 `
-const StyledText = styled.p`
+const BasicText = styled.p`
   margin: 0;
 `
 export default QuizMonListItem
