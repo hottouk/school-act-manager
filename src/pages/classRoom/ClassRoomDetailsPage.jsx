@@ -19,6 +19,7 @@ import EmptyResult from '../../components/EmptyResult.jsx';
 import SubNav from '../../components/Bar/SubNav.jsx';
 import ActiInfoModal from '../../components/Modal/ActiInfoModal.jsx';
 import MainPanel from '../../components/MainPanel.jsx';
+import AddQuizModal from '../../components/Modal/AddQuizModal.jsx';
 //모달
 import PerfModal from '../../components/Modal/PerfModal.jsx';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
@@ -65,15 +66,17 @@ const ClassroomDetailsPage = () => {
   const [_intro, setIntro] = useState('');
   const [_notice, setNotice] = useState('');
   const [noticeList, setNoticeList] = useState([]);
+  //활동
   const [actiList, setActiList] = useState([]);
   const [quizList, setQuizList] = useState([]);
-  const [studentList, setStudentList] = useState([]);
+  const [addedQuizList, setAddedQuizList] = useState([]);
   const [quizId, setQuizId] = useState([]);
+  //학생
+  const [studentList, setStudentList] = useState([]);
   const [petInfo, setPetInfo] = useState(null);
   const [actiInfo, setActiInfo] = useState(null);
-  //게임 구동 정보
+  //게임 정보
   const [gameDetails, setGameDetails] = useState(null);
-  //게임 랭크 정보
   const [gameRankInfo, setGameRankInfo] = useState(null);
   //모드
   const [isModifying, setIsModifying] = useState(false);
@@ -84,6 +87,7 @@ const ClassroomDetailsPage = () => {
   const [isPetInfoModal, setIsPetInfoModal] = useState(false);    //펫
   const [isActiInfoModal, setIsActiInfoModal] = useState(false);  //활동
   const [isQuizRankModal, setIsQuizRankModal] = useState(false);  //게임순위
+  const [isAddQuizModal, setIsAddQuizModal] = useState(false);    //게임등록
   //에니메이션
   const [isVisible, setIsVisible] = useState(false)
   //모바일
@@ -115,18 +119,21 @@ const ClassroomDetailsPage = () => {
   //활동 데이터 바인딩
   const bindActiData = () => {
     if (!klassData) return;
+    const addedQuizIdList = klassData.addedQuizIdList || [];
     const classTeacherId = user.isTeacher ? user.uid : studentKlassData?.uid;
     getSubjKlassActiList(classTeacherId, klassData?.subject).then((list) => {
       dispatcher(setAllActivities(list.subjActiList));
       setActiList(list.subjActiList);
-      const quizActis = list.quizActiList.filter((item) => { return item.isPrivate === false });
-      setQuizList(quizActis);
+      const quizList = list.quizActiList
+      const added = quizList.filter((item) => addedQuizIdList.includes(item.id));
+      setQuizList(quizList);
+      setAddedQuizList(added);
     });
   }
   //학생 데이터 바인딩
   const bindStudentData = () => {
     if (!studentDataList) return;
-    dispatcher(setAllStudents(studentDataList))                              //학생 data
+    dispatcher(setAllStudents(studentDataList));
     setStudentList(studentDataList);
   }
   //공지사항 list 변환
@@ -143,16 +150,11 @@ const ClassroomDetailsPage = () => {
   }
   //몬스터 클릭
   const handleMonsterOnClick = (item) => {
-    const { quizInfo, ...rest } = item;
+    const { quizInfo, gameRecord, ...rest } = item;
     setIsGameModal(true);
     setQuizId(quizInfo.id);
-    setGameDetails(rest);
-  }
-  //게임 순위 클릭
-  const handleRankOnClick = (item) => {
-    const { gameRecord } = item;
-    setIsQuizRankModal(true);
     setGameRankInfo(gameRecord);
+    setGameDetails(rest);
   }
   //변경 저장
   const handleSaveOnClick = () => {
@@ -225,11 +227,11 @@ const ClassroomDetailsPage = () => {
           <MainSelector isMobile={isMobile} type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
         </MainPanel>}
         {/* 퀴즈 게임부 */}
-        <KlassQuizSection isMobile={isMobile} quizList={quizList} klassData={klassData} onClick={handleMonsterOnClick} smallBtnOnClick={handleRankOnClick} />
+        <KlassQuizSection isMobile={isMobile} quizList={addedQuizList} klassData={klassData} onClick={handleMonsterOnClick} setIsAddQuizModal={setIsAddQuizModal} />
         {/* 학생 상세 보기*/}
         <MainPanel>
           <TitleText>학생 상세히 보기</TitleText>
-          {studentList && <StudentList petList={studentList} plusBtnOnClick={() => { setIsAddStuModal(true) }} classType={"subject"} setIsPetInfoModal={setIsPetInfoModal} setPetInfo={setPetInfo} />}
+          {studentList && <StudentList petList={studentList} plusBtnOnClick={setIsAddStuModal} classType={"subject"} setIsPetInfoModal={setIsPetInfoModal} setPetInfo={setPetInfo} />}
           {(!studentList || studentList.length === 0) && <><EmptyResult comment="등록된 학생이 없습니다." /></>}
         </MainPanel>
         {/* 퀘스트 목록(학생) */}
@@ -257,8 +259,10 @@ const ClassroomDetailsPage = () => {
     {isGameModal && <GameModal
       show={isGameModal}
       onHide={() => setIsGameModal(false)}
+      setIsQuizRankModal={setIsQuizRankModal}
       quizSetId={quizId}
       gameDetails={gameDetails}
+      klassId={thisKlassId}
     />}
     {/* 학생 정보 모달 */}
     {isPetInfoModal && <PetInfoModal
@@ -275,9 +279,16 @@ const ClassroomDetailsPage = () => {
     {/* 게임 순위 */}
     {gameRankInfo && <GameRankModal
       show={isQuizRankModal}
-      onHide={() => { setIsQuizRankModal(false) }}
+      onHide={() => setIsQuizRankModal(false)}
       result={gameRankInfo}
     />}
+    {/* 퀴즈 등록 */}
+    <AddQuizModal
+      show={isAddQuizModal}
+      onHide={() => setIsAddQuizModal(false)}
+      klassId={thisKlassId}
+      quizData={quizList}
+    />
   </>)
 }
 

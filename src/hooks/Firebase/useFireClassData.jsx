@@ -43,7 +43,7 @@ const useFireClassData = () => {
       window.alert(error);
     }
   }
-  //클래스 배열형 정보 수정(250220)
+  //3. 클래스 배열형 정보 수정(250220)
   const updateKlassroomArrayInfo = async (klassId, field, info) => {
     const klassDocRef = doc(colRef, klassId);
     try {
@@ -53,7 +53,7 @@ const useFireClassData = () => {
       window.alert(error);
     }
   }
-  //클래스 배열형 정보 삭제(250225)
+  //4. 클래스 배열형 정보 삭제(250225)
   const deleteKlassroomArrayInfo = async (klassId, field, info) => {
     const klassDocRef = doc(colRef, klassId);
     try {

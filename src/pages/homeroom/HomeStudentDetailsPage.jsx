@@ -32,7 +32,7 @@ import AnimRotation from '../../anim/AnimRotation';
 //이미지
 import arrows_icon from '../../image/icon/arrows_icon.png';
 
-//2024.10.16 생성-> 회전효과 추가(24.12.01)-> 정보 통신 일원화(250104)-> 진로, 자율 그리드 섹션 추가(250223)
+//생성(241016)-> 회전효과 추가(241201)-> 통신 일원화(250104)-> 진로, 자율 그리드 섹션 추가(250223)
 const HomeStudentDetailPage = () => {
   //유저 인증
   const { log } = useClassAuth();
@@ -86,12 +86,12 @@ const HomeStudentDetailPage = () => {
   const bindData = () => {
     const { studentNumber, writtenName, selectedSpec, behaviorOpinion, selfList, selfAccRecord, careerList, careerAccRecord, } = pet || {};
     setStudentNumber(studentNumber);
-    setWrittenName(writtenName);
+    setWrittenName(writtenName || '');
     const selected = selectedSpec || '';
     if (selected) { setDesiredMajor(selectedSpec["희망진로"]?.[0] ?? '') };
     setSelectedSpec(selected);
-    setSelfList(selfList);
-    setCareerList(careerList);
+    setSelfList(selfList || []);
+    setCareerList(careerList || []);
     setSelfAccRecord(selfAccRecord || '');
     setBehaviorOpinion(behaviorOpinion || '');
     setCareerAccRecord(careerAccRecord || '');

@@ -8,7 +8,7 @@ import ModalBtn from '../Btn/ModalBtn';
 //hooks
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
 
-//정리(241022)->디자인수정(250502)
+//정리(241022) -> 디자인수정(250502)
 const AddNewStudentModal = ({ show, onHide, classId, type }) => {
   const selectedClassInfo = useSelector(({ classSelected }) => classSelected);
   const [_name, setName] = useState('');

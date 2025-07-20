@@ -62,8 +62,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     setPerfRecord(createMatrix(studentList, ''));
     setPersoanlValue(createMatrix(studentList, ''));
     setExtractedList(createMatrix(studentList, []));
-    setSelectedActi(null);
     setReplaceList({});
+    setSelectedActi(null);
   }
   //이중 객체 생성
   const createMatrix = (list, initVal) => {
@@ -359,10 +359,9 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     if (selectedActi) {
       if (window.confirm("저장하시겠습니까?")) {
         writePerfRecDataOnDB(studentList, classId, selectedActi, perfRecord);
-        initData();
-        onHide();
+        alert("저장되었습니다.")
       }
-    } else { window.alert("선택된 수행평가가 없습니다.") }
+    } else { window.alert("선택된 활동이 없습니다.") }
   }
   //취소 버튼
   const cancelBtnOnClick = () => {
@@ -515,7 +514,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       </Modal.Body >
       <Modal.Footer>
         <BtnWrapper>
-          <ModalBtn onClick={() => { cancelBtnOnClick(); }}>취소</ModalBtn>
+          <ModalBtn onClick={() => { cancelBtnOnClick(); }}>닫기</ModalBtn>
           <ModalBtn onClick={() => { saveBtnOnClick() }} styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} >저장</ModalBtn>
         </BtnWrapper>
       </Modal.Footer>

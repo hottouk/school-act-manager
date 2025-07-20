@@ -17,7 +17,6 @@ const EmptyResult = ({ comment, color, styles }) => {
 const Container = styled.div`
   max-width: ${(props) => props.$maxWidth};
   margin: 12px auto;
-  padding: 30px 20px 0;
   border: ${(props) => props.$border};
   border-radius: 10px;
   img {
@@ -29,6 +28,7 @@ const Container = styled.div`
   p {
     text-align: center;
     color: ${({ $color }) => { return $color ? $color : "gray" }};
+    margin: 0;
   }
   @media screen and (max-width: 767px) {
     margin: 0 auto 50px;

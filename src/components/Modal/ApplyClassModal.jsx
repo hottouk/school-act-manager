@@ -20,7 +20,7 @@ const ApplyClassModal = ({ show, onHide, klass, myUserData: user }) => {
   //------함수부------------------------------------------------  
   //셀렉터 옵션
   const createOptions = () => {
-    let options = []
+    const options = []
     allStudents.forEach((student) => {
       let name = '미등록'
       let number = student.studentNumber
@@ -30,9 +30,7 @@ const ApplyClassModal = ({ show, onHide, klass, myUserData: user }) => {
     options.sort((a, b) => a.label.localeCompare(b.label));
     return options
   }
-
-  //유저 상호작용
-  //가입 버튼 클릭
+  //가입 버튼
   const handleOnSubmit = (event) => {
     event.preventDefault();
     if (_selected) {
@@ -54,19 +52,17 @@ const ApplyClassModal = ({ show, onHide, klass, myUserData: user }) => {
       backdrop="static"
       keyboard={false}>
       <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>클래스 가입 신청</Modal.Header>
-      <form onSubmit={handleOnSubmit}>
-        <Modal.Body style={{ backgroundColor: "#efefef" }}>
-          <p>{grade}학년 {subjDetail}과목 {classTitle}반에 가입 신청하시겠습니까?</p>
-          <Select
-            options={createOptions()}
-            placeholder="자신의 학번을 선택하세요"
-            onChange={(event) => { setSelected(event) }} />
-        </Modal.Body>
-        <Modal.Footer style={{ backgroundColor: "#efefef" }}>
-          <ModalBtn onClick={() => { onHide(); }}>취소</ModalBtn>
-          <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} type="submit">가입</ModalBtn>
-        </Modal.Footer>
-      </form>
+      <Modal.Body style={{ backgroundColor: "#efefef" }}>
+        <p>{grade}학년 {subjDetail}과목 {classTitle}반에 가입 신청하시겠습니까?</p>
+        <Select
+          options={createOptions()}
+          placeholder="자신의 학번을 선택하세요"
+          onChange={(event) => { setSelected(event) }} />
+      </Modal.Body>
+      <Modal.Footer style={{ backgroundColor: "#efefef" }}>
+        <ModalBtn onClick={() => { onHide(); }}>취소</ModalBtn>
+        <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={(event) => handleOnSubmit(event)}>가입</ModalBtn>
+      </Modal.Footer>
     </Modal>
   )
 }
