@@ -1,4 +1,5 @@
 //라이브러리
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 //컴포넌트
 import EmptyResult from '../../components/EmptyResult'
@@ -11,6 +12,7 @@ import PlusBtn from '../../components/Btn/PlusBtn'
 
 //로직 분리(250204) -> 모바일(250213)
 const KlassQuizSection = ({ isMobile, quizList, klassData, onClick, setIsAddQuizModal }) => {
+  const user = useSelector(({ user }) => user)
   return (
     <Container>
       <TitleText>퀴즈 게임</TitleText>
@@ -30,7 +32,7 @@ const KlassQuizSection = ({ isMobile, quizList, klassData, onClick, setIsAddQuiz
         {quizList.length === 0 && <Column style={{ margin: "20px auto" }}><EmptyResult comment="등록된 단어 게임이 없습니다." /><MidBtn onClick={() => { setIsAddQuizModal(true); }}>추가</MidBtn></Column>}
         {quizList.length !== 0 && <Row style={{ gap: "10px" }}>
           {quizList.map((item) => <QuizMonListItem key={item.id} item={item} onClick={onClick} />)}
-          <PlusBtn onClick={() => { setIsAddQuizModal(true); }} /></Row>
+          {user.isTeacher && <PlusBtn onClick={() => { setIsAddQuizModal(true); }} />}</Row>
         }
       </GameMonListWrapper>
     </Container>

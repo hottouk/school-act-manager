@@ -19,7 +19,6 @@ const LoginPage = () => {
   //모달
   const [isSnsModal, setIsSnsModal] = useState(false)
   const [isEmailModalShow, setIsEmailModalShow] = useState(false)
-
   return (
     <Container>
       <Wrapper>

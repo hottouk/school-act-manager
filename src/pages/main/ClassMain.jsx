@@ -4,35 +4,51 @@ import styled from 'styled-components'
 //컴포넌트
 import NoticeModal from '../../components/Modal/NoticeModal'
 import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
+import SupplementInfoModal from '../../components/Modal/SupplementInfoModal'
 //hooks
 import useClientHeight from '../../hooks/useClientHeight'
 import useMediaQuery from '../../hooks/useMediaQuery'
 //이미지
 import main from '../../image/main.png'
-//24.07.20 -> 모바일감지(250213)
+import { useSelector } from 'react-redux'
+//정비(240720) -> 모바일감지(250213)
 const ClassMain = () => {
-  const [isShownNotice, setIsShownNotice] = useState(false) //공지사항
-  useEffect(() => { fetchNotice(); }, [])
+  const user = useSelector(({ user }) => user);
+  //모달
+  const [isNoticeModal, setIsNoticeModal] = useState(false); //공지사항
+  const [isSupplement, setIsSupplement] = useState(false);   //무결성
+  useEffect(() => {
+    fetchNotice();
+    checkUserInfo();
+  }, [])
   const isMobile = useMediaQuery('(max-width: 768px)'); //화면 크기 감지
   const clientHeight = useClientHeight(document.documentElement)
 
-  //------함수부------------------------------------------------  
+  //------함수부------------------------------------------------
+  //중요 사항 체크
+  const checkUserInfo = () => {
+    const { isTeacher, studentNumber } = user;
+    if (!isTeacher) {
+      if (studentNumber) return
+      alert("학번이 없습니다. 학번을 설정해주세요.");
+      setIsSupplement(true);
+    }
+  }
   //공지사항
   const fetchNotice = () => {
     const noticeDismissed = localStorage.getItem("noticeDismissed")
-    if (!noticeDismissed) { setIsShownNotice(true) } else {
+    if (!noticeDismissed) { setIsNoticeModal(true) } else {
       const now = new Date();
       const dismissedUntil = new Date(parseInt(noticeDismissed, 10));
       if (now > dismissedUntil) {
         localStorage.removeItem("noticeDismissed");
-        setIsShownNotice(true);
+        setIsNoticeModal(true);
       }
     }
   }
-
   //공지사항 없애기
   const handleDismiss = () => {
-    setIsShownNotice(false)
+    setIsNoticeModal(false)
     const now = new Date();
     const tmr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     localStorage.setItem("noticeDismissed", tmr.getTime());
@@ -48,7 +64,7 @@ const ClassMain = () => {
         </Wrapper>
       </LandingBg>
       <WhiteBg>
-        <SubTitleText>{2407}명의 선생님, {234}명의 학생이 이용중!!</SubTitleText>
+        <SubTitleText>{2608}명의 선생님, {234}명의 학생이 이용중!!</SubTitleText>
       </WhiteBg>
       <Row style={{ justifyContent: "center" }}>
         <HorizontalBannerAd />
@@ -75,7 +91,7 @@ const ClassMain = () => {
         <LandingImage className='landing_img' src={main} alt="랜딩이미지" />
       </LandingBg>
       <WhiteBg>
-        <SubTitleText>{2277}명의 선생님, {231}명의 학생이 이용중!!</SubTitleText>
+        <SubTitleText>{2608}명의 선생님, {234}명의 학생이 이용중!!</SubTitleText>
       </WhiteBg>
       <Row style={{ justifyContent: "center" }}>
         <HorizontalBannerAd />
@@ -98,10 +114,15 @@ const ClassMain = () => {
     </MobileContainer>}
     {/* 공지사항팝업 */}
     <NoticeModal
-      show={isShownNotice}
-      onHide={() => setIsShownNotice(false)}
+      show={isNoticeModal}
+      onHide={() => setIsNoticeModal(false)}
       onDismissed={handleDismiss}
     />
+    {/* 미달 정보 채우기 */}
+    <SupplementInfoModal
+      show={isSupplement}
+      onHide={() => setIsSupplement(false)}>
+    </SupplementInfoModal>
   </>
   )
 }

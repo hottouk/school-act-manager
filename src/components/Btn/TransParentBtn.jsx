@@ -1,20 +1,24 @@
 import React from 'react'
 import styled from 'styled-components'
-//2024.11.13 생성
-const TransparentBtn = ({ id, children, onClick, styles }) => {
-  let width = styles?.width || "100%"
-  let color = styles?.color || "#3454d1"
-  let boxShadow = styles?.boxShadow || "5px 5px 15px rgba(0, 0, 0, 0.3), -5px -5px 15px rgba(255, 255, 255, 0.3)"
-  let cursor = styles?.cursor || "pointer"
-  let backgroundColor = styles?.backgroundColor || "transparent"
+//생성(241113) => 수정(250711)
+const TransparentBtn = ({ id, children, onClick, styles, disabled }) => {
+  const color = styles?.color || "#3454d1";
+  const normalStyle = {
+    width: styles?.width || "100%", color: styles?.color || "#3454d1",
+    boxShadow: styles?.boxShadow || "5px 5px 15px rgba(0, 0, 0, 0.3), -5px -5px 15px rgba(255, 255, 255, 0.3)",
+    cursor: styles?.cursor || "pointer",
+    backgroundColor: styles?.backgroundColor || "transparent"
+  };
+  const disabledStyle = { width: "100%", boxShadow: "inset 5px 5px 10px rgba(0, 0, 0, 0.3),inset -5px -5px 10px rgba(255, 255, 255, 0.3)", cursor: "default", backgroundColor: "#3454d1" };
   return (
-    <StyledBtn $borderColor={color} style={{ width: width, color: color, boxShadow: boxShadow, cursor: cursor, backgroundColor: backgroundColor }}
+    <StyledBtn $borderColor={color}
+      style={disabled ? disabledStyle : normalStyle}
       id={id}
       onClick={onClick}
+      disabled={disabled}
     >{children || "샘플"}</StyledBtn>
   )
 }
-
 const StyledBtn = styled.button`
   display: flex;
   justify-content: center;

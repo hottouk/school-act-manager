@@ -12,8 +12,6 @@ const StudentList = ({ petList, plusBtnOnClick, classType, setIsPetInfoModal, se
   //반 id
   const classId = useParams();
   const navigate = useNavigate();
-
-  //유저 상호작용
   const handleOnClick = (pet) => {
     const petId = pet.id;
     const masterId = pet.master?.studentId;

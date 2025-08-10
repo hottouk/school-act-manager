@@ -1,14 +1,15 @@
 import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap';
 import { Graphics } from '@pixi/react';
-
-const BasicRest = ({ x, y, size, thick, movingPoint, trigger }) => {
+//수정(250731)
+const BasicRest = ({ x, y, size, thick, movingPoint, trigger, setTrigger }) => {
   const plusRef1 = useRef();
   const plusRef2 = useRef();
   const plusRef3 = useRef();
   const animationListRef = useRef([]); // 애니메이션 인스턴스를 저장할 배열
 
   useEffect(() => {
+    if (!trigger) return;
     if (plusRef1.current) {
       const anim1 = gsap.fromTo(plusRef1.current, { alpha: 1, y: y }, {
         y: y - movingPoint,
@@ -41,6 +42,7 @@ const BasicRest = ({ x, y, size, thick, movingPoint, trigger }) => {
     return () => {
       animationListRef.current.forEach((anim) => anim.kill()); // 모든 애니메이션 중지
       animationListRef.current = []; // 배열 초기화
+      if (setTrigger) setTrigger(null);
     };
   }, [trigger])
 
@@ -75,7 +77,7 @@ const BasicRest = ({ x, y, size, thick, movingPoint, trigger }) => {
     g.lineTo(x + (size - 15) / 2 - 60, y - 80)
   };
 
-  return (<>
+  return (trigger && <>
     <Graphics draw={drawPlus1} ref={plusRef1} />
     <Graphics draw={drawPlus2} ref={plusRef2} />
     <Graphics draw={drawPlus3} ref={plusRef3} />

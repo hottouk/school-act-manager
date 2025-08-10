@@ -1,10 +1,9 @@
-
+//정비(250721)
 const useStudent = () => {
-
   //주어진 학년 반에 번호+1에 -> 학번 string 반환
   const createStudentNumber = (number, grade, classNumber) => {
-    let studentNumber = 0
-    let _number = Number(number) //숫자로 변환
+    let studentNumber = ""
+    const _number = Number(number) //숫자로 변환
     if (_number + 1 < 10) {
       studentNumber = `${grade}${classNumber}0${(_number + 1).toString()}`
     } else {
@@ -27,10 +26,7 @@ const useStudent = () => {
     }
     return studentList
   }
-
-  return (
-    { makeStudent, createStudentNumber }
-  )
+  return { makeStudent, createStudentNumber }
 }
 
 export default useStudent

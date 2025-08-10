@@ -24,8 +24,8 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   //교사 인증
   const { log } = useTeacherAuth();
   if (log) { window.alert(log) }
-  const user = useSelector(({ user }) => user)
-  const navigate = useNavigate()
+  const user = useSelector(({ user }) => user);
+  const navigate = useNavigate();
   //활동관리-전체 활동 선택된 과목
   const [selectedSubj, setSelectedSubj] = useState(null);
   const [isLoading, setIsLoading] = useState(true);

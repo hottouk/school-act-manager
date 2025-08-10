@@ -101,6 +101,7 @@ const StudentDetailPage = () => {
       const petList = info.myPetList;
       if (!petList) return;
       const thisPet = petList.find((item) => item.petId === params.studentId);
+      console.log(thisPet);
       updatePetInfo(params.id, params.studentId, thisPet); //pet 업데이트
     })
   }
@@ -254,12 +255,12 @@ const StudentDetailPage = () => {
             {(user.isTeacher || isMaster) && <GrayBotPannel>
               <GridBotContainer>
                 <GridRow>
-                  {!isMobile && <StyledHeader>연번</StyledHeader>}
-                  <StyledHeader>활동</StyledHeader>
-                  <StyledHeader>생기부</StyledHeader>
-                  {!isMobile && <StyledHeader>{!isModifying ? "날짜" : "성취도"}</StyledHeader>}
-                  {!isMobile && <StyledHeader>{!isModifying ? "기록자" : "변경"}</StyledHeader>}
-                  {!isMobile && <StyledHeader>바이트</StyledHeader>}
+                  {!isMobile && <Header>연번</Header>}
+                  <Header>활동</Header>
+                  <Header>생기부</Header>
+                  {!isMobile && <Header>{!isModifying ? "날짜" : "성취도"}</Header>}
+                  {!isMobile && <Header>{!isModifying ? "기록자" : "변경"}</Header>}
+                  {!isMobile && <Header>바이트</Header>}
                 </GridRow>
                 {!_actiList || _actiList.length === 0
                   ? <GridItem style={{ gridColumn: "1/7" }}>활동이 없어요ㅠㅠ</GridItem>
@@ -424,7 +425,7 @@ const StyledAcc = styled.div`
 const GridRow = styled.div`
   display: contents;
 `
-const StyledHeader = styled.div`
+const Header = styled.div`
   height: 40px;
   display: flex;
   background-color: #3454d1; 

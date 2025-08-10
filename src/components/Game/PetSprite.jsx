@@ -8,6 +8,7 @@ const PetSprite = ({ src, x, y, width, height, trigger, movingPoint }) => {
   useEffect(() => {
     let animation
     if (!myPetRef.current) return;
+    if (!trigger) return;
     animation = gsap.to(myPetRef.current, {
       x: x + movingPoint,
       y: y - movingPoint,

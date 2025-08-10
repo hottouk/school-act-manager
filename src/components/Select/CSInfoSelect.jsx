@@ -1,7 +1,7 @@
+//라이브러리
 import styled from "styled-components"
 //데이터
 import classNumberList from '../../data/classNumberList'
-
 //24.07.22 (반 데이터로 제공, 사용처: 클래스 만들기, 학생 회원 가입 2곳, 학생 myInfo 수정)
 const CSInfoSelect = ({ grade, classNumber, number, handleOnChange, classMode }) => { //classMode true 교실 생성 진입
   return (
@@ -20,7 +20,7 @@ const CSInfoSelect = ({ grade, classNumber, number, handleOnChange, classMode })
           return <option key={value} value={value}>{key}</option>
         })}
       </select>
-      {!classMode && <StyledInput id="number_input" type="number" value={number} onChange={handleOnChange} min={1} max={99} required />}
+      {!classMode && <NumberInput id="number_input" type="number" value={number} onChange={handleOnChange} min={1} max={99} required />}
     </Container>
   )
 }
@@ -35,7 +35,7 @@ const Container = styled.div`
     border-radius: 7px;
   }
 `
-const StyledInput = styled.input`
+const NumberInput = styled.input`
   height: 35px;
   border: 1px solid rgba(120,120,120,0.5);
   border-radius: 5px;

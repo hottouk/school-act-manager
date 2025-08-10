@@ -1,10 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-
-const MainBtn = ({ children, onClick, type }) => {
-  return (
-    <StyledBtn type={type || "button"} onClick={onClick}>{children || "샘플"} </StyledBtn>
-  )
+//정비(250722)
+const MainBtn = ({ children, onClick, type, styles, disabled }) => {
+  return (<StyledBtn type={type || "button"} onClick={onClick} disabled={disabled}>{children || "샘플"} </StyledBtn>)
 }
 const StyledBtn = styled.button`
   appearance: none;

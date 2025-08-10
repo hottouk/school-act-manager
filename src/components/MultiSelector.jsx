@@ -41,14 +41,10 @@ const MultiSelector = (
     }
   }
 
-  const handleStudentSelection = (event) => { //event는 선택값의 배열 반환
-    dispatcher(setSelectStudent(event))
-  }
-
-  const handleActivitySelection = (event) => {
-    console.log(event);
-    dispatcher(setSelectActivity(event))
-  }
+  //학생 선택
+  const handleStudentSelection = (event) => { dispatcher(setSelectStudent(event)); }
+  //활도 선택
+  const handleActivitySelection = (event) => { dispatcher(setSelectActivity(event)); }
 
   // 백엔드에서 데이터 수만큼 받아서 멀티 셀렉터 옵션 만들기
   let options = []

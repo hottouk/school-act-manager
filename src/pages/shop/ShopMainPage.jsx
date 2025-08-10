@@ -21,7 +21,7 @@ import rira_gem from "../../image/money.png";
 const ShopMainPage = () => {
 	const user = useSelector(({ user }) => user);
 	const { myUserData } = useFetchRtMyUserData();
-	const { subscribeUserData, deleteUserArrayInfo, updateUserArrayInfo } = useFireUserData();
+	const { userDataListener, deleteUserArrayInfo, updateUserArrayInfo } = useFireUserData();
 	useEffect(() => {
 		fetchMySchoolInfo();
 		fetchShopItemInfo();
@@ -41,7 +41,7 @@ const ShopMainPage = () => {
 	const { fetchSchoolByCode } = useFireSchoolData();
 	const [teacherList, setTeacherList] = useState([]);
 	const [teacherId, setTeacherId] = useState(null);
-	useEffect(() => { subscribeUserData(teacherId, setSelectedTeacher); }, [teacherId])
+	useEffect(() => { userDataListener(teacherId, setSelectedTeacher); }, [teacherId])
 	const [selectedTeacher, setSelectedTeacher] = useState(null);
 	useEffect(() => { bindTeacherInfo() }, [selectedTeacher]);
 	//------교사용 함수------------------------------------------------  

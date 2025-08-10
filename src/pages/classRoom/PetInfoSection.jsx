@@ -3,22 +3,33 @@ import React from 'react'
 import styled from 'styled-components'
 //컴포넌트
 import PetImg from '../../components/PetImg'
-
+import XBtn from '../../components/Btn/XBtn'
+import useFirePetData from '../../hooks/Firebase/useFirePetData'
 //생성(250223)
-const PetInfoSection = ({ pet, isModifiying, setWrittenName, writtenName }) => {
-  const { subject, studentNumber, name, level, master, desc, path } = pet;
+const PetInfoSection = ({ pet, isModifiying, setWrittenName }) => {
+  const { subject, studentNumber, name, level, master, desc, path, id, classId } = pet;
+  const { deletePetField } = useFirePetData();
+  //구독 취소
+  const handleDeSubscribeOnClick = () => {
+    const confirm = window.confirm("위 학생의 구독 정보를 삭제하시겠습니까?")
+    if (confirm) { deletePetField(classId, id, "master").then(() => { alert("구독 정보가 삭제되었습니다."); }) }
+  }
   return (
     <Container>
       <StudentInfoWrapper>
         <PetImgWrapper><PetImg subject={subject} onClick={() => { }} path={path} styles={{ width: "100px", height: "100px" }} /></PetImgWrapper>
-        <Row style={{ flexDirection: "column", padding: "12px", justifyContent: "space-evenly" }}>
-          <p>학번: {studentNumber}</p>
-          <p>이름: {!isModifiying
-            ? writtenName ? writtenName : '미등록'
-            : <ModifyingInput type="text" defaultValue={writtenName} onChange={(event) => { setWrittenName(event.target.value) }} />
-          }</p>
-          <p style={{ margin: "0" }}> 가입여부: {master ? "O" : "X"}</p>
-        </Row>
+        <Column style={{ padding: "12px", justifyContent: "space-evenly", gap: "5px" }}>
+          <span>학번: {studentNumber}</span>
+          <Row style={{ alignItems: "center" }}><span>이름:&nbsp;</span>{!isModifiying
+            ? master ? master.studentName : '미등록'
+            : <ModifyingInput type="text" defaultValue={''} onChange={(event) => { setWrittenName(event.target.value) }} />
+          }</Row>
+          <Row > <span>가입여부:&nbsp;</span>{master ?
+            <Row style={{ gap: "10px" }}>
+              <span>{master.studentName}으로 가입</span>
+              <XBtn styles={{ backgroundColor: "red", color: "white" }} onClick={() => { handleDeSubscribeOnClick(); }} />
+            </Row> : 'X'}</Row>
+        </Column>
       </StudentInfoWrapper>
       <Row style={{ flexDirection: "column", padding: "12px", marginTop: "12px", justifyContent: "space-evenly" }}>
         <p>펫이름: {name || "미정"}</p>
@@ -29,7 +40,6 @@ const PetInfoSection = ({ pet, isModifiying, setWrittenName, writtenName }) => {
     </Container>
   )
 }
-
 const Container = styled.div`
 	display: grid;
   grid-template-columns: 1fr 3fr; 
@@ -42,6 +52,9 @@ const Container = styled.div`
 `
 const Row = styled.div`
 	display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
 `
 const ModifyingInput = styled.input`
 	width: 130px;
