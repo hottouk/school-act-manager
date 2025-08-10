@@ -477,7 +477,9 @@ const Container = styled(Row)`
   align-items: center;
   @media (max-width: 768px) {
     display: grid;
-    width: ${window.innerWidth}px;
+    width: 100%;
+    min-height: 100%;
+    overflow-y: auto;
     grid-template-rows: 135px 1fr auto;
   }
 `

@@ -256,11 +256,6 @@ const Column = styled(Row)`
 `
 const Container = styled(Column)`
   box-sizing: border-box;
-  @media (max-width: 768px) {
-    display: grid;
-    width: ${window.innerWidth}px;
-    grid-template-rows: 1fr 10%;
-  }
 `
 const VsWrapper = styled(Row)`
   box-sizing: border-box;

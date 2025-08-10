@@ -447,7 +447,8 @@ const Container = styled(Column)`
 	@media (max-width: 768px) {
     display: grid;
     width: ${window.innerWidth}px;
-    grid-template-rows: 110px auto;
+    overflow-y: auto;
+    grid-template-rows: 110px 1fr auto;
   }
 `
 const ControllerUI = styled(Row)`
