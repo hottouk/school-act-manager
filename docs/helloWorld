@@ -18,7 +18,6 @@ default w134;
 icon size
 width: 45px;
 height: 45px;
-
 MarginalText
   color: rgb(120, 120, 120)
   text-decoration: underline;
@@ -30,4 +29,8 @@ const dotStyle = { dotColor: "#3454d1", width: "50%" }
 선택 색깔: "rgba(52, 84, 209, 0.4)"
 //오늘 날짜
 const assignedDate = new Date().toISOString().split('T')[0];
- */
+firebase 
+실시간에선 doc대신 snapshot
+아니면 ref와 doc 사용
+한칸 띄기 &nbsp;
+*/

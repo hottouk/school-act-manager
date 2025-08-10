@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-
 //2024.07.26 샘플
-const SmallBtn = ({ id, btnColor, hoverBtnColor, btnOnClick, onClick, btnName, fontColor, children, disabled }) => {
+const SmallBtn = ({ id, btnColor, hoverBtnColor, btnOnClick, onClick, btnName, fontColor, children, disabled, styles }) => {
+  const width = styles?.width;
   return (
     <StyledButton
       type="button"
@@ -11,6 +11,7 @@ const SmallBtn = ({ id, btnColor, hoverBtnColor, btnOnClick, onClick, btnName, f
       $backgroundColor={btnColor || "#3454d1"}
       $fontColor={fontColor || "#fff"}
       $hoverBackgroundColor={hoverBtnColor || "#1366d6"}
+      $width={width || "52px"}
       onClick={btnOnClick || onClick}
       disabled={disabled || false}
     >{!disabled && (btnName || children || "샘플")}
@@ -25,14 +26,14 @@ const StyledButton = styled.button`
   border-style: none;
   box-shadow: none;
   box-sizing: border-box;
-  color:  ${(props) => props.$fontColor};
+  color: ${(props) => props.$fontColor};
   display: flex;
   justify-content: center;
   align-items: center;
   font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
   font-size: 12px;
   font-weight: 500;
-  width: 52px;
+  width: ${(props) => props.$width};
   height: 28px;
   letter-spacing: normal;
   line-height: 1.5;

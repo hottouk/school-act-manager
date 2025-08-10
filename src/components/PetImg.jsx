@@ -9,16 +9,19 @@ import { monsterWaterList, monsterGrassList, monsterFireList, monsterNormalList 
 import questionMark from "../image/icon/question.png"
 
 //250212 수정
-const PetImg = ({ subject, step, onClick = () => { }, path, styles }) => {
-  const width = styles?.width || "134px"
-  const height = styles?.height || "134px"
-  const margin = styles?.margin || "0"
+const PetImg = ({ subject = null, step, onClick = () => { }, path, styles }) => {
+  const width = styles?.width || "134px";
+  const height = styles?.height || "134px";
+  const margin = styles?.margin || "0";
+  const border = styles?.border || "none";
+  const borderRadius = styles?.borderRadius || "none";
   const { getPathList, fetchImgUrl } = useFetchStorageImg();
-  useEffect(() => { getImage(); }, [subject])
+  useEffect(() => { getImage(); }, [path, subject])
   const [imgSrc, setImgSrc] = useState(null);
   const getImage = () => {
     if (path) {
       fetchImgUrl(path, setImgSrc);
+      return
     } else {
       if (!subject) return
       let pathList
@@ -43,8 +46,8 @@ const PetImg = ({ subject, step, onClick = () => { }, path, styles }) => {
     }
   };
   return (
-    subject ? (<img src={imgSrc} alt="펫이미지" onClick={() => { onClick() }} style={{ width: width, height: height, margin: margin }} />)
-      : <UnknownImg src={questionMark} alt="물음표" onClick={() => { onClick() }} style={{ width: width, height: height, margin: margin }} />
+    path ? (<img src={imgSrc} alt="펫이미지" onClick={() => { onClick() }} style={{ width: width, height: height, margin: margin, border: border, borderRadius: borderRadius }} />)
+      : <UnknownImg src={questionMark} alt="물음표" onClick={() => { onClick() }} style={{ width: width, height: height, margin: margin, border: border, borderRadius: borderRadius }} />
   )
 }
 

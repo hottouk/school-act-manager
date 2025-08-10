@@ -2,23 +2,12 @@
 import styled from 'styled-components'
 //이미지
 import iconImg from '../../../image/icon/like_icon.png'
-import unknownIcon from '../../../image/icon/unkown_icon.png'
 //생성(250118)
 const CardListItem = ({ item, onClick, type, styles }) => {
   const hoverColor = styles?.hoverColor
   const backgroundColor = styles?.backgroundColor
-
   return (
     <Container $hoverColor={hoverColor} $backgroundColor={backgroundColor} onClick={() => { onClick(item) }}    >
-      {/* 교사 */}
-      {type === "teacher" && <>
-        <Row style={{ flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
-          <Row style={{ justifyContent: "flex-start", alignItems: "center" }}>
-            <StyledImg src={item.profileImg || unknownIcon} alt='프로필' />
-            <Title style={{ color: "#3454d1", margin: "0 20px" }}>{item.name}</Title>
-          </Row>
-          <p>{item.email}</p>
-        </Row></>}
       {/* 교과 클래스 */}
       {type === "classroom" && <>
         <Title style={{ color: "#3454d1" }}>{item.classTitle}</Title>
@@ -71,11 +60,6 @@ const Container = styled.li`
 `
 const Row = styled.div`
   display: flex;
-`
-const StyledImg = styled.img`
-  width: 45px;
-  height: 45px;
-  border-radius: 23px;
 `
 const Title = styled.h5`
   margin: 0 0 8px;

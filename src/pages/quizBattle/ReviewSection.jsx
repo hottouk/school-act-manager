@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 //250201 생성
 const ReviewSection = ({ incorrectList }) => {
-
+  console.log(incorrectList);
   const FlipCard = ({ quiz, answer }) => {
     const [_isFlipped, setIsFlipped] = useState(false);
     return (
@@ -17,7 +17,7 @@ const ReviewSection = ({ incorrectList }) => {
 
   return (
     <Container>
-      {incorrectList.map((item) =>
+      {incorrectList?.map((item) =>
         <FlipCard key={item.quiz} quiz={item.quiz} answer={item.answer} />
       )}
     </Container>
@@ -38,6 +38,7 @@ const Container = styled.ul`
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow-y: auto;
     width: ${window.innerWidth}px;
   }
 `

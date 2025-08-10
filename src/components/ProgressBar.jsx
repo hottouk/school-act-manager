@@ -1,5 +1,5 @@
 import ProgressBar from 'react-bootstrap/ProgressBar';
-
+//추가(250722)
 const AnimatedProgressBar = ({ levelInfo, gptProgress }) => {
   if (levelInfo) {
     const { exp, nextLvXp } = levelInfo;

@@ -27,6 +27,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   const [optionList, setOptionList] = useState([]);
   //선택 활동
   const [selectedActi, setSelectedActi] = useState(null);
+  useEffect(() => { bindStudentRec(); }, [selectedActi])
+  const [savedActi, setSavedActi] = useState(null);
   const [achivList] = useState(["상", "중", "하", "최하"]);
   //pdf
   const { uploadFile, findFile } = useFireStorage();
@@ -63,7 +65,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     setPersoanlValue(createMatrix(studentList, ''));
     setExtractedList(createMatrix(studentList, []));
     setReplaceList({});
-    setSelectedActi(null);
+    if (setSavedActi) { setSelectedActi(savedActi); }
+    else { setSelectedActi(null); }
   }
   //이중 객체 생성
   const createMatrix = (list, initVal) => {
@@ -77,18 +80,20 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
     actiList.forEach(acti => { options.push({ label: acti.title, value: acti.record, ...acti }) })
     setOptionList([...options])
   }
+
   //활동 셀렉터
-  const handleActiOnChange = (event) => {
-    const perfId = event?.id ?? null;
-    if (perfId) {
-      studentList.forEach((student, i) => {
-        const actiList = student.actList?.filter((acti) => acti.id === perfId) ?? null;
-        const record = actiList?.length > 0 ? actiList[0].record : '';
-        setSelectedActi(event);
-        setPerfRecord((prev) => { return { ...prev, [i]: record } });
-      })
-    }
+  const handleActiOnChange = (event) => { setSelectedActi(event); }
+  //셀렉터
+  const bindStudentRec = () => {
+    if (!selectedActi) return
+    const perfId = selectedActi.id;
+    studentList.forEach((student, i) => {
+      const actiList = student.actList?.filter((acti) => acti.id === perfId) ?? null;
+      const record = actiList?.length > 0 ? actiList[0].record : '';
+      setPerfRecord((prev) => { return { ...prev, [i]: record } });
+    })
   }
+
   //활동 셀렉터 옵션
   const getRecOptionList = () => {
     if (!selectedActi) return
@@ -358,8 +363,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   const saveBtnOnClick = () => {
     if (selectedActi) {
       if (window.confirm("저장하시겠습니까?")) {
-        writePerfRecDataOnDB(studentList, classId, selectedActi, perfRecord);
-        alert("저장되었습니다.")
+        setSavedActi(JSON.parse(JSON.stringify(selectedActi)));
+        writePerfRecDataOnDB(studentList, classId, selectedActi, perfRecord).then(() => { alert("저장되었습니다.") });
       }
     } else { window.alert("선택된 활동이 없습니다.") }
   }
@@ -367,6 +372,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   const cancelBtnOnClick = () => {
     initData();
     onHide();
+    setSavedActi(null);
+    setSelectedActi(null);
   }
   return (
     <Modal

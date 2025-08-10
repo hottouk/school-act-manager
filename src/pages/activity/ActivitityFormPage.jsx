@@ -23,12 +23,11 @@ import LongW100Btn from "../../components/Btn/LongW100Btn";
 import ByteCalculator from "../../components/Etc/ByteCalculator";
 import SubNav from "../../components/Bar/SubNav";
 import BackBtn from "../../components/Btn/BackBtn";
+import SmallBtn from "../../components/Btn/SmallBtn";
+import AddRepeatRecModal from "../../components/Modal/AddRepeatRecModal";
 //애니
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
 import { Spinner } from "react-bootstrap";
-import SmallBtn from "../../components/Btn/SmallBtn";
-import AddRepeatRecModal from "../../components/Modal/AddRepeatRecModal";
-
 //24.07.06 수정(실시간 바이트 갱신) -> 24.12.21(담임반 활동)
 const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
   useEffect(() => { setIsVisible(true) }, [])

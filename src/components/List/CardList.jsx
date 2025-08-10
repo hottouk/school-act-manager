@@ -7,6 +7,7 @@ import EmptyResult from '../EmptyResult'
 import PetImg from '../PetImg'
 //아이콘
 import iconImg from '../../image/icon/like_icon.png'
+import unknownIcon from '../../image/icon/unkown_icon.png'
 import recycleIcon from '../../image/icon/recycle_icon.png'
 import { useSelector } from 'react-redux'
 
@@ -15,10 +16,10 @@ const CardList = ({ dataList, type, onClick, selected }) => {
   const user = useSelector(({ user }) => user)
   const navigate = useNavigate();
 
-  //------카드 랜더링----------------------------------------------- 
+  //------랜더링----------------------------------------------- 
   //펫 카드
   const PetCard = ({ item, onClick }) => {
-    return <Card $backgroundColor={`${item.petId === selected?.petId ? "rgba(52, 84, 209, 0.4)" : "white"}`} onClick={() => { onClick(item) }}>
+    return <Card $backgroundColor={`${item.petId === selected?.petId ? "rgba(52, 84, 209, 0.4)" : "white"}`} onClick={onClick}>
       <Row style={{ justifyContent: "space-between" }}>
         <Column>
           <PetImg path={item.path} subject={"none"} styles={{ width: "100px", height: "100px" }} />
@@ -81,6 +82,41 @@ const CardList = ({ dataList, type, onClick, selected }) => {
       <Row style={{ justifyContent: "flex-end" }}><TagText style={{ backgroundColor: "#3454d1b3" }}>by {madeBy ? `${maskedName(madeBy)} 선생님` : "어떤 선생님"}</TagText></Row>
     </Card >
   }
+  //멤버 카드
+  const MemberCard = ({ item, onClick }) => {
+    const { profileImg, name, email } = item;
+    return <Card $backgroundColor={`${item.uid === selected ? "rgba(52, 84, 209, 0.4)" : "white"}`} onClick={() => { onClick(item); }}>
+      <Column style={{ justifyContent: "space-between", height: "100%" }}>
+        <Row style={{ justifyContent: "flex-start", alignItems: "center" }}>
+          <ProfileImg src={profileImg || unknownIcon} alt='프로필' />
+          <Title style={{ color: "#3454d1", margin: "0 20px" }}>{name}</Title>
+        </Row>
+        <p>{email}</p>
+      </Column>
+    </Card>
+  }
+  //게임방 카드
+  const MultiroomCard = ({ item, onClick }) => {
+    const { status, players, pets } = item;
+    const player1 = players[0];
+    const player2 = players[1];
+    const pet1 = pets[0];
+    const pet2 = pets[1];
+    const { spec, exp, name, level, path } = pet1;
+    return <Card onClick={() => { onClick(item); }} style={{ padding: "0", position: "relative" }}>
+      <Row style={{ height: "100%", }} >
+        <Column style={{ width: "50%", height: "100%", alignItems: "center", justifyContent: "center", borderRadius: "10px 0 0 10px", backgroundColor: "#3454d150" }}>
+          <PetImg path={pet1?.path} styles={{ width: "100px", height: "100px", border: "1px solid gray", borderRadius: "50px" }} />
+          <BasicText>{player1?.name}님의 {pet1?.name}</BasicText>
+        </Column>
+        <Column style={{ width: "50%", height: "100%", alignItems: "center", justifyContent: "center", borderRadius: "0 10px 10px 0", backgroundColor: "#9b0c2450" }}>
+          <PetImg path={pet2?.path} styles={{ width: "100px", height: "100px", border: "1px solid gray", borderRadius: "50px" }} />
+          <BasicText>{player2 ? player2.name : "미입장"}</BasicText>
+        </Column>
+      </Row>
+      {/* <BasicText style={{ color: "#3454d1", fontWeight: "bold", position: "absolute", bottom: "-10px", padding: "5px", backgroundColor:"gray" }}>{status}...</BasicText> */}
+    </Card>
+  }
 
   return (
     <Container>
@@ -89,10 +125,8 @@ const CardList = ({ dataList, type, onClick, selected }) => {
         {(!dataList || dataList.length === 0) && <>
           <EmptyResult comment={"데이터가 없어요"} />
         </>}
-        {/* 교사 */}
-        {(type === "teacher") && dataList?.map((item) => {
-          return (<CardListItem key={item.uid} item={item} onClick={onClick} type={"teacher"} styles={{ backgroundColor: `${item.uid === selected ? "rgba(52, 84, 209, 0.4)" : "white"}` }} />)
-        })}
+        {/* 멤버 */}
+        {(type === "member") && dataList?.map((item) => <MemberCard key={item.uid} item={item} onClick={onClick} />)}
         {/* 교과반 */}
         {(type === "classroom" || type === "appliedClassList") && dataList?.map((item) => {
           return (<CardListItem key={item.id} item={item} onClick={onClick} type={"classroom"} />)
@@ -116,14 +150,17 @@ const CardList = ({ dataList, type, onClick, selected }) => {
           return (<CardListItem key={item.id} item={item} onClick={() => { navigate('/quiz_setting', { state: item }) }} type={"quiz"} />)
         })}
         {/*펫*/}
-        {(type === "pet") && dataList?.map((item) => (<PetCard key={item.petId} item={item} onClick={onClick} />))}
+        {(type === "pet") && dataList?.map((item, index) => <PetCard key={item.petId} item={item} onClick={() => { onClick(item, index) }} />)}
         {/*몬스터*/}
-        {(type === "monster") && dataList?.map((item) => (<MonsterCard key={item.level} item={item} onClick={onClick} />))}
+        {(type === "monster") && dataList?.map((item) => <MonsterCard key={item.level} item={item} onClick={onClick} />)}
+        {/*게임방*/}
+        {(type === "multiroom") && dataList?.map((item) => <MultiroomCard key={item.gameId} item={item} onClick={onClick} />)}
       </CardWrapper>
     </Container>
   )
 }
 const Container = styled.div`
+    width: 100%;
     border-top: 1px solid rgba(120, 120, 120, 0.5);;
     border-bottom: 1px solid rgba(120, 120, 120, 0.5);
     margin: 5px auto 5px;
@@ -136,12 +173,11 @@ const Container = styled.div`
     border-top: 1px solid #3454d1;
     border-bottom: 1px solid #3454d1;
   }
-    `
+`
 const CardWrapper = styled.ul`
-    width: 100%;
     display: flex;
     flex-wrap: wrap;
-    `
+`
 const Card = styled.li`
     width: 280px;
     height: 155px;
@@ -154,42 +190,47 @@ const Card = styled.li`
     &: hover {
       background - color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
   }
-    `
+`
 const Row = styled.div`
-    display: flex;
-    `
+  display: flex;
+`
 const Column = styled(Row)`
-    flex-direction: column;
-    `
+  flex-direction: column;
+`
 const BasicText = styled.p`
-    margin: 0;
-    text-align: center;
-    `
+  margin: 0;
+  text-align: center;
+`
 const Title = styled.h5`
-    margin: 0 0 8px;
-    font-weight: 700;
-    overflow: hidden;
-    white-space: nowrap;   /* 텍스트를 한 줄로 표시 */
-    text-overflow: ellipsis;
-    `
+  margin: 0 0 8px;
+  font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;   /* 텍스트를 한 줄로 표시 */
+  text-overflow: ellipsis;
+`
 const Highlight = styled(BasicText)`
-    color: #3454d1;
-    font-weight: 700;
-    font-size: larger;
-    `
+  color: #3454d1;
+  font-weight: 700;
+  font-size: larger;
+`
 const BigNumber = styled.p`
-    font-size: 110px;
-    text-align: right;
-    color: rgb(52, 84, 209, 0.3);
-    `
+  font-size: 110px;
+  text-align: right;
+  color: rgb(52, 84, 209, 0.3);
+`
+const ProfileImg = styled.img`
+  width: 45px;
+  height: 45px;
+  border-radius: 23px;
+`
 const IconImg = styled.img`
-    width: 30px;
-    height: 30px;
-    margin-bottom: 7px;
-    padding: 1px;
-    border: 1px solid rgb(120, 120, 120, 0.5);
-    border-radius: 30px;
-    `
+  width: 30px;
+  height: 30px;
+  margin-bottom: 7px;
+  padding: 1px;
+  border: 1px solid rgb(120, 120, 120, 0.5);
+  border-radius: 30px;
+`
 const TagText = styled.p`
   display: inline;
   color: white;

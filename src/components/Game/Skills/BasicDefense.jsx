@@ -1,10 +1,9 @@
+import React, { useEffect, useRef } from 'react'
 import { Graphics } from '@pixi/react';
 import { gsap } from 'gsap';
-import React, { useEffect, useRef } from 'react'
-
+//수정(250731)
 const BasicDefense = ({ x, y, radius, trigger }) => {
-  const defenseRef = useRef()
-
+  const defenseRef = useRef();
   useEffect(() => {
     let animation
     if (!defenseRef.current) return;
@@ -14,7 +13,7 @@ const BasicDefense = ({ x, y, radius, trigger }) => {
       yoyo: true,
       repeat: 1
     })
-    return () => { if (animation) { animation.kill(); } };// 애니메이션 종료
+    return () => { if (animation) animation.kill(); };// 애니메이션 종료
   }, [trigger])
 
   const drawCircle = (g) => {
@@ -23,8 +22,8 @@ const BasicDefense = ({ x, y, radius, trigger }) => {
     g.drawCircle(0, 0, radius);  // 크기 조절 가능
     g.endFill();
   };
-  return <Graphics x={x} y={y} draw={drawCircle} ref={defenseRef} />
 
+  return (trigger && <Graphics x={x} y={y} draw={drawCircle} ref={defenseRef} />)
 };
 
 export default BasicDefense

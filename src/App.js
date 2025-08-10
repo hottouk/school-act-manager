@@ -28,6 +28,8 @@ import ClassroomFormPage from './pages/classSetting/ClassroomFormPage';
 import WhatsNewPage from './pages/main/WhatsNewPage';
 import MySchoolPage from './pages/school/MySchoolPage';
 //단어 배틀
+import GameSettingPage from './pages/quizBattle/GameSettingPage';
+import QuizBattleMultiPage from './pages/quizBattle/QuizBattleMultiPage';
 import QuizFormPage from './pages/quizBattle/QuizFormPage';
 import QuizActiFormPage from './pages/quizBattle/QuizActiFormPage';
 import QuizMainPage from './pages/quizBattle/QuizMainPage';
@@ -39,6 +41,7 @@ import HomeSeatChange from './pages/homeroom/HomeSeatChangePage';
 import SchoolMainPage from './pages/school/SchoolMainPage';
 //상점
 import ShopMainPage from './pages/shop/ShopMainPage';
+import IndividualPage from './pages/individual/IndividualPage';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -88,7 +91,12 @@ function App() {
           <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
           {/* 학교 */}
           <Route path="/school" element={uid ? <SchoolMainPage /> : <Navigate replace={true} to='/login' />} />
-          <Route path="/store" element={uid ? <ShopMainPage /> : <Navigate replace={true} to='/' />} />
+          <Route path="/store" element={uid ? <ShopMainPage /> : <Navigate replace={true} to='/login' />} />
+          {/* 개인 페이지 */}
+          <Route path="/individual" element={uid ? <IndividualPage /> : <Navigate replace={true} to='/login' />} />
+          {/* 게임 */}
+          <Route path="game_setting" element={uid ? <GameSettingPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/multiplay" element={uid ? <QuizBattleMultiPage /> : <Navigate replace={true} to='/login' />} />
           {/* 새소식 관리 */}
           <Route path="/news" element={uid ? <WhatsNewPage /> : <Navigate replace={true} to='/' />} />
           {/* 로그인/회원가입 */}

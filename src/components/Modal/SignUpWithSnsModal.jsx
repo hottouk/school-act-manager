@@ -107,7 +107,7 @@ const SignUpWithSnsModal = (props) => {
                 value={_isTeacher}
                 onChange={() => { setIsTeacher((prev) => !prev) }} />
             </Row>
-            {_isTeacher === false &&
+            {!_isTeacher &&
               <Row>
                 <DotTitle title="학번" styles={{ fontWeight: "400", dotColor: "#3454d1" }} />
                 <CSInfoSelect grade={_grade} classNumber={_classNumber} number={_number} handleOnChange={handleStudentNumber} />

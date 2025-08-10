@@ -76,9 +76,7 @@ const MarginalText = styled.p`
   text-decoration: underline;
   margin-bottom: 0;
   cursor: pointer;
-  &:hover {
-    color: #3454d1;
-  }
+  &:hover { color: #3454d1; }
 `
 const ModifyingInput = styled.input`
   width: 100%;

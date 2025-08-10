@@ -1,14 +1,14 @@
 import React from 'react'
 import { Text, Container, Graphics } from '@pixi/react'
-import PetSprite from './PetSprite';
 import useMediaQuery from '../../hooks/useMediaQuery';
 
 //250112 생성 -> 모바일(250213)
-const BattleReport = ({ result, correct, src, x, y, score, winCount, exp }) => {
+const BattleReport = ({ result, correct, x, y, winCount, exp, isMulti }) => {
   const isMobile = useMediaQuery("(max-width: 767px)");
   const titleFontSize = isMobile ? 35 : 55;
   const width = isMobile ? window.innerWidth : 500;
   const height = isMobile ? 600 : 550;
+  const score = result === "Win" ? correct * 100 * 2 : correct * 100 / 2
   const headerStyle = {
     fill: ['#3454d1', '#4a77e2'], // 그라데이션 색상 (시작, 끝)
     fontSize: titleFontSize, // 크기 증가
@@ -33,15 +33,6 @@ const BattleReport = ({ result, correct, src, x, y, score, winCount, exp }) => {
     fontSize: 24,
     fontWeight: 'bold',
     lineHeight: 40,
-  }
-
-  //아래 몬스터 스프라이트
-  const drawRoundedRect = (g) => {
-    g.clear();
-    g.lineStyle(4, 0x000000, 1);
-    g.beginFill(0xffffff);
-    g.drawRoundedRect(x - 290, y + 600, 175, 175, 10);
-    g.endFill();
   }
   //결과 보고
   const drawReportRect = (g) => {
@@ -90,20 +81,18 @@ const BattleReport = ({ result, correct, src, x, y, score, winCount, exp }) => {
       y={y + 388}
       anchor={0.5}
       style={textStyle} />
-    <Text
+    {!isMulti && <Text
       text={`얻은 경험치: +${exp} exp`}
       x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 432}
       anchor={0.5}
-      style={textStyle} />
-    <Text
+      style={textStyle} />}
+    {!isMulti && <Text
       text={`생기부 문구 획득까지 ${winCount}번!`}
       x={!isMobile ? (x + 250) : (window.innerWidth * 0.5)}
       y={y + 476}
       anchor={0.5}
-      style={textStyle} />
-    <Graphics draw={drawRoundedRect} />
-    {!isMobile && <PetSprite src={src} x={x - 200} y={y + 685} width={175} height={175} />}
+      style={textStyle} />}
   </Container>
   )
 }

@@ -17,40 +17,55 @@ const useFireTransaction = () => {
   const { makeUniqueArrWithEle, replaceItem } = useGetRidOverlap();
   const { makeAccRec } = useAcc();
   const { logout } = useLogout();
-
-  //11. 회원 탈퇴
-  const deleteUserTransaction = async () => {
-    const auth = appAuth;
-    const firebaseUser = auth.currentUser;
-    const userDoc = doc(userCol, user.uid);
-    if (firebaseUser) {
-      try {
-        await deleteUser(firebaseUser);
-        console.log("파이어베이스 계정이 삭제되었습니다.");
-      } catch (error) {
-        console.error("회원 탈퇴 중 오류 발생:", error);
-        return;
-      }
-    } else {
-      //파이어베이스 인증된 계정이 아닌 경우
-      console.error("로그인된 사용자가 없습니다.");
-    }
-    const q = query(actiCol, where("uid", "==", user.uid));
-    const actiSnapshots = await getDocs(q);
-    if (actiSnapshots.empty) { console.log("삭제할 문서가 없습니다."); }
+  //1. 활동 업어오기: 활동 관리 - 전체활동 - 타교사 - 퍼가기
+  const copyActiTransaction = async (acti) => {
+    const actiId = acti.id
+    const othrId = acti.uid
+    const actiRef = doc(db, "activities", actiId)
+    const userRef = doc(db, "user", user.uid)
+    const otrRef = doc(db, "user", othrId) //다른 교사 user
+    //신규값
     await runTransaction(db, async (transaction) => {
-      //활동 삭제
-      actiSnapshots.forEach((actiSnap) => { transaction.delete(doc(actiCol, actiSnap.id)); })
-      //유저 삭제
-      transaction.delete(userDoc);
-    }).catch((error) => {
-      alert(`관리자에게 문의하세요(useFireTransaction_11),${error}`);
-      console.log(error);
+      const actiDoc = await transaction.get(actiRef)
+      const userDoc = await transaction.get(userRef)
+      const otrDoc = await transaction.get(otrRef)
+      if (!actiDoc.exists()) { throw new Error("활동 읽기 에러") }
+      if (!userDoc.exists()) { throw new Error("유저 읽기 에러") }
+      if (!otrDoc.exists()) { throw new Error("타교사 읽기 에러") }
+      //기존 데이터 or undefined 반환 undefined인 경우엔 초기값 제공
+      let copiedActiList = userDoc.data().copiedActiList || [];  //기존 업어간 활동 //기존 업어간 활동 + 새로 업어온 활동
+      copiedActiList = makeUniqueArrWithEle(copiedActiList, { id: actiDoc.id, ...actiDoc.data(), madeById: actiDoc.data().uid, uid: user.uid }, "id")
+      let likedCount = (actiDoc.data().likedCount || 0) + 1;
+      let targetLikedCount = (otrDoc.data().likedCount || 0) + 1;  //기존 좋아요 + 1 
+      //업데이트
+      transaction.update(userRef, { copiedActiList })
+      transaction.update(actiRef, { likedCount })
+      transaction.update(otrRef, { targetLikedCount })
     }).then(() => {
-      console.log("쫑알이 계정이 삭제되었습니다.");
-      logout();
+      window.alert("활동이 저장되었습니다.")
+    }).catch(err => {
+      window.alert(err);
+      console.log(err);
     })
   }
+  //2. 업어온 활동 삭제하기: 활동 관리 - 나의 활동 - 업어온 활동 - 삭제
+  const delCopiedActiTransaction = async (actiId) => {
+    let userDocRef = doc(userCol, user.uid)
+    await runTransaction(db, async (transaction) => {
+      const userDoc = await transaction.get(userDocRef)
+      if (!userDoc.exists()) { throw new Error("유저 읽기 에러") }
+      let copiedActiList = userDoc.data().copiedActiList || [];
+      copiedActiList = copiedActiList.filter((item) => { return item.id !== actiId })
+      transaction.update(userDocRef, { copiedActiList })
+    }).then(() => {
+      window.alert("활동이 삭제되었습니다.")
+    }).catch(err => {
+      window.alert(err);
+      console.log(err);
+    })
+  }
+
+
   //10. 교사/학생 변경
   const changeIsTeacherTransaction = async (schoolCode, memberId) => {
     const schoolDoc = doc(schoolCol, schoolCode);
@@ -241,8 +256,8 @@ const useFireTransaction = () => {
   const approveKlassTransaction = async (info, pet) => {
     const { classId, petId, studentId, studentName } = info
     const teacherRef = doc(db, "user", user.uid);
-    const studentRef = doc(db, "user", studentId)
-    const petRef = doc(db, "classRooms", classId, "students", petId)
+    const studentRef = doc(db, "user", studentId);
+    const petRef = doc(db, "classRooms", classId, "students", petId);
 
     await runTransaction(db, async (transaction) => {
       const studentDoc = await transaction.get(studentRef);
@@ -256,15 +271,13 @@ const useFireTransaction = () => {
       //교사: 상신 목록 삭제
       transaction.update(teacherRef, { onSubmitList: arrayRemove(info) }) //교사
 
-      //학생: 펫 추가, 신청 -> 승인 수정
+      //학생: 펫 추가, 신청 -> 승인
       const myClassList = studentDoc.data().myClassList || [];
       const updatedMyClassList = myClassList.map((item) => {
         if (item.id === classId) { return { ...item, isApproved: true } }
         return item
       })
-      transaction.update(studentRef,
-        { myClassList: updatedMyClassList, myPetList: arrayUnion(pet) })
-
+      transaction.update(studentRef, { myClassList: updatedMyClassList, myPetList: arrayUnion(pet) })
       //펫: 학생 정보 추가
       const master = petDoc.data().master || null;
       if (petDoc.data().master) {
@@ -310,54 +323,40 @@ const useFireTransaction = () => {
     })
   }
 
-  //2. 업어온 활동 삭제하기: 활동 관리 - 나의 활동 - 업어온 활동 - 삭제
-  const delCopiedActiTransaction = async (actiId) => {
-    let userDocRef = doc(userCol, user.uid)
+  //11. 회원 탈퇴
+  const deleteUserTransaction = async () => {
+    const auth = appAuth;
+    const firebaseUser = auth.currentUser;
+    const userDoc = doc(userCol, user.uid);
+    if (firebaseUser) {
+      try {
+        await deleteUser(firebaseUser);
+        console.log("파이어베이스 계정이 삭제되었습니다.");
+      } catch (error) {
+        console.error("회원 탈퇴 중 오류 발생:", error);
+        return;
+      }
+    } else {
+      //파이어베이스 인증된 계정이 아닌 경우
+      console.error("로그인된 사용자가 없습니다.");
+    }
+    const q = query(actiCol, where("uid", "==", user.uid));
+    const actiSnapshots = await getDocs(q);
+    if (actiSnapshots.empty) { console.log("삭제할 문서가 없습니다."); }
     await runTransaction(db, async (transaction) => {
-      const userDoc = await transaction.get(userDocRef)
-      if (!userDoc.exists()) { throw new Error("유저 읽기 에러") }
-      let copiedActiList = userDoc.data().copiedActiList || [];
-      copiedActiList = copiedActiList.filter((item) => { return item.id !== actiId })
-      transaction.update(userDocRef, { copiedActiList })
+      //활동 삭제
+      actiSnapshots.forEach((actiSnap) => { transaction.delete(doc(actiCol, actiSnap.id)); })
+      //유저 삭제
+      transaction.delete(userDoc);
+    }).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireTransaction_11),${error}`);
+      console.log(error);
     }).then(() => {
-      window.alert("활동이 삭제되었습니다.")
-    }).catch(err => {
-      window.alert(err);
-      console.log(err);
+      console.log("쫑알이 계정이 삭제되었습니다.");
+      logout();
     })
   }
 
-  //1. 활동 업어오기: 활동 관리 - 전체활동 - 타교사 - 퍼가기
-  const copyActiTransaction = async (acti) => {
-    const actiId = acti.id
-    const othrId = acti.uid
-    const actiRef = doc(db, "activities", actiId)
-    const userRef = doc(db, "user", user.uid)
-    const otrRef = doc(db, "user", othrId) //다른 교사 user
-    //신규값
-    await runTransaction(db, async (transaction) => {
-      const actiDoc = await transaction.get(actiRef)
-      const userDoc = await transaction.get(userRef)
-      const otrDoc = await transaction.get(otrRef)
-      if (!actiDoc.exists()) { throw new Error("활동 읽기 에러") }
-      if (!userDoc.exists()) { throw new Error("유저 읽기 에러") }
-      if (!otrDoc.exists()) { throw new Error("타교사 읽기 에러") }
-      //기존 데이터 or undefined 반환 undefined인 경우엔 초기값 제공
-      let copiedActiList = userDoc.data().copiedActiList || [];  //기존 업어간 활동 //기존 업어간 활동 + 새로 업어온 활동
-      copiedActiList = makeUniqueArrWithEle(copiedActiList, { id: actiDoc.id, ...actiDoc.data(), madeById: actiDoc.data().uid, uid: user.uid }, "id")
-      let likedCount = (actiDoc.data().likedCount || 0) + 1;
-      let targetLikedCount = (otrDoc.data().likedCount || 0) + 1;  //기존 좋아요 + 1 
-      //업데이트
-      transaction.update(userRef, { copiedActiList })
-      transaction.update(actiRef, { likedCount })
-      transaction.update(otrRef, { targetLikedCount })
-    }).then(() => {
-      window.alert("활동이 저장되었습니다.")
-    }).catch(err => {
-      window.alert(err);
-      console.log(err);
-    })
-  }
   return {
     changeIsTeacherTransaction, copyActiTransaction, delCopiedActiTransaction, applyKlassTransaction, approveKlassTransaction, approvWinTransaction,
     denyTransaction, confirmDenialTransaction, leaveSchoolTransaction, approveCoteahingTransaction, deleteUserTransaction

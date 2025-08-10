@@ -150,13 +150,14 @@ const Container = styled.nav`
     text-decoration: none;
   }
   @media screen and (max-width: 767px){
+    width: 100%;
     display: flex;
     position: fixed; 
     bottom: 0;
     height: 10%;
     background-color: #efefef;
     padding: 5px;
-    z-index: 999;
+    z-index: 998;
     a {
       color: #3454d1;
       font-size: 12px;

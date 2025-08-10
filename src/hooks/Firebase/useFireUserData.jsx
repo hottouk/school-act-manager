@@ -12,18 +12,18 @@ const useFireUserData = () => {
 
   //1. 유저 정보 하나 가져오기
   const fetchUserData = async (id) => {
-    const userDoc = doc(col, id);
-    const userSnapshot = await getDoc(userDoc).catch((error) => {
+    const userDocRef = doc(col, id);
+    const userDoc = await getDoc(userDocRef).catch((error) => {
       alert(`관리자에게 문의하세요(useFireUserData_01), ${error}`);
       console.log(error);
     })
-    return userSnapshot.data();
+    return userDoc.data();
   }
-  //1-1. 유저 정보 하나 구독
-  const subscribeUserData = (id, callback) => {
+  //1-1. 유저 정보 실시간 구독
+  const userDataListener = (id, callback) => {
     if (!id) return
-    const userDoc = doc(col, id);
-    const unsubscribe = onSnapshot(userDoc, (snapshot) => {
+    const userDocRef = doc(col, id);
+    const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
       if (snapshot.exists()) { callback(snapshot.data()); }
       else { callback(null); }
     })
@@ -32,10 +32,10 @@ const useFireUserData = () => {
 
   //2. 유저 기본 업데이트(250217)
   const updateUserInfo = async (field, info, otherId) => {
-    let userDoc = doc(col, user.uid);
-    if (otherId) { userDoc = doc(col, otherId); }
-    else { userDoc = doc(col, user.uid); }
-    await setDoc(userDoc, { [field]: info }, { merge: true }).catch((error) => {
+    let userDocRef = doc(col, user.uid);
+    if (otherId) { userDocRef = doc(col, otherId); }
+    else { userDocRef = doc(col, user.uid); }
+    await setDoc(userDocRef, { [field]: info }, { merge: true }).catch((error) => {
       alert(`관리자에게 문의하세요(useFireUserData_02), ${error}`);
       console.log(error);
     })
@@ -174,7 +174,7 @@ const useFireUserData = () => {
   }
 
 
-  return ({ fetchUserData, subscribeUserData, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem })
+  return ({ fetchUserData, userDataListener, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem })
 }
 
 export default useFireUserData
