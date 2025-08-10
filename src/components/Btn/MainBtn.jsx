@@ -34,7 +34,7 @@ const StyledBtn = styled.button`
   touch-action: manipulation;
   vertical-align: top;
   white-space: nowrap;
-
+  z-index: 999;
   &:hover {
   background-color: #1366d6;
   box-shadow: rgba(0, 0, 0, .05) 0 5px 30px, rgba(0, 0, 0, .05) 0 1px 4px;
