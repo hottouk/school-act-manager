@@ -256,6 +256,7 @@ const Column = styled(Row)`
 `
 const Container = styled(Column)`
   box-sizing: border-box;
+  overflow-y: scroll;
 `
 const VsWrapper = styled(Row)`
   box-sizing: border-box;

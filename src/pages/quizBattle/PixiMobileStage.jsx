@@ -31,7 +31,10 @@ const PixiMobileStage = ({ background, phase, quizListRef, correctNumber, action
   const winCount = !isMulti ? rewardPoint - countWinRecord() : null;
   return (
     <Container>
-      <Stage width={window.innerWidth} height={window.innerHeight} options={{ background: "#3454d1" }} >
+      <Stage width={window.innerWidth} height={window.innerHeight} options={{ background: "#3454d1" }} onMount={(app) => {
+        if (app.renderer?.events) { app.renderer.events.autoPreventDefault = false; }
+        app.view.style.touchAction = 'pan-y';
+      }} >
         {/* 기본UI */}
         {background && <Background src={background || qustion_icon} x={0} y={0} width={window.innerWidth} height={window.innerHeight} />}
         <Text text={`문제: ${quizListRef.current.length}개`} x={window.innerWidth * 0.15} y={window.innerHeight * 0.035} anchor={0.5} style={{ fontSize: 16, fontWeight: 'bold', }} ></Text>
@@ -75,6 +78,5 @@ const PixiMobileStage = ({ background, phase, quizListRef, correctNumber, action
 const Container = styled.div`
 	height: 100%;
 	box-sizing: border-box;
-	grid-row: 2/3;
 `
 export default PixiMobileStage

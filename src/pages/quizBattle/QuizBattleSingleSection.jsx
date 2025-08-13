@@ -476,11 +476,9 @@ const Container = styled(Row)`
   flex-direction: column;
   align-items: center;
   @media (max-width: 768px) {
-    display: grid;
     width: 100%;
     min-height: 100%;
     overflow-y: auto;
-    grid-template-rows: 135px 1fr auto;
   }
 `
 const ControllerUI = styled(Row)`

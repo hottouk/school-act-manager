@@ -48,10 +48,11 @@ const Column = styled(Row)`
   flex-direction: column;
 `
 const Container = styled(Row)`
-  width: ${({ $isMobile }) => !$isMobile ? "1200px" : "100%"};
   background-color: #ddd;
   padding: 16px;
 	border-radius: 10px 10px 0 0;
+  width: ${({ $isMobile }) => !$isMobile ? "1200px" : "100%"};
+  ${({ $isMobile }) => $isMobile && "grid-row: 1/2"};
 `
 const ProfileImg = styled.img`
 	position: relative;

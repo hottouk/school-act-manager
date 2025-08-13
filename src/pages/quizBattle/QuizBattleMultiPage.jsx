@@ -418,18 +418,6 @@ const QuizBattleMultiPage = () => {
         {phase === "end" && <MainBtn onClick={() => setPhase("review")}>틀린 문제</MainBtn>}
         {(phase === "end" || phase === "review") && <MainBtn onClick={handleExitOnClick}>종료하기</MainBtn>}
       </ControllerUI>
-      {/* <TempUi>
-				<Column style={{ gap: "5px" }}>
-					<MainBtn onClick={() => { updateGameroom({ gameId, info: { phase: "waiting" } }) }}>waiting</MainBtn>
-					<MainBtn onClick={() => { updateGameroom({ gameId, info: { phase: "end" } }) }}>end</MainBtn>
-					<MainBtn onClick={() => { updateGameroom({ gameId, info: { phase: "stance" } }) }}>stance</MainBtn>
-					<MainBtn onClick={() => {
-						updateGameroom({ gameId, info: { petCurStat: [{ petId: user.uid, curHp: mySpec.hp, type: null }, { petId: enmPet.petId, curHp: enmSpec.hp, type: null }], battleTurn: 1, actions: [] } })
-					}}>temp초기화</MainBtn>
-				</Column>
-				<p>{battleTurn}턴</p>
-				<p>{phase} 페이즈</p>
-			</TempUi> */}
     </Container >
   )
 }
@@ -461,11 +449,5 @@ const ControllerUI = styled(Row)`
 	gap: ${({ $isMobile }) => !$isMobile ? "100px" : "10px"};
 	flex-direction: ${({ $isMobile }) => !$isMobile ? "row" : "column"};
 	width: ${({ $isMobile }) => !$isMobile ? "1200px" : `${window.innerWidth}px;`};
-`
-const TempUi = styled(Column)`
-	position: absolute;
-  justify-content: center;
-	right: 0;
-	background-color: #ddd;
 `
 export default QuizBattleMultiPage
