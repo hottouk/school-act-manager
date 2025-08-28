@@ -1,22 +1,27 @@
+//라이브러리
 import React from 'react'
 import styled from 'styled-components'
+//컴포넌트
 import Container from '../../components/MainPanel';
-
-//250211 분리 생성
+import TwoRadios from '../../components/Radio/TwoRadios';
+import DotTitle from '../../components/Title/DotTitle';
+//분리 생성(250211)
 const ClassBoardSection = ({ userStatus, isModifying, klassData, title, intro, notice, studentList, noticeList,
   setIsModifying, setTitle, setIntro, setNotice, handleSaveOnClick, handleCancelOnClick, handleDeleteOnClick, handleDropOutOnClick, handleCopyOnClick }) => {
-
   return (
     <Container>
       {!isModifying && <BoldText>{title}</BoldText>}
       {isModifying && <ModifyingInput type='text' value={title} onChange={(event) => { setTitle(event.target.value) }} placeholder='반 제목을 수정해주세요'></ModifyingInput>}
       <SubjectText>{klassData?.subject || "담임"}-{klassData?.subjDetail || "담임"}</SubjectText>
-      <Row style={{ gap: "15px" }}>
+      <Row style={{ gap: "15px", justifyContent: "center" }}>
         <Board>
           <InfoText>Class Info.</InfoText>
-          {!isModifying && <p>{intro}</p>}
-          {isModifying && <ModifyingInput type='text' value={intro} onChange={(event) => { setIntro(event.target.value) }} placeholder='반 설명을 간단히 입력하세요'></ModifyingInput>}
-          <p>{!studentList ? 0 : studentList.length}명의 학생들이 있습니다.</p>
+          <Row><DotTitle title={"반 정보"} />
+            {!isModifying
+              ? <BasicText>{intro}</BasicText>
+              : <ModifyingInput type='text' value={intro} onChange={(event) => { setIntro(event.target.value) }} placeholder='반 설명을 간단히 입력하세요'></ModifyingInput>}
+          </Row>
+          <Row><DotTitle title={"학생 수"} /><BasicText>{!studentList ? 0 : studentList.length}명</BasicText></Row>
         </Board>
         <Board>
           <InfoText>Notice</InfoText>
@@ -43,15 +48,21 @@ const ClassBoardSection = ({ userStatus, isModifying, klassData, title, intro, n
   )
 }
 
-const Board = styled.div`
+const Row = styled.div`
+  display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
+`
+const Board = styled(Column)`
   width: 50%;
   padding: 12px;
+  gap: 10px;
   border: 1px solid rgba(120,120,120,0.5);
   border-radius: 15px;
 `
-const Row = styled.div`
-  display: flex;
-  justify-content: center;
+const BasicText = styled.p`
+  margin:0;
 `
 const BoldText = styled.h2`
   color; #3a3a3a;
@@ -83,7 +94,7 @@ const ModifyingInput = styled.input`
   height: 35px;
   border: 1px solid #3a3a3a;
   border-radius: 5px;
-  margin: 20px auto;
+  margin: 10px auto;
   padding: 4px;
 `
 const ModifyingTextarea = styled.textarea`

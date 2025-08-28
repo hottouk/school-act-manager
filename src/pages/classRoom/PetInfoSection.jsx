@@ -5,9 +5,12 @@ import styled from 'styled-components'
 import PetImg from '../../components/PetImg'
 import XBtn from '../../components/Btn/XBtn'
 import useFirePetData from '../../hooks/Firebase/useFirePetData'
-//생성(250223)
+import { useSelector } from 'react-redux'
+//생성(250223)->수정(250820)
 const PetInfoSection = ({ pet, isModifiying, setWrittenName }) => {
-  const { subject, studentNumber, name, level, master, desc, path, id, classId } = pet;
+  const user = useSelector(({ user }) => user);
+  const { subject, studentNumber, name, level, master, desc, path, id, classId, writtenName } = pet;
+  const isMaster = user.uid === master?.studentId;
   const { deletePetField } = useFirePetData();
   //구독 취소
   const handleDeSubscribeOnClick = () => {
@@ -21,14 +24,20 @@ const PetInfoSection = ({ pet, isModifiying, setWrittenName }) => {
         <Column style={{ padding: "12px", justifyContent: "space-evenly", gap: "5px" }}>
           <span>학번: {studentNumber}</span>
           <Row style={{ alignItems: "center" }}><span>이름:&nbsp;</span>{!isModifiying
-            ? master ? master.studentName : '미등록'
+            ? writtenName ? writtenName : '미등록'
             : <ModifyingInput type="text" defaultValue={''} onChange={(event) => { setWrittenName(event.target.value) }} />
           }</Row>
-          <Row > <span>가입여부:&nbsp;</span>{master ?
-            <Row style={{ gap: "10px" }}>
-              <span>{master.studentName}으로 가입</span>
-              <XBtn styles={{ backgroundColor: "red", color: "white" }} onClick={() => { handleDeSubscribeOnClick(); }} />
-            </Row> : 'X'}</Row>
+          <Row > <span>가입여부:&nbsp;</span>
+            {master
+              ?
+              <Row style={{ gap: "10px" }}>
+                <span>{master.studentName}(으)로 가입</span>
+                {(isMaster || user.isTeacher) && <XBtn
+                  styles={{ backgroundColor: "red", color: "white" }}
+                  onClick={() => { handleDeSubscribeOnClick(); }} />}
+              </Row>
+              : 'X'}
+          </Row>
         </Column>
       </StudentInfoWrapper>
       <Row style={{ flexDirection: "column", padding: "12px", marginTop: "12px", justifyContent: "space-evenly" }}>

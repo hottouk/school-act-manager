@@ -99,7 +99,7 @@ const ClassroomDetailsPage = () => {
   //변경 가능 데이터 바인딩
   const bindKlassData = () => {
     if (!klassData) return;
-    const { classTitle, intro, notice } = klassData;
+    const { classTitle, intro, notice, semester } = klassData;
     dispatcher(setSelectClass(klassData));
     setTitle(classTitle || '정보 없음');
     setIntro(intro || '정보 없음');
@@ -142,7 +142,7 @@ const ClassroomDetailsPage = () => {
   const handleSaveOnClick = () => {
     const confirm = window.confirm("이대로 클래스 정보를 변경하시겠습니까?");
     if (confirm) {
-      const classInfo = { title: _title, intro: _intro, notice: _notice };
+      const classInfo = { title: _title, intro: _intro, notice: _notice, };
       updateClassroom(classInfo, klassData.id);
       setIsModifying(false);
     }
@@ -199,7 +199,8 @@ const ClassroomDetailsPage = () => {
     {klassData &&
       <Container $clientheight={clientHeight} $isVisible={isVisible}>
         {/* 반 기본 정보(공용) */}
-        <ClassBoardSection userStatus={userStatus} isModifying={isModifying} klassData={klassData} title={_title} intro={_intro} notice={_notice} studentList={studentList} noticeList={noticeList}
+        <ClassBoardSection userStatus={userStatus} isModifying={isModifying} klassData={klassData} title={_title} intro={_intro} notice={_notice}
+          studentList={studentList} noticeList={noticeList}
           setIsModifying={setIsModifying} setTitle={setTitle} setIntro={setIntro} setNotice={setNotice}
           handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} handleDropOutOnClick={handleDropOutOnClick} handleCopyOnClick={handleCopyOnClick} />
         {/* 쫑알이(교사)*/}

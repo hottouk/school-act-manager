@@ -25,7 +25,7 @@ const ByteCalculator = ({ str, handleOnChange, styles }) => {
 }
 const Container = styled.div`
   margin-top: -8px;
-  display:flex;
+  display: flex;
   justify-content: ${(props) => props.$justifyContent};
 `
 const StyledInput = styled.input`

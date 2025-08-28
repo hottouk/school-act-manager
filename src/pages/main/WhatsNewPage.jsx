@@ -10,7 +10,6 @@ import SmallBtn from '../../components/Btn/SmallBtn';
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useFireTransaction from '../../hooks/useFireTransaction';
-import usePet from '../../hooks/usePet';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
 
@@ -25,7 +24,6 @@ const WhatsNewPage = () => {
   const [onSubmitList, setOnSubmitList] = useState([]);
   const [reward, setReward] = useState(null);
   const [isRewardModal, setIsRewardModal] = useState(false);
-  const { getInitialPet } = usePet();
   const { updateKlassroomArrayInfo } = useFireClassData();
   const { approvWinTransaction, denyTransaction, confirmDenialTransaction, approveKlassTransaction, approveCoteahingTransaction } = useFireTransaction();
   const { deleteUserArrayInfo } = useFireUserData();
@@ -37,9 +35,9 @@ const WhatsNewPage = () => {
   }
   //가입 승인
   const handleApproveJoinOnClick = (item) => {
-    const { classId, petId, classSubj } = item
-    const pet = { ...getInitialPet(classSubj), classId, petId }
-    approveKlassTransaction(item, pet)
+    const { classId, petId, pet } = item;
+    const petInfo = { ...pet, classId, petId };
+    approveKlassTransaction(item, petInfo);
   }
   //생기부 기록 승인
   const handleApproveWinOnClick = (item) => {
@@ -58,20 +56,16 @@ const WhatsNewPage = () => {
   //반려
   const handleDenyOnClick = (item) => {
     const reason = window.prompt("거부 사유를 입력하세요")
-    if (reason) { denyTransaction(item, reason); } else {
-      window.alert("취소하셨습니다.")
-    }
+    if (reason) { denyTransaction(item, reason); }
+    else { alert("취소하셨습니다.") }
   }
   //진화 확인
   const handleEvolutionOnClick = (info) => {
-    console.log(info)
-    setIsRewardModal(true)
-    setReward(info)
+    setIsRewardModal(true);
+    setReward(info);
   }
-  //거부 확인
-  const handleDeniedOnClick = (info) => {
-    confirmDenialTransaction(info)
-  }
+  //클래스 가입 거부 확인(교사,학생)
+  const handleDeniedOnClick = (info) => confirmDenialTransaction(info);
 
   //------교사용 랜더링----------------------------------------------- 
   //학생 가입 여부
@@ -227,7 +221,10 @@ const WhatsNewPage = () => {
           {title && <><Highlight>{title}</Highlight> 생기부 활동 기록이 거부되었습니다.{`\n`}사유: {reason}</>}
         </BubbleText>
       </GridItem>
-      <GridItem><SmallBtn onClick={() => { deleteUserArrayInfo(user.uid, "onSubmitList", item) }}>확인</SmallBtn></GridItem>
+      <GridItem>
+        {school && <SmallBtn onClick={() => confirmDenialTransaction(item)}>확인</SmallBtn>}
+        {title && <SmallBtn onClick={() => deleteUserArrayInfo(user.uid, "onSubmitList", item)}>확인</SmallBtn>}
+      </GridItem>
     </React.Fragment>
   })
   const StudentResultBubble = ({ index, item }) => {

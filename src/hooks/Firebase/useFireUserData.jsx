@@ -59,7 +59,7 @@ const useFireUserData = () => {
     })
   }
 
-  //5. 학생 샵 아이템 구매(250630)
+  //5. 학생: 샵 아이템 구매(250630)
   const purchaseShopItem = async (student, rira, item, quantity, teacherId) => {
     const { title, price, stock, order } = item;
     const userDoc = doc(col, user.uid);
@@ -85,6 +85,36 @@ const useFireUserData = () => {
       console.log(error);
     })
   }
+
+  //6. 학생: 가입 신청
+  const applyKlassTransaction = async (info) => {
+    const { klass, petId, petLabel, user, pet } = info
+    const klassInfo = { ...klass, isApproved: false } //신청 정보
+    const today = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD' 형식
+    const submitInfo =
+    {
+      studentId: user.uid, studentName: user.name, studentNumber: user.studentNumber, school: user.school.schoolName, petId, petLabel, pet,
+      classId: klass.id, classTitle: klass.classTitle, classSubj: klass.subject, applyDate: today, type: "join"
+    } //상신 정보
+    const studentDocRef = doc(col, user.uid);
+    const teacherDocRef = doc(col, klassInfo.uid);
+    await runTransaction(db, async (transaction) => {
+      const studentDoc = await transaction.get(studentDocRef);
+      if (!studentDoc.exists()) throw new Error("학생 읽기 에러");
+      //이미 신청 확인
+      const isApplied = studentDoc.data().myClassList?.find((item) => item.id === klass.id);
+      if (isApplied) throw new Error("이미 가입되었거나 가입 신청한 클래스입니다.");
+      //학생 신청 정보 업데이트, 교사 상신
+      transaction.update(studentDocRef, { "myClassList": arrayUnion(klassInfo) });
+      transaction.update(teacherDocRef, { "onSubmitList": arrayUnion(submitInfo) });
+    }).then(() => {
+      window.alert("가입 신청되었습니다.")
+    }).catch(err => {
+      window.alert(err);
+      console.log(err);
+    })
+  }
+
 
   //내 정보 창에서 정보 변경(250223)
   const updateMyInfo = async (info) => {
@@ -174,7 +204,7 @@ const useFireUserData = () => {
   }
 
 
-  return ({ fetchUserData, userDataListener, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem })
+  return ({ fetchUserData, userDataListener, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem, applyKlassTransaction })
 }
 
 export default useFireUserData

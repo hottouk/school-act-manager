@@ -27,7 +27,10 @@ const PixiResponsiveStage = ({ isMobile, phase, background, messageList, quizLis
 	result, correctNumber, rewardPoint, countWinRecord, exp, }) => {
 
 	return (<Container $isMobile={isMobile}>
-		{!isMobile && <StyledStage width={1200} height={900} options={{ background: "#3454d1" }} >
+		{!isMobile && <Stage width={1200} height={900} options={{ background: "#3454d1" }} onMount={(app) => {
+			if (app.renderer?.events) { app.renderer.events.autoPreventDefault = false; }
+			app.view.style.touchAction = 'pan-y';
+		}}>
 			{/* 배경화면 */}
 			<Background src={background || qustion_icon} x={0} y={0} width={1200} height={900} />
 			{/* 기본 UI */}
@@ -63,7 +66,7 @@ const PixiResponsiveStage = ({ isMobile, phase, background, messageList, quizLis
 			{enmSkillEff && <SkillAttack x={950} y={175} width={300} height={300} effect={enmSkillEff} skillEffMap={skillEffMap} />}
 			{/* 종료 phase */}
 			{phase === "end" && <BattleReport x={350} y={100} result={result} correct={correctNumber} src={enmImg} score={score} winCount={rewardPoint - countWinRecord()} exp={exp} />}
-		</StyledStage>}
+		</Stage>}
 		{isMobile && <PixiMobileStage background={background} phase={phase} quizListRef={quizListRef} correctNumber={correctNumber} actionBall={actionBall} messageList={messageList}
 			myCurHp={myCurHP} mySpec={mySpec} enmCurHp={enemyCurHP} enmSpec={enmSpec} enmImg={enmImg} countdown={countdown} endCountCallback={endCountdown} curQuiz={curQuiz} marking={marking}
 			myActionEff={myActionEff} enmActionEff={enmActionEff} myDmg={myDmg} enmDmg={myDmg} skillEffMap={skillEffMap} enmSkillEff={enmSkillEff}
@@ -77,8 +80,4 @@ const Container = styled.div`
 	height: 100%;
 	box-sizing: border-box;
 `
-const StyledStage = styled(Stage)`
-  touch-action: pan-y;
-  -ms-touch-action: pan-y; /* 오래된 Edge 대비 (선택) */
-`;
 export default PixiResponsiveStage
