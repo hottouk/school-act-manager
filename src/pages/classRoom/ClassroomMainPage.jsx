@@ -14,13 +14,15 @@ import useFetchRtMyClassData from '../../hooks/RealTimeData/useFetchRtMyClassDat
 import useClientHeight from '../../hooks/useClientHeight';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useMediaQuery from '../../hooks/useMediaQuery';
+import BasicModal from '../../components/Modal/BasicModal';
 
-//24.09.18(1차 수정) -> 학생 파트 수정(25.01.21) -> 코티칭(250218)
+//1차 수정(240918) -> 학생 파트 수정(250121) -> 코티칭(250218)
 const ClassRoomMainPage = () => {
   //준비
   const user = useSelector(({ user }) => user)
-  const navigate = useNavigate()
-  const dispatcher = useDispatch()
+  useEffect(() => { fetchMyData() }, [user])
+  const navigate = useNavigate();
+  const dispatcher = useDispatch();
   const isMobile = useMediaQuery("(max-width: 767px)")
   //교사
   const { classList } = useFetchRtMyClassData();
@@ -32,7 +34,6 @@ const ClassRoomMainPage = () => {
   const { fetchUserData } = useFireUserData();
   const [appplyKlass, setApplyKlass] = useState([]);
   const [myKlass, setMyKlass] = useState([]);
-  useEffect(() => { fetchMyData() }, [user])
   //모니터 높이
   const clientHeight = useClientHeight(document.documentElement)
 
@@ -70,7 +71,6 @@ const ClassRoomMainPage = () => {
     dispatcher(setSelectClass(item)) //선택한 교실 비휘발성 전역변수화
     navigate(`/homeroom/${item.id}`) //url 이동
   }
-
   //------학생용------------------------------------------------  
   //가입 신청, 승인 클래스 분류
   const sortStudentKlass = (list) => {
@@ -85,7 +85,8 @@ const ClassRoomMainPage = () => {
     setApplyKlass(applied)
   }
 
-  return (
+
+  return (<>
     <Container $clientheight={clientHeight}>
       {/* 교사 */}
       {user.isTeacher && <>
@@ -97,16 +98,15 @@ const ClassRoomMainPage = () => {
         {!isMobile && <CardList dataList={homeroomKlassList} type="homeroom" onClick={handleHomeroomOnClick} />}
         {!isMobile && <Row><MainBtn onClick={() => navigate('/classrooms_setting', { state: { step: "first" } })}>클래스 만들기</MainBtn></Row>}
       </>}
-
       {/* 학생 */}
       {!user.isTeacher && <>
         <SearchBar title="가입 신청 중인 클래스" />
-        <CardList dataList={appplyKlass} type="classroom" onClick={() => { window.alert("승인을 기다려주세요") }} />
-
+        <CardList dataList={appplyKlass} type="classroom" onClick={() => alert("교사 승인 대기중입니다.")} />
         <SearchBar title="나의 클래스" />
         <CardList dataList={myKlass} type="classroom" onClick={handleSubjClassOnClick} />
       </>}
     </Container>
+  </>
   )
 }
 

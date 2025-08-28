@@ -10,7 +10,6 @@ const IndividualPage = () => {
 	useEffect(() => { bindUserData(); }, [state])
 	const { fetchUserData } = useFireUserData();
 	const [userInfo, setUserInfo] = useState();
-	console.log(userInfo)
 	const bindUserData = () => {
 		if (!state) return;
 		const { uid } = state;

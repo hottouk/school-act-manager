@@ -37,6 +37,7 @@ import { skillList } from "../../data/skillList";
 import useMediaQuery from '../../hooks/useMediaQuery';
 import PixiMobileStage from './PixiMobileStage';
 import ReviewSection from './ReviewSection';
+import { useBlockBackButton } from '../../hooks/Game/useBlockBack';
 //생성(250722)
 const QuizBattleMultiPage = () => {
   //준비
@@ -141,6 +142,7 @@ const QuizBattleMultiPage = () => {
   const { exitInfoListener, myActionEffListener, enmActionEffListener, loserListener, stanceListener } = GameListener({ setMessageList, setOptionList });
   const { formQuizOptionList, generateQuestion, checkAnswer } = useQuizLogic({ gameId, setHasDone, setMarking, setCurQuiz, setCurAnswer, setCorrectNumber, setActionBall, setWrongList, setMessageList });
   useEffect(() => { exitInfoListener(exitList); }, [exitList]);
+  useBlockBackButton();
   //모드
   const isMobile = useMediaQuery("(max-width: 767px)");
   //------함수부-------------------------------------------------------
@@ -333,12 +335,12 @@ const QuizBattleMultiPage = () => {
     updateGameroom({ gameId, info: { players: newPlayers } });
   }
   //방 나가기
-  const handleExitOnClick = () => {
+  const handleExitOnClick = (gameId) => {
     const confirm = window.confirm(playerList.length === 2 ? "방을 나가시겠습니까?" : "방을 나가면 방이 삭제됩니다. 나가시겠습니까?");
     if (!confirm) return;
     if (playerList.length === 2) { exitGameroom({ gameId, petList, petCurList, playerList, exitList, enmUserData }); }
     else if (playerList.length === 1) { deleteGameRooom(gameId); }
-    navigate(-1);
+    navigate("/game_setting");
   }
   //카운트 끝
   const endCountDown = () => {
@@ -354,7 +356,10 @@ const QuizBattleMultiPage = () => {
     <Container>
       {/* 상단 상태창 */}
       <StatusUI isMaster={isMaster} myUserData={myUserData} myPet={myPet} mySpec={mySpec} enmUserData={enmUserData} enmPet={enmPet} enmSpec={enmSpec} imReady={imReady} enmReady={enmReady} isMobile={isMobile} />
-      {(!isMobile && phase !== "review") && <Stage width={1200} height={900}>
+      {(!isMobile && phase !== "review") && <Stage width={1200} height={900} onMount={(app) => {
+        if (app.renderer?.events) { app.renderer.events.autoPreventDefault = false; }
+        app.view.style.touchAction = 'pan-y';
+      }}>
         {/* 기본UI */}
         {background && <Background src={background} x={0} y={0} width={1200} height={900} />}
         <Text text={`남은 문제: ${quizListRef.current.length}개`} x={150} y={50} anchor={0.5} style={{ fontSize: 24, fontWeight: 'bold', }} ></Text>
@@ -412,11 +417,11 @@ const QuizBattleMultiPage = () => {
         {(phase === "waiting") && <>
           {(imReady && enmReady && isMaster) && <MainBtn onClick={handleStartOnClick}>Start</MainBtn>}
           <MainBtn onClick={handleReadyOnClick}>Ready</MainBtn>
-          <MainBtn onClick={handleExitOnClick}>방 나가기</MainBtn>
+          <MainBtn onClick={() => { handleExitOnClick(gameId) }}>방 나가기</MainBtn>
         </>}
         {optionList?.length !== 0 && optionList?.map((option, index) => <TransparentBtn key={index} onClick={() => { handleOptionOnClick(index) }} disabled={hasDone}>{option}</TransparentBtn>)}
         {phase === "end" && <MainBtn onClick={() => setPhase("review")}>틀린 문제</MainBtn>}
-        {(phase === "end" || phase === "review") && <MainBtn onClick={handleExitOnClick}>종료하기</MainBtn>}
+        {(phase === "end" || phase === "review") && <MainBtn onClick={() => { handleExitOnClick(gameId) }}>종료하기</MainBtn>}
       </ControllerUI>
     </Container >
   )

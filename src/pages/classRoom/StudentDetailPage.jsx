@@ -106,7 +106,7 @@ const StudentDetailPage = () => {
     })
   }
   //실시간 acc
-  const getAccRec = () => { return _actiList?.reduce((acc, cur) => acc + cur.record, '') }
+  const getAccRec = () => { return _actiList?.reduce((acc, cur) => acc + " " + cur.record, '') }
   //학생 이동(241202)
   const moveStudent = (student) => {
     if (isAnimating) return;
@@ -250,7 +250,7 @@ const StudentDetailPage = () => {
       <FlexWrapper>
         {(user.isTeacher && !isModifying) && <ArrowWrapper><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
         <AnimRotation isAnimating={isAnimating}>
-          <StyledBackgroundPannel>
+          <BackgroundPannel>
             {petData && <PetInfoSection pet={petData} writtenName={_writtenName} isModifiying={isModifying} setWrittenName={setWrittenName} />}
             {(user.isTeacher || isMaster) && <GrayBotPannel>
               <GridBotContainer>
@@ -323,12 +323,12 @@ const StudentDetailPage = () => {
                 {user.isTeacher && <CenterWrapper><img src={arrows_icon} alt="아래화살표" /></CenterWrapper>}
                 {user.isTeacher && <StyledAcc>{getAccRec()}</StyledAcc >}</>}
             </GrayBotPannel>}
-          </StyledBackgroundPannel>
-          <TotalByteWrapper>
+          </BackgroundPannel>
+          <Row style={{ justifyContent: "flex-end", zIndex: "999", position: "relative" }}>
             <StyledBotBackground>
               <ByteCalculator str={getAccRec()} styles={{ justifyContent: "center", fontSize: "22px", fontColor: "white", width: "81px" }}></ByteCalculator>
             </StyledBotBackground>
-          </TotalByteWrapper>
+          </Row>
         </AnimRotation>
         {(user.isTeacher && !isModifying) && <ArrowWrapper><ArrowBtn id="right_arw_btn" onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
       </FlexWrapper>
@@ -357,8 +357,7 @@ const Container = styled.div`
   margin-bottom: 50px;
   @media screen and (max-width: 767px){
     width: 100%;
-    height: 1200px;
-    margin: 0;
+    height: 120%;
   }
 `
 const Row = styled.div`
@@ -376,7 +375,7 @@ const FlexWrapper = styled(Row)`
 const ArrowWrapper = styled(Row)`
   align-items: center;
 `
-const StyledBackgroundPannel = styled.div`
+const BackgroundPannel = styled.div`
   padding: 15px;
   margin: 15px auto 0;
   margin-top: 35px;
@@ -388,7 +387,7 @@ const StyledBackgroundPannel = styled.div`
   @media screen and (max-width: 767px){
     margin-top: 0;
     border: none;
-    border-radius: 0;
+    border-radius: 10px 10px 0 10px;
   }
 `
 const GrayBotPannel = styled.div`
@@ -473,13 +472,7 @@ const SmallBtnWrapper = styled.div`
   flex-direction: column;
   gap: 2px;
   margin: 2px;
-  &.gpt { 
-    gap: 12px;
-  }
-`
-const TotalByteWrapper = styled.div`
-  display: flex;
-  justify-content: flex-end;
+  &.gpt { gap: 12px; }
 `
 const StyledBotBackground = styled.div`
   background-color: #3454d1;
@@ -490,7 +483,6 @@ const StyledBotBackground = styled.div`
   border-bottom-left-radius: 30px;
   margin-bottom: 20px;
   padding: 10px 15px 50px 10px;
-}
 `
 const BtnWrapper = styled.div`
   display: flex;

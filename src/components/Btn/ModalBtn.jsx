@@ -4,10 +4,7 @@ import styled from 'styled-components'
 const ModalBtn = ({ onClick, children, styles }) => {
   const btnColor = styles?.btnColor || "#6c757d"
   const hoverColor = styles?.hoverColor || "#5c636a"
-
-  return (
-    <StyledBtn $btnColor={btnColor} $hoverColor={hoverColor} onClick={onClick}>{children || "샘플"}</StyledBtn>
-  )
+  return <StyledBtn $btnColor={btnColor} $hoverColor={hoverColor} onClick={onClick}>{children || "샘플"}</StyledBtn>
 }
 export default ModalBtn
 

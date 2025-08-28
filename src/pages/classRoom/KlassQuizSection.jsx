@@ -28,11 +28,11 @@ const KlassQuizSection = ({ isMobile, quizList, klassData, onClick, setIsAddQuiz
       </PetImgWrapper>}
       {!isMobile && <BoldText style={{ marginTop: "10px" }}>vs</BoldText>}
       {/* 단어 게임부 */}
-      <GameMonListWrapper>
+      <GameMonListWrapper $isMObile={isMobile}>
         {quizList.length === 0 && <Column style={{ margin: "20px auto" }}><EmptyResult comment="등록된 단어 게임이 없습니다." /><MidBtn onClick={() => { setIsAddQuizModal(true); }}>추가</MidBtn></Column>}
-        {quizList.length !== 0 && <Row style={{ gap: "10px" }}>
+        {quizList.length !== 0 && <>
           {quizList.map((item) => <QuizMonListItem key={item.id} item={item} onClick={onClick} />)}
-          {user.isTeacher && <PlusBtn onClick={() => { setIsAddQuizModal(true); }} />}</Row>
+          {user.isTeacher && <PlusBtn onClick={() => { setIsAddQuizModal(true); }} />}</>
         }
       </GameMonListWrapper>
     </Container>
@@ -80,9 +80,6 @@ const GameMonListWrapper = styled.ul`
   gap: 15px;
   border-top: 1px solid rgb(120, 120, 120, 0.5);
   border-bottom: 1px solid rgb(120, 120, 120, 0.5);
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0;
-  }
+  flex-direction: ${({ $isMObile }) => $isMObile ? "column" : "row"}};
 `
 export default KlassQuizSection

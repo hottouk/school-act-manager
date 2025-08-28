@@ -80,6 +80,7 @@ const MySchoolPage = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const clientHeight = useClientHeight(document.documentElement);
   const [isShowStudent, setIsShowStudent] = useState(false);
+  //데이터
   //------함수부------------------------------------------------  
   //학교 외 다른 정보 초기화
   const initData = () => {

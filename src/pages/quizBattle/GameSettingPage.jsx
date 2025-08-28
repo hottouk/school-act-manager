@@ -126,11 +126,18 @@ const GameSettingPage = () => {
   }
   //펫 선택;
   const handlePetOnClick = (item, index) => { setSelectedPet({ ...item, index }); }
+  //개인전
   const handleMonLvOnClick = (level) => {
     setSeletedLv(level);
     if (check()) { setStep("start"); }
     else { alert("펫과 몬스터를 모두 선택해주세요."); }
   }
+  //멀티방 만들기
+  const handleMultiroomPlusOnClick = () => {
+    if (selectedPet) { setIsGameroomModal(true); }
+    else { alert("펫을 선택해주세요."); }
+  }
+
   //모바일 멀티플레이어
   const handleMultiroomOnClick = (room) => {
     const { players } = room;
@@ -164,7 +171,7 @@ const GameSettingPage = () => {
     </MonsterWrapper>
   }
   const MultiBubble = ({ room }) => {
-    const { pets, players } = room;
+    const { pets, players, title } = room;
     const number = players?.length;
     const pet = pets[0];
     const player = players[0];
@@ -173,7 +180,7 @@ const GameSettingPage = () => {
         <SmlPetImg src={player?.profileImg} alt="플레이어 펫 img" />
         <BasicText>{player?.name}</BasicText>
       </Column>
-      <Row style={{ alignItems: "center" }}><PetSpecUI spec={pet.spec} styles={{ width: "200px", height: "80%" }} /></Row>
+      <Column style={{ alignItems: "center" }}><Highlight>{title}</Highlight></Column>
       <Column style={{ justifyContent: "center" }}>
         <Highlight>인원</Highlight>
         <Highlight>{number}/2</Highlight>
@@ -218,7 +225,7 @@ const GameSettingPage = () => {
                     <p>{player?.name}님의{title}</p>
                   </Column>
                 })}
-                <PlusBtn onClick={() => { setIsGameroomModal(true); }} />
+                <PlusBtn onClick={() => { handleMultiroomPlusOnClick(); }} />
               </Row>
             </HalfWrapper>
           </Row>
@@ -275,7 +282,7 @@ const HalfWrapper = styled(Row)`
   justify-content: center;
 `
 const MonsterWrapper = styled(Row)`
-  justify-content: space-around;
+  justify-content: space-between;
   padding: 5px;
   border: 1px solid rgba(120,120,120,0.5);
   border-radius: 10px;

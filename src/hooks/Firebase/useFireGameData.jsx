@@ -83,6 +83,7 @@ const useFireGameData = () => {
 	}
 	//6. 게임방 삭제
 	const deleteGameRooom = (gameId) => {
+		console.log(gameId)
 		const gameroomDocRef = doc(col, gameId);
 		const playerDocRef = doc(gameroomDocRef, "players", user.uid);
 		deleteDoc(gameroomDocRef).catch((error) => {

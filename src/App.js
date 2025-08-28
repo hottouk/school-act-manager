@@ -37,8 +37,7 @@ import QuizMainPage from './pages/quizBattle/QuizMainPage';
 import MasterPage from './pages/main/MasterPage';
 import Lab from './pages/lab/Lab';
 import HomeSeatChange from './pages/homeroom/HomeSeatChangePage';
-//학교
-import SchoolMainPage from './pages/school/SchoolMainPage';
+
 //상점
 import ShopMainPage from './pages/shop/ShopMainPage';
 import IndividualPage from './pages/individual/IndividualPage';
@@ -83,19 +82,19 @@ function App() {
           <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
           <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomFormPage /> : <Navigate replace={true} to='/' />} />
           {/* 학생 관리 */}
-          <Route path="/myschool" element={uid ? <MySchoolPage /> : <Navigate replace={true} to='/login' />} />
           {/* 퀴즈 관리 */}
           <Route path="/lab" element={uid ? <Lab /> : <Navigate replace={true} to='/login' />} />
           <Route path="/quiz" element={uid ? <QuizMainPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/quiz_setting" element={uid ? <QuizFormPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
           {/* 학교 */}
-          <Route path="/school" element={uid ? <SchoolMainPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/myschool" element={uid ? <MySchoolPage /> : <Navigate replace={true} to='/login' />} />
+          {/* <Route path="/school" element={uid ? <SchoolMainPage /> : <Navigate replace={true} to='/login' />} /> */}
           <Route path="/store" element={uid ? <ShopMainPage /> : <Navigate replace={true} to='/login' />} />
           {/* 개인 페이지 */}
           <Route path="/individual" element={uid ? <IndividualPage /> : <Navigate replace={true} to='/login' />} />
           {/* 게임 */}
-          <Route path="game_setting" element={uid ? <GameSettingPage /> : <Navigate replace={true} to='/login' />} />
+          <Route path="/game_setting" element={uid ? <GameSettingPage /> : <Navigate replace={true} to='/login' />} />
           <Route path="/multiplay" element={uid ? <QuizBattleMultiPage /> : <Navigate replace={true} to='/login' />} />
           {/* 새소식 관리 */}
           <Route path="/news" element={uid ? <WhatsNewPage /> : <Navigate replace={true} to='/' />} />

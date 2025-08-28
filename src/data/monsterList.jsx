@@ -24,7 +24,7 @@ const monsterWaterList = [{
   step: [
     {
       ev: 1, path: "images/pet/pet_water_001_1.png", name: "물의 알",
-      desc: "푸른 물의 기운을 머금은 알이다. 영어에 밀접하게 반응한다. 어떤 아이가 깨어날지는 알 수 없다.",
+      desc: "푸른 물의 기운을 머금은 알이다. 물 지형에서 강해진다. 어떤 아이가 깨어날지는 알 수 없다.",
       spec: { hp: 17, atk: 4, def: 0, mat: 0, mdf: 0, spd: 1, },
       level: { level: 1, exp: 0, nextStepLv: 3, nextLvXp: 15 }, lvUp: { defUp: 0.5, hpUp: 3 },
     },
@@ -32,7 +32,7 @@ const monsterWaterList = [{
       ev: 2, path: "images/pet/pet_water_001_2.png", path_back: "images/pet/pet_water_001_2_back.png", name: "몰랑이",
       desc: "여러 개의 다리를 가진 말랑한 젤리 같은 생물체다. 귀여운 고양이를 닮아 여학생들의 펫으로 인기가 높은 편, 단 주인이 아닌 사람이 만지려고 하면 다리처럼 생긴 촉수를 들어 따끔하게 쏠 수도 있으니 함부로 만지지 말자.",
       spec: { hp: 55, atk: 10, def: 1, mat: 3, mdf: 4, spd: 1, },
-      level: { level: 4, exp: 0, nextStepLv: 10, nextLvXp: 50 }, lvUp: { defUp: 0.5, hpUp: 3, atkUp: 1, matUp: 2, mdfUp: 0.2 },
+      level: { level: 4, exp: 0, nextStepLv: 10, nextLvXp: 50 }, lvUp: { hpUp: 3, atkUp: 1, defUp: 0.5, matUp: 2, mdfUp: 0.2 },
       skills: [{ name: "촉수 찌르기", type: "atk", level: 5 },]
     },
     { ev: 3, path: "images/pet/pet_water_001_3.png", name: "몰랑둥이", desc: "흑악게 개체들이 동족을 잡아먹고 최종 각성한 끔찍한 개체. 전 세계적으로 몇 백 개체밖에 없다고 보고되며 주로 한 무리의 흑보송을 거느린다. 악의 기운으로 주변을 물들이거나 사냥감을 타락시켜 잡아먹는다. 가운데 눈을 오래 바라본다면 이상한 속삭임이 들리고 환각을 듣는다는 실험 보고서가 있다." },
@@ -44,15 +44,16 @@ const monsterGrassList = [{
   monId: "grass_001",
   step: [
     {
-      path: "images/pet/pet_grass_001_1.png", name: "풀의 알",
-      spec: { hp: 16, atk: 4, def: 1, mat: 0, mdf: 0, spd: 1, },
-      level: { level: 1, exp: 0, nextStepLv: 3, nextLvXp: 15 },
-      desc: "싱그러운 대지의 기운을 머금은 알이다. 국어에 밀접하게 반응한다. 어떤 아이가 깨어날지는 알 수 없다."
+      ev: 1, path: "images/pet/pet_grass_001_1.png", name: "풀의 알",
+      spec: { hp: 20, atk: 3, def: 1, mat: 0, mdf: 0, spd: 1, },
+      level: { level: 1, exp: 0, nextStepLv: 3, nextLvXp: 15 }, lvUp: { defUp: 0.5, hpUp: 4 },
+      desc: "싱그러운 대지의 기운을 머금은 알이다. 땅 지형에서 강해진다. 어떤 아이가 깨어날지는 알 수 없다."
     },
     {
-      path: "images/pet/pet_grass_001_2.png", path_back: "images/pet/pet_water_001_2_back.png", name: "몰랑이",
-      spec: { hp: 55, atk: 10, def: 1, mat: 3, mdf: 4, spd: 1, hpUp: 5, atkUp: 1, defUp: 0.1, matUp: 2, mdfUp: 0.2 },
-      level: { level: 4, exp: 0, nextStepLv: 10, nextLvXp: 50 }, desc: "여러 개의 다리를 가진 말랑한 젤리 같은 생물체다. 귀여운 고양이를 닮아 여학생들의 펫으로 인기가 높은 편, 단 주인이 아닌 사람이 만지려고 하면 다리처럼 생긴 촉수를 들어 따끔하게 쏠 수도 있으니 함부로 만지지 말자."
+      ev: 2, path: "images/pet/pet_grass_001_2.png", path_back: "images/pet/pet_water_001_2_back.png", name: "땅토미",
+      spec: { hp: 60, atk: 9, def: 1, mat: 3, mdf: 5, spd: 1, },
+      level: { level: 4, exp: 0, nextStepLv: 10, nextLvXp: 50 }, lvUp: { hpUp: 4, atkUp: 0.7, defUp: 0.7, matUp: 2, mdfUp: 0.5 },
+      desc: "대지의 기운을 받은 토끼다. 토끼처럼 귀여운 외모지만 생각보다 다부져 만져보면 단단한 질감에 놀라곤 한다."
     },
     { path: "images/pet/pet_grass_001_3.png", name: "몰랑둥이", desc: "흑악게 개체들이 동족을 잡아먹고 최종 각성한 끔찍한 개체. 전 세계적으로 몇 백 개체밖에 없다고 보고되며 주로 한 무리의 흑보송을 거느린다. 악의 기운으로 주변을 물들이거나 사냥감을 타락시켜 잡아먹는다. 가운데 눈을 오래 바라본다면 이상한 속삭임이 들리고 환각을 듣는다는 실험 보고서가 있다." },
     { path: "images/pet/pet_grass_001_4.png", name: "몰랑둥이", desc: "흑악게 개체들이 동족을 잡아먹고 최종 각성한 끔찍한 개체. 전 세계적으로 몇 백 개체밖에 없다고 보고되며 주로 한 무리의 흑보송을 거느린다. 악의 기운으로 주변을 물들이거나 사냥감을 타락시켜 잡아먹는다. 가운데 눈을 오래 바라본다면 이상한 속삭임이 들리고 환각을 듣는다는 실험 보고서가 있다." }
@@ -61,9 +62,19 @@ const monsterGrassList = [{
 
 const monsterFireList = [{
   monId: "fire_001",
-  path: "images/pet/pet_fire_001_1.png",
   step: [
-    { path: "images/pet/pet_fire_001_1.png", name: "풀의 알", spec: { hp: 16, atk: 4, def: 1, mat: 0, mdf: 0, spd: 1, }, level: { level: 1, exp: 0, nextStepLv: 3, nextLvXp: 15 }, desc: "싱그러운 대지의 기운을 머금은 알이다. 국어에 밀접하게 반응한다. 어떤 아이가 깨어날지는 알 수 없다." },
+    {
+      ev: 1, path: "images/pet/pet_fire_001_1.png", name: "불의 알",
+      spec: { hp: 15, atk: 5, def: 0, mat: 0, mdf: 0, spd: 1, },
+      level: { level: 1, exp: 0, nextStepLv: 3, nextLvXp: 15 }, lvUp: { atkUp: 0.5, hpUp: 2, },
+      desc: "열정적인 불의 기운을 머금은 알이다. 불 지형에서 강해진다. 어떤 아이가 깨어날지는 알 수 없다."
+    },
+    {
+      ev: 2, path: "images/pet/pet_fire_001_2.png", path_back: "images/pet/pet_water_001_2_back.png", name: "불페니",
+      spec: { hp: 45, atk: 10, def: 0, mat: 4, mdf: 3, spd: 1, },
+      level: { level: 4, exp: 0, nextStepLv: 10, nextLvXp: 50 }, lvUp: { hpUp: 2, atkUp: 1, defUp: 0.4, matUp: 3, mdfUp: 0.5 },
+      desc: "뜨끈한 기운을 내뿜는 팬더! 곰이지만 아직 고양이만한 크기로 잡아먹힐 위험은 없다. 겨울에 안고있으면 잠이 솔솔 온다. 아이 따뜻해~"
+    },
     { path: "images/pet/pet_fire_001_2.png", path_back: "images/pet/pet_water_001_2_back.png", name: "몰랑이", spec: { hp: 55, atk: 10, def: 1, mat: 3, mdf: 4, spd: 1, hpUp: 5, atkUp: 1, defUp: 0.1, matUp: 2, mdfUp: 0.2 }, level: { level: 4, exp: 0, nextStepLv: 10, nextLvXp: 50 }, desc: "여러 개의 다리를 가진 말랑한 젤리 같은 생물체다. 귀여운 고양이를 닮아 여학생들의 펫으로 인기가 높은 편, 단 주인이 아닌 사람이 만지려고 하면 다리처럼 생긴 촉수를 들어 따끔하게 쏠 수도 있으니 함부로 만지지 말자." },
     { path: "images/pet/pet_fire_001_3.png", name: "몰랑둥이", desc: "흑악게 개체들이 동족을 잡아먹고 최종 각성한 끔찍한 개체. 전 세계적으로 몇 백 개체밖에 없다고 보고되며 주로 한 무리의 흑보송을 거느린다. 악의 기운으로 주변을 물들이거나 사냥감을 타락시켜 잡아먹는다. 가운데 눈을 오래 바라본다면 이상한 속삭임이 들리고 환각을 듣는다는 실험 보고서가 있다." },
     { path: "images/pet/pet_fire_001_4.png", name: "몰랑둥이", desc: "흑악게 개체들이 동족을 잡아먹고 최종 각성한 끔찍한 개체. 전 세계적으로 몇 백 개체밖에 없다고 보고되며 주로 한 무리의 흑보송을 거느린다. 악의 기운으로 주변을 물들이거나 사냥감을 타락시켜 잡아먹는다. 가운데 눈을 오래 바라본다면 이상한 속삭임이 들리고 환각을 듣는다는 실험 보고서가 있다." }
@@ -72,7 +83,6 @@ const monsterFireList = [{
 
 const monsterNormalList = [{
   monId: "normal_001",
-  path: "images/pet/pet_normal_001_1.png",
   step: [
     { path: "images/pet/pet_normal_001_1.png", name: "풀의 알", spec: { hp: 16, atk: 4, def: 1, mat: 0, mdf: 0, spd: 1, }, level: { level: 1, exp: 0, nextStepLv: 3, nextLvXp: 15 }, desc: "싱그러운 대지의 기운을 머금은 알이다. 국어에 밀접하게 반응한다. 어떤 아이가 깨어날지는 알 수 없다." },
     { path: "images/pet/pet_normal_001_2.png", path_back: "images/pet/pet_water_001_2_back.png", name: "몰랑이", spec: { hp: 55, atk: 10, def: 1, mat: 3, mdf: 4, spd: 1, hpUp: 5, atkUp: 1, defUp: 0.1, matUp: 2, mdfUp: 0.2 }, level: { level: 4, exp: 0, nextStepLv: 10, nextLvXp: 50 }, desc: "여러 개의 다리를 가진 말랑한 젤리 같은 생물체다. 귀여운 고양이를 닮아 여학생들의 펫으로 인기가 높은 편, 단 주인이 아닌 사람이 만지려고 하면 다리처럼 생긴 촉수를 들어 따끔하게 쏠 수도 있으니 함부로 만지지 말자." },
@@ -81,7 +91,8 @@ const monsterNormalList = [{
   ]
 },]
 
+const initPetPathList = ["images/pet/pet_water_001_1.png", "images/pet/pet_grass_001_1.png", "images/pet/pet_fire_001_1.png"];
+const initPetList = [monsterWaterList[0].step[0], monsterGrassList[0].step[0], monsterFireList[0].step[0],];
+const monsterList = [...monsterEvilList, ...monsterWaterList, ...monsterGrassList, ...monsterFireList, ...monsterNormalList,]
 
-const monsterList = [...monsterEvilList, ...monsterWaterList, ...monsterGrassList, ...monsterFireList, ...monsterNormalList]
-
-export { monsterEvilList, monsterWaterList, monsterGrassList, monsterList, monsterFireList, monsterNormalList }
+export { monsterEvilList, monsterWaterList, monsterGrassList, monsterList, monsterFireList, monsterNormalList, initPetPathList, initPetList }
