@@ -2,7 +2,11 @@ import React from 'react'
 import styled from 'styled-components'
 //정비(250722)
 const MainBtn = ({ children, onClick, type, styles, disabled }) => {
-  return (<StyledBtn type={type || "button"} onClick={onClick} disabled={disabled}>{children || "샘플"} </StyledBtn>)
+  const zIndex = styles?.zIndex || "999";
+  return (<StyledBtn $zIndex={zIndex}
+    type={type || "button"}
+    onClick={onClick}
+    disabled={disabled}>{children || "샘플"} </StyledBtn>)
 }
 const StyledBtn = styled.button`
   appearance: none;
@@ -34,7 +38,7 @@ const StyledBtn = styled.button`
   touch-action: manipulation;
   vertical-align: top;
   white-space: nowrap;
-  z-index: 999;
+  z-index: ${({ $zIndex }) => $zIndex};
   &:hover {
   background-color: #1366d6;
   box-shadow: rgba(0, 0, 0, .05) 0 5px 30px, rgba(0, 0, 0, .05) 0 1px 4px;

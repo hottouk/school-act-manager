@@ -6,16 +6,22 @@ import PetImg from '../../components/PetImg'
 import XBtn from '../../components/Btn/XBtn'
 import useFirePetData from '../../hooks/Firebase/useFirePetData'
 import { useSelector } from 'react-redux'
+import useFireUserData from '../../hooks/Firebase/useFireUserData'
 //생성(250223)->수정(250820)
 const PetInfoSection = ({ pet, isModifiying, setWrittenName }) => {
   const user = useSelector(({ user }) => user);
-  const { subject, studentNumber, name, level, master, desc, path, id, classId, writtenName } = pet;
+  const { subject, studentNumber, name, level, master, desc, path, id, classId, writtenName, } = pet;
   const isMaster = user.uid === master?.studentId;
   const { deletePetField } = useFirePetData();
+  const { exportKlassTransaction } = useFireUserData();
   //구독 취소
   const handleDeSubscribeOnClick = () => {
-    const confirm = window.confirm("위 학생의 구독 정보를 삭제하시겠습니까?")
-    if (confirm) { deletePetField(classId, id, "master").then(() => { alert("구독 정보가 삭제되었습니다."); }) }
+    const confirm = window.confirm("학생의 구독 정보가 삭제되고 클래스에서 탈퇴됩니다. 계속 하시겠습니까?");
+    if (confirm) {
+      const studentId = master?.studentId;
+      deletePetField(classId, id, "master").then(() => { alert("구독 정보가 삭제되었습니다."); });
+      exportKlassTransaction(studentId, classId);
+    }
   }
   return (
     <Container>
@@ -36,7 +42,7 @@ const PetInfoSection = ({ pet, isModifiying, setWrittenName }) => {
                   styles={{ backgroundColor: "red", color: "white" }}
                   onClick={() => { handleDeSubscribeOnClick(); }} />}
               </Row>
-              : 'X'}
+              : "미가입"}
           </Row>
         </Column>
       </StudentInfoWrapper>

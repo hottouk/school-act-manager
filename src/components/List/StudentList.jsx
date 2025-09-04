@@ -5,7 +5,6 @@ import styled from "styled-components"
 //컴포넌트
 import SquareListItem from './ListItem/SquareListItem'
 import PlusBtn from '../Btn/PlusBtn'
-
 //2차 수정: 모달 창, 제목 상위 page 이동(240923) -> 250126(리펙토링) -> 학생 클릭 분기(250207)
 const StudentList = ({ petList, plusBtnOnClick, classType, setIsPetInfoModal, setPetInfo }) => {
   const user = useSelector(({ user }) => { return user });

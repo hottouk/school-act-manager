@@ -25,15 +25,15 @@ const WhatsNewPage = () => {
   const [reward, setReward] = useState(null);
   const [isRewardModal, setIsRewardModal] = useState(false);
   const { updateKlassroomArrayInfo } = useFireClassData();
-  const { approvWinTransaction, denyTransaction, confirmDenialTransaction, approveKlassTransaction, approveCoteahingTransaction } = useFireTransaction();
-  const { deleteUserArrayInfo } = useFireUserData();
+  const { approvWinTransaction, denyTransaction, confirmDenialTransaction, approveCoteahingTransaction } = useFireTransaction();
+  const { deleteUserArrayInfo, approveKlassTransaction } = useFireUserData();
   //------함수부------------------------------------------------ 
   //데이터 바인딩
   const bindData = () => {
     if (!myUserData) return;
     setOnSubmitList(myUserData.onSubmitList);
   }
-  //가입 승인
+  //교사: 가입 승인
   const handleApproveJoinOnClick = (item) => {
     const { classId, petId, pet } = item;
     const petInfo = { ...pet, classId, petId };

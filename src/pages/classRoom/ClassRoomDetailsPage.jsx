@@ -9,7 +9,7 @@ import { setUser } from '../../store/userSlice.jsx';
 import Select from 'react-select';
 import styled from 'styled-components';
 //페이지
-import MainSelector from './MainSelector.jsx';
+import MainSelectorSection from './MainSelectorSection.jsx';
 import KlassQuizSection from './KlassQuizSection.jsx';
 import ClassBoardSection from './ClassBoardSection.jsx';
 //컴포넌트
@@ -33,6 +33,7 @@ import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useMediaQuery from '../../hooks/useMediaQuery.jsx';
+import MidBtn from '../../components/Btn/MidBtn.jsx';
 //클래스 헤더 수정(240801) -> 애니메이션 추가(241113) -> 게임 추가, 가입 제거(250122) -> 학생 페이지 정비(250122)
 const ClassroomDetailsPage = () => {
   //준비
@@ -99,7 +100,7 @@ const ClassroomDetailsPage = () => {
   //변경 가능 데이터 바인딩
   const bindKlassData = () => {
     if (!klassData) return;
-    const { classTitle, intro, notice, semester } = klassData;
+    const { classTitle, intro, notice, } = klassData;
     dispatcher(setSelectClass(klassData));
     setTitle(classTitle || '정보 없음');
     setIntro(intro || '정보 없음');
@@ -188,6 +189,13 @@ const ClassroomDetailsPage = () => {
       navigate("/classRooms");
     }
   }
+  //학생: 클래스 목록에서 삭제
+  const handleDeleteFromListOnClick = () => {
+    const newList = user.myClassList.filter((klassInfo) => klassInfo.id !== thisKlassId);
+    updateUserInfo("myClassList", newList);
+    navigate(-1);
+  }
+
   return (<>
     <SubNav styles={{ padding: "10px" }}>
       {(user.uid === klassData?.uid) && <Select options={allSubjClassList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
@@ -195,7 +203,10 @@ const ClassroomDetailsPage = () => {
       {(user.uid === klassData?.coTeacher) && <Select options={user.coTeachingList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
         onChange={moveKlass} />}
     </SubNav>
-    {!klassData && <EmptyResult comment={"Error: 반 정보를 불러올 수 없습니다."} />}
+    {!klassData && <Column style={{ alignItems: "center" }}>
+      <EmptyResult comment={"Error: 반 정보를 불러올 수 없습니다."} />
+      <MidBtn onClick={handleDeleteFromListOnClick}>목록에서 삭제</MidBtn>
+    </Column>}
     {klassData &&
       <Container $clientheight={clientHeight} $isVisible={isVisible}>
         {/* 반 기본 정보(공용) */}
@@ -206,7 +217,7 @@ const ClassroomDetailsPage = () => {
         {/* 쫑알이(교사)*/}
         {user.isTeacher && <MainPanel>
           <TitleText>세특 쫑알이</TitleText>
-          <MainSelector isMobile={isMobile} type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
+          <MainSelectorSection isMobile={isMobile} type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
         </MainPanel>}
         {/* 학생 상세 보기*/}
         <MainPanel>
@@ -276,6 +287,9 @@ const Container = styled.main`
 `
 const Row = styled.div`
   display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
 `
 const TitleText = styled.h5`
   display: flex;

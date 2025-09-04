@@ -3,11 +3,11 @@ import { appFireStore } from "../firebase/config.js"
 import { useSelector } from 'react-redux'
 
 const useAcc = () => {
-  const db = appFireStore
+  const db = appFireStore;
   //redux 전역변수
-  const studentSelectedList = useSelector(({ studentSelected }) => studentSelected)
-  const activitySelectedList = useSelector(({ activitySelected }) => activitySelected)
-  const user = useSelector(({ user }) => user)
+  const studentSelectedList = useSelector(({ studentSelected }) => studentSelected);
+  const activitySelectedList = useSelector(({ activitySelected }) => activitySelected);
+  const user = useSelector(({ user }) => user);
   //★★★4. 활동 누가 함수
   const makeAccWithSelectedActi = async () => {
     const newActiList = [];
@@ -121,8 +121,23 @@ const useAcc = () => {
       console.log(error);
     })
   }
-
-  return { makeAccRec, makeAccWithSelectedActi, writeAccDataOnDB, writePerfRecDataOnDB, writeHomeAccOnDB }
+  //★★★ 4. 선택 활동 삭제 로직(250904)
+  const delActiDataOnDB = async (classId) => {
+    const promises = studentSelectedList.map(async ({ value: petId }) => {
+      const petRef = doc(appFireStore, "classRooms", classId, "students", petId);
+      const petDoc = await getDoc(petRef);
+      const curList = petDoc.data().actList;                                            //기존 활동
+      let deleted
+      activitySelectedList.forEach((acti) => { deleted = curList.filter((item) => item.id !== acti.value); });
+      setDoc(petRef, { actList: deleted, accRecord: makeAccRec(deleted) }, { merge: true });
+    });
+    try { await Promise.all(promises) }
+    catch (error) {
+      console.log(error)
+      alert(`관리자에게 문의하세요(useAcc_04),${error}`);
+    }
+  }
+  return { makeAccRec, makeAccWithSelectedActi, writeAccDataOnDB, writePerfRecDataOnDB, writeHomeAccOnDB, delActiDataOnDB }
 }
 
 export default useAcc
