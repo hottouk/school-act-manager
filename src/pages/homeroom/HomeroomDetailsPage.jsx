@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { setAllActivities } from '../../store/allActivitiesSlice';
 //페이지
 import ClassBoardSection from '../classroom/ClassBoardSection';
-import MainSelector from '../classroom/MainSelector';
+import MainSelectorSection from '../classroom/MainSelectorSection';
 //컴포넌트
 import MidBtn from '../../components/Btn/MidBtn';
 import EmptyResult from '../../components/EmptyResult';
@@ -24,7 +24,6 @@ import useFireClassData from '../../hooks/Firebase/useFireClassData';
 import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData';
 //img
 import deskIcon from '../../image/icon/desk_icon.png'
-
 //생성(241022)->게시판 추가(250211)
 const HomeroomDetailsPage = () => {
   //교사 인증
@@ -149,8 +148,8 @@ const HomeroomDetailsPage = () => {
             <UpperTab className="tab2" value={tab} top="-61px" left="59px" onClick={() => { setTab(2) }}>진로</UpperTab>
           </TabWrapper>
           <TitleText>빠른 세특 쫑알이</TitleText>
-          {tab === 1 && <MainSelector type="self" studentList={studentList} actiList={selfActiList} classId={thisClass.id} />}
-          {tab === 2 && <MainSelector type="career" studentList={studentList} actiList={careerActiList} classId={thisClass.id} />}
+          {tab === 1 && <MainSelectorSection type="self" studentList={studentList} actiList={selfActiList} classId={thisClass.id} />}
+          {tab === 2 && <MainSelectorSection type="career" studentList={studentList} actiList={careerActiList} classId={thisClass.id} />}
         </MainPanel>
         <MainPanel styles={{ marginTop: "55px" }}>
           <TabWrapper>

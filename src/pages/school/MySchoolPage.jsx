@@ -180,15 +180,15 @@ const MySchoolPage = () => {
     setSelectedMember(null);
     setKlass(null);
   }
-  //반 클릭
+  //공용: 클래스 클릭
   const handleKlassOnClick = (item) => {
     setKlass(item);
     let confirm;
-    if (user.isTeacher) { confirm = window.confirm(`${item.classTitle} 클래스에 공동 담당 교사로 신청하시겠습니까?`) }
+    if (user.isTeacher) { confirm = window.confirm(`${item.classTitle} 클래스에 공동 담당 교사로 신청하시겠습니까?`); }
     else { confirm = window.confirm(`${item.classTitle}에 가입 신청하시겠습니까?`); }
     if (!confirm) return;
-    if (user.isTeacher) { joinAsCoTeacher(item, user) }
-    else { setIsKlassMemberModal(true) }
+    if (user.isTeacher) { joinAsCoTeacher(item, user); }
+    else { setIsKlassMemberModal(true); }
   }
   //교사 학생 변경
   const handleIsTeacherChangeOnClick = () => {

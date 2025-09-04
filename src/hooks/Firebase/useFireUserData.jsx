@@ -29,44 +29,42 @@ const useFireUserData = () => {
     })
     return () => unsubscribe();
   }
-
   //2. 유저 기본 업데이트(250217)
   const updateUserInfo = async (field, info, otherId) => {
     let userDocRef = doc(col, user.uid);
     if (otherId) { userDocRef = doc(col, otherId); }
     else { userDocRef = doc(col, user.uid); }
-    await setDoc(userDocRef, { [field]: info }, { merge: true }).catch((error) => {
-      alert(`관리자에게 문의하세요(useFireUserData_02), ${error}`);
-      console.log(error);
-    })
+    await setDoc(userDocRef, { [field]: info }, { merge: true })
+      .catch((error) => {
+        alert(`관리자에게 문의하세요(useFireUserData_02), ${error}`);
+        console.log(error);
+      })
   }
-
   //3. 유저 배열형 정보 추가(250127)
   const updateUserArrayInfo = async (id, field, info) => {
-    const userDoc = doc(col, id);
-    await setDoc(userDoc, { [field]: arrayUnion(info) }, { merge: true }).catch((error) => {
+    const userDocRef = doc(col, id);
+    await setDoc(userDocRef, { [field]: arrayUnion(info) }, { merge: true }).catch((error) => {
       alert(`관리자에게 문의하세요(useFireUserData_03), ${error}`);
       console.log(error);
     })
   }
-
   //4. 유저 배열형 정보 삭제(250201)
   const deleteUserArrayInfo = async (id, field, info) => {
     const userDoc = doc(col, id);
-    await updateDoc(userDoc, { [field]: arrayRemove(info) }).catch((error) => {
-      alert(`관리자에게 문의하세요(useFireUserData_04), ${error}`);
-      console.log(error);
-    })
+    await updateDoc(userDoc, { [field]: arrayRemove(info) })
+      .catch((error) => {
+        alert(`관리자에게 문의하세요(useFireUserData_04), ${error}`);
+        console.log(error);
+      })
   }
-
   //5. 학생: 샵 아이템 구매(250630)
   const purchaseShopItem = async (student, rira, item, quantity, teacherId) => {
     const { title, price, stock, order } = item;
-    const userDoc = doc(col, user.uid);
-    const teacherDoc = doc(col, teacherId);
+    const userDocRef = doc(col, user.uid);
+    const teacherDocRef = doc(col, teacherId);
     await runTransaction(db, async (transaction) => {
       //1. 교사 데이터 읽기
-      const teacherSnapshot = await transaction.get(teacherDoc);
+      const teacherSnapshot = await transaction.get(teacherDocRef);
       if (!teacherSnapshot.exists()) throw new Error("Error: 교사 데이터를 읽어올 수 없습니다.");
       const teacherData = teacherSnapshot.data();
       const { rira: tRira, shopItemList, name } = teacherData;
@@ -77,18 +75,17 @@ const useFireUserData = () => {
         else { return ele }
       });
       //학생 리라 정산 및 아이템 배달
-      transaction.update(userDoc, { purchasedItemList: arrayUnion(trade), rira: rira - price * quantity });
+      transaction.update(userDocRef, { purchasedItemList: arrayUnion(trade), rira: rira - price * quantity });
       //교사 리라 정산 및 명세서 배달
-      transaction.update(teacherDoc, { soldItemList: arrayUnion(trade), rira: tRira + price * quantity, shopItemList: arr });
+      transaction.update(teacherDocRef, { soldItemList: arrayUnion(trade), rira: tRira + price * quantity, shopItemList: arr });
     }).catch((error) => {
       alert(`관리자에게 문의하세요(useFireUserData_05), ${error}`);
       console.log(error);
     })
   }
-
   //6. 학생: 가입 신청
   const applyKlassTransaction = async (info) => {
-    const { klass, petId, petLabel, user, pet } = info
+    const { klass, petId, petLabel, user, pet } = info;
     const klassInfo = { ...klass, isApproved: false } //신청 정보
     const today = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD' 형식
     const submitInfo =
@@ -107,15 +104,64 @@ const useFireUserData = () => {
       //학생 신청 정보 업데이트, 교사 상신
       transaction.update(studentDocRef, { "myClassList": arrayUnion(klassInfo) });
       transaction.update(teacherDocRef, { "onSubmitList": arrayUnion(submitInfo) });
-    }).then(() => {
-      window.alert("가입 신청되었습니다.")
-    }).catch(err => {
-      window.alert(err);
-      console.log(err);
-    })
+    }).then(() => { alert("가입 신청되었습니다."); })
+      .catch(err => {
+        alert(`관리자에게 문의하세요(useFireUserData_06), ${err}`);
+        console.log(err);
+      })
   }
-
-
+  //7. 교사: 학생 가입 승인
+  const approveKlassTransaction = async (info, pet) => {
+    const { classId, petId, studentId, studentName } = info
+    const teacherRef = doc(col, user.uid);
+    const studentRef = doc(col, studentId);
+    const petRef = doc(db, "classRooms", classId, "students", petId);
+    await runTransaction(db, async (transaction) => {
+      const studentDoc = await transaction.get(studentRef);
+      const teacherDoc = await transaction.get(teacherRef);
+      const petDoc = await transaction.get(petRef);
+      //1. 읽기
+      if (!studentDoc.exists()) throw new Error("학생 정보 없음");
+      if (!teacherDoc.exists()) throw new Error("교사 정보 없음");
+      if (!petDoc.exists()) throw new Error("펫 정보 없음");
+      //2. 수정
+      //교사: 상신 목록 삭제
+      transaction.update(teacherRef, { onSubmitList: arrayRemove(info) }); //교사
+      //학생: 펫 추가, 클래스 -> 승인
+      const myClassList = studentDoc.data().myClassList || [];
+      const updated = myClassList.map((item) => {
+        if (item.id === classId) return { ...item, isApproved: true };
+        return item;
+      })
+      transaction.update(studentRef, { myClassList: updated, myPetList: arrayUnion(pet) });
+      //펫: 학생 정보 추가
+      const master = petDoc.data().master || null;
+      if (petDoc.data().master) {
+        const { studentName } = master;
+        throw new Error(`이미 ${studentName}(이)가 구독중인 학생 정보입니다. 학생 중복 구독 여부를 확인해주세요`);
+      }
+      else transaction.update(petRef, { master: { studentId, studentName }, ...pet });
+    }).then(() => { alert("학생의 신청이 승인되었습니다."); })
+      .catch(err => {
+        alert(`관리자에게 문의하세요(useFireUserData_07), ${err}`);
+        console.log(err);
+      })
+  }
+  //8. 학생 클래스 탈퇴
+  const exportKlassTransaction = async (studentId, klassId) => {
+    const studentRef = doc(col, studentId);
+    await runTransaction(db, async (transaction) => {
+      const studentDoc = await transaction.get(studentRef);
+      if (!studentDoc.exists()) throw new Error("학생 정보 없음");
+      const myClassList = studentDoc.data().myClassList || [];
+      const deleted = myClassList.filter((item) => item.id !== klassId);
+      transaction.update(studentRef, { myClassList: deleted });
+    }).then(() => { alert("학생이 클래스에서 탈퇴되었습니다."); })
+      .catch(err => {
+        alert(`관리자에게 문의하세요(useFireUserData_08), ${err}`);
+        console.log(err);
+      })
+  }
   //내 정보 창에서 정보 변경(250223)
   const updateMyInfo = async (info) => {
     const userDocRef = doc(col, user.uid);
@@ -203,8 +249,7 @@ const useFireUserData = () => {
     }
   }
 
-
-  return ({ fetchUserData, userDataListener, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem, applyKlassTransaction })
+  return ({ fetchUserData, userDataListener, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem, applyKlassTransaction, approveKlassTransaction, exportKlassTransaction })
 }
 
 export default useFireUserData
