@@ -18,12 +18,33 @@ import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { compareActions, processEffect } from "./gameLogic.js";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { getFirestore } from "firebase-admin/firestore";
+import { defineSecret } from "firebase-functions/params";
 initializeApp();
 const REGION = "asia-northeast3";
 const db = getFirestore(); // ✅ firestore는 함수 형태로 가져와야 함
 const cors = corsLib({ origin: true });
 const storage = new Storage();
 const client = new vision.ImageAnnotatorClient();
+const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+
+//gpt 서버 보안
+export const askGPT = onRequest({ secrets: [OPENAI_API_KEY] }, async (req, res) => {
+  const apiKey = OPENAI_API_KEY.value();
+  const r = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: req.body?.prompt ?? "Hello" }]
+    })
+  });
+  const data = await r.json();
+  res.status(r.ok ? 200 : r.status).json(data);
+});
+
 //jpg OCR
 export const extractText = onRequest(async (req, res) => {
   cors(req, res, async () => {
@@ -42,7 +63,6 @@ export const extractText = onRequest(async (req, res) => {
     }
   });
 });
-
 //pdf OCR
 export const startOcrOnPdf = onRequest(async (req, res) => {
   cors(req, res, async () => {
@@ -79,7 +99,6 @@ export const startOcrOnPdf = onRequest(async (req, res) => {
     }
   });
 });
-
 //pdf OCR result
 export const getPdfOcrResults = onRequest(async (req, res) => {
   cors(req, res, async () => {
@@ -142,3 +161,4 @@ export const resolveGameTurn = onDocumentUpdated({
     console.log("index 1차 결과", firsResult);
     await processEffect({ effect: effects[1], petCurStat: firsResult, docRef, battleTurn, players });
   });
+

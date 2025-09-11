@@ -29,8 +29,6 @@ import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroo
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData.jsx';
 import useFireUserData from '../../hooks/Firebase/useFireUserData.jsx';
 import useFireActiData from '../../hooks/Firebase/useFireActiData.jsx';
-import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
-import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData.jsx';
 import useClientHeight from '../../hooks/useClientHeight.jsx';
 import useMediaQuery from '../../hooks/useMediaQuery.jsx';
 import MidBtn from '../../components/Btn/MidBtn.jsx';
@@ -45,9 +43,7 @@ const ClassroomDetailsPage = () => {
   //회원 검증
   const { state: studentKlassData } = useLocation();
   //hooks
-  const { deleteClassWithStudents } = useDeleteFireData();
   const { updateUserInfo } = useFireUserData();
-  const { updateClassroom, deleteKlassroomArrayInfo, copyKlassroom } = useFireClassData();
   const { getSubjKlassActiList } = useFireActiData();
   //실시간 데이터
   const { klassData } = useFetchRtClassroomData(thisKlassId);                                                 //클래스 기본 data
@@ -57,13 +53,8 @@ const ClassroomDetailsPage = () => {
     setIsVisible(false);
     bindActiData();
     bindStudentData();
-    bindKlassData();
     setTimeout(() => setIsVisible(true), 200);
   }, [thisKlassId, klassData, studentDataList])
-  const [_title, setTitle] = useState('');
-  const [_intro, setIntro] = useState('');
-  const [_notice, setNotice] = useState('');
-  const [noticeList, setNoticeList] = useState([]);
   //활동
   const [actiList, setActiList] = useState([]);
   const [quizList, setQuizList] = useState([]);
@@ -72,8 +63,6 @@ const ClassroomDetailsPage = () => {
   const [studentList, setStudentList] = useState([]);
   const [petInfo, setPetInfo] = useState(null);
   const [actiInfo, setActiInfo] = useState(null);
-  //모드
-  const [isModifying, setIsModifying] = useState(false);
   //모달
   const [isAddStuModal, setIsAddStuModal] = useState(false)       //교사 학생 추가
   const [isPerfModal, setIsPerfModal] = useState(false)           //수행 관리
@@ -97,16 +86,6 @@ const ClassroomDetailsPage = () => {
     else if (isCoteacher) { setUserStatus("coTeacher") }
     else { setUserStatus("student") };
   }
-  //변경 가능 데이터 바인딩
-  const bindKlassData = () => {
-    if (!klassData) return;
-    const { classTitle, intro, notice, } = klassData;
-    dispatcher(setSelectClass(klassData));
-    setTitle(classTitle || '정보 없음');
-    setIntro(intro || '정보 없음');
-    setNotice(notice || '공지 없음');
-    splitNotice(notice || []);
-  }
   //활동 데이터 바인딩
   const bindActiData = () => {
     if (!klassData) return;
@@ -127,68 +106,10 @@ const ClassroomDetailsPage = () => {
     dispatcher(setAllStudents(studentDataList));
     setStudentList(studentDataList);
   }
-  //공지사항 list 변환
-  const splitNotice = (notice) => {
-    if (notice.length === 0) { setNoticeList([]); }
-    else {
-      const arr = notice.split("^").map((item) => item.trim()).slice(0, 3);
-      setNoticeList(arr)
-    }
-  }
   //클래스 이동
   const moveKlass = (event) => { navigate(`/classrooms/${event.value.id}`, { state: { ...event.value } }) }
   //몬스터 클릭
   const handleMonsterOnClick = (item) => { navigate("/game_setting", { state: { ...item, klassId: thisKlassId } }) }
-  //변경 저장
-  const handleSaveOnClick = () => {
-    const confirm = window.confirm("이대로 클래스 정보를 변경하시겠습니까?");
-    if (confirm) {
-      const classInfo = { title: _title, intro: _intro, notice: _notice, };
-      updateClassroom(classInfo, klassData.id);
-      setIsModifying(false);
-    }
-  }
-  //변경 취소
-  const handleCancelOnClick = () => {
-    bindKlassData();
-    setIsModifying(false);
-  }
-  //클래스 복제
-  const handleCopyOnClick = () => {
-    const { classTitle } = klassData;
-    const copyConfrim = window.prompt("클래스를 복제하시겠습니까? 클래스 이름을 입력하세요.", `2학기 ${classTitle} 사본`);
-    if (copyConfrim === null) return;
-    if (copyConfrim !== '') {
-      copyKlassroom(klassData, studentDataList, copyConfrim).then(() => {
-        alert("복제 되었습니다");
-        navigate("/classRooms");
-      })
-    } else {
-      alert("클래스 제목을 입력해주세요.");
-    }
-  }
-  //클래스 삭제
-  const handleDeleteOnClick = () => {
-    const deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.");
-    if (deleteConfirm === "삭제합니다") {
-      deleteClassWithStudents(thisKlassId).then(() => {
-        alert("클래스와 모든 학생 정보가 삭제 되었습니다.")
-        navigate("/classRooms");
-      })
-    } else {
-      alert("문구가 제대로 입력되지 않았습니다.");
-    }
-  }
-  //코티칭 탈퇴
-  const handleDropOutOnClick = () => {
-    const confirm = window.confirm("코티칭 클래스를 탈퇴하시겠습니까?");
-    if (confirm) {
-      const deletedList = user.coTeachingList.filter((item) => item.id !== klassData?.id);
-      updateUserInfo("coTeachingList", deletedList);                                     //유저 코티칭 list에서 삭제
-      deleteKlassroomArrayInfo(klassData.id, "coTeacher", user.uid);                     //클래스 코티쳐 list에서 삭제
-      navigate("/classRooms");
-    }
-  }
   //학생: 클래스 목록에서 삭제
   const handleDeleteFromListOnClick = () => {
     const newList = user.myClassList.filter((klassInfo) => klassInfo.id !== thisKlassId);
@@ -210,10 +131,7 @@ const ClassroomDetailsPage = () => {
     {klassData &&
       <Container $clientheight={clientHeight} $isVisible={isVisible}>
         {/* 반 기본 정보(공용) */}
-        <ClassBoardSection userStatus={userStatus} isModifying={isModifying} klassData={klassData} title={_title} intro={_intro} notice={_notice}
-          studentList={studentList} noticeList={noticeList}
-          setIsModifying={setIsModifying} setTitle={setTitle} setIntro={setIntro} setNotice={setNotice}
-          handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} handleDropOutOnClick={handleDropOutOnClick} handleCopyOnClick={handleCopyOnClick} />
+        <ClassBoardSection userStatus={userStatus} klassData={klassData} studentList={studentList} />
         {/* 쫑알이(교사)*/}
         {user.isTeacher && <MainPanel>
           <TitleText>세특 쫑알이</TitleText>

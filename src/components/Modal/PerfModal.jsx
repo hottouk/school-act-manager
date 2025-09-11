@@ -17,7 +17,6 @@ import useGetByte from '../../hooks/useGetByte';
 import useAcc from '../../hooks/useAcc';
 import useFireStorage from '../../hooks/useFireStorage';
 import useChatGpt from '../../hooks/useChatGpt';
-
 //생성(241113)-> OCR(250402) -> 모든 활동으로 변경(250703) -> 전체개별화(250706)
 const PerfModal = ({ show, onHide, studentList, classId }) => {
   const actiList = useSelector(({ allActivities }) => allActivities);
@@ -118,13 +117,9 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   //라디오 버튼
   const handleRadioOnChange = (event, index, subIndex) => {
     let record;
-    switch (event.target.id) {
-      case "achiv":
-        record = selectedActi?.perfRecordList[subIndex];
-        break;
-      default:
-        record = event.target.value;
-    }
+    if (event.target.id === "achiv_radio") record = selectedActi?.perfRecordList[subIndex];
+    else record = event.target.value;
+    setReplaceList({});
     setPerfRecord((prev) => { return { ...prev, [index]: record } });
   }
   //gpt 값 받아오기
@@ -262,8 +257,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   }
   //특정 기호, {/*  */} 사이의 문자열 추출
   const extractContent = (text, index) => {
-    let matches = text.match(/\{\/\*\s*(.*?)\s*\*\/\}/g); //정규식
-    let result = matches?.map(match => match.slice(3, -3).trim()) ?? []
+    const matches = text?.match(/\{\/\*\s*(.*?)\s*\*\/\}/g); //정규식
+    const result = matches?.map(match => match?.slice(3, -3).trim()) || [];
     setExtractedList((prev) => { return { ...prev, [index]: result } })
   }
   //ocr 셀렉터 option
@@ -444,7 +439,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
                 {selectedActi?.perfRecordList && <RadioWrapper>{achivList.map((achiv, subIndex) => {
                   return <label key={`a${index}${subIndex}`}
                   ><input type="radio"
-                    id='achiv'
+                    id='achiv_radio'
                     name="record"
                     value={achiv}
                     onChange={(event) => { handleRadioOnChange(event, index, subIndex) }}
@@ -453,13 +448,16 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
               </GridItem>
               <GridItem> {/* 랜덤 */}
                 {selectedActi && <RadioWrapper>
-                  <label ><input type="radio" id='random' name="record"
-                    value={selectedActi.record}
-                    onChange={(event) => { handleRadioOnChange(event, index, undefined) }}
-                    disabled={gptRes === "loading"} /> 기본문구</label>
+                  <label>
+                    <input type="radio" id='random_radio' name="random"
+                      value={selectedActi.record}
+                      onChange={(event) => { handleRadioOnChange(event, index, undefined) }}
+                      disabled={gptRes === "loading"} />
+                    <span>&nbsp;기본 문구</span>
+                  </label>
                   {selectedActi.extraRecordList?.map((item, subIndex) => {
                     return <label key={`r${index}${subIndex}`}><input
-                      type="radio" id='random' name="record"
+                      type="radio" id='random_radio' name="random"
                       value={item}
                       onChange={(event) => { handleRadioOnChange(event, index, subIndex) }}
                       disabled={gptRes === "loading"} /> {`랜덤 ${subIndex + 1}`}</label>

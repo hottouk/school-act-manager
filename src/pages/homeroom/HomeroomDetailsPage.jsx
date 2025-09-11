@@ -135,13 +135,13 @@ const HomeroomDetailsPage = () => {
           setIsModifying={setIsModifying} setTitle={setTitle} setIntro={setIntro} setNotice={setNotice}
           handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} handleCopyOnClick={handleCopyOnClick}
           Row={Row} />
-        <MainPanel>
+        {/* <MainPanel>
           <TitleText>도구모음</TitleText>
           <IconWrapper>
             <StyledImg src={deskIcon} alt="자리바꾸기" onClick={() => { navigate(`/homeroom/${thisClass.id}/seat`) }} />
             <p>자리바꾸기(test)</p>
           </IconWrapper>
-        </MainPanel>
+        </MainPanel> */}
         <MainPanel styles={{ marginTop: "55px" }}>
           <TabWrapper>
             <UpperTab className="tab1" value={tab} top="-61px" onClick={() => { setTab(1) }}>자율</UpperTab>
