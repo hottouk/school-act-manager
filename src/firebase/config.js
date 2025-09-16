@@ -4,6 +4,7 @@ import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { Timestamp, getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -22,9 +23,10 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const appAuth = getAuth(app);
-const analytics = getAnalytics(app);
 const appFireStore = getFirestore(app);
 const storage = getStorage(app, "gs://school-act-manager.appspot.com");
-const timeStamp = Timestamp
+const timeStamp = Timestamp;
+export const functions = getFunctions(app, "asia-northeast3");
+export const callAskGPT = httpsCallable(functions, "askGPT");
 
 export { app, appFireStore, appAuth, storage, timeStamp }
