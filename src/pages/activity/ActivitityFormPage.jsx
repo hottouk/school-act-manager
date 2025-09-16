@@ -204,7 +204,8 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     switch (event.target.id) {
       case "gpt_btn": //교사 전용
         if (_title !== '' && _selectedSubjDetail !== 'default' && _content !== '') {
-          if (sort === "homeroom") { askHomeroomReccord(_title, _selectedSubjDetail, _content, _myByte) } else { askSubjRecord(_title, _selectedSubjDetail, _content) }
+          if (sort === "homeroom") { askHomeroomReccord(_title, _selectedSubjDetail, _content, _myByte) }
+          else { askSubjRecord(_title, _selectedSubjDetail, _content) }
         } else {
           window.alert('활동 제목, 과목, 간단한 설명을 입력해주세요.')
         }
@@ -285,7 +286,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
             />
             <Row style={{ justifyContent: "space-between" }}>
               <ClickableText onClick={() => { handlePersonalizeOnClick() }}>개별화 틀 삽입</ClickableText>
-              <ByteCalculator handleOnConhange={handleOnChange} str={_record} />
+              {/* <ByteCalculator handleOnConhange={handleOnChange} str={_record} /> */}
             </Row>
             {/* 날짜_담임반 전용 */}
             <Row style={{ marginBottom: "13px" }}>{sort === "homeroom" && <DotTitle title={"날짜 정보 ▼"} onClick={() => { setIsDateShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}</Row>

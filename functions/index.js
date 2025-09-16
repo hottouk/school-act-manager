@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 /* eslint-disable comma-dangle */
 /* eslint-disable padded-blocks */
 /* eslint-disable no-empty */
@@ -16,14 +17,46 @@ import { initializeApp } from "firebase-admin/app";
 import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { compareActions, processEffect } from "./gameLogic.js";
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { getFirestore } from "firebase-admin/firestore";
+import { defineSecret } from "firebase-functions/params";
+import OpenAI from "openai";
 initializeApp();
 const REGION = "asia-northeast3";
 const db = getFirestore(); // ✅ firestore는 함수 형태로 가져와야 함
 const cors = corsLib({ origin: true });
 const storage = new Storage();
 const client = new vision.ImageAnnotatorClient();
+const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+
+//gpt apiKey
+export const askGPT = onCall(
+  {
+    region: REGION,
+    secrets: [OPENAI_API_KEY]
+  },
+  async (req) => {
+    const apiKey = OPENAI_API_KEY.value();
+    const openai = new OpenAI({ apiKey: apiKey }); // 안전하게 사용
+    console.log("요청:", req.data);
+    const { messages, model = "gpt-4o-mini", temperature = 1.0 } = req.data || {};
+    if (!Array.isArray(messages)) {
+      throw new HttpsError("invalid-argument", "`messages`는 배열이어야 합니다.");
+    }
+    try {
+      const completion = await openai.chat.completions.create({
+        model,
+        messages,
+        temperature,
+      });
+      const content = completion.choices?.[0]?.message?.content ?? "";
+      return { content };
+    } catch (err) {
+      console.error("OpenAI error:", err?.response?.data || err?.message || err);
+      // 클라이언트가 처리하기 쉽게 HttpsError로 변환
+      throw new HttpsError("internal", "문장 생성 중 서버 오류가 발생했습니다.");
+    }
+  });
+  
 //jpg OCR
 export const extractText = onRequest(async (req, res) => {
   cors(req, res, async () => {
@@ -42,7 +75,6 @@ export const extractText = onRequest(async (req, res) => {
     }
   });
 });
-
 //pdf OCR
 export const startOcrOnPdf = onRequest(async (req, res) => {
   cors(req, res, async () => {
@@ -79,7 +111,6 @@ export const startOcrOnPdf = onRequest(async (req, res) => {
     }
   });
 });
-
 //pdf OCR result
 export const getPdfOcrResults = onRequest(async (req, res) => {
   cors(req, res, async () => {
@@ -142,3 +173,4 @@ export const resolveGameTurn = onDocumentUpdated({
     console.log("index 1차 결과", firsResult);
     await processEffect({ effect: effects[1], petCurStat: firsResult, docRef, battleTurn, players });
   });
+

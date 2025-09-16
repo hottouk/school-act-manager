@@ -16,7 +16,7 @@
   "functions": [
     {
       "source": "functions",
-      "v2": false,
+      "v2": true,
       "codebase": "default",
       "ignore": [
         "node_modules",
