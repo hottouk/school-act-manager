@@ -47,7 +47,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   }, [perfRecord]);
   //개별화
   const [personalValue, setPersoanlValue] = useState(null);
-  const [extractedList, setExtractedList] = useState(null);
+  const [extractedList, setExtractedList] = useState([]);
   const [replaceList, setReplaceList] = useState({});
   //pdf OCR
   const [pdfFile, setPdfFile] = useState(null);
@@ -60,6 +60,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   //------함수부------------------------------------------------  
   //초기화
   const initData = () => {
+    if(!studentList) return;
     setPerfRecord(createMatrix(studentList, ''));
     setPersoanlValue(createMatrix(studentList, ''));
     setExtractedList(createMatrix(studentList, []));
@@ -268,7 +269,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   }
   //최종 바이트 get
   const getByte = (index) => {
-    const text = perfRecord[index];
+    const text = perfRecord?.[index];
     if (typeof (text) == "string") {
       return getByteLengthOfString(text)
     } else { return 0 }
@@ -477,7 +478,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
               </GridItem>
               {/* 개별화 */}
               <GridItem>
-                {(extractedList[index]?.length > 0)
+                {(extractedList && extractedList[index]?.length > 0)
                   ? <ExtractWrapper>
                     {extractedList[index].map((result, subIndex) => {
                       //place홀더 개수에 따라 input 생성
@@ -497,12 +498,12 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
                   : <Column>
                     <Textarea
                       $clickable={selectedOcr ? true : false}
-                      value={personalValue[index]}
+                      value={personalValue?.[index]}
                       onChange={(event) => { handlePersonalTextOnChange(event, index); }}
                       onClick={() => { handleOcrInsertOnClick(index); }}
                       disabled={gptRes === "loading"}
                     />
-                    {(personalValue[index] !== '') &&
+                    {(personalValue?.[index] !== '') &&
                       <Row style={{ gap: "10px", justifyContent: "center", marginTop: "10px" }}>
                         <SmallBtn onClick={() => { handleTranslateOnClick(index) }} disabled={gptRes === "loading"}>번역</SmallBtn>
                         <SmallBtn onClick={() => { handleOcrGptOnClilck(index) }} disabled={gptRes === "loading"}>통합</SmallBtn>
@@ -511,7 +512,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
                 }
               </GridItem>
               {/* 문구 */}
-              <GridItem><Textarea value={perfRecord[index]} onChange={(event) => { handlePerfRecordOnChange(event, index) }} disabled={gptRes === "loading"} /></GridItem>
+              <GridItem><Textarea value={perfRecord?.[index]} onChange={(event) => { handlePerfRecordOnChange(event, index) }} disabled={gptRes === "loading"} /></GridItem>
               <GridItem>{getByte(index)}</GridItem>
             </React.Fragment>
           })}

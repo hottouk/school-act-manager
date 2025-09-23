@@ -22,8 +22,6 @@ import useClassAuth from '../../hooks/useClassAuth';
 import useFireActiData from '../../hooks/Firebase/useFireActiData';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
 import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData';
-//img
-import deskIcon from '../../image/icon/desk_icon.png'
 //생성(241022)->게시판 추가(250211)
 const HomeroomDetailsPage = () => {
   //교사 인증
@@ -135,21 +133,14 @@ const HomeroomDetailsPage = () => {
           setIsModifying={setIsModifying} setTitle={setTitle} setIntro={setIntro} setNotice={setNotice}
           handleSaveOnClick={handleSaveOnClick} handleCancelOnClick={handleCancelOnClick} handleDeleteOnClick={handleDeleteOnClick} handleCopyOnClick={handleCopyOnClick}
           Row={Row} />
-        {/* <MainPanel>
-          <TitleText>도구모음</TitleText>
-          <IconWrapper>
-            <StyledImg src={deskIcon} alt="자리바꾸기" onClick={() => { navigate(`/homeroom/${thisClass.id}/seat`) }} />
-            <p>자리바꾸기(test)</p>
-          </IconWrapper>
-        </MainPanel> */}
         <MainPanel styles={{ marginTop: "55px" }}>
           <TabWrapper>
             <UpperTab className="tab1" value={tab} top="-61px" onClick={() => { setTab(1) }}>자율</UpperTab>
             <UpperTab className="tab2" value={tab} top="-61px" left="59px" onClick={() => { setTab(2) }}>진로</UpperTab>
           </TabWrapper>
           <TitleText>빠른 세특 쫑알이</TitleText>
-          {tab === 1 && <MainSelectorSection type="self" studentList={studentList} actiList={selfActiList} classId={thisClass.id} />}
-          {tab === 2 && <MainSelectorSection type="career" studentList={studentList} actiList={careerActiList} classId={thisClass.id} />}
+          {tab === 1 && <MainSelectorSection studentList={studentList} actiList={selfActiList} classId={thisClass.id} />}
+          {tab === 2 && <MainSelectorSection studentList={studentList} actiList={careerActiList} classId={thisClass.id} />}
         </MainPanel>
         <MainPanel styles={{ marginTop: "55px" }}>
           <TabWrapper>

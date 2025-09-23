@@ -13,8 +13,9 @@ import useGetByte from '../../hooks/useGetByte.jsx';
 import Select from 'react-select';
 import { setSelectStudent } from '../../store/studentSelectedSlice.jsx';
 import { setSelectActivity } from '../../store/activitySelectedSlice.jsx';
+import PerfModal from '../../components/Modal/PerfModal.jsx';
 //수정(250903)
-const MainSelectorSection = ({ isMobile, type, studentList, actiList, classId, setIsPerfModalShow }) => {
+const MainSelectorSection = ({ isMobile, studentList, actiList, classId }) => {
   const dispatcher = useDispatch();
   const navigate = useNavigate();
   useEffect(() => { bindOptions() }, [studentList, actiList]);
@@ -29,7 +30,7 @@ const MainSelectorSection = ({ isMobile, type, studentList, actiList, classId, s
   //주요 정보
   const [_accRecord, setAccRecords] = useState();
   const [_byte, setByte] = useState(0);
-  const { writeAccDataOnDB, writeHomeAccOnDB, delActiDataOnDB } = useAcc();
+  const { writeAccDataOnDB, delActiDataOnDB } = useAcc();
   const { getByteLengthOfString } = useGetByte();
   //MultiSelector 내부 변수
   const selectStudentRef = useRef(null);   //학생 선택 셀렉터 객체, 재랜더링 X 
@@ -37,7 +38,8 @@ const MainSelectorSection = ({ isMobile, type, studentList, actiList, classId, s
   const studentCheckBoxRef = useRef(null); //모든 학생 체크박스, 재랜더링 X
   const actiCheckBoxRef = useRef(null);    //모든 활동 체크박스, 재랜더링 X
   //모달창
-  const [isCompleteModalShow, setIsCompleteModalShow] = useState(false)
+  const [isCompleteModalShow, setIsCompleteModalShow] = useState(false);
+  const [isPerfModal, setIsPerfModal] = useState(false);                //활동별 보기
 
   //------함수부------------------------------------------------
   //학생 옵션
@@ -60,14 +62,6 @@ const MainSelectorSection = ({ isMobile, type, studentList, actiList, classId, s
     setByte(byte);
     setAccRecords(acc);
   }
-  //type에 따른 prop 전달 함수
-  const functionMap = {
-    subject: () => writeAccDataOnDB(classId),
-    self: () => writeHomeAccOnDB(classId, "self"),
-    career: () => writeHomeAccOnDB(classId, "career"),
-  };
-  //전달 함수 선택
-  const handleFunction = functionMap[type] || (window.alert("functionMap에 type 지정 바람"));
   //학생 선택
   const handleStudentSelection = (event) => { dispatcher(setSelectStudent(event)); }
   //활동 선택
@@ -154,7 +148,7 @@ const MainSelectorSection = ({ isMobile, type, studentList, actiList, classId, s
         </AccWrapper>
         <BtnWrapper>
           <MainBtn onClick={() => { setIsCompleteModalShow(true) }} styles={{ zIndex: "null" }}>선택 완료</MainBtn>
-          {(setIsPerfModalShow && !isMobile) && <MainBtn onClick={() => { setIsPerfModalShow(true) }} styles={{ zIndex: "null" }}>활동별 보기</MainBtn>}
+          {!isMobile && <MainBtn onClick={() => { setIsPerfModal(true) }} styles={{ zIndex: "null" }}>활동별 보기</MainBtn>}
           {!isMobile && <MainBtn onClick={() => { navigate('allStudents') }} styles={{ zIndex: "null" }}>전체 세특 보기</MainBtn>}
         </BtnWrapper>
       </Container >
@@ -163,10 +157,18 @@ const MainSelectorSection = ({ isMobile, type, studentList, actiList, classId, s
         show={isCompleteModalShow}
         onHide={() => setIsCompleteModalShow(false)}
         onClearSelect={onClearSelect}
-        writeAccDataOnDB={handleFunction}
+        writeAccDataOnDB={() => writeAccDataOnDB(classId)}
         delActiDataOnDB={delActiDataOnDB}
         isDeleteChecked={isDeleteChecked}
         klassId={classId}
+      />
+      {/* 활동별 보기 */}
+      <PerfModal
+        show={isPerfModal}
+        onHide={() => setIsPerfModal(false)}
+        actiList={actiList}
+        studentList={studentList}
+        classId={classId}
       />
     </>
   )

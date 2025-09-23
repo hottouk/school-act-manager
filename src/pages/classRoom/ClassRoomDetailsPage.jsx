@@ -21,7 +21,6 @@ import ActiInfoModal from '../../components/Modal/ActiInfoModal.jsx';
 import MainPanel from '../../components/MainPanel.jsx';
 import AddQuizModal from '../../components/Modal/AddQuizModal.jsx';
 //모달
-import PerfModal from '../../components/Modal/PerfModal.jsx';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal.jsx';
 import PetInfoModal from '../../components/Modal/PetInfoModal.jsx';
 //hooks
@@ -65,7 +64,6 @@ const ClassroomDetailsPage = () => {
   const [actiInfo, setActiInfo] = useState(null);
   //모달
   const [isAddStuModal, setIsAddStuModal] = useState(false)       //교사 학생 추가
-  const [isPerfModal, setIsPerfModal] = useState(false)           //수행 관리
   const [isPetInfoModal, setIsPetInfoModal] = useState(false);    //펫
   const [isActiInfoModal, setIsActiInfoModal] = useState(false);  //활동
   const [isAddQuizModal, setIsAddQuizModal] = useState(false);    //게임등록
@@ -135,7 +133,7 @@ const ClassroomDetailsPage = () => {
         {/* 쫑알이(교사)*/}
         {user.isTeacher && <MainPanel>
           <TitleText>세특 쫑알이</TitleText>
-          <MainSelectorSection isMobile={isMobile} type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} setIsPerfModalShow={setIsPerfModal} />
+          <MainSelectorSection isMobile={isMobile} type="subject" studentList={studentList} actiList={actiList} classId={thisKlassId} />
         </MainPanel>}
         {/* 학생 상세 보기*/}
         <MainPanel>
@@ -159,13 +157,6 @@ const ClassroomDetailsPage = () => {
       show={isAddStuModal}
       onHide={() => { setIsAddStuModal(false) }}
       classId={thisKlassId} />
-    {/* 수행 관리 모달 */}
-    <PerfModal
-      show={isPerfModal}
-      onHide={() => setIsPerfModal(false)}
-      studentList={studentList}
-      classId={thisKlassId}
-    />
     {/* 학생 정보 모달 */}
     {isPetInfoModal && <PetInfoModal
       show={isPetInfoModal}

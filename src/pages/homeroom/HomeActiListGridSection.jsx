@@ -1,5 +1,5 @@
 //라이브러리
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import Select from 'react-select';
 //컴포넌트
@@ -8,13 +8,10 @@ import SmallBtn from '../../components/Btn/SmallBtn';
 //img
 import x_btn from '../../image/icon/x_btn.png';
 import { useSelector } from 'react-redux';
-
 //생성(250223)
-const HomeActiListGridSection = ({ isModifying, list, setList, allActiList }) => {
+const HomeActiListGridSection = ({ isModifying, list, setList, type, allActiList }) => {
 	const user = useSelector(({ user }) => user);
 	const selectRef = useRef({});
-	const [_addOnActi, setAddOnActi] = useState(null);
-
 	//------함수부------------------------------------------------
 	//순서 변경
 	const moveActiItem = (index, direction) => {
@@ -43,32 +40,33 @@ const HomeActiListGridSection = ({ isModifying, list, setList, allActiList }) =>
 			const newActi = { ...rest, assignedDate };
 			const newActiList = [...list.slice(undefined, index), newActi, ...list.slice(index + 1)];
 			setList(newActiList);
-		} else { window.alert(result.msg) }
+		} else { alert(result.msg) }
 	}
 	//활동 추가
 	const handleAddActiOnClick = () => {
 		const assignedDate = new Date().toISOString().split('T')[0];
-		const newActiItem = { title: "임의기록", record: '', id: "random" + assignedDate, uid: user.uid, assignedDate, madeBy: user.name }
-		let newList
+		const newActiItem = {
+			title: "임의기록", record: '', id: "random" + assignedDate, uid: user.uid,
+			assignedDate, madeBy: user.name, subject: "담임", subjDetail: type,
+		};
+		let newList;
 		if (list) { newList = [...list, newActiItem]; }
 		else { newList = [newActiItem] }
 		setList(newList);
 	}
 	//textarea 변경1 (gpt, 수기 변경)
-	const handleTextareaOnChange = (event, index) => {
-		changeAccRecord(index, event.target.value);
-	};
+	const handleTextareaOnChange = (event, index) => changeAccRecord(index, event.target.value);
 	//textarea 변경2 (gpt, 수기 변경)
 	const changeAccRecord = (index, newRec) => {
 		const curActi = list[index];
 		const newActi = { ...curActi, record: newRec };
-		const newActiList = [...list.slice(undefined, index), newActi, ...list.slice(index + 1)]
-		setList(newActiList)
+		const newActiList = [...list.slice(undefined, index), newActi, ...list.slice(index + 1)];
+		setList(newActiList);
 	};
 	//삭제 버튼
 	const handleDeleteActiOnClick = (index) => {
-		const leftList = list.filter((_, i) => i !== index)
-		setList(leftList)
+		const leftList = list.filter((_, i) => i !== index);
+		setList(leftList);
 	};
 
 	return (

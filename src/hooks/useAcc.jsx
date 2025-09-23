@@ -16,8 +16,7 @@ const useAcc = () => {
       const actiSnapshot = await getDoc(actiDoc);                //데이터 통신
       const acti = actiSnapshot.data();
       const assignedDate = new Date().toISOString().split("T")[0];
-      let { byte, monImg, studentDoneList, subjDetail, subject, monster, quizInfo,
-        particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, record, ...rest } = acti;   //불필요 속성 제거
+      let { byte, monImg, studentDoneList, monster, quizInfo, particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, record, ...rest } = acti;   //불필요 속성 제거
       //랜덤문구 체크
       if (acti.extraRecordList?.length > 0) {
         const randomIndex = Math.floor(Math.random() * acti.extraRecordList.length);
@@ -79,27 +78,6 @@ const useAcc = () => {
       alert(`관리자에게 문의하세요(useAcc_01),${error}`);
     }
   }
-  //★★★★ 2. 담임반 누가기록
-  const writeHomeAccOnDB = async (classId, type) => {
-    const typeList = `${type}List`;
-    const typeAccRecord = `${type}AccRecord`;
-    try {
-      await Promise.all(
-        studentSelectedList.map(async ({ value }) => {             //선택된 모든 학생에게서 아래 작업 반복
-          const id = value //id 참조
-          const petRef = doc(appFireStore, "classRooms", classId, "students", id);
-          const pet = await getDoc(petRef);
-          const curActiList = pet.data()[typeList] || [];            // 선택 학생의 '기존 활동'
-          const { newActiList } = await makeAccWithSelectedActi();   // 선택한 활동의 누가 배열, 누가 기록 반환
-          const actiList = [...curActiList, ...newActiList];         // 기존 활동들과 새로운 활동을 합치기.
-          const uniqueList = makeUniqueList(actiList);
-          setDoc(petRef, { [typeList]: uniqueList, [typeAccRecord]: makeAccRec(uniqueList) }, { merge: true });
-        }))
-    } catch (error) {
-      console.log(error)
-      alert(`관리자에게 문의하세요(useAcc_02),${error}`);
-    }
-  }
   //★★★★ 3. 수행 관리 입력하기: 수정(250515)
   const writePerfRecDataOnDB = async (studentList, classId, selectedPerf, perfRecord) => {
     const promises = studentList.map(async (student, index) => {
@@ -137,7 +115,7 @@ const useAcc = () => {
       alert(`관리자에게 문의하세요(useAcc_04),${error}`);
     }
   }
-  return { makeAccRec, makeAccWithSelectedActi, writeAccDataOnDB, writePerfRecDataOnDB, writeHomeAccOnDB, delActiDataOnDB }
+  return { makeAccRec, makeAccWithSelectedActi, writeAccDataOnDB, writePerfRecDataOnDB, delActiDataOnDB }
 }
 
 export default useAcc

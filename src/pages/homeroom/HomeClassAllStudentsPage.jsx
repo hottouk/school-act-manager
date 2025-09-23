@@ -1,7 +1,7 @@
 //라이브러리
 import { useSelector } from 'react-redux';
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 //컴포넌트
 import SmallBtn from '../../components/Btn/SmallBtn';
@@ -10,78 +10,128 @@ import EmptyResult from '../../components/EmptyResult';
 import SubNav from '../../components/Bar/SubNav';
 import BackBtn from '../../components/Btn/BackBtn';
 import PrintBtn from '../../components/Btn/PrintBtn';
+import UpperTab from '../../components/UpperTab';
+import MidBtn from '../../components/Btn/MidBtn';
 //hooks
 import useGetByte from '../../hooks/useGetByte';
 import useClassAuth from '../../hooks/useClassAuth';
-import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import useFetchRtMyStudentData from '../../hooks/RealTimeData/useFetchRtMyStudentListData';
-import UpperTab from '../../components/UpperTab';
+import useFirePetData from '../../hooks/Firebase/useFirePetData';
 //css
 import styled from 'styled-components';
-
-//2024.10.22 생성-->24.12.23(인쇄, 진로, 자율 추가)
+//생성(20241022) -> 인쇄,진로,자율 추가(241223) -> 로직 수정(250922)
 const HomeClassAllStudentsPage = () => {
-  //----1.변수부--------------------------------
-  //교사 인
+  //교사 인증
   const { log } = useClassAuth();
-  if (log) { window.alert(log) }
-  useEffect(() => { setIsVisible(true) }, [])
+  if (log) { window.alert(log) };
+  const user = useSelector(({ user }) => user);
+  useEffect(() => { setIsVisible(true) }, []);
+  const navigate = useNavigate();
   //반 정보
   const params = useParams(); //{ id:'id'} 반환
   const classId = params.id
   const thisClass = useSelector(({ classSelected }) => { return classSelected }) //반 전역변수
   //학생 정보 데이터 통신
-  const { studentDataList: studentList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
+  const { studentDataList } = useFetchRtMyStudentData("classRooms", thisClass.id, "students", "studentNumber") //모든 학생 List
+  const { updatePetInfo } = useFirePetData();
+  const [_studentList, setStudentList] = useState([]);
+  const [_origin, setOrigin] = useState(null);
+  useEffect(() => { setStudentList(studentDataList); }, [studentDataList]);
   //선택 탭
   const [tab, setTab] = useState(1)
-  //현재 행 수정
-  const [thisModifying, setThisModifying] = useState('')
+  //행 수정
+  const [isModifying, setisModifying] = useState('');
   //학생 속성
-  const [newName, setNewName] = useState('')
-  const [newRecord, setNewRecord] = useState('')
   const { getByteLengthOfString } = useGetByte();
-  const { updateStudent } = useAddUpdFireData("classRooms")
   //에니메이션
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
   //인쇄
   const printRef = useRef({});
   const handlePrint = useReactToPrint({ contentRef: printRef });
-
-  //----2.함수부--------------------------------
-  //학생 개별 수정
-  const handleModiBtnOnClick = (key, name, record) => {
-    setThisModifying(key)
-    setNewName(name)
-    setNewRecord(record)
-  }
+  //css
+  const nameFontStyle = { cursor: "pointer", fontWeight: "bold", textDecoration: "underline" };
+  //------함수부------------------------------------------------
   //tab에 따라 다른 기록 반환
-  const handleRecord = (student) => {
+  const getRecord = (student) => {
+    if (!student) return;
+    const { actList, behaviorOpinion } = student;
     if (tab === 1) {
-      return student.behaviorOpinion
+      return behaviorOpinion;
     } else if (tab === 2) {
-      return student.selfAccRecord
+      const selfList = actList?.filter((item) => item.subjDetail === "자율");
+      return selfList?.reduce((acc, cur) => acc + " " + cur.record, '');
     } else if (tab === 3) {
-      return student.careerAccRecord
+      const carList = actList?.filter((item) => item.subjDetail === "진로")
+      return carList?.reduce((acc, cur) => acc + " " + cur.record, '');
     }
   }
-  //저장 버튼
-  const handleSaveBtnOnClick = (key) => {
-    let student
-    if (tab === 1) {
-      student = { behaviorOpinion: newRecord, writtenName: newName }
-    } else if (tab === 2) {
-      student = { selfAccRecord: newRecord, writtenName: newName }
-    } else if (tab === 3) {
-      student = { behaviorOpinion: newRecord, writtenName: newName }
-    }
-    updateStudent(student, classId, key); //데이터 통신       
-    setThisModifying('');
+  //진로, 자율 활동 반환
+  const getActiList = (student) => {
+    if (!student) return;
+    const { actList } = student;
+    if (tab === 2) { return actList?.filter((item) => item.subjDetail === "자율"); }
+    else if (tab === 3) { return actList?.filter((item) => item.subjDetail === "진로") }
+  }
+  //수정 버튼
+  const handleEditOnClick = (key) => {
+    setisModifying(key);
+    setOrigin(JSON.parse(JSON.stringify(_studentList))); //깊은 복사(배열,객체는 메모리 참조)
   }
   //취소 버튼
   const handleCancleBtnOnClick = () => {
-    setThisModifying('');
-    setNewName('');
-    setNewRecord('');
+    setisModifying('');
+    setStudentList(JSON.parse(JSON.stringify(_origin))); //깊은 복사
+  }
+  //활동 문구 변경
+  const handleRecordOnChage = (event, index, actiIndex) => {
+    setStudentList((prev) => {
+      const students = [...prev];
+      const student = students[index];
+      if (tab === 1) { student.behaviorOpinion = event.target.value; }
+      else { getActiList(student)[actiIndex].record = event.target.value; }
+      return students;
+    })
+  }
+  //진로, 자율 추가
+  const handleAddActiOnClick = (index) => {
+    setStudentList((prev) => {
+      const subjDetail = tab === 2 ? "자율" : "진로";
+      const assignedDate = new Date().toISOString().split('T')[0];
+      const newActi = { title: "임의기록", id: "random" + assignedDate, record: "", uid: user.uid, assignedDate, subject: "담임", subjDetail, madeBy: user?.name || "익명" };
+      const students = [...prev];
+      const student = students[index];
+      student.actList ??= [];
+      student.actList.push(newActi);
+      return students;
+    })
+  }
+  //진로, 자율 삭제
+  const handleDeleteOnClick = (i, j) => {
+    setStudentList((prev) => {
+      const students = [...prev];
+      const student = students[i];
+      const { actList } = student;
+      const selfList = actList?.filter((item) => item.subjDetail === "자율");
+      const carList = actList?.filter((item) => item.subjDetail === "진로")
+      if (tab === 2) {
+        selfList.splice(j, 1);
+        student.actList = [...selfList, ...carList];
+      }
+      else if (tab === 3) {
+        carList.splice(j, 1);
+        student.actList = [...selfList, ...carList];
+      }
+      return students;
+    })
+  }
+  //저장 버튼
+  const handleSaveBtnOnClick = (index) => {
+    const student = _studentList[index];
+    let { id: petId, actList, behaviorOpinion } = student;
+    actList ??= [];
+    behaviorOpinion ??= '';
+    updatePetInfo(classId, petId, { actList, behaviorOpinion });
+    setisModifying('');
   }
 
   return (
@@ -91,7 +141,6 @@ const HomeClassAllStudentsPage = () => {
         <ExportAsExcel type="home" />
         <PrintBtn onClick={() => { handlePrint() }} />
       </SubNav>
-
       <StyledGirdContainer ref={printRef}>
         <TabWrapper >
           <UpperTab className="tab1" value={tab} onClick={() => { setTab(1) }}>행동특성</UpperTab>
@@ -99,45 +148,61 @@ const HomeClassAllStudentsPage = () => {
           <UpperTab className="tab3" value={tab} left="147px" onClick={() => { setTab(3) }}>진로</UpperTab>
         </TabWrapper>
         <HeaderWrapper>
-          <StyledHeader>연번</StyledHeader>
-          <StyledHeader>학번</StyledHeader>
-          <StyledHeader>이름</StyledHeader>
-          <StyledHeader>행동특성 및 종합 의견</StyledHeader>
-          <StyledHeader>Byte</StyledHeader>
-          <StyledHeader>수정</StyledHeader>
+          <Header>연번</Header>
+          <Header>학번</Header>
+          <Header>이름</Header>
+          <Header>행동특성 및 종합 의견</Header>
+          <Header>Byte</Header>
+          <Header>수정</Header>
         </HeaderWrapper>
-        {!studentList && <EmptyWrapper><EmptyResult comment="학생 목록이 텅텅 비었어요." /></EmptyWrapper>}
-        {(studentList && studentList.length > 0) && studentList.map((student, index) => {
-          let key = student.id
-          let isModifying = (thisModifying === key)                          //현재 수정 중
-          let studentNumber = student.studentNumber
-          let name = (student.writtenName || "미등록")
-          let record = (handleRecord(student) || "기록 없음")
-          let bytes = ((record !== "기록 없음") ? getByteLengthOfString(record) : 0)
-
-          return <React.Fragment key={key}>
-            <StyledGridItem>{index + 1}</StyledGridItem>                     {/* 연번 */}
-            <StyledGridItem>{studentNumber}</StyledGridItem>                 {/* 학번 */}
-            <StyledGridItem>                                                 {/* 이름 */}
-              {!isModifying
-                ? name
-                : <StyledNameInput type="text" value={newName} onChange={(event) => setNewName(event.target.value)} />}
-            </StyledGridItem>
-            <StyledGridItem className="left-align">                          {/* 행발 */}
-              {!isModifying
-                ? record
-                : <StyledTextArea type="text" value={newRecord} onChange={(event) => setNewRecord(event.target.value)} />}
-            </StyledGridItem> {/* 기록 */}
-            <StyledGridItem>{bytes}</StyledGridItem>                         {/* 바이트 */}
-            <StyledGridItem>
-              {!isModifying && <SmallBtn btnName="수정" btnOnClick={() => { handleModiBtnOnClick(key, name, record) }} hoverBtnColor="blue" />}
-              {isModifying &&
+        {!_studentList && <EmptyWrapper><EmptyResult comment="학생 목록이 텅텅 비었어요." /></EmptyWrapper>}
+        {(_studentList && _studentList.length > 0) && _studentList.map((student, index) => {
+          const { id, studentNumber, writtenName } = student;
+          const key = id;
+          const accRecord = getRecord(student);
+          const thisModifying = (isModifying === key);
+          const bytes = (accRecord ? getByteLengthOfString(accRecord) : 0);
+          return <React.Fragment key={index + id}>
+            {/* 연번 */}
+            <GridItem>{index + 1}</GridItem>
+            {/* 학번 */}
+            <GridItem>{studentNumber}</GridItem>
+            {/* 이름 */}
+            <GridItem><p onClick={() => { navigate(`/homeroom/${classId}/${key}`) }} style={nameFontStyle}>{writtenName || "미등록"}</p></GridItem>
+            {/* 문구 */}
+            <GridItem className="left-align">
+              {!thisModifying && accRecord}
+              {/* 행발 수정 */}
+              {(thisModifying && tab === 1) && <TextArea
+                placeholder="이 곳에 새로운 활동을 기록하세요"
+                value={accRecord}
+                onChange={(event) => handleRecordOnChage(event, index)} />}
+              {/* 자율, 진로 수정 */}
+              {(thisModifying && tab !== 1) && <Column style={{ width: "100%", gap: "5px" }}>
+                {getActiList(student)?.map((acti, actiIndex) => {
+                  const { record, id } = acti;
+                  return <Row key={actiIndex + id} style={{ position: "relative" }}>
+                    <TextArea
+                      placeholder="이 곳에 새로운 활동을 기록하세요"
+                      value={record}
+                      onChange={(event) => handleRecordOnChage(event, index, actiIndex)} />
+                    <XBtn onClick={() => { handleDeleteOnClick(index, actiIndex) }}>X</XBtn>
+                  </Row>
+                })}
+                <Row style={{ justifyContent: "center" }}><MidBtn onClick={() => { handleAddActiOnClick(index) }}>기록 추가</MidBtn></Row>
+              </Column>}
+            </GridItem>
+            {/* 바이트 */}
+            <GridItem>{bytes}</GridItem>
+            <GridItem>
+              {!isModifying && <SmallBtn btnOnClick={() => { handleEditOnClick(key) }} hoverBtnColor="blue">수정</SmallBtn>}
+              {thisModifying &&
                 <FlexColWrapper>
-                  <SmallBtn btnName="저장" btnOnClick={() => { handleSaveBtnOnClick(key) }} hoverBtnColor="blue" />
-                  <SmallBtn btnName="취소" btnOnClick={handleCancleBtnOnClick} btnColor="#9b0c24" hoverBtnColor="red" />
+                  <SmallBtn btnOnClick={() => { handleSaveBtnOnClick(index) }} hoverBtnColor="blue" >저장</SmallBtn>
+                  <SmallBtn btnOnClick={handleCancleBtnOnClick} btnColor="#9b0c24" hoverBtnColor="red" >취소</SmallBtn>
                 </FlexColWrapper>
               }
-            </StyledGridItem>
+            </GridItem>
           </React.Fragment>
         })}
       </StyledGirdContainer>
@@ -145,11 +210,15 @@ const HomeClassAllStudentsPage = () => {
   )
 }
 
+const Row = styled.div`
+  display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
+`
 const Container = styled.div`
   opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
   transition: opacity 0.7s ease;
-  @media screen and (max-width: 767px){
-  }
 `
 const FlexColWrapper = styled.div`
   display: flex;
@@ -163,9 +232,7 @@ const StyledGirdContainer = styled.div`
   grid-template-columns: 70px 100px 100px 1000px 60px 100px; 
   grid-template-rows: 1fr 40px;
   @media print {
-    @page {
-      margin : 5mm;
-    }
+    @page { margin : 5mm; }
   }
 `
 const TabWrapper = styled.div`
@@ -178,7 +245,7 @@ const TabWrapper = styled.div`
 const HeaderWrapper = styled.div` 
   display: contents;
 `
-const StyledHeader = styled.div`
+const Header = styled.div`
   display: flex;
   background-color: #3454d1;
   color: white;
@@ -200,7 +267,7 @@ const EmptyWrapper = styled.div`
   border-bottom-left-radius: 5px;
   border
 `
-const StyledGridItem = styled.div`
+const GridItem = styled.div`
   background-color: #efefef;
   padding: 10px;
   color: black;
@@ -212,16 +279,22 @@ const StyledGridItem = styled.div`
     text-align: left;
   }
 `
-const StyledNameInput = styled.input`
-  display: block;
-  width: 85px;
-  height: 50%;
-  border-radius: 10px;
-`
-const StyledTextArea = styled.textarea`
+const TextArea = styled.textarea`
   display: block;
   width: 100%;
   height: 100%;
   border-radius: 10px;
+`
+const XBtn = styled.p`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: rgba(120,120,120,0.5);
+  border-radius: 3px;
+  cursor: pointer;
 `
 export default HomeClassAllStudentsPage

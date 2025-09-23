@@ -46,7 +46,7 @@ const HomeStudentDetailPage = () => {
   const frozenAllActiList = useSelector(({ allActivities }) => allActivities);
   //실시간 학생 정보
   const { pet } = useFetchRtPetDoc(klassId, studentId);
-  useEffect(() => { bindData(); }, [pet]);
+  useEffect(() => { bindInitData(); }, [pet]);
   //gpt
   const { askBehavioralOp, gptAnswer, gptBytes, gptRes } = useChatGpt();
   useEffect(() => {
@@ -66,9 +66,7 @@ const HomeStudentDetailPage = () => {
   const [_selectedSpec, setSelectedSpec] = useState('');        //선택된 spec { spec1: [], spec2: [], spec3:[]..}
   const [_behaviorOpinion, setBehaviorOpinion] = useState('');
   const [_selfList, setSelfList] = useState(null);
-  const [_selfAccRecord, setSelfAccRecord] = useState('');
   const [_careerList, setCareerList] = useState(null);
-  const [_careerAccRecord, setCareerAccRecord] = useState('');
   useEffect(() => { changeAllActisByTab(); }, [tab]);
   //편집
   const [isFreeze, setIsFreeze] = useState(false);
@@ -83,18 +81,19 @@ const HomeStudentDetailPage = () => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   //------함수부------------------------------------------------
-  const bindData = () => {
-    const { studentNumber, writtenName, selectedSpec, behaviorOpinion, selfList, selfAccRecord, careerList, careerAccRecord, } = pet || {};
+  const bindInitData = () => {
+    if (!pet) return;
+    const { studentNumber, writtenName, selectedSpec, behaviorOpinion, actList } = pet || {};
+    const selfListData = actList?.filter((acti) => acti.subjDetail === "자율");
+    const careerListData = actList?.filter((acti) => acti.subjDetail === "진로");
     setStudentNumber(studentNumber);
     setWrittenName(writtenName || '');
     const selected = selectedSpec || '';
     if (selected) { setDesiredMajor(selectedSpec["희망진로"]?.[0] ?? '') };
     setSelectedSpec(selected);
-    setSelfList(selfList || []);
-    setCareerList(careerList || []);
-    setSelfAccRecord(selfAccRecord || '');
+    setSelfList(selfListData || []);
+    setCareerList(careerListData || []);
     setBehaviorOpinion(behaviorOpinion || '');
-    setCareerAccRecord(careerAccRecord || '');
     setNthStudent(allStudentList.findIndex(({ id }) => { return id === studentId }));      //전체 학생에서 몇 번째 index
     setIsVisible(true);
     setStep('');
@@ -108,7 +107,7 @@ const HomeStudentDetailPage = () => {
     else if (tab === 3) { setAllActiList(allCareerList) };
   }
   //실시간 acc
-  const getAccRec = (list) => { return list?.reduce((acc, cur) => acc + cur.record, '') }
+  const getAccRec = (list) => { return list?.reduce((acc, cur) => acc + ' ' + cur.record, '') };
   //학생 이동 버튼 클릭(241201)
   const handleMoveOnClick = (direction) => {
     let student;
@@ -131,9 +130,8 @@ const HomeStudentDetailPage = () => {
     setTab(number);
   }
   //목록 이동
-  const handleBackOnClick = () => {
-    navigate(`/homeroom/${klassId}/`);
-  }
+  const handleBackOnClick = () => navigate(`/homeroom/${klassId}/`);
+
   //gpt 생성 버튼 클릭
   const handleGptOnClick = () => {
     const check = _selectedSpec !== '';
@@ -143,9 +141,10 @@ const HomeStudentDetailPage = () => {
   //수정 저장
   const handleSaveOnClick = () => {
     if (window.confirm('학생정보를 이대로 저장하시겠습니까?')) {
-      const info = { writtenName: _writtenName, behaviorOpinion: _behaviorOpinion, selfList: _selfList, selfAccRecord: _selfAccRecord, careerList: _careerList, careerAccRecord: _careerAccRecord };
+      const actList = [..._selfList, ..._careerList];
+      const info = { writtenName: _writtenName, behaviorOpinion: _behaviorOpinion, actList };
       updatePetInfo(klassId, studentId, info);
-    } else { bindData(); };
+    } else { bindInitData(); };
     setIsModifying(false);
   };
   //행발 저장
@@ -161,18 +160,18 @@ const HomeStudentDetailPage = () => {
   }
   //수정 취소
   const handleCancelOnClick = () => {
-    bindData();
+    bindInitData();
     setIsModifying(false);
   }
   //현재 특성 db 저장
   const handleCurSaveOnClick = () => {
-    let check = _selectedSpec !== ''
+    const check = _selectedSpec !== ''
     if (check) {
       if (window.confirm("현재 상태를 저장하시겠습니까?")) {
         updatePetInfo(klassId, studentId, { selectedSpec: _selectedSpec })//서버 저장
-        window.alert("저장되었습니다.")
+        alert("저장되었습니다.")
       }
-    } else { window.alert("체크된 특성이 없습니다.") }
+    } else { alert("체크된 특성이 없습니다.") }
   }
   //gpt결과 행발에 반영
   const handleJoinBtnOnClick = () => {
@@ -235,8 +234,8 @@ const HomeStudentDetailPage = () => {
                 {tab === 2 && <p style={{ margin: "0" }}>자율 활동 특이사항</p>}
                 {tab === 3 && <p style={{ margin: "0" }}>진로 활동 특이사항</p>}
                 {/* 활동 리스트 그리드 */}
-                {tab === 2 && <HomeActiListGridSection list={_selfList} setList={setSelfList} allActiList={allActiList} isModifying={isModifying} />}
-                {tab === 3 && <HomeActiListGridSection list={_careerList} setList={setCareerList} allActiList={allActiList} isModifying={isModifying} />}
+                {tab === 2 && <HomeActiListGridSection list={_selfList} type="자율" setList={setSelfList} allActiList={allActiList} isModifying={isModifying} />}
+                {tab === 3 && <HomeActiListGridSection list={_careerList} type="진로" setList={setCareerList} allActiList={allActiList} isModifying={isModifying} />}
                 {/* 누가 화살표 */}
                 {tab !== 1 && <Row><img src={arrows_icon} alt="아래화살표" /></Row>}
                 {tab === 1 && <StyledTextarea

@@ -109,7 +109,7 @@ const ClassBoardSection = ({ userStatus, klassData, studentList }) => {
           <Row>
             <DotTitle title={"학생 공개 여부"} />
             {!isModifying
-              ? <BasicText>{klassData.isPublic ? "공개" : "비공개"}</BasicText>
+              ? <BasicText>{klassData?.isPublic ? "공개" : "비공개"}</BasicText>
               : <TwoRadios name="isPublic"
                 id={["public", "private"]}
                 label={["공개 활동", "비공개 활동"]}
