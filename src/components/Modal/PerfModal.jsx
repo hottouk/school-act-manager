@@ -60,7 +60,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
   //------함수부------------------------------------------------  
   //초기화
   const initData = () => {
-    if(!studentList) return;
+    if (!studentList) return;
     setPerfRecord(createMatrix(studentList, ''));
     setPersoanlValue(createMatrix(studentList, ''));
     setExtractedList(createMatrix(studentList, []));
@@ -322,6 +322,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       } catch (error) {
         console.error("추출 실패: ", error);
         alert("추출 실패: ", error);
+        setLoadingStage(null);
       }
     }
   }
@@ -342,6 +343,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
       console.error("OCR 결과 가져오기 실패:", error);
       alert("OCR 결과 가져오기 실패:", error);
       setOcrStage(3);
+      setLoadingStage(null);
     }
   };
   //ocr 삽입
@@ -436,7 +438,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
               <GridItem>{index + 1}</GridItem>     {/* 연번 */}
               <GridItem>{studentNumber}</GridItem> {/* 학번 */}
               <GridItem>{name}</GridItem>          {/* 이름 */}
-              <GridItem> {/* 성취도 */}
+              {/* 성취도 */}
+              <GridItem>
                 {selectedActi?.perfRecordList && <RadioWrapper>{achivList.map((achiv, subIndex) => {
                   return <label key={`a${index}${subIndex}`}
                   ><input type="radio"
@@ -447,7 +450,8 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
                     disabled={gptRes === "loading"} /> {achiv}</label>
                 })}</RadioWrapper>}
               </GridItem>
-              <GridItem> {/* 랜덤 */}
+              {/* 랜덤 */}
+              <GridItem>
                 {selectedActi && <RadioWrapper>
                   <label>
                     <input type="radio" id='random_radio' name="random"
@@ -478,7 +482,7 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
               </GridItem>
               {/* 개별화 */}
               <GridItem>
-                {(extractedList && extractedList[index]?.length > 0)
+                {(extractedList?.[index]?.length > 0)
                   ? <ExtractWrapper>
                     {extractedList[index].map((result, subIndex) => {
                       //place홀더 개수에 따라 input 생성
@@ -490,9 +494,13 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
                           disabled={gptRes === "loading"} />
                       </React.Fragment>)
                     })}
-                    {!thisIndex && <Row style={{ gap: "10px", justifyContent: "center" }}>
-                      <SmallBtn onClick={() => { handleChangeBtnOnClick(index) }} disabled={gptRes === "loading"}>변경</SmallBtn>
-                      <SmallBtn onClick={() => { handleChangeGptBtnOnClick(index) }} disabled={gptRes === "loading"}>통합</SmallBtn>
+                    {!thisIndex && <Row style={{ justifyContent: "center" }}>
+                      {gptRes === "loading" && <Row style={{ gap: "15px" }}><Spinner /><span>gpt 기다리는중..</span></Row>}
+                      {gptRes !== "loading" &&
+                        <Row style={{ gap: "10px" }}>
+                          <SmallBtn onClick={() => { handleChangeBtnOnClick(index); }}>변경</SmallBtn>
+                          <SmallBtn onClick={() => { handleChangeGptBtnOnClick(index); }}>통합</SmallBtn>
+                        </Row>}
                     </Row>}
                   </ExtractWrapper>
                   : <Column>
@@ -504,9 +512,13 @@ const PerfModal = ({ show, onHide, studentList, classId }) => {
                       disabled={gptRes === "loading"}
                     />
                     {(personalValue?.[index] !== '') &&
-                      <Row style={{ gap: "10px", justifyContent: "center", marginTop: "10px" }}>
-                        <SmallBtn onClick={() => { handleTranslateOnClick(index) }} disabled={gptRes === "loading"}>번역</SmallBtn>
-                        <SmallBtn onClick={() => { handleOcrGptOnClilck(index) }} disabled={gptRes === "loading"}>통합</SmallBtn>
+                      <Row style={{ justifyContent: "center", marginTop: "10px" }}>
+                        {gptRes === "loading" && <Row style={{ gap: "15px" }}><Spinner /><span>gpt 기다리는중..</span></Row>}
+                        {gptRes !== "loading" &&
+                          <Row style={{ gap: "10px" }}>
+                            <SmallBtn onClick={() => { handleTranslateOnClick(index); }}>번역</SmallBtn>
+                            <SmallBtn onClick={() => { handleOcrGptOnClilck(index); }}>통합</SmallBtn>
+                          </Row>}
                       </Row>}
                   </Column>
                 }

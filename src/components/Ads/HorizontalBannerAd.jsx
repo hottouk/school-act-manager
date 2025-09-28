@@ -8,7 +8,6 @@ const HorizontalBannerAd = () => {
     script.async = true;
     script.type = 'text/javascript';
     document.body.appendChild(script);
-
     return () => {
       document.body.removeChild(script);
     };

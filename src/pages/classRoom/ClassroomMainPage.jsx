@@ -14,13 +14,13 @@ import useFetchRtMyClassData from '../../hooks/RealTimeData/useFetchRtMyClassDat
 import useClientHeight from '../../hooks/useClientHeight';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useMediaQuery from '../../hooks/useMediaQuery';
-import BasicModal from '../../components/Modal/BasicModal';
+import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd';
 
 //1차 수정(240918) -> 학생 파트 수정(250121) -> 코티칭(250218)
 const ClassRoomMainPage = () => {
   //준비
   const user = useSelector(({ user }) => user)
-  useEffect(() => { fetchMyData() }, [user])
+  useEffect(() => { fetchMyData() }, [user]);
   const navigate = useNavigate();
   const dispatcher = useDispatch();
   const isMobile = useMediaQuery("(max-width: 767px)")
@@ -94,6 +94,7 @@ const ClassRoomMainPage = () => {
         <CardList dataList={subjKlassList} type="classroom" onClick={handleSubjClassOnClick} />
         <SearchBar title="코티칭 클래스" />
         <CardList dataList={coTeachingList} type="classroom" onClick={handleCoTeachingOnClick} />
+        <HorizontalBannerAd />
         {!isMobile && <SearchBar title="담임 클래스" />}
         {!isMobile && <CardList dataList={homeroomKlassList} type="homeroom" onClick={handleHomeroomOnClick} />}
         {!isMobile && <Row><MainBtn onClick={() => navigate('/classrooms_setting', { state: { step: "first" } })}>클래스 만들기</MainBtn></Row>}
