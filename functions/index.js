@@ -20,13 +20,91 @@ import { compareActions, processEffect } from "./gameLogic.js";
 import { getFirestore } from "firebase-admin/firestore";
 import { defineSecret } from "firebase-functions/params";
 import OpenAI from "openai";
+import express from "express";
+// --- 공통 설정 ---
 initializeApp();
 const REGION = "asia-northeast3";
 const db = getFirestore(); // ✅ firestore는 함수 형태로 가져와야 함
-const cors = corsLib({ origin: true });
 const storage = new Storage();
-const client = new vision.ImageAnnotatorClient();
+// --- (1) openAI
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+// --- (2) 구글 비젼
+const client = new vision.ImageAnnotatorClient();
+// --- (3) 결제용 Express 앱 묶음(api) ---
+// express 서버
+const app = express();
+const cors = corsLib({ origin: true });
+app.use(cors);
+app.use(express.json());
+// 시크릿은 이 export에만 연결
+// NOTE: 토스 키는 문자열 기반 secrets를 권장(또는 defineSecret로 교체 가능)
+const widgetSecretKey = "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6";
+const apiSecretKey = "test_sk_zXLkKEypNArWmo50nX3lmeaxYG5R";
+const encryptedWidgetSecretKey = "Basic " + Buffer.from(widgetSecretKey + ":").toString("base64");
+const encryptedApiSecretKey = "Basic " + Buffer.from(apiSecretKey + ":").toString("base64");
+/**
+ * POST /api/prepare-order
+ * body: { userId, amount, name }
+ * 역할: 서버에서 orderId 생성 & Firestore에 status: "ready"로 기록(금액 고정)
+ */
+// 결제위젯 승인
+app.post("/confirm/widget", async (req, res) => {
+  const { paymentKey, orderId, amount } = req.body;
+  fetch("https://api.tosspayments.com/v1/payments/confirm", {
+    method: "POST",
+    headers: {
+      "Authorization": encryptedWidgetSecretKey,
+      "Content-Type": "application/json",
+    }, body: JSON.stringify(
+      {
+        orderId,
+        amount,
+        paymentKey
+      }
+    )
+  }).then(async (response) => {
+    const result = await response.json();
+    console.log(result);
+    if (!response.ok) {
+      // TODO: 결제 승인 실패 비즈니스 로직을 구현하세요.
+      res.status(response.status).json(result);
+      return;
+    }
+    // TODO: 결제 완료 비즈니스 로직을 구현하세요.
+    res.status(response.status).json(result);
+  });
+});
+// 결제창 승인
+app.post("/confirm/payment", async (req, res) => {
+  const { paymentKey, orderId, amount } = req.body;
+  // 결제 승인 API를 호출하세요.
+  // 결제를 승인하면 결제수단에서 금액이 차감돼요.
+  // @docs https://docs.tosspayments.com/guides/v2/payment-widget/integration#3-결제-승인하기
+  fetch("https://api.tosspayments.com/v1/payments/confirm", {
+    method: "POST",
+    headers: {
+      "Authorization": encryptedApiSecretKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      orderId: orderId,
+      amount: amount,
+      paymentKey: paymentKey,
+    }),
+  }).then(async (response) => {
+    const result = await response.json();
+    console.log("결제창 승인", result);
+    if (!response.ok) {
+      // TODO: 결제 승인 실패 비즈니스 로직을 구현하세요.
+      res.status(response.status).json(result);
+      return;
+    }
+    // TODO: 결제 완료 비즈니스 로직을 구현하세요.
+    res.status(response.status).json(result);
+  });
+});
+
+export const api = onRequest({ region: REGION }, app);
 
 //gpt apiKey
 export const askGPT = onCall(

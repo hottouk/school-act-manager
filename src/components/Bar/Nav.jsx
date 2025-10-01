@@ -73,6 +73,8 @@ const Nav = () => {
           <span>상점</span></Link></li>
         {user.isMaster && <li id="master_btn" ><Link to="/master"><Icon className="fa-solid fa-key"></Icon>
           <span>마스터</span></Link></li>}
+        {user.isMaster && <li id="master_btn" ><Link to="/purchase"><Icon className="fa-solid fa-key"></Icon>
+          <span>충전</span></Link></li>}
         <NewsWrapper >
           {isNew && <NewIcon><Badge bg="danger">new</Badge></NewIcon>}
           <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>

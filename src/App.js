@@ -37,10 +37,12 @@ import QuizMainPage from './pages/quizBattle/QuizMainPage';
 import MasterPage from './pages/main/MasterPage';
 import Lab from './pages/lab/Lab';
 import HomeSeatChange from './pages/homeroom/HomeSeatChangePage';
-
 //상점
 import ShopMainPage from './pages/shop/ShopMainPage';
 import IndividualPage from './pages/individual/IndividualPage';
+import WidgetCheckoutPage from './pages/purchase/WidgetCheckoutPage';
+import WidgetSuccessPage from './pages/purchase/WidgetSuccessPage';
+import PurchaseFailPage from './pages/purchase/PurchaseFailPage';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -103,6 +105,10 @@ function App() {
           <Route path="/login/email" element={!uid ? <EmailSignupPage /> : <Navigate replace={true} to='/' />} />
           {/* 관리자 */}
           <Route path="/master" element={user.isMaster ? <MasterPage /> : <Navigate replace={true} to='/' />} />
+          {/* 충전하기 */}
+          <Route path="/purchase" element={user.isMaster ? <WidgetCheckoutPage /> : <Navigate replace={true} to='/' />} />
+          <Route path="/purchase/success" element={user.isMaster ? <WidgetSuccessPage /> : <Navigate replace={true} to='/' />} />
+          <Route path="/purchase/fail" element={user.isMaster ? <PurchaseFailPage /> : <Navigate replace={true} to='/' />} />
         </Routes>
       </BrowserRouter>
     </>

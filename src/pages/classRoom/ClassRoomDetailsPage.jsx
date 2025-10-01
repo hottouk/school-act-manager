@@ -4,7 +4,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
 import { setAllStudents } from '../../store/allStudentsSlice.jsx';
 import { setAllActivities } from '../../store/allActivitiesSlice.jsx';
-import { setSelectClass } from '../../store/classSelectedSlice.jsx';
 import { setUser } from '../../store/userSlice.jsx';
 import Select from 'react-select';
 import styled from 'styled-components';
