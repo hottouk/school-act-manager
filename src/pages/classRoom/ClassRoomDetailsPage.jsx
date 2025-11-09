@@ -185,7 +185,6 @@ const Container = styled.main`
   opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
   transition: opacity 0.7s ease;
   @media screen and (max-width: 768px){
-    position: fixed;
     width: 100%;
     height: ${(props) => props.$clientheight}px;
     margin: 0;

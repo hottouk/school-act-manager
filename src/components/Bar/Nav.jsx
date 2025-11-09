@@ -140,9 +140,10 @@ const Nav = () => {
   </Container >
   )
 }
-const Container = styled.nav`
-  width: 100%;
+const Row = styled.div`
   display: flex;
+`
+const Container = styled(Row)`
   background-color: #3454d1;
   align-items: center;
   padding: 20px 30px;
@@ -151,7 +152,7 @@ const Container = styled.nav`
     color: #efefef;
     text-decoration: none;
   }
-  @media screen and (max-width: 767px){
+  @media screen and (max-width: 768px){
     width: 100%;
     display: flex;
     position: fixed; 
@@ -160,13 +161,11 @@ const Container = styled.nav`
     background-color: #efefef;
     padding: 5px;
     z-index: 998;
+    border-top: 1px solid #949192;
     a {
       color: #3454d1;
       font-size: 12px;
     }
-`
-const Row = styled.div`
-  display: flex;
 `
 const NewsWrapper = styled.li`
   position: relative;

@@ -153,7 +153,7 @@ const StyledSearchBtn = styled.button`
 `
 const SchoolListWrapper = styled.div`
   width: 100%;
-  background-color: #efefef;
+  background-color: white;
   height: ${({ $isSeacrh }) => { return $isSeacrh ? "200px" : "0" }};
   transition: height 0.3s;
   overflow-y: scroll;

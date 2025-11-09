@@ -31,7 +31,8 @@ const ShopMainPage = () => {
 	const giftImgUrlList = ['images/store_gift_r.png', 'images/store_gift_g.png', 'images/store_gift_b.png', 'images/store_gift_y.png'];
 	const [giftImgList, setGiftImgList] = useState([]);
 	useEffect(() => { fetchImgUrlList(giftImgUrlList, setGiftImgList) }, []);
-	//------공용 변수------------------------------------------------  
+	//------공용 변수------------------------------------------------ 
+	const [rira, setRira] = useState(0);
 	const [_shopItemList, setShopItemList] = useState([null, null, null, null, null, null, null, null]);
 	const [selectedGift, setSelectedGift] = useState(null);
 	//모달
@@ -47,9 +48,10 @@ const ShopMainPage = () => {
 	//------교사용 함수------------------------------------------------  
 	//공용: 정보
 	const fetchShopItemInfo = () => {
-		if (!user.isTeacher || !myUserData) return
-		const { shopItemList } = myUserData;
+		if (!user.isTeacher || !myUserData) return;
+		const { shopItemList, rira } = myUserData;
 		bindShopItemList(shopItemList);
+		setRira(rira);
 	}
 	//공용: 샵 아이템
 	const bindShopItemList = (shopItemList) => {
@@ -84,7 +86,7 @@ const ShopMainPage = () => {
 	const handleUseOnClick = (item) => {
 		const { title, quantity } = item;
 		const result = window.confirm(`${title} 1개를 사용합니다. 사용후 남은 수량은 ${quantity - 1}개 입니다. 꼭 선생님 앞에서 사용하세요.`);
-		if (!result) return
+		if (!result) return;
 		if (quantity - 1 <= 0) { deleteUserArrayInfo(user.uid, "purchasedItemList", item); }
 		else {
 			deleteUserArrayInfo(user.uid, "purchasedItemList", item);
@@ -123,6 +125,13 @@ const ShopMainPage = () => {
 	return (<>
 		{!user.isTeacher && <SubNav styles={{ padding: "10px" }}><Select options={teacherList} onChange={(event) => { handleSelectOnChange(event) }} />선생님의 상점</SubNav>}
 		<Container>
+			<InfoWrapper>
+				<RiraDiv>
+					<p style={{ margin: "0" }}>나의 리라: &nbsp;</p>
+					<h6 style={{ fontSize: "24px", margin: "0" }}>{rira}</h6>
+					<img src={rira_gem} width={"45px"} alt="리라" />
+				</RiraDiv>
+			</InfoWrapper>
 			<GridWrapper>
 				<PixiShopStage shopItemList={_shopItemList} setIsModal={setIsModal} setSelected={setSelectedGift} />
 				<Inventory>{user.isTeacher
@@ -136,18 +145,38 @@ const ShopMainPage = () => {
 	</>
 	)
 }
+const Row = styled.div`
+	display: flex;
+`
 const Container = styled.div`
 	box-sizing: border-box;
   min-height: 350px;
+	margin-top: 20px;
+`
+const RiraDiv = styled(Row)`
+	height: 80%;
+	align-items: center;
+	margin: 0 0 0 15px;
+	padding: 3px;
+	background-color: #fdf5d9;
+	border: 3px solid #9a5b2c;
+	border-radius: 10px;
+	
+`
+const InfoWrapper = styled(Row)`
+	width: 1600px;
+	height: 70px;
+	margin: 0 auto;
+	background-color: #e7cdb3;
+	border-radius: 20px 20px 0 0;
+	justify-content: flex-start;
+	align-items: center;
 `
 const GridWrapper = styled.div`
 	display: grid;
 	grid-template-columns: 1200px 400px;
 	width: 1600px;
 	margin: 0 auto;
-`
-const Row = styled.div`
-	display: flex;
 `
 const CenterRow = styled(Row)`
 	justify-content: center;

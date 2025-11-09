@@ -97,7 +97,7 @@ const ClassBoardSection = ({ userStatus, klassData, studentList }) => {
       {!isModifying && <BoldText>{_title}</BoldText>}
       {isModifying && <ModifyingInput type='text' value={_title} onChange={(event) => { setTitle(event.target.value) }} placeholder='반 제목을 수정해주세요'></ModifyingInput>}
       <SubjectText>{klassData?.subject || "담임"}-{klassData?.subjDetail || "담임"}</SubjectText>
-      <Row style={{ gap: "15px", justifyContent: "center" }}>
+      <Wrapper>
         <Board>
           <InfoText>Class Info.</InfoText>
           <Row><DotTitle title={"반 정보"} />
@@ -127,7 +127,7 @@ const ClassBoardSection = ({ userStatus, klassData, studentList }) => {
           {isModifying && <ModifyingTextarea value={_notice} onChange={(event) => { setNotice(event.target.value) }}
             placeholder='공지를 작성해주세요. ^(눈웃음 기호)를 사용하여 줄바꿈할 수 있습니다.'></ModifyingTextarea>}
         </Board>
-      </Row>
+      </Wrapper>
       {(userStatus === "master") &&
         <Row style={{ justifyContent: "flex-end", marginTop: "20px", gap: "20px" }}>
           {!isModifying && <MarginalText onClick={() => { setIsModifying((prev) => !prev) }}>정보 수정</MarginalText>}
@@ -150,12 +150,23 @@ const Row = styled.div`
 const Column = styled(Row)`
   flex-direction: column;
 `
+const Wrapper = styled(Row)`
+  gap: 15px;
+  justify-content: center;
+  @media screen and (max-width: 758px) {
+    flex-direction: column;
+  }
+`
 const Board = styled(Column)`
   width: 50%;
   padding: 12px;
   gap: 10px;
   border: 1px solid rgba(120,120,120,0.5);
   border-radius: 15px;
+  @media screen and (max-width: 758px) {
+    width: 100%;
+  }
+
 `
 const BasicText = styled.p`
   margin:0;

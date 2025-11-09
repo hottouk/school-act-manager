@@ -195,6 +195,10 @@ const useFireTransaction = () => {
       const { klass, teacher } = info
       denialInfo = { id: klass.id, klassTitle: klass.classTitle, subject: klass.subject, name: teacher.name, reason, applyDate: today, type: "denial" }
       otherRef = doc(db, "user", teacher.uid);
+    } else if (info.type === "edit") {
+      const { subject, sId, newRecord } = info
+      denialInfo = { subject, reason, date: today, newRecord, type: "denial" }
+      otherRef = doc(db, "user", sId);
     }
 
     await runTransaction(db, async (transaction) => {
@@ -230,7 +234,6 @@ const useFireTransaction = () => {
       if (!teacherDoc.exists()) { throw new Error("TeacherUserInfo does not exist!"); }
       if (!petDoc.exists()) { throw new Error("Pet does not exist!"); }
       if (!actiDoc.exists()) { throw new Error("Acti does not exist!"); }
-
       //2. 수정
       //교사: 상신 목록 삭제
       transaction.update(teacherRef, { onSubmitList: arrayRemove(info) })
@@ -245,7 +248,34 @@ const useFireTransaction = () => {
       const updatedList = [...winnerList, studentNumber];
       transaction.update(actiRef, { winnerList: updatedList });
     }).then(() => {
-      window.alert("생기부가 해당 학생에게 기록되었습니다.")
+      alert("생기부가 해당 학생에게 기록되었습니다.");
+    }).catch(err => {
+      window.alert(err);
+      console.log(err);
+    })
+  }
+  //6. 교사 생기부 수정 요청 승인
+  const approveEditTransaction = async (info) => {
+    const { sId, classId, petId, actiId, newRecord } = info;
+    const confirm = { type: "confirm", subType: "edit", message: "생기부 수정 요청이 승인되었습니다.", newRecord };
+    const teacherRef = doc(db, "user", user.uid);
+    const studentRef = doc(db, "user", sId);
+    const petRef = doc(db, "classRooms", classId, "students", petId);
+    await runTransaction(db, async (transaction) => {
+      //1. 읽기
+      const petDoc = await transaction.get(petRef);
+      if (!petDoc.exists()) throw new Error("펫이 존재하지 않습니다.");
+      const actiList = petDoc.data().actList || [];
+      const target = actiList.find((acti) => acti.id === actiId);
+      if (!target) throw new Error("학생이 수정 요청한 활동이 없습니다.");
+      const edited = { ...target, assignedDate: new Date().toISOString().split("T")[0], record: newRecord };
+      const newList = replaceItem(actiList, edited, "id");
+      //2. 수정
+      transaction.update(studentRef, { onSubmitList: arrayUnion(confirm) });
+      transaction.update(petRef, { actList: newList });
+      transaction.update(teacherRef, { onSubmitList: arrayRemove(info) });
+    }).then(() => {
+      alert("생기부가 해당 학생에게 기록되었습니다.");
     }).catch(err => {
       window.alert(err);
       console.log(err);
@@ -287,7 +317,7 @@ const useFireTransaction = () => {
   }
 
   return {
-    changeIsTeacherTransaction, copyActiTransaction, delCopiedActiTransaction, approvWinTransaction,
+    changeIsTeacherTransaction, copyActiTransaction, delCopiedActiTransaction, approvWinTransaction, approveEditTransaction,
     denyTransaction, confirmDenialTransaction, leaveSchoolTransaction, approveCoteahingTransaction, deleteUserTransaction
   }
 }

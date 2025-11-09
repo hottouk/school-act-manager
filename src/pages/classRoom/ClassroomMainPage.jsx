@@ -9,21 +9,22 @@ import styled from 'styled-components';
 import CardList from '../../components/List/CardList';
 import MainBtn from '../../components/Btn/MainBtn';
 import SearchBar from '../../components/Bar/SearchBar';
+import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd';
+import HorizontalMobileAd from '../../components/Ads/HorizontalMobileAd';
+import MainWrapper from '../../components/Styled/MainWrapper';
 //hooks
 import useFetchRtMyClassData from '../../hooks/RealTimeData/useFetchRtMyClassData';
 import useClientHeight from '../../hooks/useClientHeight';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useMediaQuery from '../../hooks/useMediaQuery';
-import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd';
-
-//1차 수정(240918) -> 학생 파트 수정(250121) -> 코티칭(250218)
+//수정(240918) -> 학생 파트 수정(250121) -> 코티칭(250218) -> 디자인(251108)
 const ClassRoomMainPage = () => {
   //준비
-  const user = useSelector(({ user }) => user)
+  const user = useSelector(({ user }) => user);
   useEffect(() => { fetchMyData() }, [user]);
   const navigate = useNavigate();
   const dispatcher = useDispatch();
-  const isMobile = useMediaQuery("(max-width: 767px)")
+  const isMobile = useMediaQuery("(max-width: 767px)");
   //교사
   const { classList } = useFetchRtMyClassData();
   const [subjKlassList, setSubjKlassList] = useState(null);
@@ -35,8 +36,7 @@ const ClassRoomMainPage = () => {
   const [appplyKlass, setApplyKlass] = useState([]);
   const [myKlass, setMyKlass] = useState([]);
   //모니터 높이
-  const clientHeight = useClientHeight(document.documentElement)
-
+  const clientHeight = useClientHeight(document.documentElement);
   //------공용-------------------------------------------------- 
   //클래스 데이터 가져오기
   const fetchMyData = () => {
@@ -47,7 +47,6 @@ const ClassRoomMainPage = () => {
   const handleSubjClassOnClick = (item) => {
     navigate(`/classrooms/${item.id}`, { state: { ...item } }) //url 이동
   }
-
   //------교사용------------------------------------------------  
   //교과, 담임반 분류
   const sortTeacherKlass = () => {
@@ -84,47 +83,41 @@ const ClassRoomMainPage = () => {
     dispatcher(setAllSubjClasses(approved)) //전역 변수화
     setApplyKlass(applied)
   }
-
-
-  return (<>
-    <Container $clientheight={clientHeight}>
-      {/* 교사 */}
-      {user.isTeacher && <>
-        <SearchBar title="교과 클래스" type="classroom" list={subjKlassList} setList={setSubjKlassList} isMobile={isMobile} />
-        <CardList dataList={subjKlassList} type="classroom" onClick={handleSubjClassOnClick} />
-        <SearchBar title="코티칭 클래스" />
-        <CardList dataList={coTeachingList} type="classroom" onClick={handleCoTeachingOnClick} />
-        <HorizontalBannerAd />
-        {!isMobile && <SearchBar title="담임 클래스" />}
-        {!isMobile && <CardList dataList={homeroomKlassList} type="homeroom" onClick={handleHomeroomOnClick} />}
-        {!isMobile && <Row><MainBtn onClick={() => navigate('/classrooms_setting', { state: { step: "first" } })}>클래스 만들기</MainBtn></Row>}
-      </>}
-      {/* 학생 */}
-      {!user.isTeacher && <>
-        <SearchBar title="가입 신청 중인 클래스" />
-        <CardList dataList={appplyKlass} type="classroom" onClick={() => alert("교사 승인 대기중입니다.")} />
-        <SearchBar title="나의 클래스" />
-        <CardList dataList={myKlass} type="classroom" onClick={handleSubjClassOnClick} />
-      </>}
-    </Container>
-  </>
-  )
+  return (<Container $clientheight={clientHeight}>
+    {/* 교사 */}
+    {user.isTeacher && <MainWrapper>
+      <SearchBar title="교과 클래스" type="classroom" list={subjKlassList} setList={setSubjKlassList} isMobile={isMobile} />
+      <CardList dataList={subjKlassList} type="classroom" onClick={handleSubjClassOnClick} />
+      <SearchBar title="코티칭 클래스" />
+      <CardList dataList={coTeachingList} type="classroom" onClick={handleCoTeachingOnClick} />
+      {!isMobile ? <HorizontalBannerAd /> : <HorizontalMobileAd />}
+      {!isMobile && <SearchBar title="담임 클래스" />}
+      {!isMobile && <CardList dataList={homeroomKlassList} type="homeroom" onClick={handleHomeroomOnClick} />}
+      {!isMobile && <MainBtn onClick={() => navigate('/classrooms_setting', { state: { step: "first" } })}>클래스 만들기</MainBtn>}
+    </MainWrapper>}
+    {/* 학생 */}
+    {!user.isTeacher && <MainWrapper>
+      <SearchBar title="가입 신청 중인 클래스" />
+      <CardList dataList={appplyKlass} type="classroom" onClick={() => alert("교사 승인 대기중입니다.")} />
+      <SearchBar title="나의 클래스" />
+      <CardList dataList={myKlass} type="classroom" onClick={handleSubjClassOnClick} />
+    </MainWrapper>}
+  </Container>)
 }
-
-const Container = styled.div`
-  box-sizing: border-box;
-  margin: 2px auto;  
-  @media screen and (max-width: 767px) {
-    position: fixed;
-    width: 100%;
-    height: ${(props) => props.$clientheight}px;
-    padding-bottom: 20px;
-    overflow-y: scroll;
-  }
-`
 const Row = styled.div`
   display: flex;
-  justify-content: center;
-  margin: 30px 0;
+`
+const Column = styled(Row)` 
+  flex-direction: column;
+`
+const Container = styled(Column)`
+  box-sizing: border-box;
+  background-color: #efefef;
+  min-height: 100dvh;
+  align-items: center;
+  @media screen and (max-width: 768px) {
+    height: ${(props) => props.$clientheight}px;
+    overflow-y: scroll;
+  }
 `
 export default ClassRoomMainPage

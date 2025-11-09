@@ -1,14 +1,13 @@
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { collection, doc, getDoc, runTransaction, updateDoc, arrayUnion, arrayRemove, getDocFromCache, getDocFromServer, setDoc, onSnapshot, } from 'firebase/firestore'
 import { appFireStore } from '../../firebase/config'
-import { setUserPersonalInfo } from '../../store/userSlice'
-
+import useFireBasic from './useFireBasic';
 //user collection 함수 모음
 const useFireUserData = () => {
   const user = useSelector(({ user }) => user);
   const db = appFireStore;
   const col = collection(db, "user");
-  const dispatcher = useDispatch();
+  const { addData } = useFireBasic("error");
 
   //1. 유저 정보 하나 가져오기
   const fetchUserData = async (id) => {
@@ -43,10 +42,13 @@ const useFireUserData = () => {
   //3. 유저 배열형 정보 추가(250127)
   const updateUserArrayInfo = async (id, field, info) => {
     const userDocRef = doc(col, id);
-    await setDoc(userDocRef, { [field]: arrayUnion(info) }, { merge: true }).catch((error) => {
-      alert(`관리자에게 문의하세요(useFireUserData_03), ${error}`);
-      console.log(error);
-    })
+    await setDoc(userDocRef, { [field]: arrayUnion(info) }, { merge: true })
+      .catch((error) => {
+        const message = `관리자에게 문의하세요(useFireUserData_03), ${error}`
+        alert(message);
+        console.log(error);
+        addData({ type: "write", message, uid: user.uid, userData: user });
+      })
   }
   //4. 유저 배열형 정보 삭제(250201)
   const deleteUserArrayInfo = async (id, field, info) => {
@@ -162,15 +164,13 @@ const useFireUserData = () => {
         console.log(err);
       })
   }
-  //내 정보 창에서 정보 변경(250223)
+  //내 정보 변경(251023)
   const updateMyInfo = async (info) => {
     const userDocRef = doc(col, user.uid);
     updateDoc(userDocRef, { ...info })
-      .then(() => {
-        dispatcher(setUserPersonalInfo(info))
-      }).catch((err) => {
-        window.alert(err)
-        console.log(err)
+      .catch((err) => {
+        alert(err);
+        console.log(err);
       })
   }
 
