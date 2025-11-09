@@ -160,13 +160,12 @@ const CardList = ({ dataList, type, onClick, selected }) => {
   )
 }
 const Container = styled.div`
-    width: 100%;
-    border-top: 1px solid rgba(120, 120, 120, 0.5);;
-    border-bottom: 1px solid rgba(120, 120, 120, 0.5);
-    margin: 5px auto 5px;
-    list-style: none;
-    @media screen and (max-width: 767px){
-      flex - direction: column;
+  background-color: white;
+  border-top: 1px solid rgba(120, 120, 120, 0.5);;
+  border-bottom: 1px solid rgba(120, 120, 120, 0.5);
+  list-style: none;
+  @media screen and (max-width: 768px){
+    flex-direction: column;
     align-items: center;
     padding: 0;
     border: none;
@@ -175,20 +174,20 @@ const Container = styled.div`
   }
 `
 const CardWrapper = styled.ul`
-    display: flex;
-    flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
 `
 const Card = styled.li`
-    width: 280px;
-    height: 155px;
-    margin: 10px;
-    padding: 15px 25px;
-    border: 1.5px solid  rgb(120, 120, 120, 0.5) ;
-    border-radius: 15px;
-    cursor: pointer;
-    background-color: ${props => props.$backgroundColor || "white"};
-    &: hover {
-      background - color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
+  width: 280px;
+  height: 155px;
+  margin: 10px;
+  padding: 15px 25px;
+  border: 1.5px solid  rgb(120, 120, 120, 0.5) ;
+  border-radius: 15px;
+  cursor: pointer;
+  background-color: ${props => props.$backgroundColor || "white"};
+  &: hover {
+    background - color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
   }
 `
 const Row = styled.div`

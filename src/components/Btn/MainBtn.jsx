@@ -2,22 +2,30 @@ import React from 'react'
 import styled from 'styled-components'
 //정비(250722)
 const MainBtn = ({ children, onClick, type, styles, disabled }) => {
-  const zIndex = styles?.zIndex || "999";
-  return (<StyledBtn $zIndex={zIndex}
-    type={type || "button"}
-    onClick={onClick}
-    disabled={disabled}>{children || "샘플"} </StyledBtn>)
+  const margin = styles?.margin ?? "0";
+  const zIndex = styles?.zIndex ?? "999";
+  const alignSelf = styles?.alignSelf ?? "none";
+  return (
+    <StyledBtn $zIndex={zIndex} $alignSelf={alignSelf} $margin={margin} $disabled={disabled}
+      type={type || "button"}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {children || "샘플"}
+    </StyledBtn>)
 }
+
 const StyledBtn = styled.button`
   appearance: none;
+  align-self: ${({ $alignSelf }) => $alignSelf};
   backface-visibility: hidden;
-  background-color: #3454d1;
+  background-color: ${({ $disabled }) => !$disabled ? "#3454d1" : "#949192"};
   border-radius: 10px;
   border-style: none;
   box-shadow: none;
   box-sizing: border-box;
   color: #fff;
-  cursor: pointer;
+  cursor: ${({ $disabled }) => !$disabled ? "pointer" : "default"};
   display: block;
   font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
   font-size: 15px;
@@ -27,6 +35,7 @@ const StyledBtn = styled.button`
   line-height: 1.5;
   outline: none;
   overflow: hidden;
+  margin: ${({ $margin }) => $margin};
   padding: 14px 30px;
   position: relative;
   text-align: center;
@@ -40,7 +49,7 @@ const StyledBtn = styled.button`
   white-space: nowrap;
   z-index: ${({ $zIndex }) => $zIndex};
   &:hover {
-  background-color: #1366d6;
+  background-color: ${({ $disabled }) => !$disabled ? "#1366d6;" : "#949192"};
   box-shadow: rgba(0, 0, 0, .05) 0 5px 30px, rgba(0, 0, 0, .05) 0 1px 4px;
   opacity: 1;
   transform: translateY(0);

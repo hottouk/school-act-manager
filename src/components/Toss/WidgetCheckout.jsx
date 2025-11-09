@@ -1,26 +1,25 @@
 import { loadTossPayments, } from "@tosspayments/tosspayments-sdk";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import MainBtn from "../Btn/MainBtn";
+import useFireBasic from "../../hooks/Firebase/useFireBasic";
 // TODO: clientKey는 개발자센터의 결제위젯 연동 키 > 클라이언트 키로 바꾸세요.
 // TODO: server.js 의 secretKey 또한 결제위젯 연동 키가 아닌 API 개별 연동 키의 시크릿 키로 변경해야 합니다.
 // TODO: 구매자의 고유 아이디를 불러와서 customerKey로 설정하세요. 이메일・전화번호와 같이 유추가 가능한 값은 안전하지 않습니다.
 // @docs https://docs.tosspayments.com/sdk/v2/js#토스페이먼츠-초기화
 const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-const customerKey = generateRandomString();
-function generateRandomString() { return window.btoa(Math.random().toString()).slice(0, 20); }
-const WidgetCheckout = () => {
-	const navigate = useNavigate();
-	const [amount, setAmount] = useState({ currency: "KRW", value: 500 });
+// 난수 생성
+const generateRandomString = () => { return window.btoa(Math.random().toString()).slice(0, 20); }
+const WidgetCheckout = ({ payment, customerKey, name, }) => {
 	const [ready, setReady] = useState(false);
 	const [widgets, setWidgets] = useState(null);
+	const { setData, deleteData } = useFireBasic("paymentcheck");
 	useEffect(() => {
 		const fetchPaymentWidgets = async () => {
+			if (!customerKey) return;
 			try {
 				const tossPayments = await loadTossPayments(clientKey);
-				// 회원 결제
-				const widgets = tossPayments.widgets({ customerKey, });
+				const widgets = tossPayments.widgets({ customerKey });
 				setWidgets(widgets);
 			} catch (error) {
 				console.error("Error fetching payment widget:", error);
@@ -36,7 +35,7 @@ const WidgetCheckout = () => {
 			// TODO: 위젯의 결제금액을 결제하려는 금액으로 초기화하세요.
 			// TODO: renderPaymentMethods, renderAgreement, requestPayment 보다 반드시 선행되어야 합니다.
 			// @docs https://docs.tosspayments.com/sdk/v2/js#widgetssetamount
-			await widgets.setAmount(amount);
+			await widgets.setAmount(payment);
 			await Promise.all([
 				// ------  결제 UI 렌더링 ------
 				// @docs https://docs.tosspayments.com/sdk/v2/js#widgetsrenderpaymentmethods
@@ -60,23 +59,25 @@ const WidgetCheckout = () => {
 
 	// ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
 	// @docs https://docs.tosspayments.com/sdk/v2/js#widgetsrequestpayment
-	const hadnelOnClick = async () => {
+	const handleOnClick = async () => {
+		const orderId = generateRandomString();
 		try {
-			// 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
-			// 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
+			// 결제 요청 전에 orderId, amount를 서버에 임시 저장. 무결성 확인 용도
+			const amount = payment;
+			await setData({ orderId, amount }, orderId);
 			await widgets.requestPayment({
-				orderId: generateRandomString(), // 고유 주문 번호
-				orderName: "토스 티셔츠 외 2건",
-				successUrl: window.location.origin + "/purchase/success", // 결제 요청이 성공하면 리다이렉트되는 URL
-				failUrl: window.location.origin + "/purchase/fail", // 결제 요청이 실패하면 리다이렉트되는 URL
-				customerEmail: "customer123@gmail.com",
-				customerName: "김토스",
+				orderId: orderId, // 고유 주문 번호
+				orderName: `${amount.value}리라 포인트`,
+				successUrl: window.location.origin + "/purchase/success", // 결제 요청 성공 리다이렉트되는 URL
+				failUrl: window.location.origin + "/purchase/fail", // 결제 요청 실패 리다이렉트되는 URL
+				customerName: name,
 				// 가상계좌 안내, 퀵계좌이체 휴대폰 번호 자동 완성에 사용되는 값입니다. 필요하다면 주석을 해제해 주세요.
 				// customerMobilePhone: "01012341234",
 			});
 		} catch (error) {
 			// 에러 처리하기
 			console.error(error);
+			await deleteData(orderId);
 		}
 	}
 
@@ -89,7 +90,7 @@ const WidgetCheckout = () => {
 					{/* 이용약관 UI */}
 					<div id="agreement" />
 					{/* 쿠폰 체크박스 */}
-					<div style={{ paddingLeft: "30px" }}>
+					{/* <div T={{ paddingLeft: "30px" }}>
 						<div className="checkable typography--p">
 							<label htmlFor="coupon-box" className="checkable__label typography--regular">
 								<input
@@ -117,16 +118,14 @@ const WidgetCheckout = () => {
 								<span className="checkable__label-text">5,000원 쿠폰 적용</span>
 							</label>
 						</div>
-					</div>
+					</div> */}
 				</div>
 				{/* 결제하기 버튼 */}
-				<Row style={{ justifyContent: "center" }}>
-					<MainBtn
-						disabled={!ready}
-						onClick={hadnelOnClick}
-					>결제하기</MainBtn>
-				</Row>
 			</div>
+			<MainBtn
+				disabled={!ready}
+				onClick={handleOnClick}
+			>결제하기</MainBtn>
 		</Container>
 	);
 }
@@ -138,7 +137,8 @@ const Column = styled(Row)`
 `
 const Container = styled(Column)`
   box-sizing: border-box;
-	width: 60%;
-	margin: 0 auto;
+	border-radius: 6px;
+	background-color: white;
+	padding: 15px;
 `
 export default WidgetCheckout

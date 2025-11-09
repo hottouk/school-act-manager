@@ -5,8 +5,6 @@ import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 //hooks
 import useLogin from '../../hooks/useLogin';
-
-
 //2024.07.24 생성
 const KakaoSocialLogin = (props) => {
   //1. 변수

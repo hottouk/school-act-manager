@@ -1,17 +1,15 @@
 import React from 'react'
 import styled from 'styled-components'
 import useGetByte from '../../hooks/useGetByte';
-
-//2024.11.23 생성
+//생성(241113)
 const ByteCalculator = ({ str, handleOnChange, styles }) => {
   const { getByteLengthOfString } = useGetByte();
-  //기본값
-  let isTotalByteHide = styles?.isTotalByteHide || false
-  let totalByte = styles?.totalByte || "1500"
-  let justifyContent = styles?.justifyContent || "flex-end"
-  let fontSize = styles?.fontSize || "16px"
-  let fontColor = styles?.fontColor || "black;"
-  let width = styles?.width || "61px;"
+  const isTotalByteHide = styles?.isTotalByteHide || false;
+  const totalByte = styles?.totalByte || "1500";
+  const justifyContent = styles?.justifyContent || "flex-end";
+  const fontSize = styles?.fontSize || "16px";
+  const fontColor = styles?.fontColor || "black";
+  const width = styles?.width || "61px";
   return (
     <Container $justifyContent={justifyContent} $fontSize={fontSize} >
       <FlexWrapper $fontSize={fontSize} $fontColor={fontColor} >
@@ -35,8 +33,8 @@ const StyledInput = styled.input`
   border-radius: 5px;
   padding-left: 13px;
   font-size: ${(props) => props.$fontSize};
-  &:disabled {        /* 해당 input disabled 되었을 때 */
-    color: black;      /* 글자 색을 white로 설정 */
+  &:disabled {
+   color: black;
   }
 `
 const FlexWrapper = styled.div`

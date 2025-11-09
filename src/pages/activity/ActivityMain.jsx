@@ -9,17 +9,19 @@ import CardList from '../../components/List/CardList'
 import MainBtn from '../../components/Btn/MainBtn'
 import TabBtn from '../../components/Btn/TabBtn'
 import SearchBar from '../../components/Bar/SearchBar'
+import Pagenation from '../../components/Pagenation'
+import HorizontalMobileAd from '../../components/Ads/HorizontalMobileAd'
+import MainWrapper from '../../components/Styled/MainWrapper'
 //hooks
+import useFireActiData from '../../hooks/Firebase/useFireActiData'
 import useTeacherAuth from '../../hooks/useTeacherAuth'
 import useClientHeight from '../../hooks/useClientHeight'
 import useFetchRtActiData from '../../hooks/RealTimeData/useFetchRtActiData'
 import useFireUserData from '../../hooks/Firebase/useFireUserData'
+import useMediaQuery from '../../hooks/useMediaQuery'
 //데이터
 import { subjectGroupList } from '../../data/subjectGroupList'
-import useFireActiData from '../../hooks/Firebase/useFireActiData'
-import Pagenation from '../../components/Pagenation'
-
-//24.09.37 subjList update -> 24.12.18 코드 정리 및 담임반 섹션 추가
+//과목 업데이트(240937) -> 코드 정리 및 담임반 섹션 추가(241218) -> 디자인 수정(251106) 
 const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 나의 활동, 활동 관리 - 전체 활동)
   //교사 인증
   const { log } = useTeacherAuth();
@@ -61,8 +63,9 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   }, [currentPage]);
   //css
   const clientHeight = useClientHeight(document.documentElement);
-
-  //----2.함수부--------------------------------
+  //모바일
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  //------함수부------------------------------------------------
   //교과 제목 추출
   const extractSubjFromData = () => {
     let subjList = subjectGroupList.reduce((acc, curSubjObj) => {
@@ -97,66 +100,64 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   return (
     <Container $clientheight={clientHeight}>
       {/* 교사: 활동관리 - 나의활동 */}
-      {(user.isTeacher && !location.state) && <>
+      {(user.isTeacher && !location.state) && <MainWrapper>
         <SearchBar title="교과 활동" type="acti" list={_mySubjActiList} setList={setMySubjActiList} />
         <CardList dataList={_mySubjActiList} type="activity" onClick={handleActiOnClick} />
-        <HorizontalBannerAd />
+        {!isMobile ? <HorizontalBannerAd /> : <HorizontalMobileAd />}
         <SearchBar title="담임반 활동" />
         <CardList dataList={_myHomeActiList} type="activity" onClick={handleActiOnClick} />
         <SearchBar title="업어온 활동" />
         <CardList dataList={copiedList} type="copiedActi" />
         <SearchBar title="퀴즈 활동" />
         <CardList dataList={_myQuizActiList} type="quizActi" onClick={handleActiOnClick} />
-        <Row><MainBtn onClick={() => { navigate("/activities_setting") }} >활동 만들기</MainBtn></Row>
-      </>}
+        <MainBtn styles={{ margin: "10px 0 0 0" }} onClick={() => navigate("/activities_setting")} >활동 만들기</MainBtn>
+      </MainWrapper>}
       {/* 교사: 활동관리-전체 활동 */}
       {(user.isTeacher && location.state === "acti_all") && <>
         <TabBtnContainer>
           {subjectList && <TabBtn tabItems={subjectList} activeTab={selectedSubj} setActiveTab={setSelectedSubj} />}
         </TabBtnContainer>
-        <SearchBar title={isLoading ? "데이터를 서버에서 불러오는 중 입니다." : `서버에 총 ${_allActiList ? _allActiList.length : 0}개의 활동이 등록되어 있습니다.`}
-          type="allActi" list={_allActiList} setList={setAllActiList} />
-        <CardList dataList={pageData} type="activity" comment="아직 활동이 없습니다. 활동을 생성해주세요" onClick={handleActiOnClick} />
-        {_allActiList?.length > itemsPerPage && <PageWrapper>
-          <Pagenation
-            totalItems={_allActiList.length}
-            currentPage={currentPage}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-          />
-        </PageWrapper>}
-        <HorizontalBannerAd />
+        <MainWrapper>
+          <HorizontalBannerAd />
+          <SearchBar title={isLoading ? "데이터를 서버에서 불러오는 중 입니다." : `서버에 총 ${_allActiList ? _allActiList.length : 0}개의 활동이 등록되어 있습니다.`}
+            type="allActi" list={_allActiList} setList={setAllActiList} />
+          <CardList dataList={pageData} type="activity" comment="아직 활동이 없습니다. 활동을 생성해주세요" onClick={handleActiOnClick} />
+          {_allActiList?.length > itemsPerPage && <PageWrapper>
+            <Pagenation
+              totalItems={_allActiList.length}
+              currentPage={currentPage}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
+          </PageWrapper>}
+        </MainWrapper>
       </>}
     </Container>
   )
 }
-
-const Container = styled.div`
+const Row = styled.div`
+  display: flex;
+`
+const Column = styled(Row)` 
+  flex-direction: column;
+`
+const Container = styled(Column)`
   box-sizing: border-box;
-  margin-bottom: 50px;
-  @media screen and (max-width: 767px) {
-    position: fixed;
-    width: 100%;
+  background-color: #efefef;
+  min-height: 100dvh;
+  align-items: center;
+  @media screen and (max-width: 768px) {
     height: ${(props) => props.$clientheight}px;
-    padding-bottom: 20px;
     overflow-y: scroll;
   }
 `
-const Row = styled.div`
-  display: flex;
-  justify-content: center;
-  margin: 30px 0;
-`
-const TabBtnContainer = styled.div`
-  display: flex;
+const TabBtnContainer = styled(Row)`
   align-items: center;
   background-color: #f0f0f0;
   height: 100px;
 `
-const PageWrapper = styled.div`
-  display: flex;
+const PageWrapper = styled(Row)`
   justify-content: center;
   margin: 10px;
 `
-
 export default ActivityMain

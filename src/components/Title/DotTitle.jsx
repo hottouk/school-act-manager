@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-const DotTitle = ({ title, pointer, onClick, styles }) => {
+const DotTitle = ({ title, children, pointer, onClick, styles }) => {
   //기본값
   let dotColor = styles?.dotColor || "#3454d1";
   let width = styles?.width || "30%";
@@ -16,7 +16,7 @@ const DotTitle = ({ title, pointer, onClick, styles }) => {
       $fontWeight={fontWeight}
       $pointer={pointer}
       $dotColor={dotColor || "white"}
-    > {title || "샘플"}</StyledTitle >
+    > {title || children || "샘플"}</StyledTitle >
   )
 }
 

@@ -19,20 +19,20 @@ import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetData';
 import useFirePetData from '../../hooks/Firebase/useFirePetData';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
+import useMediaQuery from '../../hooks/useMediaQuery';
 //이미지
 import x_btn from "../../image/icon/x_btn.png"
 import arrows_icon from "../../image/icon/arrows_icon.png"
 //효과
 import AnimRotation from '../../anim/AnimRotation';
-import useMediaQuery from '../../hooks/useMediaQuery';
-
-//코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223)
+import AskEditModal from '../../components/Modal/AskEditModal';
+//코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223) -> 수정 요청 기능(251104)
 const StudentDetailPage = () => {
   const params = useParams();
   const navigate = useNavigate();
   //객체 접근
   const selectRef = useRef({});
-  useEffect(() => { setIsVisible(true); }, [])
+  useEffect(() => { setIsVisible(true); }, []);
   //전역변수(Frozen)
   const user = useSelector(({ user }) => user);
   const allStudentList = useSelector((state) => state.allStudents);
@@ -56,10 +56,11 @@ const StudentDetailPage = () => {
   const [_writtenName, setWrittenName] = useState('미등록');
   const [_actiList, setActiList] = useState(null);
   const [isMaster, setIsMaster] = useState(false);
-  //GPT 모달
-  const [isGptShown, setIsGptShown] = useState(false);
+  //모달
+  const [isGptModal, setIsGptModal] = useState(false);
   const [selectedActi, setSelectedActi] = useState(null);
   const [gptRecord, setGptRecord] = useState('');
+  const [isEditModal, setIsEditModal] = useState(false);
   useEffect(() => { if (selectedActi) { changeAccRecord(selectedActi.index, gptRecord); } }, [gptRecord]); //GPT 개별화 문구 textArea에 띄우고 새 활동 문구로 저장.
   //모바일
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -216,7 +217,12 @@ const StudentDetailPage = () => {
       default: return
     }
   }
-
+  //학생 수정 요청
+  const handleEditRecordOnClick = (item, index) => {
+    if (user.isTeacher) return;
+    setSelectedActi({ item, index });
+    setIsEditModal(true);
+  }
   //------랜더링------------------------------------------------  
   const ActiRow = ({ item, index }) => {
     const { title, record, madeBy, assignedDate, repeatTimes } = item;
@@ -227,13 +233,25 @@ const StudentDetailPage = () => {
           {title}
           {repeatTimes && <span style={{ fontWeight: "bold", color: "#3454d1" }}>{repeatTimes}회 반복</span>}
         </GridItem>
-        <GridItem className="left-align"><span>{record}</span></GridItem>
+        {!isMobile
+          ? <GridItem className="left-align"><span>{record}</span></GridItem>
+          : <GridItem className="left-align">
+            <span
+              onClick={() => handleEditRecordOnClick(item, index)}
+              style={{ textDecoration: "underline", color: "#3454d1" }}>{record}
+            </span>
+          </GridItem>
+        }
         {!isMobile && <GridItem>{assignedDate || '없음'}</GridItem>}
-        {!isMobile && <GridItem>{madeBy || '익명'}</GridItem>}
+        {!isMobile &&
+          (user.isTeacher
+            ? <GridItem>{madeBy || '익명'}</GridItem>
+            : <GridItem>
+              <SmallBtn onClick={() => handleEditRecordOnClick(item, index)}>수정</SmallBtn>
+            </GridItem>)}
         {!isMobile && <GridItem><ByteCalculator str={record} styles={{ isTotalByteHide: true }} /></GridItem>}
       </GridRow>)
   }
-
   return (<>
     <SubNav styles={{ padding: "10px" }}>
       {user.isTeacher && <Select
@@ -251,6 +269,7 @@ const StudentDetailPage = () => {
         {(user.isTeacher && !isModifying) && <ArrowWrapper><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
         <AnimRotation isAnimating={isAnimating}>
           <BackgroundPannel>
+            {/* 펫 데이터 */}
             {petData && <PetInfoSection pet={petData} writtenName={_writtenName} isModifiying={isModifying} setWrittenName={setWrittenName} />}
             {(user.isTeacher || isMaster) && <GrayBotPannel>
               <GridBotContainer>
@@ -259,7 +278,11 @@ const StudentDetailPage = () => {
                   <Header>활동</Header>
                   <Header>생기부</Header>
                   {!isMobile && <Header>{!isModifying ? "날짜" : "성취도"}</Header>}
-                  {!isMobile && <Header>{!isModifying ? "기록자" : "변경"}</Header>}
+                  {!isMobile &&
+                    (user.isTeacher
+                      ? <Header> {!isModifying ? "기록자" : "변경"}</Header>
+                      : <Header>수정</Header>)
+                  }
                   {!isMobile && <Header>바이트</Header>}
                 </GridRow>
                 {!_actiList || _actiList.length === 0
@@ -303,7 +326,7 @@ const StudentDetailPage = () => {
                           <GridItem><SmallBtnWrapper className="gpt">
                             <SmallBtn btnColor="#3454d1" btnName="GPT" btnOnClick={() => { //gpt 버튼
                               setSelectedActi({ item, index });
-                              setIsGptShown(true);
+                              setIsGptModal(true);
                             }}></SmallBtn>
                             <img src={x_btn} id="delete_acti_btn" alt="삭제x" onClick={(event) => handleDeleteActiOnClick(index)} />
                           </SmallBtnWrapper>
@@ -320,8 +343,8 @@ const StudentDetailPage = () => {
                 </GridRow>}
               </GridBotContainer>
               {(_actiList && _actiList.length !== 0) && <>
-                {user.isTeacher && <CenterWrapper><img src={arrows_icon} alt="아래화살표" /></CenterWrapper>}
-                {user.isTeacher && <StyledAcc>{getAccRec()}</StyledAcc >}</>}
+                <CenterWrapper><img src={arrows_icon} alt="아래화살표" /></CenterWrapper>
+                <StyledAcc>{getAccRec()}</StyledAcc ></>}
             </GrayBotPannel>}
           </BackgroundPannel>
           <Row style={{ justifyContent: "flex-end", zIndex: "999", position: "relative" }}>
@@ -344,7 +367,17 @@ const StudentDetailPage = () => {
       </BtnWrapper>}
     </Container >
     {/* 모달 */}
-    {isGptShown && <GptModal show={isGptShown} acti={selectedActi.item} setPersonalRecord={setGptRecord} onHide={() => { setIsGptShown(false) }}></GptModal>}
+    {isGptModal && <GptModal
+      show={isGptModal}
+      onHide={() => setIsGptModal(false)}
+      acti={selectedActi?.item}
+      setPersonalRecord={setGptRecord} />}
+    {isEditModal && <AskEditModal
+      show={isEditModal}
+      onHide={() => setIsEditModal(false)}
+      acti={selectedActi?.item}
+      petInfo={petData}
+    />}
   </>
   )
 }
@@ -412,7 +445,7 @@ const GridBotContainer = styled.div`
   display: grid;
   grid-template-columns: 52px 130px 9fr 1fr 1fr 1fr;
   @media screen and (max-width: 767px){
-    grid-template-columns: 1fr 4fr;
+    grid-template-columns: 1fr 5fr;
   }
 `
 const StyledAcc = styled.div`

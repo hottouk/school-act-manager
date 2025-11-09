@@ -6,9 +6,11 @@ primaryWhite #efefef,
 grey #949192;
 Green #00a86b;
 Pink #FF69B4;
+배경: #edeff2;
 phone max-width 767px
 BorderColor: rgb(120, 120, 120, 0.5);
 black: 3a3a3a
+
 
 icon size
 w25 h25
@@ -25,6 +27,7 @@ MarginalText
 //스타일
 const dotStyle = { dotColor: "#3454d1", width: "50%" }
 모달 헤더 스타일 : style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }}
+모달 바디 스타일 : style={{ backgroundColor: "#efefef", borderRadius: "5px" }}
 모달 확인 버튼: styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }}
 선택 색깔: "rgba(52, 84, 209, 0.4)"
 //오늘 날짜
@@ -34,3 +37,6 @@ firebase
 아니면 ref와 doc 사용
 한칸 띄기 &nbsp;
 */
+
+//모바일
+const isMobile = useMediaQuery("(max-width: 768px)");

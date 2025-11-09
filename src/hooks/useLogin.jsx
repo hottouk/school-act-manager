@@ -177,25 +177,25 @@ const useLogin = () => {
   };
 
   //유저 가입(240730)
-  const classifyUserInfo = ({ uid, school, isTeacher, name, email, phoneNumber, profileImg, classNumber, grade, number, password, samePassword }) => {
+  const classifyUserInfo = ({ uid, school, isTeacher, name, email, phoneNumber, profileImg, classNumber, grade, number, password, samePassword, isMyTermAgree }) => {
     //이메일 가입: 비번 에러 시 return 
     if (!password) { password = null; }
     else {
-      const errMsg = validatePassword(password, samePassword)
+      const errMsg = validatePassword(password, samePassword);
       if (errMsg) {
-        setEmailMsg(errMsg)
+        setEmailMsg(errMsg);
         return
       }
     }
     //이메일, SNS 가입 로직 
     if (isTeacher) { //교사
-      const teacherUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, password }
+      const teacherUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, password, isMyTermAgree }
       if (window.confirm(`교사회원으로 가입 하시겠습니까?`)) {
         return teacherUserInfo
       } else { return null; }
     } else { //학생
       const studentNumber = createStudentNumber(number - 1, grade, classNumber)
-      const studentUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, studentNumber, password }
+      const studentUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, studentNumber, password, isMyTermAgree }
       if (window.confirm(`${school?.schoolName ?? "그외 학교"} 학번 ${studentNumber}로 회원가입 하시겠습니까?`)) {
         return studentUserInfo
       } else { return null; }

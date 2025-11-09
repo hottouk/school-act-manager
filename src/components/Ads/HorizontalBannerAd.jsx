@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import styled from 'styled-components';
-
+//수정(251105)
 const HorizontalBannerAd = () => {
   useEffect(() => {
     const script = document.createElement('script');
@@ -13,7 +13,7 @@ const HorizontalBannerAd = () => {
     };
   }, [])
   return (
-    <StyledAdContainer>
+    <Container>
       <ins className="kakao_ad_area"
         style={{ display: 'none' }}
         data-ad-unit="DAN-j7yl6yzSKsZiIKvT"     //AdFit에서 발급 받은 광고단위코드 값
@@ -21,11 +21,11 @@ const HorizontalBannerAd = () => {
         data-ad-height="90"                     // 광고단위 세로 사이즈
       >
       </ins>
-    </StyledAdContainer>
+    </Container>
   )
 }
 
-const StyledAdContainer = styled.div`
+const Container = styled.div`
   display: flex;
   justify-content: center;
 `

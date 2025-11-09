@@ -4,6 +4,7 @@ import styled from 'styled-components'
 //컴포넌트
 import NoticeModal from '../../components/Modal/NoticeModal'
 import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
+import HorizontalMobileAd from '../../components/Ads/HorizontalMobileAd'
 import SupplementInfoModal from '../../components/Modal/SupplementInfoModal'
 //hooks
 import useClientHeight from '../../hooks/useClientHeight'
@@ -23,7 +24,6 @@ const ClassMain = () => {
   }, [])
   const isMobile = useMediaQuery('(max-width: 768px)'); //화면 크기 감지
   const clientHeight = useClientHeight(document.documentElement)
-
   //------함수부------------------------------------------------
   //중요 사항 체크
   const checkUserInfo = () => {
@@ -64,25 +64,13 @@ const ClassMain = () => {
         </Wrapper>
       </LandingBg>
       <WhiteBg>
-        <SubTitleText>{2608}명의 선생님, {234}명의 학생이 이용중!!</SubTitleText>
+        <SubTitleText>{2682}명의 선생님, {287}명의 학생이 이용중!!</SubTitleText>
       </WhiteBg>
-      <Row style={{ justifyContent: "center" }}>
-        <HorizontalBannerAd />
-      </Row>
       <BottomBg>
         <BibleText className='bible'>네 길을 여호와께 맡기라 그를 의지하면 그가 이루시고 네 의를 빛 같이 나타내시며 네 공의를 정오의 빛 같이 하시리로다. 시편 37:5-6</BibleText>
       </BottomBg>
-      <Row style={{ gridColumn: "2/3", justifyContent: "space-between", paddingTop: "10px" }}>
-        <p style={{ color: "rgb(120,120,120)", margin: "0" }}>
-          Copyright © 생기부쫑아리 All Rights Reserved. <br />
-          사업자등록번호 등록중 | 통신판매신고 진행중 | 대표: 강건<br />
-          과천시 과천대로 12가길 | 고객센터: 010-6554-4161
-        </p>
-        <Row style={{ gap: "20px", height: "fitContent" }}>
-          <CopyRightText onClick={() => { alert("준비중 입니다.") }}>이용 약관</CopyRightText>
-          <p> | </p>
-          <CopyRightText onClick={() => { alert("준비중 입니다.") }}>개인정보 처리방침</CopyRightText>
-        </Row>
+      <Row style={{ justifyContent: "center" }}>
+        <HorizontalBannerAd />
       </Row>
     </Container>}
     {isMobile && <MobileContainer>
@@ -91,25 +79,13 @@ const ClassMain = () => {
         <LandingImage className='landing_img' src={main} alt="랜딩이미지" />
       </LandingBg>
       <WhiteBg>
-        <SubTitleText>{2608}명의 선생님, {234}명의 학생이 이용중!!</SubTitleText>
+        <SubTitleText>{2682}명의 선생님, {287}명의 학생이 이용중!!</SubTitleText>
       </WhiteBg>
-      <Row style={{ justifyContent: "center" }}>
-        <HorizontalBannerAd />
-      </Row>
       <BottomBg>
         <BibleText className='bible'>네 길을 여호와께 맡기라 그를 의지하면 그가 이루시고 네 의를 빛 같이 나타내시며 네 공의를 정오의 빛 같이 하시리로다. 시편 37:5-6</BibleText>
       </BottomBg>
-      <Row style={{ flexDirection: "column", paddingTop: "10px" }}>
-        <p style={{ color: "rgb(120,120,120)", margin: "0", textAlign: "center" }}>
-          Copyright © 생기부쫑아리 All Rights Reserved. <br />
-          사업자등록번호 등록중 | 통신판매신고 진행중 | 대표: 강건<br />
-          과천시 과천대로 12가길 | 고객센터: 010-6554-4161
-        </p>
-        <Row style={{ gap: "20px", height: "fitContent", justifyContent: "center" }}>
-          <CopyRightText onClick={() => { alert("준비중 입니다.") }}>이용 약관</CopyRightText>
-          <p> | </p>
-          <CopyRightText onClick={() => { alert("준비중 입니다.") }}>개인정보 처리방침</CopyRightText>
-        </Row>
+      <Row style={{ justifyContent: "center" }}>
+        <HorizontalMobileAd />
       </Row>
     </MobileContainer>}
     {/* 공지사항팝업 */}
@@ -130,8 +106,8 @@ const ClassMain = () => {
 const Container = styled.div`
   display: grid;
   box-sizing: border-box;
-  grid-template-columns:20% 60% 20%;
-  grid-template-rows: 548px 120px 90px 1fr 1fr;
+  grid-template-columns: 20% 60% 20%;
+  grid-template-rows: 548px 120px 120px 90px;
 `
 const MobileContainer = styled.div`
   overflow-y: scroll;
@@ -202,10 +178,5 @@ const BibleText = styled.p`
     font-size: 14px;
   }
 `
-const CopyRightText = styled.p`
-  color: rgb(120, 120, 120);
-  margin: 0;
-  cursor: pointer;
-  text-decoration: underline;
-`
+
 export default ClassMain

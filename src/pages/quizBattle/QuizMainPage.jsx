@@ -9,8 +9,9 @@ import CardList from '../../components/List/CardList'
 import MainBtn from '../../components/Btn/MainBtn'
 //hooks
 import useFireBasic from '../../hooks/Firebase/useFireBasic'
-//25.01.14
-const WordMain = () => {
+import MainWrapper from '../../components/Styled/MainWrapper'
+//생성(250104)
+const QuizMainPage = () => {
   //준비
   const user = useSelector(({ user }) => { return user })
   const navigate = useNavigate()
@@ -20,21 +21,28 @@ const WordMain = () => {
   const { fetchData } = useFireBasic("quiz")
   useEffect(() => { fetchData("uid").then(quizSetList => { setQuizSetList(quizSetList) }) }, [])
   return (
-    <StyledContainer $clientheight={clientHeight}>
-      {user.isTeacher && <>
-        <CardList dataList={_quizSetList} type="quiz" //교사
+    <Container $clientheight={clientHeight}>
+      {user.isTeacher && <MainWrapper>
+        <CardList dataList={_quizSetList} type="quiz"
           comment="아직 퀴즈 세트가 없습니다. 퀴즈 세트를 생성해주세요" />
-        <Row><MainBtn onClick={() => { navigate("/quiz_setting") }}>퀴즈 세트 만들기</MainBtn></Row>
-      </>}
-    </StyledContainer>
+        <MainBtn onClick={() => { navigate("/quiz_setting") }}>퀴즈 세트 만들기</MainBtn>
+      </MainWrapper>}
+    </Container>
   )
 }
 
-const StyledContainer = styled.div`
+const Row = styled.div`
+  display: flex;
+`
+const Column = styled(Row)` 
+  flex-direction: column;
+`
+const Container = styled(Column)`
   box-sizing: border-box;
-  margin: 20px auto;
-  margin-bottom: 50px;
-  @media screen and (max-width: 767px) {
+  background-color: #efefef;
+  min-height: 100dvh;
+  align-items: center;
+  @media screen and (max-width: 768px) {
     position: fixed;
     width: 100%;
     height: ${(props) => props.$clientheight}px;
@@ -42,10 +50,4 @@ const StyledContainer = styled.div`
     overflow-y: scroll;
   }
 `
-const Row = styled.div`
-  display: flex;
-  justify-content: center;
-  margin: 30px 0; 
-`
-
-export default WordMain
+export default QuizMainPage
