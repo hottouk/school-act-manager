@@ -18,6 +18,7 @@
     "firebase-admin": "^13.5.0",
     "firebase-functions": "^6.4.0",
     "gsap": "^3.12.5",
+    "html-react-parser": "^5.2.10",
     "jwt-decode": "^3.1.2",
     "normalize.css": "^8.0.1",
     "openai": "^4.24.1",

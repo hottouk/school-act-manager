@@ -63,7 +63,7 @@ const BasicText = styled.p`
 `
 const Container = styled(Column)`
   box-sizing: border-box;
-  background-color : #efefef;
+  background-color: #efefef;
   min-height: 100dvh;
   align-items: center;
   gap: 10px;

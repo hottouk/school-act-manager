@@ -5,7 +5,7 @@ import styled, { keyframes } from 'styled-components';
 const DropDownBtn = (props) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);

@@ -6,7 +6,6 @@ import { Helmet } from "react-helmet";
 import 'bootstrap/dist/css/bootstrap.min.css';
 //로그인
 import LoginPage from './pages/login/LoginPage';
-import EmailSignupPage from './pages/login/EmailSignupPage';
 //대문
 import ClassMain from './pages/main/ClassMain';
 import Nav from './components/Bar/Nav';
@@ -46,6 +45,7 @@ import PurchaseFailPage from './pages/purchase/PurchaseFailPage';
 import AmountSelectPage from './pages/purchase/AmountSelectPage';
 import Footer from './components/Bar/Footer';
 import styled from 'styled-components';
+import ExamFormPage from './pages/exam/ExamFormPage';
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -89,11 +89,13 @@ function App() {
               <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
               <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomFormPage /> : <Navigate replace={true} to='/' />} />
               {/* 학생 관리 */}
-              {/* 퀴즈 관리 */}
-              <Route path="/lab" element={uid ? <Lab /> : <Navigate replace={true} to='/login' />} />
+              {/* 단어 관리 */}
+              {/* <Route path="/lab" element={uid ? <Lab /> : <Navigate replace={true} to='/login' />} /> */}
               <Route path="/quiz" element={uid ? <QuizMainPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/quiz_setting" element={uid ? <QuizFormPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
+              {/* 시험 관리 */}
+              <Route path="/exam_setting" element={uid ? <ExamFormPage /> : <Navigate replace={true} to='/login' />} />
               {/* 학교 */}
               <Route path="/myschool" element={uid ? <MySchoolPage /> : <Navigate replace={true} to='/login' />} />
               {/* <Route path="/school" element={uid ? <SchoolMainPage /> : <Navigate replace={true} to='/login' />} /> */}
@@ -107,7 +109,6 @@ function App() {
               <Route path="/news" element={uid ? <WhatsNewPage /> : <Navigate replace={true} to='/' />} />
               {/* 로그인/회원가입 */}
               <Route path="/login" element={!uid ? <LoginPage /> : <Navigate replace={true} to='/' />} />
-              <Route path="/login/email" element={!uid ? <EmailSignupPage /> : <Navigate replace={true} to='/' />} />
               {/* 관리자 */}
               <Route path="/master" element={user.isMaster ? <MasterPage /> : <Navigate replace={true} to='/' />} />
               {/* 충전하기 */}

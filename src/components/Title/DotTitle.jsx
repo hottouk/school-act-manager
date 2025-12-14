@@ -2,8 +2,8 @@ import styled from 'styled-components'
 
 const DotTitle = ({ title, children, pointer, onClick, styles }) => {
   //기본값
-  let dotColor = styles?.dotColor || "#3454d1";
-  let width = styles?.width || "30%";
+  const dotColor = styles?.dotColor || "#3454d1";
+  const width = styles?.width;
   let fontWeight = styles?.fontWeight || "bold"
   // 샘플1 <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" />
   // 샘플2

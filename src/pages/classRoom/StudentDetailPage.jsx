@@ -306,7 +306,7 @@ const StudentDetailPage = () => {
                           <GridItem>
                             <Select
                               ref={(ele) => selectRef.current[index] = ele}
-                              options={allActivityList.map((item) => { return { label: item.title, value: item } })}
+                              options={allActivityList.map((item) => ({ label: item.title, value: item }))}
                               onChange={(event) => { handleSelectOnchange(event, index) }} />
                           </GridItem>
                           {/* 3열 */}
@@ -376,6 +376,7 @@ const StudentDetailPage = () => {
       show={isEditModal}
       onHide={() => setIsEditModal(false)}
       acti={selectedActi?.item}
+      accRecord={getAccRec()}
       petInfo={petData}
     />}
   </>

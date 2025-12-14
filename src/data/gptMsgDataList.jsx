@@ -1,3 +1,6 @@
+
+import { purposeExData, feelingChangeExData, authorMainPointExData, meaningExData, mainIdeaExData, thesisExData, titleExData, trueFalseExData, grammarExData, lexisExData, blankExData, nonRelatedExData, sequenceExData, insertExData, summaryExData } from "./examData"
+
 const commonBehaviorMsg = "위의 특성에 따라서 글을 작성하되, 내용을 더 구체적으로 근거 사례를 창작하여 의견 작성 바람"
   + "또한, '학생은' 이라는 주어는 문장에서 절대 사용하면 안됨."
   + "주어를 항상 생략하고 '성실한 수업 태도를 일관되게 보여줌.' 과 같이 써주어야 함."
@@ -900,7 +903,7 @@ const gptRepeatRecMsg = [
       + "다양한 지문을 조사하여 간단히 요약함. 수업시간에 지루함을 느끼지 않도록 노력하는 모습이 인상적임."
   },
   //예시2
-  { role: "user", content: `  [예시 문구]: 소설을 읽고 독서 신문을 만드는 활동에서 주어진 소설을 분석하여 기사로 씀.  ` },
+  { role: "user", content: `[예시 문구]: 소설을 읽고 독서 신문을 만드는 활동에서 주어진 소설을 분석하여 기사로 씀.  ` },
   {
     role: "assistant", content: "독서 신문을 만드는 활동에 7회 참여하여 주어진 소설을 꼼꼼히 정독하여 등장 인물의 심리, 주요 줄거리, 이에 대한 본인의 다양한 해석을 제시함. 특히 '사랑방 손님과 어머니' 라는 작품에서 어린아이의 시점으로 소설을 서술한 것에 대한 본인의 생각을 제시하는 창의성이 엿보임.^"
       + "문학작품을 읽고 독서 신문을 만드는 활동에 5회 참여하여 주어진 소설을 분석하고 등장 인물의 심리와 행동에 대해 탐구함. 또한 창의적인 아이디어와 표현력을 발휘하여 문학적 요소를 잘 소화해냄.^"
@@ -956,13 +959,62 @@ const gptExtractVocabMsg = [
   {
     role: "user", content: `[지문]: Robert Blattberg and Steven Hoch noted that, in a changing environment, it is not clear that consistency is always a virtue
      and that one of the advantages of humanjudgment is the ability to detect change.Thus, in changing environments, it might be ① advantageous to combine human judgment
-      and statistical models.Blattberg and Hoch examined this possibility by having supermarket managers forecast demand for certain products and then creating a composite forecast
-       by averaging these judgments with the forecasts of statistical models based on ② past data.The logic was that statistical models ③ deny stable conditions 
-       and therefore cannot account for the effects on demand of novel events such as actions taken by competitors or the introduction of new products. 
-       Humans, however, can ④ incorporate these novel factors in their judgments.The composite ─ or average of human judgments and statistical models ─ proved to be more ⑤ accurate than either the statistical models or the managers working alone.
+     and statistical models.Blattberg and Hoch examined this possibility by having supermarket managers forecast demand for certain products and then creating a composite forecast
+     by averaging these judgments with the forecasts of statistical models based on ② past data.The logic was that statistical models ③ deny stable conditions 
+     and therefore cannot account for the effects on demand of novel events such as actions taken by competitors or the introduction of new products. 
+     Humans, however, can ④ incorporate these novel factors in their judgments.The composite ─ or average of human judgments and statistical models ─ proved to be more ⑤ accurate than either the statistical models or the managers working alone.
 ` },
   {
     role: "assistant", content: `consistency#일관성^virtue#미덕, 장점^advantageous#유리한^composite#복합체, 합성물^forecast#예측하다^deny#부정하다, 거부하다^stable#안정된^incorporate#포함하다, 통합하다^accurate#정확한^judgment#판단`
-  },
-]
-export { gptBehaviorMsg, gptSubjectDetailsMsg, gptHomeroomDetailMsg, gptPersonalOnReportMsg, gptPersonalOnTraitMsg, gptExtraRecordMsg, gptPerfRecordMsg, gptTranslateMsg, gptRepeatRecMsg, gptExtractVocabMsg, gptPersonalKeywordsMsg }
+  }]
+
+//시험 문제
+const gptMakeExamMsg = (type, question, text) => {
+  const exampleMap = {
+    "글의 목적": purposeExData,
+    "심경, 분위기": feelingChangeExData,
+    "필자의 주장": authorMainPointExData,
+    "함축 의미": meaningExData,
+    "글의 요지": mainIdeaExData,
+    "글의 주제": thesisExData,
+    "글의 제목": titleExData,
+    "일치/불일치": trueFalseExData,
+    "어법 밑줄": grammarExData,
+    "어휘 밑줄": lexisExData,
+    "빈칸 추론": blankExData,
+    "무관한 문장": nonRelatedExData,
+    "글의 순서": sequenceExData,
+    "문장 삽입": insertExData,
+    "요약": summaryExData,
+  };
+  const example = exampleMap[type] ?? "";
+  const outputEx = exampleMap[type][1].content;
+  console.log(outputEx);
+  return [
+    { //1. 대전제
+      role: "system", content: `역할은 주어진 지문으로 수능 유형의 문제를 출제하는 교사입니다.
+    [지문]과 문제의 [발문]을 제공하면 발문에 맞는 수능 유형의 객관식 오지선다형 문제를 출제해주세요.
+    주어진 [학년]의 수준에 맞는 단어들을 사용해야하며 정답은 반드시 1개만 존재해야합니다.
+    또한 정답과 함께 해설도 제공해주세요.
+    특히 [발문]과 해설은 한글로 오지선다형의 선택지는 영어로 작성해주세요.
+    
+    출력 형식 규칙
+    - 당신의 모든 출력은 반드시 JSX 마크업 형태로 반환해야 합니다.
+    - 전체 결과는 하나의 최상위 요소(<div> 또는 <></>)로 감싸야 합니다.
+    - 각 보기는 <li>, 답과 해설은 <p>, 밑줄은 <u> 태그를 사용하십시오.
+    - HTML이 아닌 JSX 규칙을 따르세요.
+    - JSON, 텍스트만 출력, Markdown 코드블록 등은 금지합니다.
+   
+    출력 형식 예시
+      ${outputEx}
+    `
+    },
+    ...example,
+    {
+      role: "user",
+      content: `[발문]: ${question}
+          [지문]: ${text}`
+    }
+  ]
+}
+export { gptBehaviorMsg, gptSubjectDetailsMsg, gptHomeroomDetailMsg, gptPersonalOnReportMsg, gptPersonalOnTraitMsg, gptExtraRecordMsg, gptPerfRecordMsg, gptTranslateMsg, gptRepeatRecMsg, gptExtractVocabMsg, gptPersonalKeywordsMsg, gptMakeExamMsg }
