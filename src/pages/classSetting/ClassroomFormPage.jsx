@@ -15,7 +15,7 @@ import useStudent from '../../hooks/useStudent';
 import useClientHeight from '../../hooks/useClientHeight';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
 import useFireTransaction from '../../hooks/useFireTransaction';
-//2024.11.23 3차 수정(클래스 타입 추가, css정리), ux 향상 -> 250212 코드 간소화
+//2024.11.23 3차 수정(클래스 타입 추가, css정리), ux 향상 -> 코드 간소화(250212)
 const ClassroomFormPage = () => {
   //인증
   useEffect(() => { setIsVisible(true) }, []);

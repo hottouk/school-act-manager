@@ -7,7 +7,6 @@ import { setSelectClass } from '../../store/classSelectedSlice';
 import styled from 'styled-components';
 //컴포넌트
 import CardList from '../../components/List/CardList';
-import MainBtn from '../../components/Btn/MainBtn';
 import SearchBar from '../../components/Bar/SearchBar';
 import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd';
 import HorizontalMobileAd from '../../components/Ads/HorizontalMobileAd';
@@ -93,7 +92,6 @@ const ClassRoomMainPage = () => {
       {!isMobile ? <HorizontalBannerAd /> : <HorizontalMobileAd />}
       {!isMobile && <SearchBar title="담임 클래스" />}
       {!isMobile && <CardList dataList={homeroomKlassList} type="homeroom" onClick={handleHomeroomOnClick} />}
-      {!isMobile && <MainBtn onClick={() => navigate('/classrooms_setting', { state: { step: "first" } })}>클래스 만들기</MainBtn>}
     </MainWrapper>}
     {/* 학생 */}
     {!user.isTeacher && <MainWrapper>

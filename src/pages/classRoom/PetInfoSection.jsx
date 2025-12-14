@@ -7,10 +7,11 @@ import XBtn from '../../components/Btn/XBtn'
 import useFirePetData from '../../hooks/Firebase/useFirePetData'
 import { useSelector } from 'react-redux'
 import useFireUserData from '../../hooks/Firebase/useFireUserData'
-//생성(250223)->수정(250820)
+//생성(250223) -> 수정(250820)
 const PetInfoSection = ({ pet, isModifiying, setWrittenName }) => {
   const user = useSelector(({ user }) => user);
   const { subject, studentNumber, name, level, master, desc, path, id, classId, writtenName, } = pet;
+  const studentName = writtenName ? writtenName : '미등록';
   const isMaster = user.uid === master?.studentId;
   const { deletePetField } = useFirePetData();
   const { exportKlassTransaction } = useFireUserData();
@@ -29,10 +30,11 @@ const PetInfoSection = ({ pet, isModifiying, setWrittenName }) => {
         <PetImgWrapper><PetImg subject={subject} onClick={() => { }} path={path} styles={{ width: "100px", height: "100px" }} /></PetImgWrapper>
         <Column style={{ padding: "12px", justifyContent: "space-evenly", gap: "5px" }}>
           <span>학번: {studentNumber}</span>
-          <Row style={{ alignItems: "center" }}><span>이름:&nbsp;</span>{!isModifiying
-            ? writtenName ? writtenName : '미등록'
-            : <ModifyingInput type="text" defaultValue={''} onChange={(event) => { setWrittenName(event.target.value) }} />
-          }</Row>
+          <Row style={{ alignItems: "center" }}><span>이름:&nbsp;</span>
+            {!isModifiying
+              ? studentName
+              : <ModifyingInput type="text" defaultValue={studentName} onChange={(event) => { setWrittenName(event.target.value) }} />
+            }</Row>
           <Row > <span>가입여부:&nbsp;</span>
             {master
               ?

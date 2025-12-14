@@ -2,7 +2,7 @@ import { useState } from 'react'
 //데이터
 import {
   gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg,
-  gptRepeatRecMsg, gptPerfRecordMsg, gptTranslateMsg, gptExtractVocabMsg, gptPersonalKeywordsMsg
+  gptRepeatRecMsg, gptPerfRecordMsg, gptTranslateMsg, gptExtractVocabMsg, gptPersonalKeywordsMsg, gptMakeExamMsg
 } from '../data/gptMsgDataList'
 import { callAskGPT } from '../firebase/config'
 
@@ -234,6 +234,12 @@ const useChatGpt = () => {
     ]
     await playGpt({ messages, model: "gpt-4o-mini" });
   }
+  //13. 시험문제
+  const makeExamQuestion = async (type, question, text) => {
+    const messages = [...gptMakeExamMsg(type, question, text)];
+    console.log(messages);
+    await playGpt({ messages, model: "o4-mini" });
+  }
 
   //실행(gpt-4o-mini, gpt-4.1-mini)
   const playGpt = async ({ messages, model = "gpt-4o-mini", temperature = 1.0 }) => {
@@ -247,7 +253,7 @@ const useChatGpt = () => {
   }
   return {
     gptAnswer, gptProgress, gptRes, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askPersonalizeOnKeywords,
-    askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, askRepeatRecord, extractVocab,
+    askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, askRepeatRecord, extractVocab, makeExamQuestion
   }
 }
 

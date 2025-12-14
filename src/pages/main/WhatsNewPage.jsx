@@ -12,11 +12,12 @@ import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useFireTransaction from '../../hooks/useFireTransaction';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
+import EditRecordModal from '../../components/Modal/EditRecordModal';
 //240201 갱신 -> 모바일(250215)
 const WhatsNewPage = () => {
   //준비
   const user = useSelector(({ user }) => { return user });
-  const isMobile = useMediaQuery("(max-width: 767px)");
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const { myUserData } = useFetchRtMyUserData();          //실시간 유저 정보 구독
   useEffect(() => { bindData(); }, [myUserData]);
   //새소식
@@ -26,6 +27,9 @@ const WhatsNewPage = () => {
   const { updateKlassroomArrayInfo } = useFireClassData();
   const { approvWinTransaction, denyTransaction, confirmDenialTransaction, approveCoteahingTransaction, approveEditTransaction } = useFireTransaction();
   const { deleteUserArrayInfo, approveKlassTransaction } = useFireUserData();
+  //세특 수정
+  const [isEditModal, setIsEditModal] = useState(false);
+  const [newRecordInfo, setNewRecordInfo] = useState(null);
   //------함수부------------------------------------------------ 
   //데이터 바인딩
   const bindData = () => {
@@ -63,6 +67,11 @@ const WhatsNewPage = () => {
   const handleEvolutionOnClick = (info) => {
     setIsRewardModal(true);
     setReward(info);
+  }
+  //세특 재수정
+  const handleReEditOnClick = (item) => {
+    setIsEditModal(true);
+    setNewRecordInfo(item);
   }
   //------교사용 랜더링----------------------------------------------- 
   //학생 클래스 구독 신청
@@ -109,9 +118,9 @@ const WhatsNewPage = () => {
         <BasicText>
           <Hilit> {subject}</Hilit> 과목 문구<br />
           기존 <Hilit>{byte}</Hilit> 바이트: {record} <br />
-          수정 <Hilit>{newByte}</Hilit> 바이트: <Underlined>{newRecord}</Underlined>
+          수정 <Hilit>{newByte}</Hilit> 바이트: <Underlined onClick={() => handleReEditOnClick(item)} >{newRecord}</Underlined>
         </BasicText>
-      </GridItem>
+      </GridItem >
       <GridItem>{date.split("T")[0]}</GridItem>
       <GridItem><SmallBtn btnOnClick={() => approveEditTransaction(item)}>O</SmallBtn></GridItem>
       <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => handleDenyOnClick(item)} >X</SmallBtn></GridItem>
@@ -308,7 +317,7 @@ const WhatsNewPage = () => {
             <Hilit>{subject}</Hilit> 과목 <br />
             "{newRecord}"<br />
             수정 요청이 <Hilit>거부</Hilit>되었습니다.<br />
-            사유: <Underlined>{reason}</Underlined>
+            사유: <Hilit>{reason}</Hilit>
           </BasicText>}
       </GridItem>
       <GridItem>
@@ -318,7 +327,7 @@ const WhatsNewPage = () => {
     </>
   })
   const StudentResultBubble = ({ index, item }) => {
-    const { classTitle, petLabel, reason, school, title, newRecord, date } = item
+    const { classTitle, petLabel, reason, school, title, newRecord, date } = item;
     return <BubbleWrapper>
       {school &&
         <BubbleText>
@@ -408,7 +417,9 @@ const WhatsNewPage = () => {
     </>}
   </Container >
     {/* 진화모달 */}
-    <EvolutionModal show={isRewardModal} onHide={() => { setIsRewardModal(false) }} info={reward} />
+    <EvolutionModal show={isRewardModal} onHide={() => setIsRewardModal(false)} info={reward} />
+    {/* 재수정 모달 */}
+    <EditRecordModal show={isEditModal} onHide={() => setIsEditModal(false)} info={newRecordInfo} />
   </>)
 }
 
@@ -481,10 +492,10 @@ const BubbleText = styled(BasicText)`
 const Hilit = styled.span`
   font-weight: bold;
   color: #3454d1;
-  font-dec
 `
 const Underlined = styled.span`
-  text-decoration: underline
+  text-decoration: underline;
+  cursor: pointer;
 `
 const BubbleWrapper = styled.div`
   background-color: #efefef;

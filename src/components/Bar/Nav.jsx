@@ -27,7 +27,6 @@ const Nav = () => {
   const [isMyInfoShow, setIsMyInfoShow] = useState(false);
   const [isNew, setIsNew] = useState(false); //새소식 아이콘
   useEffect(() => { bindData(); }, [myUserData]);
-
   //------함수부------------------------------------------------ 
   const bindData = () => {
     setProfileImg(user.profileImg);//프로필 사진
@@ -58,19 +57,37 @@ const Nav = () => {
         {!isMobile && <li id="acti_btn" ><Icon className="fa-solid fa-scroll"></Icon>
           <DropDownBtn btnName={"활동 관리"}
             dropDownItems={[
+              { href: "activities_setting", label: "새 활동" },
               { href: "activities", label: "나의 활동" },
               { href: "activities_all", label: "전체 활동", itemState: "acti_all" }]} />
         </li>}
-        <li><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon>
-          <span>클래스 관리</span></Link></li>
-        <li><Link to="/quiz"><Icon className="fa-solid fa-database"></Icon>
-          <span>퀴즈 관리</span></Link></li>
+        <li>
+          <Icon className="fa-solid fa-chalkboard"></Icon>
+          <DropDownBtn btnName={"클래스 관리"}
+            dropDownItems={[
+              { href: "classrooms_setting", itemState: { step: "first" }, label: "새 클래스" },
+              { href: "classrooms", label: "나의 클래스" },
+            ]} />
+        </li>
+        <li><Icon className="fa-solid fa-database" />
+          <DropDownBtn btnName={"단어 관리"}
+            dropDownItems={[
+              { href: "quiz_setting", label: "새 퀴즈" },
+              { href: "quiz", label: "나의 퀴즈" },
+            ]} />
+        </li>
+        <li><Icon className="fa-solid fa-star" />
+          <DropDownBtn btnName={"문제 관리"}
+            dropDownItems={[
+              { href: "exam_setting", label: "새 문제" },
+            ]} />
+        </li>
         <li><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon>
           <span>나의 학교</span></Link></li>
         {/* {user.isMaster && <li id="lab_btn" ><Link to="/lab"><Icon className="fa-solid fa-khanda"></Icon>
           <span>실험실</span></Link></li>} */}
-        <li><Link to="/store"><Icon className="fa-solid fa-store"></Icon>
-          <span>상점</span></Link></li>
+        {user.isMaster && <li><Link to="/store"><Icon className="fa-solid fa-store"></Icon>
+          <span>상점</span></Link></li>}
         {user.isMaster && <li id="master_btn" ><Link to="/master"><Icon className="fa-solid fa-key"></Icon>
           <span>마스터</span></Link></li>}
         {user.isMaster && <li id="master_btn" ><Link to="/purchase"><Icon className="fa-solid fa-key"></Icon>

@@ -5,8 +5,8 @@ import { useSelector } from 'react-redux'
 //2024.12.05 생성(firebase 기본 기능)
 const useFireBasic = (col) => {
   const user = useSelector(({ user }) => { return user })
-  const db = appFireStore
-  const colRef = collection(db, col)
+  const db = appFireStore;
+  const colRef = collection(db, col);
   //새로 생성
   const addData = async (data) => {
     try {

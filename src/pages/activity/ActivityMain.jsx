@@ -6,7 +6,6 @@ import styled from 'styled-components'
 //컴포넌트
 import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
 import CardList from '../../components/List/CardList'
-import MainBtn from '../../components/Btn/MainBtn'
 import TabBtn from '../../components/Btn/TabBtn'
 import SearchBar from '../../components/Bar/SearchBar'
 import Pagenation from '../../components/Pagenation'
@@ -110,7 +109,6 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
         <CardList dataList={copiedList} type="copiedActi" />
         <SearchBar title="퀴즈 활동" />
         <CardList dataList={_myQuizActiList} type="quizActi" onClick={handleActiOnClick} />
-        <MainBtn styles={{ margin: "10px 0 0 0" }} onClick={() => navigate("/activities_setting")} >활동 만들기</MainBtn>
       </MainWrapper>}
       {/* 교사: 활동관리-전체 활동 */}
       {(user.isTeacher && location.state === "acti_all") && <>

@@ -1,5 +1,5 @@
 //라이브러리
-import { createUserWithEmailAndPassword, GoogleAuthProvider, sendSignInLinkToEmail, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth'
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth'
 import { useDispatch } from 'react-redux';
 import { useState } from 'react'
 import { appAuth, appFireStore, timeStamp } from '../firebase/config'
@@ -59,22 +59,6 @@ const useLogin = () => {
     } catch (err) {
       window.alert(err)
       console.error(err)
-    }
-  }
-
-  //이메일 링크 인증(24.07.30)
-  const sendEmailSignInLink = async (email) => {
-    let actionCodeSettings = {
-      url: "https://school-act-manager.web.app/login/email", // 사용자가 이메일 링크를 클릭한 후 리디렉션될 URL
-      handleCodeInApp: true,
-    };
-    try {
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      window.localStorage.setItem('emailForSignIn', email);
-      setEmailMsg("인증 이메일 발송 완료. 이 창을 닫고 메일을 확인해주세요. 인증 이메일 확인 시 반드시 같은 브라우저를 사용하셔야 합니다.");
-    } catch (error) {
-      console.error("이메일 인증 에러 발생", error);
-      setEmailMsg(`Error: ${error.message}`);
     }
   }
 
@@ -203,7 +187,7 @@ const useLogin = () => {
   }
 
   return (
-    { addUser, googleLogin, kakaoLogin, emailLogin, sendEmailSignInLink, getEmailUserCredential, classifyUserInfo, emailMsg, isPending, err, }
+    { addUser, googleLogin, kakaoLogin, emailLogin, getEmailUserCredential, classifyUserInfo, emailMsg, isPending, err, }
   )
 }
 

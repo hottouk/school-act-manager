@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useReactToPrint } from "react-to-print"
+import Select from 'react-select';
 import { useSelector } from "react-redux"
 import styled from "styled-components"
 //컴포넌트
@@ -27,6 +28,7 @@ const ClassAllStudents = () => {
   const params = useParams(); //id와 param의 key-value(id:'id') 오브젝트로 반환
   const navigate = useNavigate();
   const classId = params.id
+  const allActivityList = useSelector((state) => state.allActivities);
   //학생 정보 데이터 통신
   const { studentDataList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber");
   const [_studentList, setStudentList] = useState([]);
@@ -80,11 +82,15 @@ const ClassAllStudents = () => {
     })
   }
   //활동 문구 변경
-  const handleActiRecordOnChage = (event, index, subIndex) => {
+  const handleActiRecordOnChage = ({ record, index, actiIndex, title, id }) => {
     setStudentList((prev) => {
       const students = [...prev];
       const { actList } = students[index];
-      actList[subIndex].record = event.target.value;
+      actList[actiIndex].record = record;
+      actList[actiIndex].madeBy = user?.name || "익명";
+      actList[actiIndex].assignedDate = new Date().toISOString().split('T')[0];
+      if (title) actList[actiIndex].title = title;
+      if (id) actList[actiIndex].id = id;
       return students;
     })
   }
@@ -127,7 +133,13 @@ const ClassAllStudents = () => {
       updatePetInfo(classId, id, { accRecord: getAccRec(actList), actList },);
     })
   }
-
+  //셀렉터 스타일
+  const customStyles = (width) => ({
+    container: (base) => ({
+      ...base,
+      width,
+    }),
+  });
   return (
     <Container $isVisible={isVisible} $clientheight={clientHeight}>
       <SubNav>
@@ -162,13 +174,29 @@ const ClassAllStudents = () => {
               {!thisModifying && accRecord}
               {thisModifying && <Column style={{ width: "100%", gap: "5px" }}>
                 {actList?.map((acti, actiIndex) => {
-                  const { record, id } = acti;
-                  return <Row key={actiIndex + id} style={{ position: "relative" }}>
+                  const { record, id, uid } = acti;
+                  return <Row key={actiIndex + id} style={{ position: "relative", gap: "5px", alignItems: "center" }}>
+                    <Select
+                      styles={customStyles("100px")}
+                      placeholder={"활동"}
+                      options={allActivityList.map((item) => ({ label: item.title, value: item }))}
+                      onChange={(event) => {
+                        console.log(event)
+                        const { record, title, id } = event.value
+                        handleActiRecordOnChage({ record, index, actiIndex, title, id });
+                      }}
+                      isDisabled={user.uid !== uid}
+                    />
                     <Textarea
                       placeholder="이 곳에 새로운 활동을 기록하세요"
                       value={record}
-                      onChange={(event) => { handleActiRecordOnChage(event, index, actiIndex) }} />
-                    <XBtn onClick={() => { handleDeleteOnClick(index, actiIndex) }}>X</XBtn>
+                      onChange={(event) => {
+                        const record = event.target.value;
+                        handleActiRecordOnChage({ record, index, actiIndex });
+                      }}
+                      disabled={user.uid !== uid}
+                    />
+                    {user.uid === uid && <XBtn onClick={() => { handleDeleteOnClick(index, actiIndex) }}>X</XBtn>}
                   </Row>
                 })}
                 <Row style={{ justifyContent: "center" }}><MidBtn onClick={() => { handleAddActiOnClick(index) }}>추가</MidBtn></Row>
@@ -177,10 +205,10 @@ const ClassAllStudents = () => {
             {/* 바이트 */}
             <GridItem>{bytes}</GridItem>
             <GridItem>
-              {(!isModifying && user.userStatus === "master") && <SmallBtn btnOnClick={() => { handleEditOnClick(key); }} btnColor="#3454d1" hoverBtnColor="blue">수정</SmallBtn>}
+              {(!isModifying && ["master", "coTeacher"].includes(user.userStatus)) && <SmallBtn btnOnClick={() => { handleEditOnClick(key); }} btnColor="#3454d1" hoverBtnColor="blue">수정</SmallBtn>}
               {thisModifying && <BtnWrapper>
-                {(actList && actList.length !== 0) && <SmallBtn btnOnClick={() => { handleSaveBtnOnClick(index); }} btnColor="#3454d1" hoverBtnColor="blue">저장</SmallBtn>}
-                {(actList && actList.length !== 0) && <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(index); }} hoverBtnColor="blue">섞기</SmallBtn>}
+                {actList?.length && <SmallBtn btnOnClick={() => { handleSaveBtnOnClick(index); }} btnColor="#3454d1" hoverBtnColor="blue">저장</SmallBtn>}
+                {(actList?.length && user.userStatus === "master") && <SmallBtn btnOnClick={() => { handleShuffleBtnOnClick(index); }} hoverBtnColor="blue">섞기</SmallBtn>}
                 <SmallBtn btnOnClick={() => { handleCacncelOnClick(); }} btnColor="#9b0c24" hoverBtnColor="red">취소</SmallBtn>
               </BtnWrapper>
               }
@@ -227,7 +255,7 @@ const GridContainer = styled.div`
   margin: 50px auto;
   display: grid;
   justify-content: center;
-  grid-template-columns: 70px 100px 100px 1000px 60px 100px; 
+  grid-template-columns: 70px 100px 100px 1100px 60px 100px; 
   grid-template-rows: 40px;
   @media print {
     @page {

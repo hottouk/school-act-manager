@@ -3,7 +3,6 @@ import React from 'react'
 import { useState } from 'react';
 //컴포넌트
 import SignUpWithSnsModal from '../../components/Modal/SignUpWithSnsModal'
-import SignUpWithEmailModal from '../../components/Modal/SignUpWithEmailModal'
 //hooks
 import useLogin from '../../hooks/useLogin';
 //이미지
@@ -11,19 +10,17 @@ import googleIcon from '../../image/icon/g-logo.png'
 //css
 import styled from 'styled-components';
 import KakaoSocialLogin from './KakaoLogin';
-import EmailLogin from './EmailLogin';
-
-//24.2.21
+import EmailLoginSection from './EmailLoginSection';
+//생성(240221)
 const LoginPage = () => {
-  const { err, isPending, emailMsg, googleLogin, emailLogin } = useLogin();
+  const { err, isPending, googleLogin, emailLogin } = useLogin();
   //모달
   const [isSnsModal, setIsSnsModal] = useState(false)
-  const [isEmailModalShow, setIsEmailModalShow] = useState(false)
   return (
     <Container>
       <Wrapper>
         <Title>생기부 쫑알이</Title>
-        <EmailLogin openEmailModal={setIsEmailModalShow} login={emailLogin} emailMsg={emailMsg} />
+        <EmailLoginSection login={emailLogin} />
       </Wrapper>
       <Wrapper>
         <div className="sns_centered">
@@ -38,16 +35,11 @@ const LoginPage = () => {
         {err && <strong>{err}</strong>}
       </Wrapper>
       <p>본 App은 PC 크롬에 최적화 되어 있습니다.</p>
-      {/* 모달창 */}
+      {/* 모달 */}
       {isSnsModal && <SignUpWithSnsModal
         show={isSnsModal}
         backdrop="static"
         onHide={() => setIsSnsModal(false)}
-      />}
-      {isEmailModalShow && <SignUpWithEmailModal
-        show={isEmailModalShow}
-        backdrop="static"
-        onHide={() => setIsEmailModalShow(false)}
       />}
     </Container >
   )
