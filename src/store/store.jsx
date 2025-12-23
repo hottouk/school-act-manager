@@ -6,6 +6,7 @@ import classSelected from './classSelectedSlice';
 import allStudents from './allStudentsSlice'
 import allActivities from './allActivitiesSlice';
 import user from './userSlice';
+import exam from './examSlice';
 //리덕스 persist
 import { persistReducer } from 'redux-persist';
 import storageSession from 'redux-persist/lib/storage/session'
@@ -22,6 +23,7 @@ const reducers = combineReducers(
     user: user.reducer,
     tempUser: tempUser.reducer,
     allClasses: allClasses.reducer,
+    exam: exam.reducer,
   }
 )
 

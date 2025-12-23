@@ -11,6 +11,8 @@ phone max-width 767px
 BorderColor: rgb(120, 120, 120, 0.5);
 black: 3a3a3a
 
+*배열은 반드시 list로 작성
+firebase, react 통일
 
 icon size
 w25 h25
@@ -37,6 +39,23 @@ firebase
 아니면 ref와 doc 사용
 한칸 띄기 &nbsp;
 */
-
 //모바일
 const isMobile = useMediaQuery("(max-width: 768px)");
+
+기본 css 스타일
+const Row = styled.div`
+  display: flex;
+`
+const Column = styled(Row)` 
+  flex-direction: column;
+`
+const BasicText = styled.p`
+  margin: 0;
+`
+const Container = styled(Column)`
+  box-sizing: border-box;
+  background-color: #efefef;
+  min-height: 100dvh;
+  align-items: center;
+  gap: 10px;
+`

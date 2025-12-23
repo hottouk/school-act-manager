@@ -36,6 +36,9 @@ import QuizMainPage from './pages/quizBattle/QuizMainPage';
 import MasterPage from './pages/main/MasterPage';
 import Lab from './pages/lab/Lab';
 import HomeSeatChange from './pages/homeroom/HomeSeatChangePage';
+//시험
+import ExamMainPage from './pages/exam/ExamMainPage';
+import ExamFormPage from './pages/exam/ExamFormPage';
 //상점
 import ShopMainPage from './pages/shop/ShopMainPage';
 import IndividualPage from './pages/individual/IndividualPage';
@@ -45,7 +48,8 @@ import PurchaseFailPage from './pages/purchase/PurchaseFailPage';
 import AmountSelectPage from './pages/purchase/AmountSelectPage';
 import Footer from './components/Bar/Footer';
 import styled from 'styled-components';
-import ExamFormPage from './pages/exam/ExamFormPage';
+import ExamItemPage from './pages/exam/ExamItemPage';
+
 
 function App() {
   const user = useSelector(({ user }) => { return user; })
@@ -96,6 +100,8 @@ function App() {
               <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
               {/* 시험 관리 */}
               <Route path="/exam_setting" element={uid ? <ExamFormPage /> : <Navigate replace={true} to='/login' />} />
+              <Route path="/exam" element={uid ? <ExamMainPage /> : <Navigate replace={true} to='/login' />} />
+              <Route path="/exam_item" element={uid ? <ExamItemPage /> : <Navigate replace={true} to='/login' />} />
               {/* 학교 */}
               <Route path="/myschool" element={uid ? <MySchoolPage /> : <Navigate replace={true} to='/login' />} />
               {/* <Route path="/school" element={uid ? <SchoolMainPage /> : <Navigate replace={true} to='/login' />} /> */}
@@ -105,8 +111,7 @@ function App() {
               {/* 게임 */}
               <Route path="/game_setting" element={uid ? <GameSettingPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/multiplay" element={uid ? <QuizBattleMultiPage /> : <Navigate replace={true} to='/login' />} />
-              {/* 새소식 관리 */}
-              <Route path="/news" element={uid ? <WhatsNewPage /> : <Navigate replace={true} to='/' />} />
+              {/* 새소식 관리 */}              <Route path="/news" element={uid ? <WhatsNewPage /> : <Navigate replace={true} to='/' />} />
               {/* 로그인/회원가입 */}
               <Route path="/login" element={!uid ? <LoginPage /> : <Navigate replace={true} to='/' />} />
               {/* 관리자 */}

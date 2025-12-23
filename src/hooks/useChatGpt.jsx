@@ -2,7 +2,8 @@ import { useState } from 'react'
 //데이터
 import {
   gptBehaviorMsg, gptSubjectDetailsMsg, gptPersonalOnTraitMsg, gptPersonalOnReportMsg, gptHomeroomDetailMsg, gptExtraRecordMsg,
-  gptRepeatRecMsg, gptPerfRecordMsg, gptTranslateMsg, gptExtractVocabMsg, gptPersonalKeywordsMsg, gptMakeExamMsg
+  gptRepeatRecMsg, gptPerfRecordMsg, gptTranslateMsg, gptExtractVocabMsg, gptPersonalKeywordsMsg, gptMakeExamMsg, gptRetouchPassageMsg,
+  gptRetouchOptionsMsg
 } from '../data/gptMsgDataList'
 import { callAskGPT } from '../firebase/config'
 
@@ -230,15 +231,39 @@ const useChatGpt = () => {
     {
       role: "user",
       content: `[지문]: ${text}`
-    }
-    ]
+    }]
     await playGpt({ messages, model: "gpt-4o-mini" });
   }
   //13. 시험문제
-  const makeExamQuestion = async (type, question, text) => {
-    const messages = [...gptMakeExamMsg(type, question, text)];
+  const makeExamQuestion = async (type, question, text, level, target) => {
+    if (type === "심경, 분위기") question = `다음 글에 드러난 ${target}의 심경 변화로 가장 적절한 것은?`;
+    if (type === "함축 의미") question = `밑줄 친 ${target}이 다음 글에서 의미하는 바로 가장 적절한 것은?`;
+    const messages = [...gptMakeExamMsg(type, question, text, level)];
     console.log(messages);
-    await playGpt({ messages, model: "o4-mini" });
+    await playGpt({ messages, model: "gpt-4o-mini" });
+  }
+  //14. 지문 리터치
+  const retouchPassage = async (passage, request) => {
+    const messages = [
+      ...gptRetouchPassageMsg,
+      {
+        role: "user",
+        content: `[지문]: ${passage}, [요구]:${request}`
+      }
+    ];
+    await playGpt({ messages, model: "gpt-4o-mini" });
+  }
+  //15. 선지 리터치
+  const retouchOptions = async (optionList, request) => {
+    const options = optionList.join("\n");
+    const messages = [
+      ...gptRetouchOptionsMsg,
+      {
+        role: "user",
+        content: `[선택지]: ${options}, [요구]:${request}`
+      }
+    ];
+    await playGpt({ messages, model: "gpt-4o-mini" });
   }
 
   //실행(gpt-4o-mini, gpt-4.1-mini)
@@ -252,8 +277,8 @@ const useChatGpt = () => {
     })
   }
   return {
-    gptAnswer, gptProgress, gptRes, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askPersonalizeOnKeywords,
-    askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, askRepeatRecord, extractVocab, makeExamQuestion
+    gptAnswer, setGptAnswer, gptProgress, gptRes, askSubjRecord, askHomeroomReccord, askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, askPersonalizeOnKeywords,
+    askExtraRecord, askPerfRecord, askBehavioralOp, translateEngtoKorean, askRepeatRecord, extractVocab, makeExamQuestion, retouchPassage, retouchOptions
   }
 }
 

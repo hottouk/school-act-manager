@@ -969,52 +969,94 @@ const gptExtractVocabMsg = [
   }]
 
 //시험 문제
-const gptMakeExamMsg = (type, question, text) => {
+const gptMakeExamMsg = (type, question, text, level) => {
   const exampleMap = {
-    "글의 목적": purposeExData,
-    "심경, 분위기": feelingChangeExData,
-    "필자의 주장": authorMainPointExData,
-    "함축 의미": meaningExData,
-    "글의 요지": mainIdeaExData,
-    "글의 주제": thesisExData,
-    "글의 제목": titleExData,
-    "일치/불일치": trueFalseExData,
+    "글의 목적": purposeExData(type, question, text, level),
+    "심경, 분위기": feelingChangeExData(type, question, text, level),
+    "필자의 주장": authorMainPointExData(type, question, text, level),
+    "함축 의미": meaningExData(type, question, text, level),
+    "글의 요지": mainIdeaExData(type, question, text, level),
+    "글의 주제": thesisExData(type, question, text, level),
+    "글의 제목": titleExData(type, question, text, level),
+    "일치/불일치": trueFalseExData(type, question, text, level),
     "어법 밑줄": grammarExData,
     "어휘 밑줄": lexisExData,
-    "빈칸 추론": blankExData,
+    "빈칸 추론": blankExData(type, question, text, level),
     "무관한 문장": nonRelatedExData,
     "글의 순서": sequenceExData,
     "문장 삽입": insertExData,
-    "요약": summaryExData,
+    "요약": summaryExData(type, question, text, level),
   };
-  const example = exampleMap[type] ?? "";
-  const outputEx = exampleMap[type][1].content;
-  console.log(outputEx);
+  const messages = exampleMap[type] ?? "";
   return [
     { //1. 대전제
-      role: "system", content: `역할은 주어진 지문으로 수능 유형의 문제를 출제하는 교사입니다.
-    [지문]과 문제의 [발문]을 제공하면 발문에 맞는 수능 유형의 객관식 오지선다형 문제를 출제해주세요.
-    주어진 [학년]의 수준에 맞는 단어들을 사용해야하며 정답은 반드시 1개만 존재해야합니다.
-    또한 정답과 함께 해설도 제공해주세요.
-    특히 [발문]과 해설은 한글로 오지선다형의 선택지는 영어로 작성해주세요.
-    
+      role: "system", content: `당신의 역할은 주어진 지문으로 수능 유형의 문제를 출제하는 교사임.
+    [유형],[발문],[지문],[학년],[추가 규칙]의 단서를 제공하겠습니다. 고등학교 수능 모의고사 [유형]의 객관식 오지선다형 선지를 영문으로 작성바람.
+    선지를 제작할때는 [학년]의 수준에 맞는 단어들을 사용해야하며 정답은 반드시 1개만 존재해야함.
+    [추가 규칙]이 있다면 추가 규칙의 내용을 꼭 지켜야 함.
+    또한 정답과 함께 한글 해설도 제공 바람.
+        
     출력 형식 규칙
-    - 당신의 모든 출력은 반드시 JSX 마크업 형태로 반환해야 합니다.
-    - 전체 결과는 하나의 최상위 요소(<div> 또는 <></>)로 감싸야 합니다.
-    - 각 보기는 <li>, 답과 해설은 <p>, 밑줄은 <u> 태그를 사용하십시오.
-    - HTML이 아닌 JSX 규칙을 따르세요.
-    - JSON, 텍스트만 출력, Markdown 코드블록 등은 금지합니다.
-   
-    출력 형식 예시
-      ${outputEx}
-    `
+    - 영어 오지선다형 선택지는 영어로 작성.
+    - 영어 오지선다형의 번호는 ①,②,③,④,⑤를 사용.
+    - 정답과 해설지는 한국어로 작성.
+    - 오지선다형 선택지와 해설을 구분하기 위해 구분자 '<br>' 태그를 사용한 string 형식으로 제공 바람.
+    - 오지선다형 선택지들을 구분하기 위해 선택지들 사이에 구분자 '</li>' 태그를 사용.`
     },
-    ...example,
-    {
-      role: "user",
-      content: `[발문]: ${question}
-          [지문]: ${text}`
-    }
-  ]
+    ...messages,
+  ];
 }
-export { gptBehaviorMsg, gptSubjectDetailsMsg, gptHomeroomDetailMsg, gptPersonalOnReportMsg, gptPersonalOnTraitMsg, gptExtraRecordMsg, gptPerfRecordMsg, gptTranslateMsg, gptRepeatRecMsg, gptExtractVocabMsg, gptPersonalKeywordsMsg, gptMakeExamMsg }
+//시험문제 리터치
+const gptRetouchPassageMsg = [
+  {
+    role: "system", content: `당신은 주어진 지문으로 수능 유형의 문제를 출제하는 교사를 보조하는 역할임.
+    주어진 수능 [지문]을 교사의 [요구]에 맞게 적절히 수정해야 함.
+    단, 원 [지문]의 내용을 변경하면 안됨. 아니라 단순히 문장의 표현 방식, 길이나 어휘 수준만 변경해야 함.`
+  },
+  {
+    role: "user", content: `[지문]: As children, the principle of opposites is foreign. Children perceive words and their meanings separately from each other. It is only in later development that we understood that individual words directly connect to one another. 
+    For many children, for instance, it is not clear that ‘Right’ is the opposite of ‘Left’. A vivid example of this can be seen when children learn to ride a bicycle. If parents tell their child “Don’t go to the left,” they will often find that the child will continue riding straight ahead and not automatically turn to the right.
+      The same applies to the logical connection between ‘Yes’ and ‘No’ as perceived by parents. When we were children and were told, for example, “No, don’t eat with your hands,” we were confused and didn’t know what our parents expected from us. Our confusion was about whether we should continue eating or not and if so, how? 
+      Only later did we recognize the connection and understand that we should continue eating, but not with our hands but with a fork or a spoon.
+      [요구]: 위 지문은 고1 지문입니다. 지문 수준을 고3 수준으로 변경해주세요.`
+  },
+  {
+    role: "assistant", content: `As children, the concept of opposites is not naturally understood. Young children tend to perceive words and their meanings as independent rather than relational. It is only through later cognitive development that we come to recognize how individual words are directly connected to one another. 
+    For example, many children do not immediately understand that “right” is the opposite of “left.” A clear illustration of this can be observed when children learn to ride a bicycle. When parents tell a child, “Don’t go to the left,” the child often continues riding straight ahead instead of instinctively turning to the right. This occurs because the child does not yet grasp the oppositional relationship between the two directions.
+    The same misunderstanding applies to the logical relationship between “yes” and “no,” as perceived by adults. When we were children and were told, for instance, “No, don’t eat with your hands,” we often felt confused about what was expected of us. Our confusion stemmed from uncertainty about whether we should stop eating altogether or continue eating in a different way. It was only later that we came to understand the implied connection: 
+    we were expected to continue eating, but not with our hands—instead, using a fork or a spoon.`
+  },
+  {
+    role: "user", content: `[지문]: As children, the principle of opposites is foreign. Children perceive words and their meanings separately from each other. It is only in later development that we understood that individual words directly connect to one another. 
+    For many children, for instance, it is not clear that ‘Right’ is the opposite of ‘Left’. A vivid example of this can be seen when children learn to ride a bicycle. If parents tell their child “Don’t go to the left,” they will often find that the child will continue riding straight ahead and not automatically turn to the right.
+      The same applies to the logical connection between ‘Yes’ and ‘No’ as perceived by parents. When we were children and were told, for example, “No, don’t eat with your hands,” we were confused and didn’t know what our parents expected from us. Our confusion was about whether we should continue eating or not and if so, how? 
+      Only later did we recognize the connection and understand that we should continue eating, but not with our hands but with a fork or a spoon.
+      [요구]: 위 지문을 요약해주세요`
+  },
+  {
+    role: "assistant", content: `Urban regeneration projects in degraded areas are intended to enhance the wellbeing of residents and address environmental injustice. However, the development of new, high-quality green spaces can lead to a paradox: while these improvements increase neighborhood attractiveness, they also raise housing costs, potentially displacing low-income residents.
+     Consequently, those who were meant to benefit from these green spaces may find themselves forced to relocate to similarly degraded areas with limited access to green infrastructure.`
+  },
+]
+const gptRetouchOptionsMsg = [
+  {
+    role: "system", content: `당신은 주어진 지문으로 수능 유형의 문제를 출제하는 교사를 보조하는 역할임.
+    주어진 수능 [선택지]를 교사의 [요구]에 맞게 적절히 수정해야 함.
+
+        출력 형식 규칙
+    - 영어 오지선다형 선택지는 영어로 작성.
+    - 영어 오지선다형의 번호는 ①,②,③,④,⑤를 사용.
+    - 오지선다형 선택지들을 구분하기 위해 선택지들 사이에 구분자 '</li>' 태그를 사용.`
+  },
+  {
+    role: "user", content: `[선택지]: ① The paradox of urban green regeneration leading to resident displacement ② The role of community participation in designing green spaces ③ The environmental benefits of creating high-quality urban parks ④ The effects of green spaces on public health improvement ⑤ The economic challenges of funding urban regeneration projects.
+      [요구]: 이 선택지들의 수준을 중3 수준으로 바꿔주세요.`
+  },
+  {
+    role: "assistant", content: `① The problem that green development in cities can push residents out</li>② The importance of residents taking part in making green spaces</li>③ The good effects of well-made city parks on the environment</li>④ How green spaces affect people’s health</li>⑤ The cost problems of urban development projects`
+  },
+]
+export {
+  gptBehaviorMsg, gptSubjectDetailsMsg, gptHomeroomDetailMsg, gptPersonalOnReportMsg, gptPersonalOnTraitMsg, gptExtraRecordMsg, gptPerfRecordMsg, gptTranslateMsg, gptRepeatRecMsg,
+  gptExtractVocabMsg, gptPersonalKeywordsMsg, gptRetouchPassageMsg, gptRetouchOptionsMsg, gptMakeExamMsg
+}

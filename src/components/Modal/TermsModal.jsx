@@ -94,5 +94,4 @@ const Wrapper = styled.div`
 	margin-bottom: 10px;
 	overflow-y: scroll;
 `
-
 export default TermsModal
