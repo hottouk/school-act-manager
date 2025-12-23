@@ -138,7 +138,7 @@ const HomeClassAllStudentsPage = () => {
     <Container $isVisible={isVisible}>
       <SubNav>
         <BackBtn />
-        <ExportAsExcel type="home" />
+        <ExportAsExcel allStudentList={_studentList} type="home" tab={tab} />
         <PrintBtn onClick={() => { handlePrint() }} />
       </SubNav>
       <StyledGirdContainer ref={printRef}>

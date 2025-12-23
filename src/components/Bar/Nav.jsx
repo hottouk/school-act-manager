@@ -80,6 +80,7 @@ const Nav = () => {
           <DropDownBtn btnName={"문제 관리"}
             dropDownItems={[
               { href: "exam_setting", label: "새 문제" },
+              { href: "exam", label: "나의 문제" },
             ]} />
         </li>
         <li><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon>

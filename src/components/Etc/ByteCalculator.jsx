@@ -9,7 +9,7 @@ const ByteCalculator = ({ str, handleOnChange, styles }) => {
   const justifyContent = styles?.justifyContent || "flex-end";
   const fontSize = styles?.fontSize || "16px";
   const fontColor = styles?.fontColor || "black";
-  const width = styles?.width || "61px";
+  const width = styles?.width || "70px";
   return (
     <Container $justifyContent={justifyContent} $fontSize={fontSize} >
       <FlexWrapper $fontSize={fontSize} $fontColor={fontColor} >
@@ -27,7 +27,7 @@ const Container = styled.div`
   justify-content: ${(props) => props.$justifyContent};
 `
 const StyledInput = styled.input`
-  width: ${(props) => props.$width};
+  width: ${props => props.$width};
   margin: 5px 5px 0px 5px;
   height: 35px;
   border-radius: 5px;

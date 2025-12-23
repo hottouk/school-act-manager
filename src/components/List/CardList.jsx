@@ -2,7 +2,6 @@
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 //컴포넌트
-import CardListItem from './ListItem/CardListItem'
 import EmptyResult from '../EmptyResult'
 import PetImg from '../PetImg'
 //아이콘
@@ -11,11 +10,10 @@ import unknownIcon from '../../image/icon/unkown_icon.png'
 import recycleIcon from '../../image/icon/recycle_icon.png'
 import { useSelector } from 'react-redux'
 
-//생성(240109) -> onClick 로직 분리(250122)
+//생성(240109) -> onClick 로직 분리(250122) -> 정리(251216)
 const CardList = ({ dataList, type, onClick, selected }) => {
   const user = useSelector(({ user }) => user)
   const navigate = useNavigate();
-
   //------랜더링----------------------------------------------- 
   //펫 카드
   const PetCard = ({ item, onClick }) => {
@@ -117,38 +115,80 @@ const CardList = ({ dataList, type, onClick, selected }) => {
       {/* <BasicText style={{ color: "#3454d1", fontWeight: "bold", position: "absolute", bottom: "-10px", padding: "5px", backgroundColor:"gray" }}>{status}...</BasicText> */}
     </Card>
   }
-
+  //단어 세트
+  const QuizCard = ({ item, onClick }) => {
+    return <Card onClick={() => { onClick(item); }}>
+      <Title style={{ color: "#3454d1" }} >{item.title}</Title>
+      <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
+      <QuizNumber style={{ margin: "-60px -15px" }}>{item.quizList.length}</QuizNumber>
+    </Card>
+  }
+  //퀴즈 활동
+  const QuizActiCard = ({ item, onClick }) => {
+    return <Card onClick={() => onClick(item)}>
+      <Title style={{ color: "#098a0f" }} >{item.title}</Title>
+      <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
+      <Row style={{ height: "41px", justifyContent: "space-between" }}>
+        <BasicText>{item?.quizInfo?.quizList?.length} 문제</BasicText>
+      </Row>
+      <Row style={{ justifyContent: "flex-end" }}><TagText style={{ backgroundColor: "#098a0f" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</TagText></Row>
+    </Card>
+  }
+  //업어온 활동
+  const CopiedActiCard = ({ item, onClick }) => {
+    return <Card onClick={() => onClick(item)}>
+      <Title style={{ color: "#FF69B4" }} >{item.title}</Title>
+      <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
+      <Row style={{ height: "75px", alignItems: "flex-end", justifyContent: "flex-end" }}><TagText style={{ backgroundColor: "#FF69B4" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</TagText></Row>
+    </Card>
+  }
+  //담임반 활동
+  const HomeActiCard = ({ item, onClick }) => {
+    return <Card onClick={() => onClick(item)}>
+      <Title style={{ color: "#3454d1" }}>{item.classTitle}</Title>
+      <Row style={{ justifyContent: "flex-start", marginBottom: "20px" }}>
+        <h5 style={{ color: "#3454d1" }}>{item.grade}</h5><span>학년</span>
+        <h5 style={{ color: "#3454d1" }}>{item.classNumber}</h5><span>반</span></Row>
+      <p>{item.intro}</p>
+    </Card>
+  }
+  //교과반
+  const SubectKlassCard = ({ item, onClick }) => {
+    return <Card onClick={() => onClick(item)}>
+      <Title style={{ color: "#3454d1" }}>{item.classTitle}</Title>
+      <p style={{ marginBottom: "20px" }}>{item.intro}</p>
+      <p>{item.subject ? `${item.subject}과` : "교사가 삭제한 클래스입니다."}{item.subjDetail ? '-' + item.subjDetail : ''} </p>
+    </Card>
+  }
+  //시험 문제
+  const ExamCard = ({ item, onClick }) => {
+    return <Card $backgroundColor={`${item.id === selected?.id ? "rgba(52, 84, 209, 0.4)" : "white"}`} onClick={onClick}>
+      <Title style={{ color: "#3454d1" }}>{item.title}</Title>
+      <p>{item.type}</p>
+      <p>{item.level}</p>
+    </Card>
+  }
   return (
     <Container>
       <CardWrapper>
         {/* 데이터 없음 */}
-        {(!dataList || dataList.length === 0) && <>
-          <EmptyResult comment={"데이터가 없어요"} />
-        </>}
+        {(!dataList?.length) && <EmptyResult comment={"데이터가 없어요"} />}
+        {/* 시험 문제 */}
+        {(type === "exam") && dataList?.map((item) => <ExamCard key={item.id} item={item} onClick={() => { navigate(`/exam_item`, { state: item }) }} />)}
         {/* 멤버 */}
         {(type === "member") && dataList?.map((item) => <MemberCard key={item.uid} item={item} onClick={onClick} />)}
         {/* 교과반 */}
-        {(type === "classroom" || type === "appliedClassList") && dataList?.map((item) => {
-          return (<CardListItem key={item.id} item={item} onClick={onClick} type={"classroom"} />)
-        })}
+        {(type === "classroom" || type === "appliedClassList") && dataList?.map((item) => (<SubectKlassCard key={item.id} item={item} onClick={onClick} />))}
         {/* 담임반 */}
-        {(type === "homeroom") && dataList?.map((item) => {
-          return (<CardListItem key={item.id} item={item} onClick={onClick} type={"homeroom"} />)
-        })}
+        {(type === "homeroom") && dataList?.map((item) => { return (<HomeActiCard key={item.id} item={item} onClick={onClick} />) })}
         {/* 교과활동 */}
         {type === "activity" && dataList?.map((item) => (<SubjectActiCard key={item.id} item={item} onClick={onClick} />))}
         {/* 업어온 활동 */}
-        {type === "copiedActi" && dataList?.map((item) => {
-          return (<CardListItem key={item.id} item={item} onClick={() => { navigate(`/activities/${item.id}`, { state: { acti: item } }) }} type={"copiedActi"} styles={{ hoverColor: "rgba(255, 105, 180, 0.2)" }} />)
-        })}
+        {type === "copiedActi" && dataList?.map((item) => (<CopiedActiCard key={item.id} item={item} onClick={() => { navigate(`/activities/${item.id}`, { state: { acti: item } }) }} styles={{ hoverColor: "rgba(255, 105, 180, 0.2)" }} />))}
         {/* 퀴즈 활동*/}
-        {type === "quizActi" && dataList?.map((item) => {
-          return (<CardListItem key={item.id} item={item} onClick={onClick} type={"quizActi"} styles={{ hoverColor: "rgba(9, 138, 15,0.2)" }} />)
-        })}
+        {type === "quizActi" && dataList?.map((item) => (<QuizActiCard key={item.id} item={item} onClick={onClick} styles={{ hoverColor: "rgba(9, 138, 15,0.2)" }} />))}
         {/* 단어 세트 */}
-        {(type === "quiz") && dataList?.map((item) => {
-          return (<CardListItem key={item.id} item={item} onClick={() => { navigate('/quiz_setting', { state: item }) }} type={"quiz"} />)
-        })}
+        {(type === "quiz") && dataList?.map((item) => (<QuizCard key={item.id} item={item} onClick={() => { navigate('/quiz_setting', { state: item }) }} />))}
         {/*펫*/}
         {(type === "pet") && dataList?.map((item, index) => <PetCard key={item.petId} item={item} onClick={() => { onClick(item, index) }} />)}
         {/*몬스터*/}
@@ -237,4 +277,10 @@ const TagText = styled.p`
   border-radius: 5px;
   margin-bottom: 4px
 `
+const QuizNumber = styled.p`
+  font-size: 110px;
+  text-align: right;
+  color: rgb(52, 84, 209, 0.3);
+`
+
 export default CardList
