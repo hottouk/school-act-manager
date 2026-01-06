@@ -20,10 +20,10 @@ const AmountSelectPage = () => {
   //------함수부---------------------------------------------------  
   const handleOnClick = () => {
     navigate("widget", { state: _amount });
-  }
+  };
   const handleRadioOnChange = (event) => {
     setAmount(Number(event.target.value));
-  }
+  };
 
   return (
     <Container>

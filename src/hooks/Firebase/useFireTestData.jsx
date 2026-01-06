@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { appFireStore, timeStamp } from '../../firebase/config';
-import { arrayRemove, arrayUnion, collection, doc, onSnapshot, query, setDoc } from 'firebase/firestore';
+import { arrayUnion, collection, doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { setExamQuestionList } from '../../store/examSlice';
 //생성(251216)
 const useFireTestData = () => {

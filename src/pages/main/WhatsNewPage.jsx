@@ -13,10 +13,12 @@ import useFireTransaction from '../../hooks/useFireTransaction';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
 import EditRecordModal from '../../components/Modal/EditRecordModal';
+import { useNavigate } from 'react-router-dom';
+import Pagenation from '../../components/Pagenation';
 //240201 갱신 -> 모바일(250215)
 const WhatsNewPage = () => {
-  //준비
   const user = useSelector(({ user }) => { return user });
+  const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { myUserData } = useFetchRtMyUserData();          //실시간 유저 정보 구독
   useEffect(() => { bindData(); }, [myUserData]);
@@ -30,10 +32,20 @@ const WhatsNewPage = () => {
   //세특 수정
   const [isEditModal, setIsEditModal] = useState(false);
   const [newRecordInfo, setNewRecordInfo] = useState(null);
+  //페이지네이션
+  const itemsPerPage = 20;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageData, setPageData] = useState(onSubmitList?.slice(0, itemsPerPage));
+  useEffect(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = currentPage * itemsPerPage;
+    setPageData(onSubmitList?.slice(start, end));
+  }, [currentPage]);
   //------함수부------------------------------------------------ 
   //데이터 바인딩
   const bindData = () => {
     if (!myUserData) return;
+    setPageData(myUserData.onSubmitList.slice(0, itemsPerPage));
     setOnSubmitList(myUserData.onSubmitList);
   }
   //교사: 가입 승인
@@ -108,10 +120,10 @@ const WhatsNewPage = () => {
   }
   //학생 수정 요청
   const TeacherEditRecordRow = ({ index, item }) => {
-    const { studentName, studentNumber, record, newRecord, subject, date, byte, newByte, } = item;
+    const { studentName, studentNumber, record, newRecord, subject, date, byte, newByte, classId, petId } = item;
     return <><GridItem>{index + 1}</GridItem>
-      <GridItem>
-        {studentNumber}&nbsp;{studentName}
+      <GridItem onClick={() => navigate(`/classrooms/${classId}/${petId}`)}>
+        <Underlined style={{ fontWeight: "bold", color: "#3454d1" }}>{studentNumber}&nbsp;{studentName}</Underlined>
       </GridItem>
       <GridItem>수정요청</GridItem>
       <GridItem>
@@ -148,7 +160,7 @@ const WhatsNewPage = () => {
     const { actiRecord, name, studentNumber, title, date } = item
     return <>
       <GridItem>{index + 1}</GridItem>
-      <GridItem>{name || "에러"}</GridItem>
+      <GridItem>{studentNumber || "학번"}<br /> {name || "이름"}</GridItem>
       <GridItem>{title || "에러"}</GridItem>
       <GridItem><BubbleText>
         <Hilit>{studentNumber} {name}</Hilit> 학생이 <Hilit>{title}</Hilit>활동에서
@@ -362,60 +374,69 @@ const WhatsNewPage = () => {
     confirm: (item, index) => (<StudentApprovalBubble key={item.message} index={index} item={item} />),
   }
 
-  return (<><Container>
-    {/* 교사용 */}
-    {(user.isTeacher && !isMobile) && <>
-      <TeacherGridContainer>
-        <TableHeaderWrapper>
-          <Header>연번</Header>
-          <Header>누가</Header>
-          <Header>무엇을</Header>
-          <Header>어떻게</Header>
-          <Header>언제</Header>
-          <Header>승인</Header>
-          <Header>반려</Header>
-        </TableHeaderWrapper>
-        {(!onSubmitList || onSubmitList?.length === 0) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
-        {onSubmitList?.map((item, index) => {
-          const renderer = teacherRenderes[item.type];
-          return renderer ? renderer(item, index) : null;
-        })}
-      </TeacherGridContainer>
-    </>}
-    {/* 교사용 모바일 */}
-    {(isMobile && user.isTeacher) && <>
-      {(onSubmitList?.length === 0 || !onSubmitList) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
-      {onSubmitList?.map((item, index) => {
-        const renderer = teacherMobileRenderers[item.type];
-        return renderer ? renderer(item, index) : null;
-      })}
-    </>}
-    {/* 학생용 */}
-    {(!user.isTeacher && !isMobile) && <>
-      <StudentGridContainer>
-        <TableHeaderWrapper>
-          <Header>연번</Header>
-          <Header>대상</Header>
-          <Header>내용</Header>
-          <Header>확인</Header>
-        </TableHeaderWrapper>
+  return (<>
+    <Container>
+      {/* 교사용 */}
+      {(user.isTeacher && !isMobile) && <>
+        <TeacherGridContainer>
+          <TableHeaderWrapper>
+            <Header>연번</Header>
+            <Header>학번 이름</Header>
+            <Header>종류</Header>
+            <Header>내용</Header>
+            <Header>날짜</Header>
+            <Header>승인</Header>
+            <Header>반려</Header>
+          </TableHeaderWrapper>
+          {(!onSubmitList || onSubmitList?.length === 0) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
+          {pageData?.map((item, index) => {
+            const renderer = teacherRenderes[item.type];
+            return renderer ? renderer(item, index) : null;
+          })}
+        </TeacherGridContainer>
+      </>}
+      {/* 교사용 모바일 */}
+      {(isMobile && user.isTeacher) && <>
         {(onSubmitList?.length === 0 || !onSubmitList) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
         {onSubmitList?.map((item, index) => {
-          const renderer = studentRenderes[item.type];
+          const renderer = teacherMobileRenderers[item.type];
           return renderer ? renderer(item, index) : null;
-        }
-        )}
-      </StudentGridContainer>
-    </>}
-    {/* 학생용 모바일 */}
-    {(isMobile && !user.isTeacher) && <>
-      {(onSubmitList?.length === 0 || !onSubmitList) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
-      {onSubmitList?.map((item, index) => {
-        const renderer = studentMobileRenderes[item.type];
-        return renderer ? renderer(item, index) : null;
-      })}
-    </>}
-  </Container >
+        })}
+      </>}
+      {/* 학생용 */}
+      {(!user.isTeacher && !isMobile) && <>
+        <StudentGridContainer>
+          <TableHeaderWrapper>
+            <Header>연번</Header>
+            <Header>대상</Header>
+            <Header>내용</Header>
+            <Header>확인</Header>
+          </TableHeaderWrapper>
+          {(onSubmitList?.length === 0 || !onSubmitList) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
+          {onSubmitList?.map((item, index) => {
+            const renderer = studentRenderes[item.type];
+            return renderer ? renderer(item, index) : null;
+          }
+          )}
+        </StudentGridContainer>
+      </>}
+      {/* 학생용 모바일 */}
+      {(isMobile && !user.isTeacher) && <>
+        {(onSubmitList?.length === 0 || !onSubmitList) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
+        {onSubmitList?.map((item, index) => {
+          const renderer = studentMobileRenderes[item.type];
+          return renderer ? renderer(item, index) : null;
+        })}
+      </>}
+      {onSubmitList?.length > itemsPerPage && <PageWrapper>
+        <Pagenation
+          totalItems={onSubmitList.length}
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
+      </PageWrapper>}
+    </Container >
     {/* 진화모달 */}
     <EvolutionModal show={isRewardModal} onHide={() => setIsRewardModal(false)} info={reward} />
     {/* 재수정 모달 */}
@@ -423,16 +444,21 @@ const WhatsNewPage = () => {
   </>)
 }
 
-const Container = styled.main`
-  width: 100%;
+const Row = styled.div`
+  display: flex;
+`
+const Container = styled(Row)`
   box-sizing: border-box;
+  flex-direction: column;
+  align-items: center;  
+  width: 100%;
+  min-height: 80vh;
+  padding: 20px 0;
+  background-color: white;
   @media screen and (max-width: 767px){
     width: 100%;
     height: ${(props) => props.$clientheight}px;
   }
-`
-const Row = styled.div`
-  display: flex;
 `
 const GridRow = styled.div`
   grid-column: 1/-1;
@@ -442,7 +468,6 @@ const GridRow = styled.div`
 `
 const GridContainer = styled.div`
   width: 90%;
-  margin: 50px auto;
   display: grid;
   grid-template-rows: 40px;
 `
@@ -504,5 +529,9 @@ const BubbleWrapper = styled.div`
   color: 3a3a3a;
   border: 1px solid #ddd;
   border-radius: 15px;
+`
+const PageWrapper = styled(Row)`
+  justify-content: center;
+  margin: 10px;
 `
 export default WhatsNewPage

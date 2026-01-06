@@ -11,6 +11,7 @@ export default XBtn
 const StyledBtn = styled.p`
 	margin: 0;
   width: 30px;
+  height: 30px;
   text-align: center;
   font-size: 20px;
   font-weight: bold;

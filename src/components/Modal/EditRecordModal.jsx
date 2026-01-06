@@ -16,12 +16,15 @@ const EditRecordModal = ({ show, onHide, info }) => {
     const confirm = window.confirm("세특을 수정하시겠습니까?");
     if (!confirm) return;
     approveEditTransaction(info);
+    setNewRecord('');
     onHide();
   }
   return (
     <Modal
       show={show}
-      onHide={onHide}>
+      onHide={() => { setNewRecord(''); onHide(); }}
+      size='lg'
+    >
       <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>세특 재수정</Modal.Header>
       <Modal.Body style={{ backgroundColor: "#efefef", borderRadius: "5px" }}>
         <p onClick={() => setNewRecord(info?.record)} style={{ margin: "10px 0" }}><Hilit>기존 {info?.byte} 바이트</Hilit>: <Underlined>{info?.record}</Underlined></p>
@@ -52,7 +55,7 @@ const Column = styled(Row)`
 `
 const Textarea = styled.textarea`
   width: 100%;
-  height: 4rem;
+  height: 10dvh;
   border: none;
   border-radius: 5px;
   margin: 10px 0 5px 0;

@@ -14,6 +14,7 @@ const MainWrapper = ({ children, styles }) => {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
+  align-self: center;
   width: ${({ $width }) => $width};
   margin : ${({ $margin }) => $margin};
   gap:${({ $gap }) => $gap};

@@ -1,14 +1,16 @@
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { collection, doc, getDoc, runTransaction, updateDoc, arrayUnion, arrayRemove, getDocFromCache, getDocFromServer, setDoc, onSnapshot, } from 'firebase/firestore'
 import { appFireStore } from '../../firebase/config'
+import { setUser } from '../../store/userSlice';
+//hooks
 import useFireBasic from './useFireBasic';
 //user collection 함수 모음
 const useFireUserData = () => {
   const user = useSelector(({ user }) => user);
+  const dispatcher = useDispatch();
   const db = appFireStore;
   const col = collection(db, "user");
   const { addData } = useFireBasic("error");
-
   //1. 유저 정보 하나 가져오기
   const fetchUserData = async (id) => {
     const userDocRef = doc(col, id);
@@ -23,7 +25,10 @@ const useFireUserData = () => {
     if (!id) return
     const userDocRef = doc(col, id);
     const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
-      if (snapshot.exists()) { callback(snapshot.data()); }
+      if (snapshot.exists()) {
+        callback(snapshot.data());
+        dispatcher(setUser(snapshot.data()));
+      }
       else { callback(null); }
     })
     return () => unsubscribe();
@@ -164,6 +169,17 @@ const useFireUserData = () => {
         console.log(err);
       })
   }
+
+  //09. 리라 차감 임시 코드(260104) 
+  const TempDeductRira = async (amount) => {
+    const userDocRef = doc(col, user.uid);
+    await updateDoc(userDocRef, { rira: user.rira - amount })
+      .catch((error) => {
+        alert(`관리자에게 문의하세요(useFireUserData_09), ${error}`);
+        console.log(error);
+      })
+  }
+
   //내 정보 변경(251023)
   const updateMyInfo = async (info) => {
     const userDocRef = doc(col, user.uid);
@@ -248,8 +264,10 @@ const useFireUserData = () => {
       }
     }
   }
-
-  return ({ fetchUserData, userDataListener, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem, applyKlassTransaction, approveKlassTransaction, exportKlassTransaction })
+  return ({
+    fetchUserData, userDataListener, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem, applyKlassTransaction, approveKlassTransaction, exportKlassTransaction,
+    TempDeductRira,
+  })
 }
 
 export default useFireUserData

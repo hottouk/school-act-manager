@@ -240,7 +240,7 @@ const useChatGpt = () => {
     if (type === "함축 의미") question = `밑줄 친 ${target}이 다음 글에서 의미하는 바로 가장 적절한 것은?`;
     const messages = [...gptMakeExamMsg(type, question, text, level)];
     console.log(messages);
-    await playGpt({ messages, model: "gpt-4o-mini" });
+    await playGpt({ messages, model: "gpt-5-mini" });
   }
   //14. 지문 리터치
   const retouchPassage = async (passage, request) => {
@@ -251,7 +251,7 @@ const useChatGpt = () => {
         content: `[지문]: ${passage}, [요구]:${request}`
       }
     ];
-    await playGpt({ messages, model: "gpt-4o-mini" });
+    await playGpt({ messages, model: "gpt-5-mini" });
   }
   //15. 선지 리터치
   const retouchOptions = async (optionList, request) => {
@@ -263,16 +263,19 @@ const useChatGpt = () => {
         content: `[선택지]: ${options}, [요구]:${request}`
       }
     ];
-    await playGpt({ messages, model: "gpt-4o-mini" });
+    await playGpt({ messages, model: "gpt-5-mini" });
   }
-
-  //실행(gpt-4o-mini, gpt-4.1-mini)
-  const playGpt = async ({ messages, model = "gpt-4o-mini", temperature = 1.0 }) => {
+  //실행(gpt-5-mini, gpt-4.1-mini)
+  const playGpt = async ({ messages, model = "gpt-5-mini", temperature = 1.0 }) => {
     setGptRes("loading");
     callAskGPT({ messages, model, temperature }).then((res) => {
       const { data } = res;
-      const content = data.content;
+      const content = data.content
+      console.log(data.usage);
       setGptAnswer(content);
+      setGptRes("complete");
+    }).catch(err => {
+      console.log(err);
       setGptRes("complete");
     })
   }

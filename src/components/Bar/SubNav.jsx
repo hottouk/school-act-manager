@@ -19,6 +19,7 @@ const Container = styled.div`
   padding: ${(props) => props.$padding};
   gap: ${(props) => props.$gap};
   background-color: #efefef;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
   p {
     display: none;
     color: #3454d1;

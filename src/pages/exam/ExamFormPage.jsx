@@ -14,6 +14,7 @@ import useChatGpt from '../../hooks/useChatGpt.jsx'
 import useFireBasic from '../../hooks/Firebase/useFireBasic.jsx'
 //data
 import { numbers, typeData } from '../../data/examData.jsx'
+import ChargeRiraModal from '../../components/Modal/ChargeRiraModal.jsx'
 //생성(251222)
 const ExamFormPage = () => {
 	const user = useSelector(({ user }) => user);
@@ -31,7 +32,7 @@ const ExamFormPage = () => {
 	const [grade, setGrade] = useState(null);
 	useEffect(() => { setMonth(null); setExam(null); }, [grade]);
 	//월
-	const monthList = [{ label: "10월", value: "10월" }];
+	const monthList = [{ label: "3월", value: "3월" }, { label: "10월", value: "10월" },];
 	const [month, setMonth] = useState(null);
 	useEffect(() => { fetchExamData(); }, [month]);
 	//기출 문항
@@ -39,11 +40,14 @@ const ExamFormPage = () => {
 	const numberList = numbers.map((item) => ({ label: item, value: item })) || [];
 	const [number, setNumber] = useState(null);
 	useEffect(() => {
-		if (!number || !exam) return;
-		setMockPassage(exam[number]?.passage ?? '');
-		setPassage(exam[number]?.original ?? exam[number]?.passage ?? '');
-		setMockQuestion(exam[number]?.question ?? '');
-		setMockOptionList(exam[number]?.optionList ?? []);
+		if (!number || !exam) {
+			initData();
+		} else {
+			setMockPassage(exam[number]?.passage ?? '');
+			setPassage(exam[number]?.original?.replace(/(\r\n|\n|\r)/g, " ") ?? exam[number]?.passage.replace(/(\r\n|\n|\r)/g, " ") ?? '');
+			setMockQuestion(exam[number]?.question ?? '');
+			setMockOptionList(exam[number]?.optionList ?? []);
+		}
 	}, [number]);
 	//기출
 	const [mockQuestion, setMockQuestion] = useState('');
@@ -51,27 +55,48 @@ const ExamFormPage = () => {
 	const [mockOptionList, setMockOptionList] = useState([]);
 	//제작
 	const [type, setType] = useState(null);
+	useEffect(() => {
+		const list = passage.split(". ").filter((item) => item !== '');
+		setSentenceList(list);
+	}, [type]);
 	const [level, setLevel] = useState(null);
 	const typeOptList = Object.entries(typeData).map((item) => ({ label: item[0], value: item[1] }));
 	const [question, setQuestion] = useState('');
 	const [passage, setPassage] = useState('');
-	const { makeExamQuestion, gptAnswer, gptRes } = useChatGpt();
+	const { makeExamQuestion, gptAnswer, setGptAnswer, gptRes } = useChatGpt();
 	//특수 문형
-	const [target, setTarget] = useState('');
+	const [target, setTarget] = useState(''); //감정, 함축의미
+	const circleNumber = ["①", "②", "③", "④", "⑤"];
+	const [sentenceList, setSentenceList] = useState([]); //무관한 문장
+	const [circleAnswer, setCircleAnswer] = useState(null);
 	//관리자
 	const [m_options, setOptions] = useState('');
 	const [m_question, setMasterQuestion] = useState('');
 	const [m_passage, setMasterPassage] = useState('');
 	const [isOriginal, setIsOriginal] = useState(false);
+	//과금 모달
+	const [isChargeModal, setIsChargeModal] = useState(false);
+
+	//초기화
+	const initData = () => {
+		setMockPassage('');
+		setPassage('');
+		setMockQuestion('');
+		setMockOptionList([]);
+	}
 	//모고 불러오기
 	const fetchExamData = async () => {
 		setNumber(null);
 		const docId = `${year}${grade}${month}${subject}`;
 		const examInfo = await fetchDoc(docId);
-		if (!examInfo) return;
-		const { uid, ...rest } = examInfo;
-		setExam(rest);
+		if (examInfo) {
+			const { uid, createdTime, ...rest } = examInfo;
+			setExam(rest);
+		} else {
+			setExam(null);
+		}
 	}
+	//유효성 검사
 	const check = () => {
 		let err = null;
 		if (question === '') err = "문항 유형을 선택하세요.";
@@ -92,7 +117,7 @@ const ExamFormPage = () => {
 		}
 		if (type === "심경, 분위기") setQuestion(`다음 글에 드러난 ${target}의 심경 변화로 가장 적절한 것은?`);
 		if (type === "함축 의미") setQuestion(`밑줄 친 ${target}이 다음 글에서 의미하는 바로 가장 적절한 것은?`);
-		makeExamQuestion(type, question, passage, level, target);
+		setIsChargeModal(true);
 	}
 	//지문 서버 업로드(마스터)
 	const handleMasterOnClick = () => {
@@ -108,7 +133,7 @@ const ExamFormPage = () => {
 		const data = { [number]: question };
 		setData(data, `${year}${grade}${month}${subject}`);
 	}
-	return (
+	return (<>
 		<Container>
 			{/* 기출 */}
 			<MainWrapper styles={{ width: "60%", gap: "10px" }}>
@@ -161,7 +186,7 @@ const ExamFormPage = () => {
 				</AnimMaxHightOpacity>
 			</MainWrapper>
 			{/* 제작대 */}
-			<AnimMaxHightOpacity isVisible={subject} styles={{ width: "60%", margin: "20px 0 0 0", }}>
+			<AnimMaxHightOpacity isVisible={subject && !gptAnswer} styles={{ width: "60%", margin: "20px 0 0 0", alignSelf: "center" }}>
 				<MainWrapper styles={{ width: "100%", gap: "10px" }}>
 					<TestSubBar>제작대</TestSubBar>
 					{passage !== '' && <Row style={{ justifyContent: "space-between" }}>
@@ -188,10 +213,17 @@ const ExamFormPage = () => {
 						<DotTitle>대상</DotTitle>
 						<TextInput style={{ width: "30%" }} value={target} onChange={(event) => setTarget(event.target.value)} />
 					</Row>}
+					{["무관한 문장"].includes(type) && <Column>
+						<DotTitle>[선택] 정답을 몇번으로 지정할까요?</DotTitle>
+						<Row style={{ gap: "20px" }}>
+							{circleNumber.map((item, index) =>
+								<Row key={item} style={{ gap: "3px" }}><input type='radio' name='answer' value={index} onClick={() => setCircleAnswer(index)} />{item}</Row>)}
+						</Row>
+					</Column>}
 					<Textarea
 						value={passage}
 						placeholder={"문항을 만들 지문을 선택 또는 작성하세요"}
-						onChange={(event) => setPassage(event.target.value)}
+						onChange={(event) => setPassage(event.target.value.replace(/(\r\n|\n|\r)/g, " "))}
 					/>
 					{gptRes !== "loading" && <Column>
 						<MainBtn onClick={handleMakeOnClick}>AI 문제 생성</MainBtn>
@@ -203,11 +235,12 @@ const ExamFormPage = () => {
 			</AnimMaxHightOpacity>
 			{/* 결과물 */}
 			{gptAnswer &&
-				<ExamEditSection gptAnswer={gptAnswer} question={question} passage={passage} subject={subject} type={type} level={level} />}
+				<ExamEditSection gptAnswer={gptAnswer} setGptAnswer={setGptAnswer}
+					question={question} passage={passage} subject={subject} type={type} level={level}
+					sentenceList={sentenceList} circleAnswer={circleAnswer} />}
 			{/* 관리자 */}
 			{user.isMaster && <MainWrapper styles={{ width: "60%", margin: "20px 0 0 0", gap: "5px" }}>
 				<TestSubBar>관리자</TestSubBar>
-				<DotTitle>관리자</DotTitle>
 				<TextInput
 					type='text'
 					value={m_question}
@@ -230,6 +263,13 @@ const ExamFormPage = () => {
 				<MainBtn styles={{ margin: "15px 0 0 0" }} onClick={(handleMasterOnClick)}>서버 업로드</MainBtn>
 			</MainWrapper>}
 		</Container>
+		<ChargeRiraModal
+			show={isChargeModal}
+			onHide={() => setIsChargeModal(false)}
+			onApprove={() => makeExamQuestion(type, question, passage, level, target)}
+			onCancel={() => setIsChargeModal(false)}
+		/>
+	</>
 	)
 }
 const Row = styled.div`
@@ -242,7 +282,7 @@ const Container = styled(Column)`
 	box-sizing: border-box;
 	min-height: 100dvh;
   background-color: #efefef;
-	align-items: center;
+	padding: 20px 0 0 0;
 `
 const QuestionText = styled.p`
 	font-size: 18px;
@@ -257,25 +297,12 @@ const Textarea = styled.textarea`
 	border-radius: 5px;
 `
 const TestSubBar = styled(Row)`
-	background-color: #3255df50;
+	background-color: #3454d1;
 	justify-content: space-between;
 	border-radius: 10px 10px 0 0;
 	margin: -15px -15px 0 -15px;
 	padding: 5px 15px;
-`
-const TestCol = styled(Column)`
-	margin: 10px 0 0 0;
-	padding: 5px 0 0 0;
-	border-top: 1px solid #949192;
-`
-const IconWrapper = styled(Row)`
-	margin: 3px 10px;
-	gap: 10px;
-`
-const ImgIcon = styled.img`
-	width: 20px;
-	cursor: pointer;
-	align-self: flex-end;
+	color: white;
 `
 const QuestionWrapper = styled.div`
 	width: 50%;

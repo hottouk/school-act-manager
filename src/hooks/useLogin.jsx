@@ -1,5 +1,5 @@
 //라이브러리
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth'
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth'
 import { useDispatch } from 'react-redux';
 import { useState } from 'react'
 import { appAuth, appFireStore, timeStamp } from '../firebase/config'
@@ -7,6 +7,7 @@ import { appAuth, appFireStore, timeStamp } from '../firebase/config'
 import { setUser } from '../store/userSlice'
 import { setTempUser } from '../store/tempUserSlice';
 import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore';
+//hooks
 import useStudent from './useStudent';
 
 const useLogin = () => {
@@ -18,7 +19,7 @@ const useLogin = () => {
   const [err, setErr] = useState(null);
   const [emailMsg, setEmailMsg] = useState('');
 
-  //기존 유저 검사(24.02.21)
+  //기존 유저 검사(240221)
   const findUser = async (userInfo, sns) => {
     let isUserExist;
     let userInfofromServer = null;
@@ -61,13 +62,6 @@ const useLogin = () => {
       console.error(err)
     }
   }
-
-  //이메일 인증 정보(20240730)
-  const getEmailUserCredential = async (email, password) => {
-    let userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return userCredential
-  }
-
   //이메일 로그인(20240730)
   const emailLogin = async (email, password) => {
     try {
@@ -153,42 +147,22 @@ const useLogin = () => {
     })
   }
 
-  //비밀번호 유효성 검사(24.07.30)
-  const validatePassword = (password, samePassword) => {
-    if (password.length < 6) { return "비밀 번호는 최소 6자를 넘어야 합니다."; }
-    if (password !== samePassword) { return "비밀번호 확인란과 번호가 다릅니다."; }
-    return null; // 비밀번호가 유효한 경우
-  };
-
-  //유저 가입(240730)
-  const classifyUserInfo = ({ uid, school, isTeacher, name, email, phoneNumber, profileImg, classNumber, grade, number, password, samePassword, isMyTermAgree }) => {
-    //이메일 가입: 비번 에러 시 return 
-    if (!password) { password = null; }
-    else {
-      const errMsg = validatePassword(password, samePassword);
-      if (errMsg) {
-        setEmailMsg(errMsg);
-        return
-      }
-    }
-    //이메일, SNS 가입 로직 
+  //유저 가입(240730) -> 이메일 가입 삭제(260106)
+  const classifyUserInfo = ({ uid, school, isTeacher, name, email, phoneNumber, profileImg, classNumber, grade, number, isMyTermAgree }) => {
     if (isTeacher) { //교사
-      const teacherUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, password, isMyTermAgree }
+      const teacherUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, isMyTermAgree }
       if (window.confirm(`교사회원으로 가입 하시겠습니까?`)) {
         return teacherUserInfo
       } else { return null; }
     } else { //학생
       const studentNumber = createStudentNumber(number - 1, grade, classNumber)
-      const studentUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, studentNumber, password, isMyTermAgree }
+      const studentUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, studentNumber, isMyTermAgree }
       if (window.confirm(`${school?.schoolName ?? "그외 학교"} 학번 ${studentNumber}로 회원가입 하시겠습니까?`)) {
         return studentUserInfo
       } else { return null; }
     }
   }
-
-  return (
-    { addUser, googleLogin, kakaoLogin, emailLogin, getEmailUserCredential, classifyUserInfo, emailMsg, isPending, err, }
-  )
+  return { addUser, googleLogin, kakaoLogin, emailLogin, classifyUserInfo, emailMsg, isPending, err, }
 }
 
 export default useLogin

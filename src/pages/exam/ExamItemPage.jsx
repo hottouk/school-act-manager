@@ -2,16 +2,17 @@ import React from 'react'
 import styled from 'styled-components'
 import ExamEditSection from './ExamEditSection'
 import { useLocation } from 'react-router-dom';
+import SubNav from '../../components/Bar/SubNav';
+import BackBtn from '../../components/Btn/BackBtn';
 
 const ExamItemPage = () => {
   const location = useLocation();
   const { state: examItem } = location;
-  return (<>
-    <Container>
+  return <Container>
+    <SubNav><BackBtn /></SubNav>
       <ExamEditSection examItem={examItem} />
-    </Container>
-  </>
-  )
+  </Container>
+
 }
 
 export default ExamItemPage
@@ -29,6 +30,5 @@ const Container = styled(Column)`
   box-sizing: border-box;
   background-color: #efefef;
   min-height: 100dvh;
-  align-items: center;
   gap: 10px;
 `

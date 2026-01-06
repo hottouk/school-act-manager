@@ -21,6 +21,7 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { defineSecret } from "firebase-functions/params";
 import OpenAI from "openai";
 import express from "express";
+import { user } from "firebase-functions/v1/auth";
 // --- 공통 설정 ---
 initializeApp();
 const REGION = "asia-northeast3";
@@ -30,7 +31,14 @@ const storage = new Storage();
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 // --- (2) 구글 비젼
 const client = new vision.ImageAnnotatorClient();
-// --- (3) 결제용 Express 앱 묶음(api) ---
+// --- (3) gpt 인앱 재화 결제(GPT) model pricing (server-side only)
+const GPT_MODEL_PRICING = Object.freeze({
+  "gpt-5.1": { question: 70 },
+  "gpt-5-mini": { question: 20 },
+});
+const getGptPrice = (model, type) => GPT_MODEL_PRICING[model]?.[type] || 0;
+const isAllowedGptModel = (model) => Boolean(GPT_MODEL_PRICING[model]);
+// --- (4) 결제용 Express 앱 묶음(api) ---
 // express 서버
 const app = express();
 const cors = corsLib({ origin: true });
@@ -72,7 +80,7 @@ app.post("/confirm/widget", (req, res, next) => {
       const batch = db.batch();
       const payRef = db.doc(`purchases/${orderId}`);
       const userRef = db.doc(`user/${userId}`);
-      const checkRef = db.doc(`paymentcheck/${orderId}`)
+      const checkRef = db.doc(`paymentcheck/${orderId}`);
       batch.set(userRef, { rira: FieldValue.increment(Number(amount)) }, { merge: true });
       batch.delete(checkRef);
       batch.set(payRef,
@@ -97,7 +105,7 @@ app.post("/confirm/widget", (req, res, next) => {
 });
 export const api = onRequest({ region: REGION }, app);
 
-//gpt apiKey
+//gpt 호출 
 export const askGPT = onCall(
   {
     region: REGION,
@@ -107,10 +115,26 @@ export const askGPT = onCall(
     const apiKey = OPENAI_API_KEY.value();
     const openai = new OpenAI({ apiKey: apiKey }); // 안전하게 사용
     console.log("요청:", req.data);
-    const { messages, model = "gpt-4o-mini", temperature = 1.0 } = req.data || {};
-    if (!Array.isArray(messages)) {
-      throw new HttpsError("invalid-argument", "`messages`는 배열이어야 합니다.");
-    }
+    const { messages, type, model = "gpt-4o-mini", temperature = 1.0, uid } = req.data || {};
+    //유효성 검사
+    if (!uid) throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    if (!isAllowedGptModel(model)) throw new HttpsError("invalid-argument", "허용되지 않은 모델입니다.");
+    if (!Array.isArray(messages)) throw new HttpsError("invalid-argument", "`messages`는 배열이어야 합니다.");
+    //사용자 정보 조회
+    const userRef = db.doc(`user/${uid}`);
+    //예상 비용 계산
+    const charged = getGptPrice(model, type);
+    console.log(`User ${uid} - Model: ${model}, Type: ${type}, Charged: ${charged}`);
+    await db.runTransaction(async (tx) => {
+      const userSnap = await tx.get(userRef);
+      if (!userSnap.exists) throw new HttpsError("not-found", "사용자 정보를 찾을 수 없습니다.");
+      const userData = userSnap.data() || {};
+      const userRira = Number(userData.rira || 0);
+      //잔액 부족
+      if (charged > userRira) throw new HttpsError("failed-precondition", "리라 잔액이 부족합니다.");
+      tx.update(userRef, { rira: userRira - charged });
+    });
+    //OpenAI API 호출
     try {
       const completion = await openai.chat.completions.create({
         model,
@@ -118,11 +142,24 @@ export const askGPT = onCall(
         temperature,
       });
       const content = completion.choices?.[0]?.message?.content ?? "";
-      return { content };
+      const usage = completion.usage || "gpt 사용량 정보 없음";
+      const ledgerRef = db.collection("rira_ledger").doc();
+      await db.set(ledgerRef, { uid, model, kind: "charge", type, amount: charged, messages, createdAt: FieldValue.serverTimestamp() });
+      return { content, usage };
     } catch (err) {
       console.error("OpenAI error:", err?.response?.data || err?.message || err);
+      // 전액 환불
+      const userRef = db.doc(`user/${uid}`);
+      await db.runTransaction(async (tx) => {
+        const userSnap = await tx.get(userRef);
+        if (!userSnap.exists) throw new HttpsError("not-found", "사용자 정보를 찾을 수 없습니다.");
+        const currentRira = Number(userSnap.data()?.rira ?? 0);
+        tx.update(userRef, { rira: currentRira + charged });
+        const ledgerRef = db.collection("rira_ledger").doc();
+        tx.set(ledgerRef, { uid, model, kind: "refund", type, amount: charged, reason: "gpt_error", createdAt: FieldValue.serverTimestamp(), });
+      });
       // 클라이언트가 처리하기 쉽게 HttpsError로 변환
-      throw new HttpsError("internal", "문장 생성 중 서버 오류가 발생했습니다.");
+      throw new HttpsError("internal", "문장 생성 중 서버 오류가 발생했습니다., 차감된 리라는 환불 처리됩니다.");
     }
   });
 

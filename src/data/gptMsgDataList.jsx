@@ -980,31 +980,15 @@ const gptMakeExamMsg = (type, question, text, level) => {
     "글의 제목": titleExData(type, question, text, level),
     "일치/불일치": trueFalseExData(type, question, text, level),
     "어법 밑줄": grammarExData,
-    "어휘 밑줄": lexisExData,
+    "어휘 밑줄": lexisExData(text),
     "빈칸 추론": blankExData(type, question, text, level),
-    "무관한 문장": nonRelatedExData,
+    "무관한 문장": nonRelatedExData(text, level),
     "글의 순서": sequenceExData,
     "문장 삽입": insertExData,
     "요약": summaryExData(type, question, text, level),
   };
   const messages = exampleMap[type] ?? "";
-  return [
-    { //1. 대전제
-      role: "system", content: `당신의 역할은 주어진 지문으로 수능 유형의 문제를 출제하는 교사임.
-    [유형],[발문],[지문],[학년],[추가 규칙]의 단서를 제공하겠습니다. 고등학교 수능 모의고사 [유형]의 객관식 오지선다형 선지를 영문으로 작성바람.
-    선지를 제작할때는 [학년]의 수준에 맞는 단어들을 사용해야하며 정답은 반드시 1개만 존재해야함.
-    [추가 규칙]이 있다면 추가 규칙의 내용을 꼭 지켜야 함.
-    또한 정답과 함께 한글 해설도 제공 바람.
-        
-    출력 형식 규칙
-    - 영어 오지선다형 선택지는 영어로 작성.
-    - 영어 오지선다형의 번호는 ①,②,③,④,⑤를 사용.
-    - 정답과 해설지는 한국어로 작성.
-    - 오지선다형 선택지와 해설을 구분하기 위해 구분자 '<br>' 태그를 사용한 string 형식으로 제공 바람.
-    - 오지선다형 선택지들을 구분하기 위해 선택지들 사이에 구분자 '</li>' 태그를 사용.`
-    },
-    ...messages,
-  ];
+  return [...messages];
 }
 //시험문제 리터치
 const gptRetouchPassageMsg = [

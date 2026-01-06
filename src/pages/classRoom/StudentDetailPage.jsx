@@ -166,6 +166,8 @@ const StudentDetailPage = () => {
   const handleTextareaOnChange = (event, index) => {
     changeAccRecord(index, event.target.value);
   }
+
+
   //저장
   const handleSaveOnClick = () => {
     if (window.confirm('학생정보를 이대로 저장하시겠습니까?')) {   //저장 버튼
@@ -173,10 +175,8 @@ const StudentDetailPage = () => {
       accRecord = _actiList.map(item => item.record).join(" "); // 누가기록 업데이트
       const newStudentData = { writtenName: _writtenName, actList: _actiList, accRecord };
       updateStudent(newStudentData, params.id, params.studentId);
-    } else { //취소 클릭
-      bindData();
+      setIsModifying(false)
     }
-    setIsModifying(false)
   }
   //취소
   const handleCancelOnClick = () => {
@@ -233,6 +233,7 @@ const StudentDetailPage = () => {
           {title}
           {repeatTimes && <span style={{ fontWeight: "bold", color: "#3454d1" }}>{repeatTimes}회 반복</span>}
         </GridItem>
+        {/* 생기부 기록 */}
         {!isMobile
           ? <GridItem className="left-align"><span>{record}</span></GridItem>
           : <GridItem className="left-align">
@@ -266,7 +267,9 @@ const StudentDetailPage = () => {
     <Container $isVisible={isVisible}>
       {user.isTeacher && <CenterWrapper><ArrowBtn deg={225} onClick={() => { navigate(`/classrooms/${params.id}`) }} /></CenterWrapper>}
       <FlexWrapper>
-        {(user.isTeacher && !isModifying) && <ArrowWrapper><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
+        {(user.isTeacher && !isModifying) && <ArrowWrapper>
+          <ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} />
+        </ArrowWrapper>}
         <AnimRotation isAnimating={isAnimating}>
           <BackgroundPannel>
             {/* 펫 데이터 */}
@@ -311,7 +314,7 @@ const StudentDetailPage = () => {
                           </GridItem>
                           {/* 3열 */}
                           <GridItem className="left-align">
-                            <StyledTextarea
+                            <Textarea
                               value={_actiList[index].record}
                               onChange={(event) => handleTextareaOnChange(event, index)} />
                           </GridItem>
@@ -495,9 +498,9 @@ const GridItem = styled.div`
     overflow-y: scroll;
   }
 `
-const StyledTextarea = styled.textarea`
+const Textarea = styled.textarea`
   width: 95%;
-  height: 100%;
+  height: 10dvh;
   padding: 5px;
   border-radius: 5px;
 `

@@ -46,3 +46,25 @@ const NumberText = styled(BasicText)`
   text-decoration: underline;
 `
 export default Pagenation
+//페이지네이션 사용 예시
+// const itemsPerPage = 30;
+// const [currentPage, setCurrentPage] = useState(1);
+// const [pageData, setPageData] = useState(_allActiList?.slice(0, itemsPerPage));
+// useEffect(() => {
+//   const start = (currentPage - 1) * itemsPerPage;
+//   const end = currentPage * itemsPerPage;
+//   setPageData(_allActiList?.slice(start, end));
+// }, [currentPage]);
+
+//진입 지점 setPageData(myUserData.onSubmitList.slice(0, itemsPerPage));
+//구현
+// {onSubmitList?.length > itemsPerPage && <PageWrapper>
+//   <Pagenation
+//     totalItems={onSubmitList.length}
+//     currentPage={currentPage}
+//     itemsPerPage={itemsPerPage}
+//     onPageChange={setCurrentPage}
+//   />
+// </PageWrapper>}
+
+
