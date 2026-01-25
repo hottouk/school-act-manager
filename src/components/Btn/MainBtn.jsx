@@ -19,7 +19,7 @@ const StyledBtn = styled.button`
   appearance: none;
   align-self: ${({ $alignSelf }) => $alignSelf};
   backface-visibility: hidden;
-  background-color: ${({ $disabled }) => !$disabled ? "#3454d1" : "#949192"};
+  background-color: ${({ $disabled }) => !$disabled ? "#3454d1a1" : "#949192"};
   border-radius: 10px;
   border-style: none;
   box-shadow: none;
@@ -30,6 +30,7 @@ const StyledBtn = styled.button`
   font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
   font-size: 15px;
   font-weight: 500;
+  width: 100%;
   height: 50px;
   letter-spacing: normal;
   line-height: 1.5;

@@ -1,424 +1,262 @@
 //라이브러리
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Select from 'react-select';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 //섹션
 import PetInfoSection from './PetInfoSection';
 //컴포넌트
+import MainContainer from '../../components/Styled/MainContainer';
 import SubNav from '../../components/Bar/SubNav';
-import SmallBtn from '../../components/Btn/SmallBtn';
-import ArrowBtn from '../../components/Btn/ArrowBtn';
-import TransparentBtn from '../../components/Btn/TransparentBtn';
+import UpperTab from '../../components/UpperTab';
 import ByteCalculator from '../../components/Etc/ByteCalculator';
-import GptModal from '../../components/Modal/gptModal/GptModal';
+import ArrowBtn from '../../components/Btn/ArrowBtn';
 import BackBtn from '../../components/Btn/BackBtn';
+import ClickableIcon from '../../components/Styled/ClickableIcon';
 //hooks
 import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
-import useFetchRtPetDoc from '../../hooks/RealTimeData/useFetchRtPetData';
 import useFirePetData from '../../hooks/Firebase/useFirePetData';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useMediaQuery from '../../hooks/useMediaQuery';
 //이미지
-import x_btn from "../../image/icon/x_btn.png"
 import arrows_icon from "../../image/icon/arrows_icon.png"
 //효과
 import AnimRotation from '../../anim/AnimRotation';
-import AskEditModal from '../../components/Modal/AskEditModal';
-//코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223) -> 수정 요청 기능(251104)
+import ActiTableSection from './ActiTableSection';
+import BehaviorOpinionSection from '../homeroom/BehaviorOpinionSection';
+//코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223) -> 수정 요청 기능(251104) -> 담임반 통합(260120)
 const StudentDetailPage = () => {
-  const params = useParams();
+  //준비
+  const { id: klassId } = useParams();
   const navigate = useNavigate();
-  //객체 접근
-  const selectRef = useRef({});
-  useEffect(() => { setIsVisible(true); }, []);
-  //전역변수(Frozen)
+  const location = useLocation();
+  const { petId, semester, klassType } = location.state;
+  //학급
+  useEffect(() => { petDataListener(klassId, petId); setSemester(semester || null); }, [location.state]);
+  //유저
   const user = useSelector(({ user }) => user);
+  //학생
   const allStudentList = useSelector((state) => state.allStudents);
-  const allActivityList = useSelector((state) => state.allActivities);
-  const { updatePetInfo } = useFirePetData();
+  const { petRtData, petDataListener, updatePetInfo } = useFirePetData();
   const { fetchUserData } = useFireUserData();
-  //실시간 학생 pet 정보
-  const { pet: petData } = useFetchRtPetDoc(params.id, params.studentId);
   useEffect(() => {
     checkUser();
-    setNthStudent(allStudentList.findIndex(({ id }) => { return id === params.studentId })); //전체 학생에서 몇 번째인지 index 찾기
+    setNthStudent(allStudentList.findIndex(({ id }) => { return id === petId })); //전체 학생에서 몇 번째인지 index 찾기
     syncPetInfo();
     fetchPetInfo();
-    bindData();
-  }, [petData]);
+    bindActiData();
+  }, [petRtData]);
+  //탭
+  const [_recordType, setRecordType] = useState(1);
+  const [_semester, setSemester] = useState(1);
+  useEffect(() => changeActiList(recByType[klassType].value), [_semester, _recordType, petRtData,]);
+  const recByType = { subject: { value: _semester, setter: setSemester }, homeroom: { value: _recordType, setter: setRecordType } };
   //편집 모드 
   const [isModifying, setIsModifying] = useState(false);
+  const [isBehavioring, setIsBehavioring] = useState(false);
   const { deleteStudent, updateStudent } = useAddUpdFireData("classRooms");
-  //학생 관련 정보
+  //학생 정보
   const [nthStudent, setNthStudent] = useState(null);
   const [_writtenName, setWrittenName] = useState('미등록');
   const [_actiList, setActiList] = useState(null);
+  const [_behaviorRecord, setBehaviorRecord] = useState('');
   const [isMaster, setIsMaster] = useState(false);
-  //모달
-  const [isGptModal, setIsGptModal] = useState(false);
-  const [selectedActi, setSelectedActi] = useState(null);
-  const [gptRecord, setGptRecord] = useState('');
-  const [isEditModal, setIsEditModal] = useState(false);
-  useEffect(() => { if (selectedActi) { changeAccRecord(selectedActi.index, gptRecord); } }, [gptRecord]); //GPT 개별화 문구 textArea에 띄우고 새 활동 문구로 저장.
   //모바일
   const isMobile = useMediaQuery("(max-width: 768px)");
   //에니메이션
-  const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-
   //------함수부------------------------------------------------  
-  const bindData = () => {
-    if (!petData) return;
-    const { writtenName, actList } = petData;
-    if (writtenName) { setWrittenName(writtenName) }; //이름 or 미등록
-    setActiList([...actList || []]);
+  const bindActiData = () => {
+    if (!petRtData) return;
+    const { behaviorOpinion } = petRtData;
+    const actList = petRtData.actList ?? [];
+    let list;
+    if (klassType === "subject") list = actList.filter((acti) => acti.semester !== 2) ?? [];
+    else list = actList.filter(acti => acti.subjDetail === "자율");
+    setBehaviorRecord(behaviorOpinion || '');
+    setActiList(list);
+  }
+  //탭 전환
+  const changeActiList = (value) => {
+    if (!klassType) return;
+    const { actList } = petRtData || [];
+    setActiList(() => {
+      if (klassType === "subject") {
+        if (value === 2) return actList?.filter((acti) => acti.semester === 2);
+        else return actList?.filter((acti) => acti.semester !== 2)
+      }
+      else if (klassType === "homeroom") {
+        if (value === 1) return actList?.filter((acti) => acti.subjDetail === "자율");
+        else if (value === 2) return actList?.filter((acti) => acti.subjDetail === "진로");
+        else if (value === 3) return [];
+      }
+    });
   }
   //학생 본인 id가 아닐 경우 back
   const checkUser = () => {
-    if (user.isTeacher || !petData) return;
-    const { master } = petData;
+    if (user.isTeacher || !petRtData) return;
+    const { master } = petRtData;
     if (master?.studentId === user.uid) { setIsMaster(true); }
     else { navigate(-1); }
   }
   //펫 동기화(학생)
   const syncPetInfo = () => {
-    if (user.isTeacher || !petData || !user) return;
+    if (user.isTeacher || !petRtData || !user) return;
     const confirm = window.confirm("펫 정보를 동기화 하시겠습니까?")
     if (confirm) {
       const myPetList = user.myPetList;
       if (!myPetList) return;
-      const myPet = myPetList.find((item) => item.petId === params.studentId);
-      updatePetInfo(params.id, params.studentId, myPet); //pet 업데이트
+      const myPet = myPetList.find((item) => item.petId === petId);
+      updatePetInfo(klassId, petId, myPet); //pet 업데이트
     }
   }
   //펫 동기화(교사)
   const fetchPetInfo = () => {
     if (!user.isTeacher) return;
-    const masterId = petData?.master?.studentId;
+    const masterId = petRtData?.master?.studentId;
     if (!masterId) return;
     fetchUserData(masterId).then((info) => {
       const petList = info.myPetList;
       if (!petList) return;
-      const thisPet = petList.find((item) => item.petId === params.studentId);
-      console.log(thisPet);
-      updatePetInfo(params.id, params.studentId, thisPet); //pet 업데이트
+      const thisPet = petList.find((item) => item.petId === petId);
+      updatePetInfo(klassId, petId, thisPet); //pet 업데이트
     })
   }
   //실시간 acc
-  const getAccRec = () => { return _actiList?.reduce((acc, cur) => acc + " " + cur.record, '') }
+  const getAccRec = (list) => list.reduce((acc, cur) => acc + " " + cur.record, '')
   //학생 이동(241202)
   const moveStudent = (student) => {
     if (isAnimating) return;
     setIsAnimating(true);
     setTimeout(() => {
-      navigate(`/classrooms/${params.id}/${student.id}`)
+      navigate(`/classrooms/${klassId}/student`, { state: { semester: _semester, petId: student.id, klassType } })
       setIsAnimating(false);
     }, 500); // 애니메이션 시간과 동일하게 설정
   }
-  //활동 순서 변경(241224)
-  const moveActiItem = (index, direction) => {
-    setActiList((prevActiList) => {
-      const newActiList = [...prevActiList];
-      const targetIndex = direction === 'up' ? index - 1 : index + 1;
-      // 범위를 벗어나면 이동하지 않음
-      if (targetIndex < 0 || targetIndex >= newActiList.length) return prevActiList;
-      // swap
-      [newActiList[index], newActiList[targetIndex]] = [newActiList[targetIndex], newActiList[index]];
-      return newActiList;
-    });
-  };
-  //셀렉터 체크
-  const check = (event) => {
-    if ((_actiList.findIndex(({ id }) => id === event.value.id)) === -1) { return { isValid: true, msg: "같은 활동 없음" } }
-    else { return { isValid: false, msg: "중복된 활동입니다." } };
-  }
-  //활동 셀렉터 변경
-  const handleSelectOnchange = (event, index) => {
-    const result = check(event);
-    if (result.isValid) {
-      const assignedDate = new Date().toISOString().split('T')[0];
-      const selected = event.value;
-      const { byte, studentDoneList, particiList, particiSIdList, likedCount, isPrivate, isHomework, createdTime, ...rest } = selected; //★필요한 prop만 사용하고 제외 및 불변성 보존★ allActivityList는 전역 변수
-      const newActi = { ...rest, assignedDate };
-      const newActiList = [..._actiList.slice(undefined, index), newActi, ..._actiList.slice(index + 1)];
-      setActiList(newActiList);
-    } else { window.alert(result.msg); };
-  }
-  //임의 활동 추가
-  const handleAddActiOnClick = () => {
-    const assignedDate = new Date().toISOString().split('T')[0];
-    const newActiItem = { title: "임의기록", record: '', id: "random" + assignedDate, uid: user.uid, assignedDate, madeBy: user.name }
-    const newList = [..._actiList, newActiItem];
-    setActiList(newList);
-  }
-  //textarea 변경 (gpt, 수기 변경)
-  const changeAccRecord = (index, newRec) => {
-    const curActi = _actiList[index];
-    const newActi = { ...curActi, record: newRec };
-    setActiList(prevActiList => {
-      const newActiList = [...prevActiList.slice(undefined, index), newActi, ...prevActiList.slice(index + 1)]
-      return newActiList;
-    })
-  }
-  //textarea 수기 변경
-  const handleTextareaOnChange = (event, index) => {
-    changeAccRecord(index, event.target.value);
-  }
-
-
   //저장
   const handleSaveOnClick = () => {
-    if (window.confirm('학생정보를 이대로 저장하시겠습니까?')) {   //저장 버튼
-      let accRecord = ""
-      accRecord = _actiList.map(item => item.record).join(" "); // 누가기록 업데이트
-      const newStudentData = { writtenName: _writtenName, actList: _actiList, accRecord };
-      updateStudent(newStudentData, params.id, params.studentId);
-      setIsModifying(false)
+    if (!window.confirm('학생정보를 이대로 저장하시겠습니까?')) return;
+    const list = petRtData.actList ?? [];
+    let rest;
+    let newStudentInfo;
+    if (klassType === "subject") {
+      if (_semester === 2) rest = list.filter(item => item.semester !== 2) ?? [];
+      else rest = list.filter(item => item.semester === 2) ?? [];
+      newStudentInfo = { writtenName: _writtenName, actList: [..._actiList, ...rest] };
+    } else {
+      if (_recordType === 1) rest = list?.filter(item => item.subjDetail !== "자율");
+      else if (_recordType === 2) rest = list.filter(item => item.subjDetail !== "진로");
+      else rest = list;
+      newStudentInfo = { writtenName: _writtenName, actList: [..._actiList, ...rest,], behaviorOpinion: _behaviorRecord };
     }
+    updateStudent(newStudentInfo, klassId, petId);
+    setIsModifying(false);
   }
   //취소
   const handleCancelOnClick = () => {
-    bindData();
+    bindActiData();
     setIsModifying(false);
-  }
-  //활동 삭제
-  const handleDeleteActiOnClick = (index) => {
-    const leftList = _actiList.filter((_, i) => { return i !== index })
-    setActiList(leftList)
   }
   //학생 삭제
   const handleStudentDeleteOnClick = () => {
     if (window.confirm('학생을 삭제하시겠습니까? 삭제한 학생은 복구할 수 없습니다.')) {
-      deleteStudent(params.id, params.studentId) //데이터 통신
-      navigate(-1)
+      deleteStudent(klassId, petId) //데이터 통신
+      navigate(-1);
     }
   }
   //화살표 버튼
   const handleArrowBtnOnClick = (event, index) => {
     switch (event.target.id) {
       case "right_arw_btn":
-        if (nthStudent === allStudentList.length - 1) {
-          window.alert("마지막 학생입니다.")
-          return;
-        }
+        if (nthStudent === allStudentList.length - 1) { alert("마지막 학생입니다."); return; }
         const nextStudent = allStudentList[nthStudent + 1];
-        moveStudent(nextStudent)
+        moveStudent(nextStudent);
         break;
       case "left_arw_btn":
-        if (nthStudent === 0) {
-          window.alert("첫번째 학생입니다.")
-          return;
-        }
+        if (nthStudent === 0) { alert("첫번째 학생입니다."); return; }
         const previousStudent = allStudentList[nthStudent - 1];
-        moveStudent(previousStudent)
+        moveStudent(previousStudent);
+        break;
+      case "up_arw_btn":
+        if (klassType === "subject") navigate(`/classrooms/${klassId}`);
+        else navigate(`/homeroom/${klassId}`);
         break;
       default: return
     }
   }
-  //학생 수정 요청
-  const handleEditRecordOnClick = (item, index) => {
-    if (user.isTeacher) return;
-    setSelectedActi({ item, index });
-    setIsEditModal(true);
-  }
-  //------랜더링------------------------------------------------  
-  const ActiRow = ({ item, index }) => {
-    const { title, record, madeBy, assignedDate, repeatTimes } = item;
-    return (
-      <GridRow>
-        {!isMobile && <GridItem>{index + 1}</GridItem>}
-        <GridItem style={{ flexDirection: "column" }}>
-          {title}
-          {repeatTimes && <span style={{ fontWeight: "bold", color: "#3454d1" }}>{repeatTimes}회 반복</span>}
-        </GridItem>
-        {/* 생기부 기록 */}
-        {!isMobile
-          ? <GridItem className="left-align"><span>{record}</span></GridItem>
-          : <GridItem className="left-align">
-            <span
-              onClick={() => handleEditRecordOnClick(item, index)}
-              style={{ textDecoration: "underline", color: "#3454d1" }}>{record}
-            </span>
-          </GridItem>
-        }
-        {!isMobile && <GridItem>{assignedDate || '없음'}</GridItem>}
-        {!isMobile &&
-          (user.isTeacher
-            ? <GridItem>{madeBy || '익명'}</GridItem>
-            : <GridItem>
-              <SmallBtn onClick={() => handleEditRecordOnClick(item, index)}>수정</SmallBtn>
-            </GridItem>)}
-        {!isMobile && <GridItem><ByteCalculator str={record} styles={{ isTotalByteHide: true }} /></GridItem>}
-      </GridRow>)
-  }
   return (<>
-    <SubNav styles={{ padding: "10px" }}>
-      {user.isTeacher && <Select
-        placeholder="학생 바로 이동"
-        options={allStudentList.map((student) => ({ label: `${student.studentNumber} ${student.writtenName || '미등록'}`, value: student.id }))}
-        onChange={(event) => { moveStudent(allStudentList.find((student) => student.id === event.value)) }}
-        isDisabled={isModifying}
-      />}
-      {!user.isTeacher && <BackBtn />}
-    </SubNav>
-    {/* 컨테이너 */}
-    <Container $isVisible={isVisible}>
-      {user.isTeacher && <CenterWrapper><ArrowBtn deg={225} onClick={() => { navigate(`/classrooms/${params.id}`) }} /></CenterWrapper>}
-      <FlexWrapper>
-        {(user.isTeacher && !isModifying) && <ArrowWrapper>
-          <ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} />
-        </ArrowWrapper>}
-        <AnimRotation isAnimating={isAnimating}>
-          <BackgroundPannel>
-            {/* 펫 데이터 */}
-            {petData && <PetInfoSection pet={petData} writtenName={_writtenName} isModifiying={isModifying} setWrittenName={setWrittenName} />}
-            {(user.isTeacher || isMaster) && <GrayBotPannel>
-              <GridBotContainer>
-                <GridRow>
-                  {!isMobile && <Header>연번</Header>}
-                  <Header>활동</Header>
-                  <Header>생기부</Header>
-                  {!isMobile && <Header>{!isModifying ? "날짜" : "성취도"}</Header>}
-                  {!isMobile &&
-                    (user.isTeacher
-                      ? <Header> {!isModifying ? "기록자" : "변경"}</Header>
-                      : <Header>수정</Header>)
-                  }
-                  {!isMobile && <Header>바이트</Header>}
-                </GridRow>
-                {!_actiList || _actiList.length === 0
-                  ? <GridItem style={{ gridColumn: "1/7" }}>활동이 없어요ㅠㅠ</GridItem>
-                  : _actiList.map((item, index) => {
-                    const { record, perfRecordList, uid, id } = item;
-                    return <React.Fragment key={id || index}>
-                      {/* 열람 */}
-                      {(!isModifying || (isModifying && user.uid !== uid && user.userStatus !== "master")) && <ActiRow item={item} index={index} />}
-                      {/* 수정 */}
-                      {(isModifying && (user.userStatus === "master" || (user.userStatus === "coTeacher" && user.uid === uid))) &&
-                        <GridRow>
-                          {/* 1열 */}
-                          <GridItem>
-                            <div style={{ display: "flex", flexDirection: "column" }}>
-                              <button onClick={() => moveActiItem(index, 'up')}>▲</button>
-                              <button onClick={() => moveActiItem(index, 'down')}>▼</button>
-                            </div>
-                          </GridItem>
-                          {/* 2열 */}
-                          <GridItem>
-                            <Select
-                              ref={(ele) => selectRef.current[index] = ele}
-                              options={allActivityList.map((item) => ({ label: item.title, value: item }))}
-                              onChange={(event) => { handleSelectOnchange(event, index) }} />
-                          </GridItem>
-                          {/* 3열 */}
-                          <GridItem className="left-align">
-                            <Textarea
-                              value={_actiList[index].record}
-                              onChange={(event) => handleTextareaOnChange(event, index)} />
-                          </GridItem>
-                          {/* 4열 */}
-                          <GridItem>{perfRecordList && <SmallBtnWrapper>
-                            <SmallBtn btnName="상" btnOnClick={() => { changeAccRecord(index, perfRecordList[0]) }} />
-                            <SmallBtn btnName="중" btnOnClick={() => { changeAccRecord(index, perfRecordList[1]) }} />
-                            <SmallBtn btnName="하" btnOnClick={() => { changeAccRecord(index, perfRecordList[2]) }} />
-                            <SmallBtn btnName="최하" btnOnClick={() => { changeAccRecord(index, perfRecordList[3]) }} />
-                          </SmallBtnWrapper>}</GridItem>
-                          {/* 5열 */}
-                          <GridItem><SmallBtnWrapper className="gpt">
-                            <SmallBtn btnColor="#3454d1" btnName="GPT" btnOnClick={() => { //gpt 버튼
-                              setSelectedActi({ item, index });
-                              setIsGptModal(true);
-                            }}></SmallBtn>
-                            <img src={x_btn} id="delete_acti_btn" alt="삭제x" onClick={(event) => handleDeleteActiOnClick(index)} />
-                          </SmallBtnWrapper>
-                          </GridItem>
-                          {/* 6열 */}
-                          <GridItem><ByteCalculator str={record} styles={{ isTotalByteHide: true }} /></GridItem>
-                        </GridRow>}
-                    </React.Fragment>
-                  })}
-                {isModifying && <GridRow>
-                  <GridItem style={{ gridColumn: "1/7", gap: "20px" }} >
-                    <SmallBtn onClick={handleAddActiOnClick}>추가</SmallBtn>
-                  </GridItem>
-                </GridRow>}
-              </GridBotContainer>
-              {(_actiList && _actiList.length !== 0) && <>
-                <CenterWrapper><img src={arrows_icon} alt="아래화살표" /></CenterWrapper>
-                <StyledAcc>{getAccRec()}</StyledAcc ></>}
-            </GrayBotPannel>}
-          </BackgroundPannel>
-          <Row style={{ justifyContent: "flex-end", zIndex: "999", position: "relative" }}>
-            <StyledBotBackground>
-              <ByteCalculator str={getAccRec()} styles={{ justifyContent: "center", fontSize: "22px", fontColor: "white", width: "81px" }}></ByteCalculator>
-            </StyledBotBackground>
-          </Row>
-        </AnimRotation>
-        {(user.isTeacher && !isModifying) && <ArrowWrapper><ArrowBtn id="right_arw_btn" onClick={handleArrowBtnOnClick} /></ArrowWrapper>}
-      </FlexWrapper>
+    <MainContainer>
+      <SubNav styles={{ padding: "10px" }}>
+        {user.isTeacher && <Select
+          placeholder="학생 바로 이동"
+          options={allStudentList.map((student) => ({ label: `${student.studentNumber} ${student.writtenName || '미등록'}`, value: student.id }))}
+          onChange={(event) => { moveStudent(allStudentList.find((student) => student.id === event.value)) }}
+          isDisabled={isModifying} />}
+        {!user.isTeacher && <BackBtn />}
+      </SubNav>
+      <Row style={{ justifyContent: "center" }}><ArrowBtn id="up_arw_btn" deg={225} onClick={handleArrowBtnOnClick} /></Row>
+      <AnimRotation isAnimating={isAnimating}>
+        <PannelContainer>
+          {/* 화살표 */}
+          {(user.isTeacher && !isModifying && !isBehavioring) && <>
+            <ArrowWrapper style={{ top: "50%", left: "-5%" }}><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>
+            <ArrowWrapper style={{ top: "50%", right: "-5%" }}><ArrowBtn id="right_arw_btn" onClick={handleArrowBtnOnClick} /></ArrowWrapper>
+          </>}
+          {/* 펫 데이터 */}
+          {petRtData && <PetInfoSection pet={petRtData} writtenName={_writtenName} isModifiying={isModifying} setWrittenName={setWrittenName} />}
+          {(user.isTeacher || isMaster) && <GrayBotPannel>
+            {(!isModifying && !isBehavioring) && <Row style={{ justifyContent: "flex-end" }}>
+              <ClickableIcon className='fa-solid fa-edit' onClick={() => setIsModifying(!isModifying)}></ClickableIcon>
+              <ClickableIcon className='fa-solid fa-trash' onClick={handleStudentDeleteOnClick}></ClickableIcon>
+            </Row>}
+            {(isModifying && !isBehavioring) && <Row style={{ justifyContent: "flex-end" }}>
+              <ClickableIcon className='fa-solid fa-check' onClick={handleSaveOnClick}></ClickableIcon>
+              <ClickableIcon className='fa-solid fa-x' onClick={handleCancelOnClick} ></ClickableIcon>
+            </Row>}
+            {/* 탭 */}
+            {!isBehavioring && <Row style={{ position: "absolute", top: "27px", left: "28px" }}>
+              <UpperTab className={"tab1"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(1)} disabled={isModifying}>{klassType === "subject" ? "1학기" : "자율"}</UpperTab>
+              <UpperTab className={"tab2"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(2)} disabled={isModifying}>{klassType === "subject" ? "2학기" : "진로"}</UpperTab>
+              {klassType === "homeroom" && <UpperTab className={"tab3"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(3)} disabled={isModifying}>행발</UpperTab>}
+            </Row>}
+            {/* 테이블 todo tabVlue 지우고 hadling 손보기*/}
+            {_recordType !== 3 && <><ActiTableSection actiList={_actiList} setActiList={setActiList} type={klassType}
+              tabValue={recByType[klassType].value}
+              getAccRec={getAccRec} petRtData={petRtData}
+              isModifying={isModifying} isMobile={isMobile} />
+              <Row style={{ justifyContent: "center" }}><img src={arrows_icon} alt="아래화살표" /></Row>
+              <AccWrapper>{_actiList?.length > 0 ? getAccRec(_actiList) : "기록 없음"}</AccWrapper>
+            </>}
+            {_recordType === 3 && <BehaviorOpinionSection isModifying={isModifying} setIsBehavioring={setIsBehavioring} behaviorRec={_behaviorRecord} setBehaviorRec={setBehaviorRecord} />}
+          </GrayBotPannel>}
+          {_actiList?.length > 0 && <ByteWrapper>
+            <ByteCalculator str={getAccRec(_actiList)} styles={{ justifyContent: "center", fontSize: "22px", fontColor: "white", width: "81px" }}></ByteCalculator>
+          </ByteWrapper>}
+        </PannelContainer>
+      </AnimRotation>
       {/* 교사전용 */}
-      {(user.isTeacher && !isMobile) && <BtnWrapper>
-        {!isModifying && <>
-          <TransparentBtn onClick={() => { setIsModifying(!isModifying) }} styles={{ width: "200px" }}>수정</TransparentBtn>
-          <TransparentBtn onClick={handleStudentDeleteOnClick} styles={{ width: "200px" }}>삭제</TransparentBtn></>}
-        {isModifying && <>
-          <TransparentBtn onClick={handleSaveOnClick} styles={{ width: "200px" }}>저장</TransparentBtn>
-          <TransparentBtn onClick={handleCancelOnClick} styles={{ width: "200px" }}>취소</TransparentBtn>
-        </>}
-      </BtnWrapper>}
-    </Container >
-    {/* 모달 */}
-    {isGptModal && <GptModal
-      show={isGptModal}
-      onHide={() => setIsGptModal(false)}
-      acti={selectedActi?.item}
-      setPersonalRecord={setGptRecord} />}
-    {isEditModal && <AskEditModal
-      show={isEditModal}
-      onHide={() => setIsEditModal(false)}
-      acti={selectedActi?.item}
-      accRecord={getAccRec()}
-      petInfo={petData}
-    />}
-  </>
-  )
+    </MainContainer>
+  </>)
 }
-const Container = styled.div`
-  opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
-  transition: opacity 0.7s ease;
-  box-sizing: border-box;
-  width: 85%;
-  margin: 0 auto;
-  margin-bottom: 50px;
-  @media screen and (max-width: 767px){
-    width: 100%;
-    height: 120%;
-  }
-`
 const Row = styled.div`
   display: flex;
 `
-const CenterWrapper = styled(Row)`
-  justify-content: center;
-`
-const FlexWrapper = styled(Row)`
-  position: relative;
-  margin-bottom: ${(props) => props.$marginBottom || "0"};
-  gap: 10px;
-  justify-content: center;
+const Column = styled(Row)`
+  flex-direction: column;
 `
 const ArrowWrapper = styled(Row)`
+  position: absolute;
   align-items: center;
 `
-const BackgroundPannel = styled.div`
+const PannelContainer = styled.div`
+  position: relative;
+  width: 80%;
   padding: 15px;
-  margin: 15px auto 0;
+  margin: 15px auto 40px;
   margin-top: 35px;
-  color: black;
-  background-color: #3454d1;
-  border-radius: 15px;
+  background-color: #3454d1b1;
+  border-radius: 10px;
   border-bottom-right-radius: 0;
   perspective: 1000px; /* 3D 효과를 위한 원근법 */
   @media screen and (max-width: 767px){
@@ -442,88 +280,22 @@ const GrayBotPannel = styled.div`
     flex-direction: column;
   }
 `
-const GridBotContainer = styled.div`
-  margin: 10px auto;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  display: grid;
-  grid-template-columns: 52px 130px 9fr 1fr 1fr 1fr;
-  @media screen and (max-width: 767px){
-    grid-template-columns: 1fr 5fr;
-  }
-`
-const StyledAcc = styled.div`
+const AccWrapper = styled.div`
   margin: 10px auto;
   border: 1px solid #ddd;
   border-radius: 10px;
   padding: 5px;
 `
-const GridRow = styled.div`
-  display: contents;
-`
-const Header = styled.div`
-  height: 40px;
-  display: flex;
-  background-color: #3454d1; 
-  color: white;
-  padding: 10px;
-  font-weight: bold;
-  justify-content: center;
-  &: first-child {
-    border-top-left-radius: 5px;
-  }
-  &: last-child {
-    border-top-right-radius: 5px;
-  }
-`
-const GridItem = styled.div`
-  display: flex;
-  background-color: #efefef;
-  padding: 10px;
-  color: black;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-  img {
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    margin: auto;
-  }
-  &.left-align { 
-    text-align: left;
-    justify-content: flex-start;
-    overflow-y: scroll;
-  }
-`
-const Textarea = styled.textarea`
-  width: 95%;
-  height: 10dvh;
-  padding: 5px;
-  border-radius: 5px;
-`
-const SmallBtnWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin: 2px;
-  &.gpt { gap: 12px; }
-`
-const StyledBotBackground = styled.div`
-  background-color: #3454d1;
-  height: 50px;
-  border-top-right-radius: 0;
+const ByteWrapper = styled.div`
+  height: 50px;  
+  position: absolute;
+  right: 0;
+  bottom: -60px;
+  background-color: #3454d1b1;
+    border-top-right-radius: 0;
   border-top-left-radius: 0;
   border-bottom-right-radius: 30px;
   border-bottom-left-radius: 30px;
-  margin-bottom: 20px;
   padding: 10px 15px 50px 10px;
-`
-const BtnWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: 12px 34px;
 `
 export default StudentDetailPage

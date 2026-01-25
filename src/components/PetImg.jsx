@@ -7,7 +7,6 @@ import useFetchStorageImg from "../hooks/Game/useFetchStorageImg"
 import { monsterWaterList, monsterGrassList, monsterFireList, monsterNormalList } from "../data/monsterList"
 //이미지
 import questionMark from "../image/icon/question.png"
-
 //250212 수정
 const PetImg = ({ subject = null, step, onClick = () => { }, path, styles }) => {
   const width = styles?.width || "134px";

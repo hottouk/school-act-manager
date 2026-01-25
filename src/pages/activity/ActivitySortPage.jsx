@@ -1,17 +1,16 @@
 import React from 'react'
+import styled from 'styled-components'
 //컴포넌트
 import CardSortForm from '../../components/Form/CardSortForm'
-import MainBtn from '../../components/Btn/MainBtn'
+import SubNav from '../../components/Bar/SubNav'
+import BackBtn from '../../components/Btn/BackBtn'
 //hooks
 import { useNavigate } from 'react-router-dom'
 import useClientHeight from '../../hooks/useClientHeight'
-//css
-import styled from 'styled-components'
 
-//2024.08.08(생성)
+//생성(240808)
 const ActivitySortPage = () => {
   const navigate = useNavigate()
-  //2. 세로 길이
   const clientHeight = useClientHeight(document.documentElement)
   const handleCardBtnClick = (event) => {
     switch (event.target.id) {
@@ -37,19 +36,33 @@ const ActivitySortPage = () => {
 
   return (
     <Container $clientheight={clientHeight}>
-      {/* 카드 랜더링 */}
-      <CardSortForm itemList={actiSortList} handleCardBtnClick={handleCardBtnClick} />
-      <BtnWrapper>
-        <Row><MainBtn onClick={() => { navigate(-1) }}>뒤로가기</MainBtn></Row>
-      </BtnWrapper>
+      <SubNav><BackBtn /></SubNav>
+      <CardWrapper>
+        <CardSortForm itemList={actiSortList} handleCardBtnClick={handleCardBtnClick} />
+      </CardWrapper>
     </Container>
   )
 }
 export default ActivitySortPage
 
-const Container = styled.div`
+const Row = styled.div`
+  display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
+`
+const CardWrapper = styled(Row)`
+  width: 80%;
+  height: 40dvh;
+  margin: 20px auto;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: space-around;
+`
+const Container = styled(Column)`
   box-sizing: border-box;
-  margin-top: 110px;
+  min-height: 100dvh;
+  background-color: #efefef;
   @media screen and (max-width: 767px){
     position: fixed;
     width: 100%;
@@ -59,11 +72,4 @@ const Container = styled.div`
     padding-bottom: 20px;
     overflow-y: scroll;
   }
-`
-const Row = styled.div`
-  display: flex;
-  justify-content: center;
-`
-const BtnWrapper = styled.div`
-  margin-top: 5%;
 `

@@ -1,9 +1,9 @@
 import styled from 'styled-components'
 
-const AnimOpacity = ({ isVisible, content }) => {
+const AnimOpacity = ({ isVisible, content, children }) => {
   return (
     <AnimationWrapper $isVisible={isVisible} >
-      {isVisible && content}
+      {isVisible && (content || children)}
     </AnimationWrapper>
   )
 }

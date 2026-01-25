@@ -11,19 +11,19 @@ import AnimMaxHightOpacity from '../../../anim/AnimMaxHightOpacity';
 import ByteCalculator from '../../Etc/ByteCalculator';
 import MidBtn from '../../Btn/MidBtn';
 import ModalBtn from '../../Btn/ModalBtn';
+import ChargeRiraModal from '../ChargeRiraModal';
 //hooks
 import useChatGpt from '../../../hooks/useChatGpt';
 import useFireStorage from '../../../hooks/useFireStorage';
 //data
-import { academicAbility, subjectCareerAbility, subjectCoopAbility } from '../../../data/AbilityList';
+import { academicAbility, subjectCareerAbility, subjectCoopAbility } from '../../../data/abilityList';
 //img
 import plusIcon from '../../../image/icon/plus.png'
 import arrowsIcon from '../../../image/icon/arrows_icon.png'
-
-//수정(240904) => 보고서탭(241203) => OCR(250327)
+//수정(240904) => 보고서탭(241203) => OCR(250327) -> 과금(260112)
 const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const { uploadFile, findFile } = useFireStorage();
-  const { askGptPersonalize, askPersonalizeOnReport, askPersonalizeOnTyping, gptAnswer, gptRes } = useChatGpt();
+  const { askGptPersonalize, askPersonalizeOnReport, gptAnswer, gptRes } = useChatGpt();
   //역량
   const [acadList, setAcadList] = useState([])      //학업
   const [careerList, setCareerList] = useState([])  //진로
@@ -32,16 +32,24 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
     sortAbilityList(academicAbility, "academic")
     sortAbilityList(subjectCareerAbility, "career")
     sortAbilityList(subjectCoopAbility, "coop")
-  }, [academicAbility, subjectCareerAbility, subjectCoopAbility])
-  const [inputValues, setInputValues] = useState(null);
+  }, [academicAbility, subjectCareerAbility, subjectCoopAbility]);
+  const [inputValues, setInputValues] = useState({});
   //탭 
-  const [tab, setTab] = useState(1)
+  const [tab, setTab] = useState(1);
+  const gptPromptByTapMap = {
+    1: (model) => {
+      const resultArray = convertObjectToArray(inputValues);
+      askGptPersonalize(acti, resultArray, model);
+    },
+    2: (model) => askPersonalizeOnReport(acti?.record, report, model),
+    3: (model) => askPersonalizeOnReport(acti?.record, extracted, model),
+  }
   //숨기기 토글
   const [isAcadShown, setIsAcadShown] = useState(false)
   const [isCareerShown, setIsCareerShown] = useState(false)
   const [isCoopShown, setIsCoopShown] = useState(false)
   //자기 보고서
-  const [report, setReport] = useState("");
+  const [report, setReport] = useState('');
   //텍스트 추출
   const [file, setFile] = useState(null);
   useEffect(() => {
@@ -54,6 +62,8 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const [ocrStage, setOcrStage] = useState(0);
   const [loadingStage, setLoadingStage] = useState(null);
   const inputFileRef = useRef(null);
+  //추가 모달
+  const [isInnerModal, setIsInnerModal] = useState(false);
   //------함수부------------------------------------------------  
   //능력 분류
   const sortAbilityList = (list, type) => {
@@ -78,47 +88,42 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   }
   //placeholder text
   const getPlaceholderText = () => {
-    if (tab === 1) { return "모든 역량을 다 눌러쓰시기보다 2~3개만 채우시는게 바람직합니다...from gpt" }
+    if (tab === 1) { return "2~3개만 채우시는게 바람직합니다" }
     else if (tab === 2) { return "학생 보고서를 복사, 붙여넣기 하세요." }
     else { return "pdf 또는 jpg 파일만 가능합니다." }
   }
-
   //input 변경
   const handleInputChange = (event, type) => {
     if (type === "input") {
-      let { id, value } = event.target;
-      setInputValues({ ...inputValues, [id]: value });
+      const { id, value } = event.target;
+      setInputValues(prev => {
+        if (value === '') {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        }
+        return { ...prev, [id]: value };
+      });
     } else {
-      let { id, value } = event
-      setInputValues({ ...inputValues, [id]: value });
+      const { id, name, value } = event;
+      const key = id || name;
+      setInputValues(prev => ({ ...prev, [key]: value }));
     }
   };
-  //제출
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    //탭1: 특성 기반 개별화
+  //유효성 검사
+  const check = () => {
+    let result = true;
     if (tab === 1) {
-      const resultArray = convertObjectToArray(inputValues)
-      askGptPersonalize(acti, resultArray)
+      if (!inputValues || Object.keys(inputValues).length === 0) { alert("특성을 선택하거나 작성하세요."); result = false; }
     }
-    //탭2: 보고서 기반 개별화
-    else if (tab === 2) {
-      const check = report !== ""
-      if (check) {
-        askPersonalizeOnReport(acti?.record, report)
-      } else {
-        window.alert("학생 활동 보고서를 입력해주세요.")
-      }
-    }
-    //탭3: 추출 text 기반 개별화
-    else if (tab === 3) {
-      const check = extracted !== ""
-      if (check) {
-        askPersonalizeOnTyping(acti?.record, extracted)
-      } else {
-        window.alert("추출된 text가 없습니다.")
-      }
-    }
+    else if (tab === 2) if (report === '') { alert("학생 활동 보고서를 입력해주세요."); result = false; }
+    else if (tab === 3) if (extracted === '') { alert("추출된 text가 없습니다."); result = false; }
+    return result;
+  };
+  //gpt
+  const handleGptOnClick = () => {
+    if (!check()) return;
+    setIsInnerModal(true);
   };
   //inputValues중 값이 있는 항목만 배열로 변경
   const convertObjectToArray = (obj) => {
@@ -238,117 +243,119 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
     onHide();
   }
 
-  return (
-    <Modal size="lg"
-      show={show}
-      onHide={onHide}
-      backdrop="static"
-    >
-      <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>GPT 개별화</Modal.Header>
-      <Modal.Body style={{ backgroundColor: "#efefef" }}>
-        {(gptRes === "loading")
-          ? <div className="text-center">
-            <Spinner animation="border" role="status"><span className="sr-only">Loading...</span></Spinner>
-          </div>
-          : <StyledForm onSubmit={handleSubmit}>
-            <StyledText>{acti?.record}</StyledText>
-            <StyledImg src={plusIcon} alt="plus_icon" />
-            <DotTitleWrapper>
-              <StyledTab $tab={tab} onClick={() => { setTab(1) }}>특성</StyledTab>
-              <StyledTab className="tab2" $tab={tab} onClick={() => { setTab(2) }}>보고서</StyledTab>
-              <StyledTab className="tab3" $tab={tab} onClick={() => { setTab(3) }}>OCR</StyledTab>
-              {tab === 1 && <>
-                <StyledSpan>학생의 특성을 간단히 적어주세요</StyledSpan>
-                <DotTitle title={"학업 역량 ▼"} onClick={() => { setIsAcadShown((prev) => !prev) }} pointer="pointer"
-                  styles={{ dotColor: "#3454d1", width: "50%", marginBot: "0" }} />
-                <AnimMaxHightOpacity isVisible={isAcadShown}
-                  content={<RowWrapper>
-                    {acadList?.map((obj) => { return <GptPersonalRow key={obj.prop} itemObj={obj} onInputChange={handleInputChange} /> })}
-                  </RowWrapper>
-                  } />
-                <DotTitle title={"진로 역량 ▼"} onClick={() => { setIsCareerShown((prev) => !prev) }} pointer="pointer"
-                  styles={{ dotColor: "#3454d1", width: "50%", marginBot: "0" }} />
-                <AnimMaxHightOpacity isVisible={isCareerShown}
-                  content={<RowWrapper>
-                    {careerList?.map((obj) => { return <GptPersonalRow key={obj.prop} itemObj={obj} onInputChange={handleInputChange} /> })}
-                  </RowWrapper>
-                  } />
-                <DotTitle title={"공동체 역량 ▼"} onClick={() => { setIsCoopShown((prev) => !prev) }} pointer="pointer"
-                  styles={{ dotColor: "#3454d1", width: "50%", marginBot: "0" }} />
-                <AnimMaxHightOpacity isVisible={isCoopShown}
-                  content={<RowWrapper>
-                    {coopList?.map((obj) => { return <GptPersonalRow key={obj.prop} itemObj={obj} onInputChange={handleInputChange} /> })}
-                  </RowWrapper>
-                  } />
-                <Row style={{ marginTop: "10px" }}><MidBtn type="submit">Chat GPT </MidBtn></Row>
-
-              </>}
-              {tab === 2 && <>
-                <StyledSpan>위 활동에 참여한 학생이 작성한 보고서 또는 소감문을 넣어주세요.</StyledSpan>
-                <textarea
-                  value={report}
-                  placeholder="복사/붙여넣기 하시면 됩니다."
-                  onChange={(e) => { setReport(e.target.value) }} />
-                <Row style={{ marginTop: "10px" }}><MidBtn type="submit">Chat GPT </MidBtn></Row>
-              </>}
-              {tab === 3 && <>
-                <StyledSpan>pdf 또는 jpg 파일만 text 추출 가능합니다.</StyledSpan>
-                {loadingStage && <Row style={{ justifyContent: "center" }}><Spinner />{loadingStage}</Row>}
-                {loadingStage === "downloading" && <Row style={{ justifyContent: "center" }}><p>⏳ 다운로드중...</p></Row>}
-                {!loadingStage && <>
-                  {(file && !filePath) && <StyledText style={{ borderColor: "rgba(120,120,120,0.5)" }}>파일명: {file.name}</StyledText>}
-                  {(file && filePath) && <StyledText style={{ borderColor: "rgba(120,120,120,0.5)" }}>파일 경로: {filePath}</StyledText>}
-                  <input type="file" ref={inputFileRef} onChange={handleFileOnChange} accept="application/pdf,image/jpeg" style={{ display: 'none' }} />
-                  <Row style={{ gap: "15px" }}>
-                    <MidBtn type="button" onClick={handleFileOnClick}>📁 파일 선택</MidBtn>
-                    {(file && ocrStage === 0) && <MidBtn type="button" onClick={handleUploadOnClick}>업로드</MidBtn>}
-                    {ocrStage === 1 && <Row><MidBtn type="button" onClick={postExtractText}>추출</MidBtn></Row>}
-                    {ocrStage === 2 && <Row style={{ gap: "5px" }}><MidBtn type="button" onClick={handleGetOcrResults}>다운로드</MidBtn></Row>}
-                  </Row>
-                  {(ocrStage === 3 && extracted) && <textarea value={extracted} onChange={(e) => { setExtracted(e.target.value) }} style={{ marginTop: "10px" }} />}
-                  {extracted && <Row style={{ marginTop: "10px" }}><MidBtn type="submit">Chat GPT </MidBtn></Row>}
-                </>}
-              </>}
-            </DotTitleWrapper>
-            <StyledImg src={arrowsIcon} alt="arrows_icon" />
-            <textarea
-              defaultValue={gptAnswer || ''}
-              placeholder={getPlaceholderText()}
-              disabled
-            >
-            </textarea>
-            <Row style={{ margin: "10px 0", justifyContent: "flex-end" }}><ByteCalculator str={gptAnswer} styles={{ isTotalByteHide: true }} /></Row>
-          </StyledForm>
-        }
-      </Modal.Body >
-      <Modal.Footer style={{ backgroundColor: "#efefef" }}>
-        <ModalBtn onClick={() => { onHide() }}>취소</ModalBtn>
-        <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirmOnClick}>확인</ModalBtn>
-      </Modal.Footer>
-    </Modal >)
+  return <Modal size="lg"
+    show={show}
+    onHide={onHide}
+    backdrop={'static'}
+  >
+    <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>GPT 개별화</Modal.Header>
+    <Modal.Body style={{ backgroundColor: "#efefef" }}>
+      {<Column style={{ gap: "10px" }}>
+        <DotTitle>현재 문구</DotTitle>
+        <WhiteWrapper>{acti?.record}</WhiteWrapper>
+        <StyledImg src={plusIcon} alt="plus_icon" />
+        <TabWrapper>
+          <UpperTab $tab={tab} onClick={() => { setTab(1) }}>특성</UpperTab>
+          <UpperTab className="tab2" $tab={tab} onClick={() => { setTab(2) }}>보고서</UpperTab>
+          <UpperTab className="tab3" $tab={tab} onClick={() => { setTab(3) }}>OCR</UpperTab>
+          {tab === 1 && <Column style={{ gap: "5px" }}>
+            <DotTitle title={"학업 역량 ▼"} onClick={() => { setIsAcadShown((prev) => !prev) }} pointer="pointer"
+              styles={{ dotColor: "#3454d1", width: "50%", marginBot: "0" }} />
+            <AnimMaxHightOpacity isVisible={isAcadShown}
+              content={<RowWrapper>
+                {acadList?.map((obj) => { return <GptPersonalRow key={obj.prop} itemObj={obj} onInputChange={handleInputChange} /> })}
+              </RowWrapper>
+              } />
+            <DotTitle title={"진로 역량 ▼"} onClick={() => { setIsCareerShown((prev) => !prev) }} pointer="pointer"
+              styles={{ dotColor: "#3454d1", width: "50%", marginBot: "0" }} />
+            <AnimMaxHightOpacity isVisible={isCareerShown}
+              content={<RowWrapper>
+                {careerList?.map((obj) => { return <GptPersonalRow key={obj.prop} itemObj={obj} onInputChange={handleInputChange} /> })}
+              </RowWrapper>
+              } />
+            <DotTitle title={"공동체 역량 ▼"} onClick={() => { setIsCoopShown((prev) => !prev) }} pointer="pointer"
+              styles={{ dotColor: "#3454d1", width: "50%", marginBot: "0" }} />
+            <AnimMaxHightOpacity isVisible={isCoopShown}
+              content={<RowWrapper>
+                {coopList?.map((obj) => { return <GptPersonalRow key={obj.prop} itemObj={obj} onInputChange={handleInputChange} /> })}
+              </RowWrapper>
+              } />
+            <Row style={{ marginTop: "10px", justifyContent: "center" }}>
+              <MidBtn onClick={handleGptOnClick}>Chat GPT</MidBtn>
+            </Row>
+          </Column>}
+          {tab === 2 && <>
+            <Textarea
+              value={report}
+              placeholder="학생 보고서"
+              onChange={(event) => setReport(event.target.value)}
+            />
+            <Row style={{ marginTop: "10px", justifyContent: "center" }}>
+              {gptRes !== "loading" && <MidBtn onClick={handleGptOnClick}>Chat GPT</MidBtn>}
+              {gptRes === "loading" && <Spinner />}
+            </Row>
+          </>}
+          {tab === 3 && <>
+            <TextSpan>pdf 또는 jpg 파일만 text 추출 가능합니다.</TextSpan>
+            {loadingStage && <Row style={{ justifyContent: "center" }}><Spinner />{loadingStage}</Row>}
+            {loadingStage === "downloading" && <Row style={{ justifyContent: "center" }}><p>⏳ 다운로드중...</p></Row>}
+            {!loadingStage && <Column>
+              {(file && !filePath) && <BasicText style={{ borderColor: "rgba(120,120,120,0.5)" }}>파일명: {file.name}</BasicText>}
+              {(file && filePath) && <BasicText style={{ borderColor: "rgba(120,120,120,0.5)" }}>파일 경로: {filePath}</BasicText>}
+              <input type="file" ref={inputFileRef} onChange={handleFileOnChange} accept="application/pdf,image/jpeg" style={{ display: 'none' }} />
+              <Row style={{ gap: "15px", justifyContent: "center" }}>
+                <MidBtn type="button" onClick={handleFileOnClick}>📁 파일 선택</MidBtn>
+                {(file && ocrStage === 0) && <MidBtn type="button" onClick={handleUploadOnClick}>업로드</MidBtn>}
+                {ocrStage === 1 && <Row><MidBtn type="button" onClick={postExtractText}>추출</MidBtn></Row>}
+                {ocrStage === 2 && <Row style={{ gap: "5px" }}><MidBtn type="button" onClick={handleGetOcrResults}>다운로드</MidBtn></Row>}
+              </Row>
+              <Column style={{ gap: "10px" }}>
+                {(ocrStage === 3 && extracted) && <Textarea value={extracted} onChange={(e) => { setExtracted(e.target.value) }} style={{ marginTop: "10px" }} />}
+                {extracted && <Row style={{ alignSelf: "center" }}><MidBtn onClick={handleGptOnClick}>Chat GPT</MidBtn></Row>}
+              </Column>
+            </Column>}
+          </>}
+        </TabWrapper>
+        <StyledImg src={arrowsIcon} alt="arrows_icon" />
+        <Textarea
+          defaultValue={gptAnswer || ''}
+          placeholder={getPlaceholderText()}
+          disabled />
+        <Row style={{ margin: "10px 0", justifyContent: "flex-end" }}><ByteCalculator str={gptAnswer} styles={{ isTotalByteHide: true }} /></Row>
+      </Column>
+      }
+      {/* 추가 모달 */}
+      {isInnerModal && <InnerLayer>
+        <InnerOverlay onClick={() => setIsInnerModal(false)} />
+        <ChargeRiraModal
+          show={isInnerModal}
+          onHide={() => setIsInnerModal(false)}
+          onApprove={gptPromptByTapMap[tab]}
+        />
+      </InnerLayer>}
+    </Modal.Body >
+    <Modal.Footer style={{ backgroundColor: "#efefef" }}>
+      <ModalBtn onClick={() => { onHide() }}>취소</ModalBtn>
+      <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirmOnClick}>확인</ModalBtn>
+    </Modal.Footer>
+  </Modal >
 }
 
-const StyledForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  margin-top: 10px;
-  padding: 10px;
-  textarea {
-    border: 1px solid rgba(120, 120, 120, 0.5);
-    border-radius: 10px;
-    padding: 5px;
-    height: 100px;
-  }
-  p.byte { 
-    widht: 80px;
-    align-self: flex-end;
-  }
-`
 const Row = styled.div`
   display: flex;
-  justify-content: center;
 `
-const StyledText = styled.p`
+const Column = styled(Row)`
+  flex-direction: column;
+`
+const WhiteWrapper = styled(Column)`
+  background-color: white;  
+  margin-top: 10px;
+  padding: 10px;
+  gap: 10px;
+  border-radius: 5px;
+  white-space: pre-wrap;
+`
+const BasicText = styled.p`
   width: 100%;
   border: 1px solid black;
   border-radius: 10px;
@@ -358,20 +365,19 @@ const StyledImg = styled.img`
   width: 27px;
   margin: 10px auto;
 `
-const StyledSpan = styled.span`
+const TextSpan = styled.span`
   margin: 7px;
 `
-const DotTitleWrapper = styled.div`
+const TabWrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 1px solid #919294;
+  background-color: white;
   border-radius: 10px;
   padding: 13px;
-  margin: 15px 0;
   gap: 5px;
 `
-const StyledTab = styled.p`
+const UpperTab = styled.p`
   position: absolute;
   top: -35px;
   border-top-right-radius: 16px;
@@ -397,4 +403,24 @@ const RowWrapper = styled.ul`
   margin-top: 5px;
   margin-bottom: 5px;
 `
+const Textarea = styled.textarea`
+  height: 10dvh;
+  padding: 5px;
+  border-radius: 5px;
+`
+// 내부모달
+const InnerLayer = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 1056; /* 부모 모달(보통 1055)보다 크게 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+const InnerOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+`;
+
 export default GptModal

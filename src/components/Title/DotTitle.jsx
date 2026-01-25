@@ -2,9 +2,10 @@ import styled from 'styled-components'
 
 const DotTitle = ({ title, children, pointer, onClick, styles }) => {
   //기본값
-  const dotColor = styles?.dotColor || "#3454d1";
+  const dotColor = styles?.dotColor || "#3454d1a1";
   const width = styles?.width;
-  let fontWeight = styles?.fontWeight || "bold"
+  const fontWeight = styles?.fontWeight || "bold"
+  const decoration = styles?.decoration || null;
   // 샘플1 <DotTitle title={"수행 문구 ▼"} onClick={() => { setIsPerfRecShown((prev) => !prev) }} pointer="pointer" />
   // 샘플2
   // <DotTitle title={"학업 역량 ▼"} onClick={() => { setIsAcadShown((prev) => !prev) }} pointer="pointer"
@@ -15,7 +16,8 @@ const DotTitle = ({ title, children, pointer, onClick, styles }) => {
       $width={width}
       $fontWeight={fontWeight}
       $pointer={pointer}
-      $dotColor={dotColor || "white"}
+      $dotColor={dotColor}
+      $deco={decoration}
     > {title || children || "샘플"}</StyledTitle >
   )
 }
@@ -29,6 +31,7 @@ const StyledTitle = styled.p`
   padding: 0 20px;  /* 텍스트가 동그라미와 겹치지 않도록 왼쪽 여백 추가 */
   margin: 0;
   cursor: ${(props) => props.$pointer};
+  text-decoration:  ${({ $deco }) => $deco};
   &::before {
     content: '';
     position: absolute;

@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import EmptyResult from '../../components/EmptyResult'
 import QuizMonListItem from '../../components/List/ListItem/QuizMonListItem'
 import ArrowBtn from '../../components/Btn/ArrowBtn'
-import Container from '../../components/MainPanel'
+import Container from '../../components/Styled/MainWrapper'
 import PetImg from '../../components/PetImg'
 import MidBtn from '../../components/Btn/MidBtn'
 import PlusBtn from '../../components/Btn/PlusBtn'
@@ -16,7 +16,7 @@ const KlassQuizSection = ({ isMobile, quizList, klassData, onClick, setIsAddQuiz
   return (
     <Container>
       <TitleText>퀴즈 게임</TitleText>
-      {!isMobile && <InfoText>학생들이 얻을 수 있는 펫</InfoText>}
+      {/* {!isMobile && <InfoText>학생들이 얻을 수 있는 펫</InfoText>}
       {!isMobile && <PetImgWrapper>
         <PetImg subject={klassData.subject} step={0} onClick={() => { }} />
         <Row><ArrowBtn direction="right" /></Row>
@@ -26,7 +26,7 @@ const KlassQuizSection = ({ isMobile, quizList, klassData, onClick, setIsAddQuiz
         <Row><ArrowBtn direction="right" /></Row>
         <PetImg subject={klassData.subject} step={3} onClick={() => { }} />
       </PetImgWrapper>}
-      {!isMobile && <BoldText style={{ marginTop: "10px" }}>vs</BoldText>}
+      {!isMobile && <BoldText style={{ marginTop: "10px" }}>vs</BoldText>} */}
       {/* 단어 게임부 */}
       <GameMonListWrapper $isMObile={isMobile}>
         {quizList.length === 0 && <Column style={{ margin: "20px auto" }}><EmptyResult comment="등록된 단어 게임이 없습니다." /><MidBtn onClick={() => { setIsAddQuizModal(true); }}>추가</MidBtn></Column>}

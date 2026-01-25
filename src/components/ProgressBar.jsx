@@ -6,7 +6,7 @@ const AnimatedProgressBar = ({ levelInfo, gptProgress }) => {
     return <ProgressBar now={(exp / nextLvXp) * 100} label={`${exp} / ${nextLvXp}`} style={{ height: "22px", flexGrow: "1", fontSize: "16px" }} />;
   } else if (gptProgress) {
     const { current, total } = gptProgress;
-    return <ProgressBar animated now={(current / total) * 100} label={`${current} / ${total}명`} style={{ height: "22px", flexGrow: "1", fontSize: "16px" }} />;
+    return <ProgressBar animated now={(current / total) * 100} label={`${current} / ${total}`} style={{ height: "22px", flexGrow: "1", fontSize: "16px" }} />;
   }
 }
 

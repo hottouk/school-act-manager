@@ -9,8 +9,10 @@ const SubNav = ({ children, styles }) => {
     <Container $gap={gap} $padding={padding} $marginBottom={marginBottom}>{children}</Container>
   )
 }
-
 const Container = styled.div`
+  position: relative;
+  width: 100%;
+  height: 4dvh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -20,6 +22,11 @@ const Container = styled.div`
   gap: ${(props) => props.$gap};
   background-color: #efefef;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+  @media screen and (max-width: 767px){ 
+    height: 6dvh;
+    padding: 0;
+    margin-bottom: 0;
+  }  
   p {
     display: none;
     color: #3454d1;

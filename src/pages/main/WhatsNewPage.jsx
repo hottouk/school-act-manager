@@ -122,7 +122,7 @@ const WhatsNewPage = () => {
   const TeacherEditRecordRow = ({ index, item }) => {
     const { studentName, studentNumber, record, newRecord, subject, date, byte, newByte, classId, petId } = item;
     return <><GridItem>{index + 1}</GridItem>
-      <GridItem onClick={() => navigate(`/classrooms/${classId}/${petId}`)}>
+      <GridItem onClick={() => navigate(`/classrooms/${classId}/student`, { state: { petId, klassType: "subject" } })}>
         <Underlined style={{ fontWeight: "bold", color: "#3454d1" }}>{studentNumber}&nbsp;{studentName}</Underlined>
       </GridItem>
       <GridItem>수정요청</GridItem>

@@ -32,6 +32,14 @@ const dotStyle = { dotColor: "#3454d1", width: "50%" }
 모달 바디 스타일 : style={{ backgroundColor: "#efefef", borderRadius: "5px" }}
 모달 확인 버튼: styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }}
 선택 색깔: "rgba(52, 84, 209, 0.4)"
+const ClickableText = styled.p`
+  cursor: pointer;
+  margin: 0;  
+  color:rgba(58, 58, 58, 0.8);
+  font-weight: bold;
+  text-decoration: underline;
+  &: hover { color: #3454d1; }
+`
 //오늘 날짜
 const assignedDate = new Date().toISOString().split('T')[0];
 firebase 

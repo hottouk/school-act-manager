@@ -266,8 +266,7 @@ const ExamFormPage = () => {
 		<ChargeRiraModal
 			show={isChargeModal}
 			onHide={() => setIsChargeModal(false)}
-			onApprove={() => makeExamQuestion(type, question, passage, level, target)}
-			onCancel={() => setIsChargeModal(false)}
+			onApprove={(model) => makeExamQuestion(type, question, passage, level, target, model)}
 		/>
 	</>
 	)

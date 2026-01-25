@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { appFireStore } from '../../firebase/config'
-import { addDoc, collection, deleteField, doc, getDocs, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, deleteField, doc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 //생성(250122)
 const useFirePetData = () => {
   const db = appFireStore;
+  const [petRtData, setPetRtData] = useState(null);
   //1. 학생 추가
   const addPet = async (data, classId) => {
     let petColRef = collection(db, "classRooms", classId, "students");
@@ -10,6 +12,16 @@ const useFirePetData = () => {
       console.log(error);
       alert("추가에 실패했습니다. 관리자에게 문의하세요(useuseFirePetData_01)")
     });
+  }
+  //2. 실시간 one pet
+  const petDataListener = (klassId, petId) => {
+    const petDocRef = doc(db, "classRooms", klassId, "students", petId)
+    const unsubscribe = onSnapshot(petDocRef, (snapshot) => {
+      if (snapshot.exists()) setPetRtData({ ...snapshot.data(), id: snapshot.id });
+      else setPetRtData(null);
+    }, (error) => { throw new Error(error.message) }
+    )
+    return () => unsubscribe();
   }
   //2. fetch 클래스 petList 
   const fetchPets = async (klassId) => {
@@ -24,10 +36,18 @@ const useFirePetData = () => {
   //3. Pet 업데이트(250207)
   const updatePetInfo = async (klassId, petId, info) => {
     const petRef = doc(db, "classRooms", klassId, "students", petId);
-    await updateDoc(petRef, { ...info }).catch((error) => {
-      alert(`관리자에게 문의하세요(useFirePetData_03),${error}`);
-      console.log(error);
-    })
+    await updateDoc(petRef, { ...info });
+  }
+  //4. Pet 전체 업데이트(260120)
+  const updateAllPetInfo = async (klassId, infoList) => {
+    if (!klassId || !infoList) throw new Error("parameter Error, 변수 확인 필요");
+    const petColRef = collection(db, "classRooms", klassId, "students");
+    const promises = infoList.map(async (info) => {
+      const { id } = info;
+      const petDoc = doc(petColRef, id);
+      await setDoc(petDoc, info, { merge: true });
+    });
+    await Promise.all(promises);
   }
   //4. 특정 필드 삭제(250720)
   const deletePetField = async (klassId, petId, field) => {
@@ -37,7 +57,7 @@ const useFirePetData = () => {
       console.log(error);
     })
   }
-  return ({ addPet, fetchPets, updatePetInfo, deletePetField })
+  return ({ petRtData, petDataListener, addPet, fetchPets, updatePetInfo, updateAllPetInfo, deletePetField, })
 }
 
 export default useFirePetData

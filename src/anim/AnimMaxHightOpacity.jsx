@@ -11,7 +11,6 @@ const AnimMaxHightOpacity = ({ isVisible, content, children, styles }) => {
     </AnimationWrapper>
   )
 }
-
 const AnimationWrapper = styled.div`
   width: ${({ $width }) => $width};
   margin : ${({ $margin }) => $margin};

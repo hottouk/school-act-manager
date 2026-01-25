@@ -9,7 +9,7 @@ const useAcc = () => {
   const activitySelectedList = useSelector(({ activitySelected }) => activitySelected);
   const user = useSelector(({ user }) => user);
   //★★★4. 활동 누가 함수
-  const makeAccWithSelectedActi = async () => {
+  const makeAccWithSelectedActi = async (semester) => {
     const newActiList = [];
     const promises = activitySelectedList.map(async ({ value: actiId }) => {
       const actiDoc = doc(db, "activities", actiId);             //id로 활동 acti 참조
@@ -22,7 +22,7 @@ const useAcc = () => {
         const randomIndex = Math.floor(Math.random() * acti.extraRecordList.length);
         record = acti.extraRecordList[randomIndex];
       };
-      newActiList.push({ id: actiSnapshot.id, record, ...rest, assignedDate });
+      newActiList.push({ id: actiSnapshot.id, record, ...rest, assignedDate, semester });
     })
     await Promise.all(promises).catch((error) => {
       alert(`관리자에게 문의하세요(useAcc_04),${error}`);
@@ -61,48 +61,45 @@ const useAcc = () => {
     }, [])
   }
   //★★★★ 1. 핵심 로직(250208 간소화)
-  const writeAccDataOnDB = async (classId) => {
+  const writeAccDataOnDB = async (klassId, semester = null) => {
     const promises = studentSelectedList.map(async ({ value: petId }) => {
-      const petRef = doc(appFireStore, "classRooms", classId, "students", petId);
+      const petRef = doc(appFireStore, "classRooms", klassId, "students", petId);
       const petDoc = await getDoc(petRef);
       const curList = petDoc.data().actList;                                            //기존 활동
-      const { newActiList } = await makeAccWithSelectedActi();                          //신규 활동
+      const { newActiList } = await makeAccWithSelectedActi(semester);                  //신규 활동
       const actiList = [...(curList || []), ...newActiList];                            //기존+신규
       const uniqueList = makeUniqueList(actiList);                                      //중복 제거
-      setDoc(petRef, { actList: uniqueList, accRecord: makeAccRec(uniqueList) }, { merge: true });
+      setDoc(petRef, { actList: uniqueList }, { merge: true });
     })
-    try {
-      await Promise.all(promises)
-    } catch (error) {
-      console.log(error)
-      alert(`관리자에게 문의하세요(useAcc_01),${error}`);
+    try { await Promise.all(promises); }
+    catch (error) {
+      console.log(error);
+      alert(`활동 입력에 문제가 발생했습니다. 관리자에게 문의하세요(useAcc_01),${error}`);
     }
   }
   //★★★★ 3. 수행 관리 입력하기: 수정(250515)
-  const writePerfRecDataOnDB = async (studentList, classId, selectedPerf, perfRecord) => {
+  const writeByActiDataOnDB = async (studentList, classId, selectedActi, recordMap) => {
     const promises = studentList.map(async (student, index) => {
       const assignedDate = new Date().toISOString().split("T")[0];
       const madeBy = user.name;
       let newActiList = student.actList || [];                                                                         //기존 list 없으면 []
-      if (perfRecord[index] !== '') {
-        newActiList = newActiList.filter(({ id }) => { return id !== selectedPerf.id });                               //기존에 같은 수행평가를 입력했다면 제거
-        newActiList.push({ ...selectedPerf, record: perfRecord[index], assignedDate, madeBy });                        //성취도에 맞게 문구 변경    
+      if (recordMap[index] !== '') {
+        newActiList = newActiList.filter(({ id }) => id !== selectedActi.id);                                          //기존에 같은 활동 있으면 제거
+        newActiList.push({ ...selectedActi, record: recordMap[index], assignedDate, madeBy });                         //성취도에 맞게 문구 변경    
       }
-      const newAcc = makeAccRec(newActiList);                                                                          //누가 기록 생성하기    
-      const updatedStudent = { ...student, actList: newActiList, accRecord: newAcc };                                  //학생 업데이트
+      const updatedStudent = { ...student, actList: newActiList };                                                     //학생 업데이트
       //DB 통신
       const petDoc = doc(appFireStore, "classRooms", classId, "students", student.id);                                 //학생 DB ref
       await setDoc(petDoc, updatedStudent, { merge: true });
     })
-    await Promise.all(promises).catch((error) => {
-      alert(`관리자에게 문의하세요(useAcc_03),${error}`);
-      console.log(error);
-    })
+    await Promise.all(promises)
+      .then(() => { alert("저장되었습니다.") })
+      .catch((error) => { alert(`관리자에게 문의하세요(useAcc_03),${error}`); console.log(error); })
   }
   //★★★ 4. 선택 활동 삭제 로직(250904)
-  const delActiDataOnDB = async (classId) => {
+  const delActiDataOnDB = async (klassId) => {
     const promises = studentSelectedList.map(async ({ value: petId }) => {
-      const petRef = doc(appFireStore, "classRooms", classId, "students", petId);
+      const petRef = doc(appFireStore, "classRooms", klassId, "students", petId);
       const petDoc = await getDoc(petRef);
       const curList = petDoc.data().actList;                                            //기존 활동
       let deleted
@@ -115,7 +112,7 @@ const useAcc = () => {
       alert(`관리자에게 문의하세요(useAcc_04),${error}`);
     }
   }
-  return { makeAccRec, makeAccWithSelectedActi, writeAccDataOnDB, writePerfRecDataOnDB, delActiDataOnDB }
+  return { makeAccRec, makeAccWithSelectedActi, writeAccDataOnDB, writeByActiDataOnDB, delActiDataOnDB }
 }
 
 export default useAcc

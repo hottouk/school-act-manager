@@ -3,18 +3,18 @@ import xlsx from 'xlsx';
 import { useDropzone } from 'react-dropzone'
 //컴포넌트
 import TwoRadios from '../components/Radio/TwoRadios'
+import DotTitle from './Title/DotTitle';
 //hooks
 import useProcessXlsxData from '../hooks/useProcessXlsxData';
 //css
 import styled from 'styled-components';
 
-const ImportExcelFile = (props) => {
+const ImportExcelFile = ({ getData }) => {
   //hooks 
   const { getStudentInfo } = useProcessXlsxData()
   const [selectedFile, setSelectedFile] = useState(null);
   const [isHiSkul, setIsHiSkul] = useState(true); //중학교 고등학교 출석부
   useEffect(() => { if (selectedFile) procesXltoStuInfo(selectedFile) }, [selectedFile, isHiSkul])
-
   //1. xl->json->studentInfo로 바꿈.
   const procesXltoStuInfo = (file) => {
     let fileTypeCheck = file ? (file.name.endsWith('xlsx') || file.name.endsWith('xls')) : null;
@@ -27,16 +27,15 @@ const ImportExcelFile = (props) => {
         let ws = wb.Sheets[wb.SheetNames[0]];
         let xlsToJson = xlsx.utils.sheet_to_json(ws, { header: 1 });
         let studentInfo = getStudentInfo(xlsToJson, isHiSkul)
-        props.getData(studentInfo);
+        getData(studentInfo);
         console.log(studentInfo);
       }
       console.log(file);
     } else {
       window.alert("엑셀 파일이 아닙니다.")
-      props.getData(null);
+      getData(null);
     }
   }
-
   //2-1. 드랍존
   const onDrop = useCallback((acceptedFiles) => {
     let file = acceptedFiles[0];
@@ -48,14 +47,12 @@ const ImportExcelFile = (props) => {
       setSelectedFile(null)
     }
   }, [isHiSkul])
-
   //2-2 드랍존
   const onDropRejected = useCallback((fileRejections) => {
     fileRejections.forEach((file) => {
       console.error(`Rejected file: ${file.file.name}, reason: ${file.errors.map(e => e.message).join(', ')}`);
     });
   }, []);
-
   //2-3 드랍존
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -65,19 +62,25 @@ const ImportExcelFile = (props) => {
   });
 
   return (<>
-    <TwoRadios name={"roll_book_check"} id={["high", "middle"]} label={["고등학교", "중학교"]} value={isHiSkul} onChange={() => { setIsHiSkul(!isHiSkul) }} />
-    <StyledDropzone {...getRootProps()}>
+    <Row style={{ justifyContent: "space-between" }}>
+      <DotTitle title={"학교급"} />
+      <TwoRadios name={"roll_book_check"} id={["high", "middle"]} label={["고등학교", "중학교"]} value={isHiSkul} onChange={() => { setIsHiSkul(!isHiSkul) }} />
+    </Row>
+    <Dropzone {...getRootProps()}>
       <input {...getInputProps()} />
       {isDragActive ? <p>이곳에 드랍</p> : <p>클릭 또는 드래그 앤 드랍</p>}
-    </StyledDropzone>
+    </Dropzone>
     <StyledDiv>
       <p>파일명: {selectedFile && selectedFile.path}</p>
     </StyledDiv>
   </>
   )
 }
-
-const StyledDropzone = styled.div`
+const Row = styled.div`
+  display: flex;
+`
+const Dropzone = styled.div`
+  width: 100%;
   height: 120px;
   margin: 10px auto;
   padding: 20px;
@@ -92,6 +95,7 @@ const StyledDropzone = styled.div`
   align-items: center;
   justify-content: center;
   transition: border .24s ease-in-out;
+  cursor: pointer;
 `
 const StyledDiv = styled.div`
   display: flex;

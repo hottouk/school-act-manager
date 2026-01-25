@@ -7,9 +7,9 @@ const MoreRecordListForm = ({ moreRecList, noListText, isBtnShown, btnOnClick })
   return (
     <Container>
       <InputWrapper>
-        {moreRecList && moreRecList.length > 0 ? (
-          moreRecList.map((extraRec) => {
-            return <StyledInput type="text" value={extraRec} disabled key={extraRec} />;
+        {moreRecList?.length > 0 ? (
+          moreRecList.map((record, idx) => {
+            return <StyledInput key={`${record}-${idx}`} type="text" value={record} disabled />;
           })
         ) : (
           <p>{noListText || "샘플"}</p>

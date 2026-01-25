@@ -7,9 +7,9 @@ const MidBtn = ({ id, onClick, btnColor, fontColor, hoverBtnColor, children, dis
       id={id}
       onClick={onClick}
       disabled={disabled || false}
-      $backgroundColor={btnColor || "#3454d1"}
+      $backgroundColor={btnColor || "#3454d1a1"}
       $fontColor={fontColor || "#fff"}
-      $hoverBackgroundColor={hoverBtnColor || "#1366d6"}
+      $hoverBackgroundColor={hoverBtnColor || "#3454d1"}
     >{!disabled && (children || "샘플")}</StyledBtn>
   )
 }
@@ -20,7 +20,7 @@ const StyledBtn = styled.button`
   display: block;
   width: 150px;
   height: 35px;
-  background-color: #3454d1;
+  background-color: ${({ $backgroundColor }) => $backgroundColor};
   border: none;
   border-radius: 8px;
   color: white;

@@ -2,19 +2,16 @@ import React, { useEffect, useRef, useState } from 'react'
 //컴포넌트
 import SmallTitle from '../../components/Title/SmallTitle'
 //data
-import { academicAbility, coopAbility, careerAbility } from '../../data/AbilityList'
+import { academicAbility, coopAbility, careerAbility } from '../../data/abilityList'
 //css
 import styled from 'styled-components'
-
-//2024.10.10 1차 완성
-const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
-  //----1.변수부--------------------------------
+//생성(241010) 
+const BehaviorChkBox = ({ step, selectedSpec, setSelectedSpec }) => {
   useEffect(() => {
-    if (step === "first") { sortData(academicAbility, titleList, specList) }
-    else if (step === "second") { sortData(coopAbility, titleList, specList) }
-    else if (step === "third") { sortData(careerAbility, titleList, specList) }
+    if (step === 1) { sortData(academicAbility, titleList, specList) }
+    else if (step === 2) { sortData(coopAbility, titleList, specList) }
+    else if (step === 3) { sortData(careerAbility, titleList, specList) }
   }, [step])
-
   const [titleList, setTitleList] = useState([]);
   const [specList, setSpecList] = useState([]);
   useEffect(() => {
@@ -52,7 +49,6 @@ const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
     setSpecList(sList)
 
   }
-
   //이중 객체 생성
   const createMatrix = (list, initVal) => {
     let matrix = {}
@@ -107,11 +103,9 @@ const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
       console.log("체크 값 없음")
     }
   }
-
   return (
     <Container>
       {titleList.map((title, index) => { //index는 title index임.
-
         return <StyledBox key={title}>
           <StyledTopRow >
             <SmallTitle title={title} />
@@ -157,38 +151,40 @@ const TitledChkBoxList = ({ step, selectedSpec, setSelectedSpec }) => {
               style={{ visibility: 'hidden' }}
               disabled={freeze[title] || false}
             />
-            <button
+            <i className='fa-solid fa-check'
               ref={(ele) => { return btnRefs.current[index] = ele }}
-              style={{ visibility: 'hidden' }}
+              style={{ visibility: 'hidden', cursor: "pointer" }}
               onClick={() => { handleEtcSave(title) }}
-              disabled={freeze[title] || false}>저장</button>
+              disabled={freeze[title] || false}
+            ></i>
           </ChkBoxWrapper>
         </StyledBox>
       })}
     </Container >
   )
 }
-
-const Container = styled.div`
+const Row = styled.div`
   display: flex;
+`
+const Column = styled(Row)`
   flex-direction: column;
+`
+const Container = styled(Column)`
   margin-top: 35px;
   gap: 37px;
 `
-const StyledBox = styled.div`
+const StyledBox = styled(Row)`
   position: relative;
-  display: flex;
   flex-wrap: wrap;
   gap: 8px;
   padding: 8px;
-  border: 1px solid black;
+  border: 1px solid #787878;
   border-radius: 5px;
   width: 100%;
 `
-const StyledTopRow = styled.div`
+const StyledTopRow = styled(Row)`
   position: absolute;
   width: 100%;
-  display: flex;
   gap: 10px;
   top: -30px;
   left: 0;
@@ -197,8 +193,7 @@ const StyledTopRow = styled.div`
     flex-grow: 1;
   }
 `
-const ChkBoxWrapper = styled.div`
-  display: flex;
+const ChkBoxWrapper = styled(Row)`
   margin-right: 1px;
   input { margin-right: 3px;}
   p { margin: 0; }
@@ -207,4 +202,4 @@ const ChkBoxWrapper = styled.div`
     border-radius: 5px;
   }
 `
-export default TitledChkBoxList
+export default BehaviorChkBox

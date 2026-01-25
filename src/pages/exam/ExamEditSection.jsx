@@ -136,7 +136,7 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 				title: _title, question: _question, passage: _passage, optionList: _optionList, explanation: _explanation, retocuhCount: retocuhCount
 			};
 			const newArr = questionList?.map(((item) => item.id === examItem?.id ? changed : item));
-			updateTestQuestion("questions", newArr, navigate("/exam"));
+			updateTestQuestion("questions", newArr);
 		}
 		else {
 			const title = prompt("문항 제목을 작성하세요");
@@ -146,7 +146,7 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 					subject, title, type, level, retocuhCount: retocuhCount,
 					question: _question, passage: _passage, optionList: _optionList, explanation: _explanation,
 				};
-				addTestArrItem("questions", question, navigate("/exam"));
+				addTestArrItem("questions", question);
 			}
 		}
 	}
@@ -200,7 +200,8 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 					: <Textarea value={_passage} onChange={(event) => setPassage(event.target.value)} />}
 				{(!isPassageEdit && !isEditing) && <IconWrapper>
 					<ImgIcon src={edit_icon} alt="편집" onClick={() => handleEditOnClick("passage", true)} />
-					<i className="fa-solid fa-brain" style={{ cursor: "pointer" }} onClick={() => { setIsGptModal(true); setModalType("passage"); }} />
+					<i className="fa-solid fa-brain" style={{ cursor: "pointer" }}
+						onClick={() => { setIsGptModal(true); setModalType("passage"); }} />
 				</IconWrapper>}
 				{isPassageEdit && <IconWrapper>
 					<i className="fa-solid fa-check" style={{ cursor: "pointer" }} onClick={() => handleEditOnClick("passage", true)} />

@@ -14,7 +14,6 @@ const AddNewStudentModal = ({ show, onHide, classId, type }) => {
   const [_name, setName] = useState('');
   const [_studentNumber, setStudentNumber] = useState('');
   const { addStudent } = useFireClassData();
-
   //------함수부------------------------------------------------
   const handleOnChange = (event) => {
     switch (event.target.id) {

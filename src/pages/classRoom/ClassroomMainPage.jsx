@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { setAllSubjClasses } from '../../store/allClassesSlice';
-import { setSelectClass } from '../../store/classSelectedSlice';
 import styled from 'styled-components';
 //컴포넌트
 import CardList from '../../components/List/CardList';
@@ -42,10 +41,10 @@ const ClassRoomMainPage = () => {
     if (user.isTeacher) { fetchUserData(user.uid).then((data) => { setCoTeachingList(data?.coTeachingList || []) }) }
     else { fetchUserData(user.uid).then((data) => { sortStudentKlass(data?.myClassList || []) }) }
   }
-  //교과반 클릭(공용)
-  const handleSubjClassOnClick = (item) => {
-    navigate(`/classrooms/${item.id}`, { state: { ...item } }) //url 이동
-  }
+  //교과반 이동
+  const handleSubjClassOnClick = (item) => navigate(`/classrooms/${item.id}`, { state: { ...item } });
+  //담임반 이동
+  const handleHomeroomOnClick = (item) => navigate(`/homeroom/${item.id}`);
   //------교사용------------------------------------------------  
   //교과, 담임반 분류
   const sortTeacherKlass = () => {
@@ -63,11 +62,6 @@ const ClassRoomMainPage = () => {
   const handleCoTeachingOnClick = (item) => {
     if (item.isApproved) { navigate(`/classrooms/${item.id}`, { state: { ...item } }) }
     else { window.alert("승인 대기중 입니다.") }
-  }
-  //담임반 클릭
-  const handleHomeroomOnClick = (item) => {
-    dispatcher(setSelectClass(item)) //선택한 교실 비휘발성 전역변수화
-    navigate(`/homeroom/${item.id}`) //url 이동
   }
   //------학생용------------------------------------------------  
   //가입 신청, 승인 클래스 분류

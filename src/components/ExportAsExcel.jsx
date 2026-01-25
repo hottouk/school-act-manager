@@ -1,11 +1,10 @@
 //라이브러리
 import { useEffect } from 'react';
 import xlsx from 'xlsx';
-import styled from 'styled-components';
 //hooks
 import useGetByte from '../hooks/useGetByte';
 //img
-import excelIcon from '../image/icon/excel.png';
+import ClickableIcon from './Styled/ClickableIcon';
 //담임반 버그 수정(251214)
 const ExportAsExcel = ({ allStudentList, type, tab }) => {
   const { getByteLengthOfString } = useGetByte();
@@ -36,23 +35,8 @@ const ExportAsExcel = ({ allStudentList, type, tab }) => {
     })
     return data;
   }
-
   //버튼 클릭
   const handleBtnClick = () => { xlsx.writeFile(wb, "생기부데이터.xlsx"); };
-  return <StyledExcelImgBtn src={excelIcon} alt='엑셀아이콘' onClick={handleBtnClick} />
+  return <ClickableIcon onClick={handleBtnClick} />
 }
-
-const StyledExcelImgBtn = styled.img`
-  width: 45px;
-  height: 45px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  cursor: pointer;
-  &:hover {
-    background-color: rgba(49, 84, 209, 0.4);
-    border: none;
-    border-radius: 10px;
-    transition: background-color 0.5s ease-in-out;
-  }
-`
 export default ExportAsExcel

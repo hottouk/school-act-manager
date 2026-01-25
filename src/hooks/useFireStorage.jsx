@@ -2,7 +2,6 @@ import { listAll, ref, uploadBytes } from "firebase/storage";
 import { storage } from "../firebase/config";
 
 const useFireStorage = () => {
-
   //storage 내에 파일 있는지 검색(250331)
   const findFile = async (folder, file) => {
     const folderRef = ref(storage, `${folder}`)

@@ -1,10 +1,11 @@
+import { useState } from 'react';
 import { appFireStore, timeStamp } from '../../firebase/config'
-import { addDoc, arrayRemove, arrayUnion, collection, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore'
+import { addDoc, arrayRemove, arrayUnion, collection, doc, getDocs, onSnapshot, query, setDoc, updateDoc, where } from 'firebase/firestore'
 
 const useFireClassData = () => {
-  const db = appFireStore
-  const colRef = collection(db, "classRooms")
-
+  const db = appFireStore;
+  const colRef = collection(db, "classRooms");
+  const [klassRtData, setKlassRtData] = useState(null);
   //1. 클래스 추가(250205 이동)
   const addClassroom = async (klassInfo, studentPetList) => {
     const { subject, type } = klassInfo;
@@ -22,7 +23,7 @@ const useFireClassData = () => {
       console.log("클래스 생성 실패", error);
       window.alert("클래스 생성에 실패했습니다. 관리자에게 문의하세요(useFireClassData_01)");
     }
-  }
+  };
   //2. 클래스 불러오기(250122)
   const fetchClassrooms = async (field, value) => {
     const q = query(colRef, where(field, "==", value));
@@ -31,19 +32,27 @@ const useFireClassData = () => {
       alert("클래스 생성에 실패했습니다. 관리자에게 문의하세요(useFireClassData_02)");
     });
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  };
+  //2-1. 클래스 정보 실시간 구독
+  const klassDataListener = (id) => {
+    if (!id) return
+    const klassDocRef = doc(colRef, id);
+    const unsubscribe = onSnapshot(klassDocRef, (snapshot) => {
+      if (snapshot.exists()) setKlassRtData(snapshot.data());
+      else setKlassRtData(null);
+    })
+    return () => unsubscribe();
   }
-
-  //클래스 기본 정보 수정(250219)
-  const updateKlassroomInfo = async (klassId, field, info) => {
-    const klassDocRef = doc(colRef, klassId);
-    try {
-      setDoc(klassDocRef, { [field]: info }, { merge: true });
-    } catch (error) {
-      console.log(error);
-      window.alert(error);
-    }
-  }
-  //3. 클래스 배열형 정보 수정(250220)
+  //3. 클래스 업데이트(260120)
+  const updateKlassroom = async (klassInfo, id) => {
+    const klassDocRef = doc(colRef, id);
+    updateDoc(klassDocRef, klassInfo)
+      .catch((err) => {
+        console.log("업데이트 에러", err);
+        alert("업데이트 에러: 관리자에게 문의하세요(useFireClassData_03)", err)
+      })
+  };
+  //4. 클래스 배열형 정보 수정(250220)
   const updateKlassroomArrayInfo = async (klassId, field, info) => {
     const klassDocRef = doc(colRef, klassId);
     try {
@@ -52,8 +61,8 @@ const useFireClassData = () => {
       console.log(error);
       window.alert(error);
     }
-  }
-  //4. 클래스 배열형 정보 삭제(250225)
+  };
+  //5. 클래스 배열형 정보 삭제(250225)
   const deleteKlassroomArrayInfo = async (klassId, field, info) => {
     const klassDocRef = doc(colRef, klassId);
     try {
@@ -62,38 +71,25 @@ const useFireClassData = () => {
       console.log(error);
       window.alert(error);
     }
-  }
-  //클래스 복제(2501511 추가)
+  };
+  //6. 클래스 복제(2501511 추가)
   const copyKlassroom = async (klassInfo, studentPetList, newTitle) => {
     const { id, classTitle, ...klassInfoRest } = klassInfo;
     const type = klassInfo.type;
-    try {
-      const createdTime = timeStamp.fromDate(new Date());
-      const classRef = await addDoc(colRef, { ...klassInfoRest, classTitle: newTitle, createdTime });
-      const petColRef = collection(classRef, "students");
-      const promises = studentPetList.map(studentPet => {
-        const { studentNumber, subject, writtenName } = studentPet;
-        let studentPetInfo
-        if (type === "subject") { studentPetInfo = { studentNumber, subject, writtenName: writtenName !== undefined ? writtenName : null } }
-        else if (type === "homeroom") { studentPetInfo = { studentNumber, subject: null, type, writtenName: writtenName !== undefined ? writtenName : null } }
-        return addDoc(petColRef, studentPetInfo);
-      })
-      await Promise.all(promises);
-    } catch (error) {
-      console.log("클래스 복제에 실패", error);
-      window.alert("클래스 복제에 실패했습니다. 관리자에게 문의하세요(useFireClassData_02");
-    }
-  }
-  //클래스 수정(250205 생성)
-  const updateClassroom = async (klassInfo, id) => {
-    const klassDocRef = doc(colRef, id);
-    const { title, intro, notice } = klassInfo;
-    try {
-      updateDoc(klassDocRef, { classTitle: title, intro, notice })
-    } catch (error) {
-      window.alert("정보 업데이트 에러: ", error);
-    }
-  }
+    const createdTime = timeStamp.fromDate(new Date());
+    const docRef = doc(colRef);
+    await setDoc(docRef, { ...klassInfoRest, classTitle: newTitle, createdTime, id: docRef.id });
+    const klassDocRef = doc(colRef, docRef.id);
+    const petColRef = collection(klassDocRef, "students");
+    const promises = studentPetList.map(studentPet => {
+      const { studentNumber, subject, writtenName } = studentPet;
+      let studentPetInfo
+      if (type === "subject") { studentPetInfo = { studentNumber, subject, type, writtenName: writtenName !== undefined ? writtenName : null } }
+      else if (type === "homeroom") { studentPetInfo = { studentNumber, subject: null, type, writtenName: writtenName !== undefined ? writtenName : null } }
+      return addDoc(petColRef, studentPetInfo);
+    })
+    await Promise.all(promises);
+  };
   //클래스 수정(250502 이동)
   const addStudent = async (newInfo, classId) => {
     let studentColRef = collection(db, "classRooms", classId, "students");
@@ -104,6 +100,17 @@ const useFireClassData = () => {
       console.log(error);
     }
   }
+  //클래스 업데이트(260120) ==> todo 삭제
+  const updateKlassroomInfo = async (klassId, field, info) => {
+    const klassDocRef = doc(colRef, klassId);
+    try {
+      setDoc(klassDocRef, { [field]: info }, { merge: true });
+    } catch (error) {
+      console.log(error);
+      window.alert(error);
+    }
+  }
+
   //좌석배치도 저장(241210)
   const addSeatMap = async (id, info) => {
     let { seatMapsList, positionList, objPositionList, studentList, objInfoList } = info
@@ -135,7 +142,10 @@ const useFireClassData = () => {
     return { subjClassList, homeroomClassList }
   }
 
-  return ({ addClassroom, addStudent, copyKlassroom, updateKlassroomInfo, updateKlassroomArrayInfo, deleteKlassroomArrayInfo, updateClassroom, addSeatMap, deleteSeatMap, fetchClassrooms, sortClassrooms })
+  return ({
+    addClassroom, fetchClassrooms, klassDataListener, updateKlassroom, addStudent, copyKlassroom,
+    updateKlassroomInfo, updateKlassroomArrayInfo, deleteKlassroomArrayInfo, addSeatMap, deleteSeatMap, sortClassrooms, klassRtData
+  })
 }
 
 export default useFireClassData

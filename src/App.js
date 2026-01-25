@@ -20,8 +20,6 @@ import StudentDetailPage from './pages/classroom/StudentDetailPage';
 import ClassAllStudentsPage from './pages/classroom/ClassAllStudentsPage';
 //담임반
 import HomeroomDetailsPage from './pages/homeroom/HomeroomDetailsPage';
-import HomeStudentDetailsPage from './pages/homeroom/HomeStudentDetailsPage';
-import HomeClassAllStudentsPage from './pages/homeroom/HomeClassAllStudentsPage';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassroomFormPage from './pages/classSetting/ClassroomFormPage';
 import WhatsNewPage from './pages/main/WhatsNewPage';
@@ -49,8 +47,7 @@ import AmountSelectPage from './pages/purchase/AmountSelectPage';
 import Footer from './components/Bar/Footer';
 import styled from 'styled-components';
 import ExamItemPage from './pages/exam/ExamItemPage';
-
-
+import AllStudentByActiPage from './pages/classroom/AllStudentByActiPage';
 function App() {
   const user = useSelector(({ user }) => { return user; })
   const uid = user.uid;
@@ -81,14 +78,16 @@ function App() {
               <Route path="/activities_setting_details" element={uid ? <ActivityFormPage /> : <Navigate replace={true} to='/login' />} />
               {/* 담임반 관리 */}
               <Route path="/homeroom/:id" element={uid ? <HomeroomDetailsPage /> : <Navigate replace={true} to='/login' />} />
-              <Route path="/homeroom/:id/:studentId" element={uid ? <HomeStudentDetailsPage /> : <Navigate replace={true} to='/login' />} />
-              <Route path="/homeroom/:id/allStudents" element={uid ? <HomeClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
+              <Route path="/homeroom/:id/student" element={uid ? <StudentDetailPage /> : <Navigate replace={true} to='/login' />} />
+              <Route path="/homeroom/:id/allStudents" element={uid ? <ClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
+              <Route path="/homeroom/:id/allstudents/acti" element={uid ? <AllStudentByActiPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/homeroom/:id/seat" element={uid ? <HomeSeatChange /> : <Navigate replace={true} to='/login' />} />
               {/* 클래스 관리 */}
               <Route path="/classrooms" element={uid ? <ClassroomMainPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/classrooms/:id" element={uid ? <ClassroomDetailsPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/classrooms/:id/allstudents" element={uid ? <ClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
-              <Route path="/classrooms/:id/:studentId" element={uid ? <StudentDetailPage /> : <Navigate replace={true} to='/login' />} />
+              <Route path="/classrooms/:id/allstudents/acti" element={uid ? <AllStudentByActiPage /> : <Navigate replace={true} to='/login' />} />
+              <Route path="/classrooms/:id/student" element={uid ? <StudentDetailPage /> : <Navigate replace={true} to='/login' />} />
               {/* 클래스 만들기, 교사 회원만 가능 */}
               <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
               <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomFormPage /> : <Navigate replace={true} to='/' />} />
@@ -130,9 +129,9 @@ function App() {
   )
 }
 export const AppLayout = styled.div`
-  min-height: 100dvh;          /* 모바일 주소창 대응: 100vh 대신 100dvh 권장 */
   display: flex;
   flex-direction: column;
+  min-height: 100dvh;          /* 모바일 주소창 대응: 100vh 대신 100dvh 권장 */
 `;
 export const Main = styled.main`
   flex: 1;                     /* 본문 영역이 남는 높이를 차지 */

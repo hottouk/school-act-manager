@@ -42,7 +42,7 @@ const Footer = () => {
 
 const Container = styled.footer`
   min-height: 15dvh;
-  background-color: #efefef;
+  background-color: #ddd;
   margin-top: auto;            /* 푸터를 아래로 밀착 *
 `
 const Row = styled.div`

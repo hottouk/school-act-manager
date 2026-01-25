@@ -10,7 +10,6 @@ const useDeleteFireData = () => {
     const studentsColRef = collection(classDocRef, "students");
     // 서브컬렉션의 모든 문서 가져오기
     const studentsSnapshot = await getDocs(studentsColRef);
-
     // 서브컬렉션의 모든 문서 삭제
     const deletePromises = [];
     studentsSnapshot.forEach((doc) => {

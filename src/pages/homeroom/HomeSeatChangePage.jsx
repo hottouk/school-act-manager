@@ -9,13 +9,9 @@ import BackBtn from '../../components/Btn/BackBtn';
 import MidBtn from '../../components/Btn/MidBtn';
 import LongW100Btn from '../../components/Btn/LongW100Btn';
 import DraggableTable from './DraggableTable';
-import PrintBtn from '../../components/Btn/PrintBtn';
 //hooks
 import useClassAuth from '../../hooks/useClassAuth';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
-import useFetchRtClassroomData from '../../hooks/RealTimeData/useFetchRtClassroomData';
-
-
 //24.12.14 생성
 const HomeSeatChange = () => {
   //----1.변수부--------------------------------
@@ -48,8 +44,8 @@ const HomeSeatChange = () => {
   //데이터 CRUD
   const { addSeatMap, deleteSeatMap } = useFireClassData();
   //실시간 데이터 가져오기
-  const classroomRtInfo = useFetchRtClassroomData(frozenClassInfo.id);
-  useEffect(() => { if (classroomRtInfo.seatInfo) { setSeatMapList(classroomRtInfo.seatInfo) } }, [classroomRtInfo])
+  // const classroomRtInfo = useFetchRtClassroomData(frozenClassInfo.id);
+  // useEffect(() => { if (classroomRtInfo.seatInfo) { setSeatMapList(classroomRtInfo.seatInfo) } }, [classroomRtInfo])
   //저장된 자리 정보
   const [seatMapsList, setSeatMapList] = useState('');
   const seatMapRef = useRef({});
@@ -202,7 +198,7 @@ const HomeSeatChange = () => {
       <GridItem $column={"1/4"} $row={"1/2"}>
         <SubNav styles={{ gap: "0" }}>
           <BackBtn />
-          <PrintBtn onClick={() => { handlePrintBtnOnClick() }} />
+          {/* <PrintBtn onClick={() => { handlePrintBtnOnClick() }} /> */}
         </SubNav>
       </GridItem>
       <GridItem className="title" $column={"1/4"} $row={"2/3"}>

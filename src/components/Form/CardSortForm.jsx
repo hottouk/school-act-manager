@@ -16,7 +16,6 @@ const CardSortForm = ({ itemList, handleCardBtnClick }) => {
     { id: "sample2", legend: "제목2", subTitle: "설명2", imgNumber: 2 },
     { id: "sample3", legend: "제목3", subTitle: "설명3", imgNumber: 3 }
   ]
-
   const getImgSrc = (imgNumber) => {
     switch (imgNumber) {
       case 1:
@@ -35,45 +34,39 @@ const CardSortForm = ({ itemList, handleCardBtnClick }) => {
         return classSort1;
     }
   }
-
   //랜더링
   const renderItem = (item) => {
     const { id, legend, subTitle, imgNumber, ban, ing } = item;
     return (
-      <StyledCardDiv $color={"#3454d1"} id={id} onClick={handleCardBtnClick} key={id}>
+      <Card $color={"#3454d1"} id={id} onClick={handleCardBtnClick} key={id}>
         <legend>{legend}</legend>
         <p>{subTitle}</p>
         {ban && <p className='ban'>추후 서비스</p>}
         {ing && <p className='ban'>현재 제작중</p>}
         <img src={getImgSrc(imgNumber)} alt="클래스5" id={id} onClick={handleCardBtnClick} />
-      </StyledCardDiv>
+      </Card>
     );
   };
-
   const itemListToRender = itemList && itemList.length > 0 ? itemList : itemSampleList;
-
   return (
-    <StyledCardContainer>
+    <Container>
       {itemListToRender.map(renderItem)}
-    </StyledCardContainer>
+    </Container>
   )
 }
-
-const StyledCardContainer = styled.div`
-  width: 80%;
-  margin: 20px auto;
-  top: 160px;
+const Container = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
+  justify-content: space-even;
+  gap: 100px;
 `
-const StyledCardDiv = styled.div`
+const Card = styled.div`
   width: 250px;
   height: 360px;
   padding: 20px;
   border-radius: 15px;
   cursor: pointer;
-  box-shadow: ${(props) => { return props.$color }} 1px 1px 7px 1px;
+  box-shadow: ${(props) => { return props.$color }} 1px 1px 4px 1px;
+  background-color: white;
   position: relative;
   legend {
     color: #3454d1;

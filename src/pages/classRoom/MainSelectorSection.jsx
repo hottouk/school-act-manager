@@ -8,14 +8,12 @@ import MidBtn from '../../components/Btn/MidBtn.jsx';
 import MainBtn from '../../components/Btn/MainBtn.jsx'
 import SelectedDialogModal from '../../components/Modal/SelectedDialogModal.jsx';
 //hooks
-import useAcc from '../../hooks/useAcc.jsx';
 import useGetByte from '../../hooks/useGetByte.jsx';
 import Select from 'react-select';
 import { setSelectStudent } from '../../store/studentSelectedSlice.jsx';
 import { setSelectActivity } from '../../store/activitySelectedSlice.jsx';
-import PerfModal from '../../components/Modal/PerfModal.jsx';
 //수정(250903)
-const MainSelectorSection = ({ isMobile, studentList, actiList, classId }) => {
+const MainSelectorSection = ({ isMobile, studentList, actiList, classId, semester }) => {
   const dispatcher = useDispatch();
   const navigate = useNavigate();
   useEffect(() => { bindOptions() }, [studentList, actiList]);
@@ -30,7 +28,6 @@ const MainSelectorSection = ({ isMobile, studentList, actiList, classId }) => {
   //주요 정보
   const [_accRecord, setAccRecords] = useState();
   const [_byte, setByte] = useState(0);
-  const { writeAccDataOnDB, delActiDataOnDB } = useAcc();
   const { getByteLengthOfString } = useGetByte();
   //MultiSelector 내부 변수
   const selectStudentRef = useRef(null);   //학생 선택 셀렉터 객체, 재랜더링 X 
@@ -39,8 +36,6 @@ const MainSelectorSection = ({ isMobile, studentList, actiList, classId }) => {
   const actiCheckBoxRef = useRef(null);    //모든 활동 체크박스, 재랜더링 X
   //모달창
   const [isCompleteModalShow, setIsCompleteModalShow] = useState(false);
-  const [isPerfModal, setIsPerfModal] = useState(false);                //활동별 보기
-
   //------함수부------------------------------------------------
   //학생 옵션
   const bindOptions = () => {
@@ -63,9 +58,9 @@ const MainSelectorSection = ({ isMobile, studentList, actiList, classId }) => {
     setAccRecords(acc);
   }
   //학생 선택
-  const handleStudentSelection = (event) => { dispatcher(setSelectStudent(event)); }
+  const handleStudentSelection = (event) => dispatcher(setSelectStudent(event));
   //활동 선택
-  const handleActivitySelection = (event) => { dispatcher(setSelectActivity(event)); }
+  const handleActivitySelection = (event) => dispatcher(setSelectActivity(event));
   //학생 체크박스
   const handleAllStudentCheckOnChange = (event) => {
     const studentChecked = event.target.checked;
@@ -146,29 +141,16 @@ const MainSelectorSection = ({ isMobile, studentList, actiList, classId }) => {
             <p style={{ display: "inline" }}> /1500 Byte</p>
           </ByteWrapper>
         </AccWrapper>
-        <BtnWrapper>
-          <MainBtn onClick={() => { setIsCompleteModalShow(true) }} styles={{ zIndex: "null" }}>선택 완료</MainBtn>
-          {!isMobile && <MainBtn onClick={() => { setIsPerfModal(true) }} styles={{ zIndex: "null" }}>활동별 보기</MainBtn>}
-          {!isMobile && <MainBtn onClick={() => { navigate('allStudents') }} styles={{ zIndex: "null" }}>전체 세특 보기</MainBtn>}
-        </BtnWrapper>
+        <MainBtn onClick={() => { setIsCompleteModalShow(true) }} styles={{ zIndex: "null", margin: "15px 0 0 0" }}>선택 완료</MainBtn>
       </Container >
       {/* 선택 완료 모달 */}
       <SelectedDialogModal
         show={isCompleteModalShow}
         onHide={() => setIsCompleteModalShow(false)}
         onClearSelect={onClearSelect}
-        writeAccDataOnDB={() => writeAccDataOnDB(classId)}
-        delActiDataOnDB={delActiDataOnDB}
         isDeleteChecked={isDeleteChecked}
         klassId={classId}
-      />
-      {/* 활동별 보기 */}
-      <PerfModal
-        show={isPerfModal}
-        onHide={() => setIsPerfModal(false)}
-        actiList={actiList}
-        studentList={studentList}
-        classId={classId}
+        semester={semester}
       />
     </>
   )
@@ -176,11 +158,13 @@ const MainSelectorSection = ({ isMobile, studentList, actiList, classId }) => {
 const Row = styled.div`
   display: flex;
 `
-const Container = styled(Row)`
-  width: 80%;
+const Column = styled(Row)`
   flex-direction: column;
-  min-height: 350px;
+`
+const Container = styled(Column)`
+  width: 50%;
   margin: 0 auto;
+  min-height: 350px;
   padding: 5px;
   @media (max-width: 767px){
     width: 100%;
@@ -188,34 +172,28 @@ const Container = styled(Row)`
   }
 `
 const SelectWrapper = styled.div`
-  width: 50%;
+  width: 100%;
   margin: 0 auto;
   margin-top: 35px;
   @media(max-width: 768px){
-    width: 80%;
+    width: 100%;
     margin-top: 35px;
   }
 `
-const AccWrapper = styled(Row)`
-  flex-direction: column;
+const AccWrapper = styled(Column)`
   align-items: flex-end;
   margin: 10px auto;
-  width: 70%;
+  width: 100%;
 `
 const ByteWrapper = styled.div`
-  margin-right: 10%;
   input {
     height: 35px;
     width: 85px;
     border-radius: 7px;
   }
 `
-const BtnWrapper = styled(Row)`
-  margin: 20px auto;
-  gap: 40px;
-`
 const AccTextArea = styled.textarea`
-  width: 80%;
+  width: 100%;
   height: 100px;
   margin: 10px auto;
   border-radius: 7px;

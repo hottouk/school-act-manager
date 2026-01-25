@@ -2,41 +2,45 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { setSelectClass } from '../../store/classSelectedSlice';
+import { useSelector } from 'react-redux';
 //컴포넌트
-import Container from '../../components/MainPanel';
+import Container from '../../components/Styled/MainWrapper';
 import TwoRadios from '../../components/Radio/TwoRadios';
 import DotTitle from '../../components/Title/DotTitle';
+import ClickableText from '../../components/Styled/ClickableText';
 //hooks
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 //분리 생성(250211) => 기능 분산(250909)
-const ClassBoardSection = ({ userStatus, klassData, studentList }) => {
-  useEffect(() => { bindKlassData(); }, [klassData]);
+const KlassBoardSection = ({ userStatus, klassInfo, studentList }) => {
+  useEffect(() => { bindData(); }, [klassInfo]);
   const user = useSelector(({ user }) => user);
   const navigate = useNavigate();
-  const dispatcher = useDispatch();
   const { updateUserInfo } = useFireUserData();
   const { deleteClassWithStudents } = useDeleteFireData();
-  const { updateClassroom, deleteKlassroomArrayInfo, copyKlassroom } = useFireClassData();
+  const { updateKlassroom, deleteKlassroomArrayInfo, copyKlassroom } = useFireClassData();
+  //기본 자료
+  const [klassType, setKlassType] = useState(null);
   const [_title, setTitle] = useState('');
   const [_intro, setIntro] = useState('');
   const [_notice, setNotice] = useState('');
   const [noticeList, setNoticeList] = useState([]);
+  //학기
+  const [semester, setSemester] = useState(null);
   const [_isPublic, setIsPublic] = useState(false);
   const [isModifying, setIsModifying] = useState(false);
   //변경 가능 데이터 바인딩
-  const bindKlassData = () => {
-    if (!klassData) return;
-    const { classTitle, intro, notice, isPublic } = klassData;
-    dispatcher(setSelectClass(klassData));
+  const bindData = () => {
+    if (!klassInfo) return;
+    const { classTitle, semester, intro, notice, isPublic, type } = klassInfo;
+    setKlassType(type);
     setTitle(classTitle || '정보 없음');
     setIntro(intro || '정보 없음');
     setNotice(notice || '공지 없음');
     splitNotice(notice || []);
     setIsPublic(isPublic || false);
+    setSemester(semester || null);
   }
   //공지사항 list 변환
   const splitNotice = (notice) => {
@@ -50,25 +54,34 @@ const ClassBoardSection = ({ userStatus, klassData, studentList }) => {
   const handleSaveOnClick = () => {
     const confirm = window.confirm("이대로 클래스 정보를 변경하시겠습니까?");
     if (confirm) {
-      const classInfo = { title: _title, intro: _intro, notice: _notice, isPublic: _isPublic };
-      updateClassroom(classInfo, klassData.id);
+      const classInfo = { classTitle: _title, intro: _intro, notice: _notice, isPublic: _isPublic };
+      updateKlassroom(classInfo, klassInfo.id);
       setIsModifying(false);
     }
   }
   //변경 취소
   const handleCancelOnClick = () => {
-    bindKlassData();
+    bindData();
     setIsModifying(false);
   }
+  //학기 분리
+  const handleSemesterOnClick = () => {
+    const confirm = window.confirm("학기를 분리하시겠습니까?");
+    if (!confirm) return;
+    updateKlassroom({ semester: 1 }, klassInfo.id);
+  }
   //클래스 복제
-  const handleCopyOnClick = () => {
-    const { classTitle } = klassData;
+  const handleCopyOnClick = async () => {
+    const { classTitle } = klassInfo;
     const copyConfrim = window.prompt("클래스를 복제하시겠습니까? 클래스 이름을 입력하세요.", `2학기 ${classTitle} 사본`);
     if (copyConfrim === null) return;
     if (copyConfrim !== '') {
-      copyKlassroom(klassData, studentList, copyConfrim).then(() => {
+      try {
+        await copyKlassroom(klassInfo, studentList, copyConfrim);
         alert("복제 되었습니다");
         navigate("/classRooms");
+      } catch (err) { console.log("클래스 복제에 실패", err); alert(err, "클래스 복제에 실패했습니다. 오류 장소(useFireClassData_06"); }
+      copyKlassroom(klassInfo, studentList, copyConfrim).then(() => {
       })
     } else alert("클래스 제목을 입력해주세요.");
   }
@@ -76,7 +89,7 @@ const ClassBoardSection = ({ userStatus, klassData, studentList }) => {
   const handleDeleteOnClick = () => {
     const deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.");
     if (deleteConfirm === "삭제합니다") {
-      deleteClassWithStudents(klassData.id).then(() => {
+      deleteClassWithStudents(klassInfo.id).then(() => {
         alert("클래스와 모든 학생 정보가 삭제 되었습니다.")
         navigate("/classRooms");
       })
@@ -86,9 +99,9 @@ const ClassBoardSection = ({ userStatus, klassData, studentList }) => {
   const handleDropOutOnClick = () => {
     const confirm = window.confirm("코티칭 클래스를 탈퇴하시겠습니까?");
     if (confirm) {
-      const deletedList = user.coTeachingList.filter((item) => item.id !== klassData?.id);
+      const deletedList = user.coTeachingList.filter((item) => item.id !== klassInfo?.id);
       updateUserInfo("coTeachingList", deletedList);                                     //유저 코티칭 list에서 삭제
-      deleteKlassroomArrayInfo(klassData.id, "coTeacher", user.uid);                     //클래스 코티쳐 list에서 삭제
+      deleteKlassroomArrayInfo(klassInfo.id, "coTeacher", user.uid);                     //클래스 코티쳐 list에서 삭제
       navigate("/classRooms");
     }
   }
@@ -96,7 +109,10 @@ const ClassBoardSection = ({ userStatus, klassData, studentList }) => {
     <Container>
       {!isModifying && <BoldText>{_title}</BoldText>}
       {isModifying && <ModifyingInput type='text' value={_title} onChange={(event) => { setTitle(event.target.value) }} placeholder='반 제목을 수정해주세요'></ModifyingInput>}
-      <SubjectText>{klassData?.subject || "담임"}-{klassData?.subjDetail || "담임"}</SubjectText>
+      <Row style={{ justifyContent: "flex-end" }}>
+        <SubjectText>{klassInfo?.subject || "담임"}-{klassInfo?.subjDetail || "담임"}</SubjectText>
+        {semester && <SubjectText>&nbsp;-{semester}학기</SubjectText>}
+      </Row>
       <Wrapper>
         <Board>
           <InfoText>Class Info.</InfoText>
@@ -109,7 +125,7 @@ const ClassBoardSection = ({ userStatus, klassData, studentList }) => {
           <Row>
             <DotTitle title={"학생 공개 여부"} />
             {!isModifying
-              ? <BasicText>{klassData?.isPublic ? "공개" : "비공개"}</BasicText>
+              ? <BasicText>{klassInfo?.isPublic ? "공개" : "비공개"}</BasicText>
               : <TwoRadios name="isPublic"
                 id={["public", "private"]}
                 label={["공개 활동", "비공개 활동"]}
@@ -130,20 +146,22 @@ const ClassBoardSection = ({ userStatus, klassData, studentList }) => {
       </Wrapper>
       {(userStatus === "master") &&
         <Row style={{ justifyContent: "flex-end", marginTop: "20px", gap: "20px" }}>
-          {!isModifying && <MarginalText onClick={() => { setIsModifying((prev) => !prev) }}>정보 수정</MarginalText>}
-          {!isModifying && <MarginalText onClick={handleCopyOnClick}>클래스 복제</MarginalText>}
-          {!isModifying && <MarginalText onClick={handleDeleteOnClick}>클래스 삭제</MarginalText>}
-          {isModifying && <MarginalText onClick={handleSaveOnClick}>변경 저장</MarginalText>}
-          {isModifying && <MarginalText onClick={handleCancelOnClick}>취소</MarginalText>}
+          {!isModifying && <>
+            <ClickableText onClick={() => setIsModifying((prev) => !prev)}>정보 수정</ClickableText>
+            {klassType !== "homeroom" && <ClickableText onClick={handleSemesterOnClick}>학기 분리</ClickableText>}
+            <ClickableText onClick={handleCopyOnClick}>클래스 복제</ClickableText>
+            <ClickableText onClick={handleDeleteOnClick}>클래스 삭제</ClickableText>
+          </>}
+          {isModifying && <ClickableText onClick={handleSaveOnClick}>변경 저장</ClickableText>}
+          {isModifying && <ClickableText onClick={handleCancelOnClick}>취소</ClickableText>}
         </Row>}
       {(userStatus === "coTeacher") &&
         <Row style={{ justifyContent: "flex-end", marginTop: "20px", gap: "20px" }}>
-          {!isModifying && <MarginalText onClick={handleDropOutOnClick}>코티칭 클래스 탈퇴</MarginalText>}
+          {!isModifying && <ClickableText onClick={handleDropOutOnClick}>코티칭 클래스 탈퇴</ClickableText>}
         </Row>}
     </Container>
   )
 }
-
 const Row = styled.div`
   display: flex;
 `
@@ -166,7 +184,6 @@ const Board = styled(Column)`
   @media screen and (max-width: 758px) {
     width: 100%;
   }
-
 `
 const BasicText = styled.p`
   margin:0;
@@ -178,7 +195,6 @@ const BoldText = styled.h2`
   justify-content: center;
 `
 const SubjectText = styled.p`
-  text-align: right;
   font-size: 20px;
   font-weight: 600;
   color: #3454d1;
@@ -187,14 +203,6 @@ const InfoText = styled.p`
   text-align: center;
   font-size: 16px;
   font-weight: 600;
-`
-const MarginalText = styled.p`
-  font-size: 14px;
-  color: rgb(120, 120, 120);
-  text-decoration: underline;
-  margin-bottom: 0;
-  cursor: pointer;
-  &:hover { color: #3454d1; }
 `
 const ModifyingInput = styled.input`
   width: 100%;
@@ -211,6 +219,5 @@ const ModifyingTextarea = styled.textarea`
   border-radius: 5px;
   padding: 4px;
 `
-
-export default ClassBoardSection
+export default KlassBoardSection
 

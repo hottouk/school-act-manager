@@ -3,15 +3,14 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 //컴포넌트
 import CardSortForm from '../../components/Form/CardSortForm'
-import MainBtn from '../../components/Btn/MainBtn'
+import SubNav from '../../components/Bar/SubNav'
+import BackBtn from '../../components/Btn/BackBtn'
 //hooks
 import useClientHeight from '../../hooks/useClientHeight'
 //css
 import styled from 'styled-components'
-
-//2024.09.15(state에 반type 생성, css제목 변경)
+//state에 반type 생성, css제목 변경(240915)
 const ClassSortSelection = () => {
-  //1. 변수
   const navigate = useNavigate()
   const { state } = useLocation(); //=>에 따라 보여줄 화면 결정
   useEffect(() => {
@@ -20,11 +19,8 @@ const ClassSortSelection = () => {
   }, [state])
   const [step, setStep] = useState('')
   const [type, setType] = useState('')
-  //2. 세로 길이
   const clientHeight = useClientHeight(document.documentElement)
-
-
-  //2. 함수
+  //------함수부------------------------------------------------  
   const handleCardBtnClick = (event) => {
     switch (event.target.id) {
       case "subject":
@@ -63,17 +59,18 @@ const ClassSortSelection = () => {
 
   return (
     <Container $clientheight={clientHeight}>
-      {(step === "first") && <CardSortForm itemList={classSortList} handleCardBtnClick={handleCardBtnClick} />}
-      {(step === "second") && <CardSortForm itemList={howtoMakeList} handleCardBtnClick={handleCardBtnClick} />}
-      <Row>
-        <MainBtn onClick={() => { navigate('/classrooms') }}>뒤로가기</MainBtn>
-      </Row>
+      <SubNav><BackBtn /></SubNav>
+      <CardWrapper>
+        {(step === "first") && <CardSortForm itemList={classSortList} handleCardBtnClick={handleCardBtnClick} />}
+        {(step === "second") && <CardSortForm itemList={howtoMakeList} handleCardBtnClick={handleCardBtnClick} />}
+      </CardWrapper>
     </Container>
   )
 }
 const Container = styled.div`
   box-sizing: border-box;
-  margin-top: 110px;
+  min-height: 100dvh;
+  background-color: #efefef;
   @media screen and (max-width: 767px){
     position: fixed;
     width: 100%;
@@ -86,7 +83,17 @@ const Container = styled.div`
 `
 const Row = styled.div`
   display: flex;
-  justify-content: center;
-  margin-top: 5%;
 `
+const Column = styled(Row)`
+  flex-direction: column;
+`
+const CardWrapper = styled(Row)`
+  width: 80%;
+  height: 40dvh;
+  margin: 20px auto;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: space-around;
+`
+
 export default ClassSortSelection

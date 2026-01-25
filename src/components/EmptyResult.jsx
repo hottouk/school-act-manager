@@ -13,10 +13,10 @@ const EmptyResult = ({ comment, color, styles }) => {
     </Container>
   )
 }
-
 const Container = styled.div`
+  width: 100%;
+  padding: 10px;
   max-width: ${(props) => props.$maxWidth};
-  margin: 12px auto;
   border: ${(props) => props.$border};
   border-radius: 10px;
   img {

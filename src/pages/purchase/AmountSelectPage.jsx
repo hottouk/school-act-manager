@@ -7,6 +7,7 @@ import MainBtn from '../../components/Btn/MainBtn';
 //hooks
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
 import MainWrapper from '../../components/Styled/MainWrapper';
+import MainContainer from '../../components/Styled/MainContainer';
 //생성(251019)
 const AmountSelectPage = () => {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ const AmountSelectPage = () => {
   };
 
   return (
-    <Container>
+    <MainContainer>
       <MainWrapper styles={{ width: "65%" }}>
         <h4 style={{ fontSize: "20px" }}>회원 정보</h4>
         <p>고유번호: {myUserData?.uid ?? "에러, 다시 시도 바랍니다."}</p>
@@ -48,7 +49,7 @@ const AmountSelectPage = () => {
         <MainBtn onClick={handleOnClick} styles={{ margin: "20px 0 0 0" }}>다음 단계로</MainBtn>
       </MainWrapper>
       <p>※결제 금액과 리라는 1:1의 비율로 치환됩니다.</p>
-    </Container>
+    </MainContainer>
   )
 }
 
@@ -60,12 +61,5 @@ const Column = styled(Row)`
 `
 const BasicText = styled.p`
   margin: 0;
-`
-const Container = styled(Column)`
-  box-sizing: border-box;
-  background-color: #efefef;
-  min-height: 100dvh;
-  align-items: center;
-  gap: 10px;
 `
 export default AmountSelectPage

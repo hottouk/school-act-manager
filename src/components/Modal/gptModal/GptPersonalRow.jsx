@@ -7,15 +7,14 @@ import styled from 'styled-components'
 const GptPersonalRow = ({ itemObj, onInputChange, }) => {
   const inputRef = useRef('')
   const propTitle = itemObj.prop
-  let optionList = []
-  itemObj.wordList.map((keyword) => {
+  let optionList = [];
+  itemObj.wordList.forEach((keyword) => {
     optionList.push({ label: keyword, value: keyword, id: propTitle })
-    return null
   })
 
   return (
     <Container>
-      {propTitle !== "희망 직군[학과]" ? <Select 
+      {propTitle !== "희망 직군[학과]" ? <Select
         styles={{
           control: (baseStyles, state) => (
             {
@@ -25,13 +24,13 @@ const GptPersonalRow = ({ itemObj, onInputChange, }) => {
             }),
         }}
         onChange={(event) => {
-          inputRef.current.value = event.value
-          onInputChange(event, "select")
+          inputRef.current.value = event.value;
+          onInputChange(event, "select");
         }}
         options={optionList}
-        placeholder={propTitle} /> : <p>희망 직군[학과]</p>}
-
-      <StyledInput type="text" ref={inputRef} onChange={(event) => { onInputChange(event, "input") }} id={propTitle} />
+        placeholder={propTitle}
+      /> : <p>희망 직군[학과]</p>}
+      <TextInput type="text" ref={inputRef} onChange={(event) => { onInputChange(event, "input") }} id={propTitle} />
     </Container>
   )
 }
@@ -50,10 +49,10 @@ const Container = styled.div`
   }
  
 `
-const StyledInput = styled.input`
+const TextInput = styled.input`
   width: 70%;
   height: 35px;
   border: 1px solid rgba(120, 120, 120, 0.5);
-  border-radius: 10px;
+  border-radius: 5px;
 `
 export default GptPersonalRow

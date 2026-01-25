@@ -5,12 +5,14 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 //컴포넌트
 import ModalBtn from '../Btn/ModalBtn';
+import useAcc from '../../hooks/useAcc';
 //코드 정리(241219) -> 디자인 수정(250212)
-const SelectedDialogModal = ({ show, onHide, onClearSelect, writeAccDataOnDB, isDeleteChecked, delActiDataOnDB, klassId }) => {
+const SelectedDialogModal = ({ show, onHide, onClearSelect, isDeleteChecked, klassId, semester }) => {
   const studentSelectedList = useSelector(({ studentSelected }) => { return studentSelected });
   const actiSelectedList = useSelector(({ activitySelected }) => { return activitySelected });
   const [studentList, setStudentList] = useState(null);
   const [actiList, setActiList] = useState(null);
+  const { writeAccDataOnDB, delActiDataOnDB } = useAcc();
   useEffect(() => {
     //대화창에 선택한 학번과 활동 이름 띄운다. 
     setStudentList(studentSelectedList?.map(({ label }) => label));
@@ -24,7 +26,7 @@ const SelectedDialogModal = ({ show, onHide, onClearSelect, writeAccDataOnDB, is
   //------함수부------------------------------------------------  
   //확인
   const handleConfirmOnClick = () => {
-    if (!isDeleteChecked) writeAccDataOnDB().then(alert("입력 되었습니다."));
+    if (!isDeleteChecked) writeAccDataOnDB(klassId, semester).then(() => alert("입력 되었습니다."));
     else delActiDataOnDB(klassId).then(alert("삭제 되었습니다."));
     onHide();
     onClearSelect();

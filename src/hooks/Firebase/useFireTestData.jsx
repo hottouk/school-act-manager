@@ -27,7 +27,10 @@ const useFireTestData = () => {
     const data = { ...item, createdTime, id: thisId() };
     await setDoc(docRef, { [field]: arrayUnion(data) }, { merge: true })
       .then(
-        () => { if (followUp) followUp(); alert("저장되었습니다.") },
+        () => {
+          alert("저장되었습니다.");
+          if (followUp) followUp();
+        },
         (err) => {
           console.log(err);
           alert(`관리자에게 문의하세요(useFireTestData_02),${err}`);
