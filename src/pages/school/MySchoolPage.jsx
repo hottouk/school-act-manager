@@ -8,7 +8,6 @@ import { setAllStudents } from "../../store/allStudentsSlice"
 //페이지
 import SignupSection from "./SignupSection"
 //컴포넌트
-import MainPanel from "../../components/MainPanel"
 import CardList from "../../components/List/CardList"
 import ClassMemberModal from "../../components/Modal/ApplyClassModal"
 import SearchBar from "../../components/Bar/SearchBar"

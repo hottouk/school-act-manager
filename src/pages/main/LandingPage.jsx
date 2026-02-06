@@ -120,8 +120,8 @@ const SubHeader = styled.h3`
   }
 `
 const BibleSection = styled(Column)`
+  width: 100%;
   background-color: white;
-  margin: 20px auto;
   gap: 20px;
 `
 const BibleText = styled.p`
