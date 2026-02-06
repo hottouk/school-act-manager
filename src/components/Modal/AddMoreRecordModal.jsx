@@ -1,18 +1,18 @@
 //라이브러리
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Spinner } from 'react-bootstrap';
 //컴포넌트
 import Modal from 'react-bootstrap/Modal';
 import ModalBtn from '../Btn/ModalBtn';
 import DotTitle from '../Title/DotTitle';
+import InnerOverlay from '../Styled/InnerOverlay';
 //hooks
 import useGetByte from '../../hooks/useGetByte';
 //이미지
 import xImage from '../../image/icon/x_btn.png';
 import plusImg from '../../image/icon/plus.png';
 //생성(240719) --> 6개로 수정(241123) --> 디자인정리(250210) --> 리라 결제 및 통합(260108)
-const AddMoreRecordModal = ({ show, onHide, record, list, setList, setIsRiraModal, from, type, setType }) => {
+const AddMoreRecordModal = ({ show, onHide, record, list, setList, isInnerModal, setIsRiraModal, from, type, setType }) => {
   useEffect(() => bindData(), [list, show, type]);
   const { getByteLengthOfString } = useGetByte();
   //성취도
@@ -206,6 +206,7 @@ const AddMoreRecordModal = ({ show, onHide, record, list, setList, setIsRiraModa
         <ModalBtn onClick={() => { onHide(); setType(from); }}>취소</ModalBtn>
         <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleSaveOnClick}>반영</ModalBtn>
       </Modal.Footer>
+      {isInnerModal && <InnerOverlay />}
     </Modal >
   )
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 //2024.07.26 샘플
-const SmallBtn = ({ id, btnColor, hoverBtnColor, btnOnClick, onClick, btnName, fontColor, children, disabled, styles }) => {
+const SmallBtn = ({ id, btnColor, hoverBtnColor, onClick, btnName, fontColor, children, disabled, styles }) => {
   const width = styles?.width;
   return (
     <StyledButton
@@ -12,7 +12,7 @@ const SmallBtn = ({ id, btnColor, hoverBtnColor, btnOnClick, onClick, btnName, f
       $fontColor={fontColor || "#fff"}
       $hoverBackgroundColor={hoverBtnColor || "#3454d1"}
       $width={width || "52px"}
-      onClick={btnOnClick || onClick}
+      onClick={onClick}
       disabled={disabled || false}
     >{!disabled && (btnName || children || "샘플")}
     </StyledButton>

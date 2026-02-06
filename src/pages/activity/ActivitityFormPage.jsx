@@ -1,8 +1,7 @@
 //라이브러리
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Spinner } from "react-bootstrap";
 import styled from "styled-components";
 //hooks
 import useChatGpt from "../../hooks/useChatGpt";
@@ -24,8 +23,11 @@ import SubNav from "../../components/Bar/SubNav";
 import BackBtn from "../../components/Btn/BackBtn";
 import SmallBtn from "../../components/Btn/SmallBtn";
 import MainBtn from "../../components/Btn/MainBtn";
+//상수
+import { GPT_RESPONSE } from "../../constants/gpt";
 //애니
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
+import GptIngModal from "../../components/Modal/gptModal/GptIngModal";
 //실시간 바이트 갱신(240706) -> 담임반 활동(241221)
 const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
   useEffect(() => { setIsVisible(true) }, []);
@@ -34,7 +36,6 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const queryParams = new URLSearchParams(location.search);
   const sort = queryParams.get("sort");
   const { state } = location; //state.acti는 활동
-  console.log(state)
   useEffect(() => { if (state?.acti) bindData(); else setIsEdit(true); }, [state]);
   const navigate = useNavigate()
   //유저 정보
@@ -78,15 +79,15 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const { addActi, updateActi, deleteActi } = useFireActiData();
   const { copyActiTransaction, delCopiedActiTransaction } = useFireTransaction()
   //gpt
-  const { gptAnswer, askExtraRecord, askPerfRecord, askSubjRecord, askHomeroomReccord, splitGptAnswers, gptRes } = useChatGpt();
+  const { gptAnswer, askExtraRecord, askPerfRecord, askSubjRecord, askHomeroomRecord, splitGptAnswers, gptRes, gptStatus, gptProgress } = useChatGpt();
   const [gptType, setGptType] = useState('');
   useEffect(() => { setGptType(sort); }, [sort]);
   const gptPromptMap = {
     subject: (model, rira) => askSubjRecord(_subjDetail, _content, model, rira),
-    perf: (model, rira) => askPerfRecord(_subjDetail, _title, _record, model, rira),
-    extra: (model, rira) => askExtraRecord(_record, model, rira),
-    repeat: (model, rira) => askPerfRecord(_subjDetail, _title, _record, model, rira),
-    homeroom: (model, rira) => askHomeroomReccord(_subjDetail, _content, model, rira),
+    perf: (model, rira) => askPerfRecord(_subjDetail, _content, _record, model, rira),
+    extra: (model, rira) => askExtraRecord(_subjDetail, _content, _record, model, rira),
+    repeat: (model, rira) => askPerfRecord(_subjDetail, _content, _record, model, rira),
+    homeroom: (model, rira) => askHomeroomRecord(_subjDetail, _title, _content, _timeFormat, model, rira),
   };
   const gptSetterMap = {
     subject: () => setRecord(gptAnswer),
@@ -100,7 +101,8 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
       const answers = splitGptAnswers(gptAnswer, "^");
       const list = answers.map((rec, idx) => ({ times: 4 - idx, record: rec }));
       setRepeatInfoList(list);
-    }
+    },
+    homeroom: () => setRecord(gptAnswer),
   };
   useEffect(() => { if (gptAnswer !== '') { gptSetterMap[gptType](); } }, [gptAnswer]);
   //css 및 에니
@@ -108,7 +110,9 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const [isVisible, setIsVisible] = useState(false)
   //개별화 함수
   const textareaRef = useRef({});
-  //------함수부------------------------------------------------  
+  //------useMemo------------------------------------------------  
+  const isGptLoading = useMemo(() => gptRes === GPT_RESPONSE.LOADING, [gptRes]);
+  //------함수부-------------------------------------------------  
   //데이터 초기화
   const bindData = () => {
     const acti = state.acti;
@@ -150,7 +154,6 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
         return;
     }
   }
-
   //개별화 틀 클릭
   const handlePersonalizeOnClick = (index) => {
     const template = '{/*개별 변경 사항을 입력하세요*/}';
@@ -177,10 +180,11 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   //GPT 대화창 열기
   const handleGptOnClick = () => { if (!check()) return; setIsRiraModal(true); };
   //GPT 승인 시
-  const askGptOnApprove = (model) => {
-    gptPromptMap[gptType](model);
-    console.log("gptTypeMap:", gptPromptMap[gptType]);
-  };
+  const askGptOnApprove = ({ model, leftRira }) => {
+    const fn = gptPromptMap[gptType];
+    if (typeof (fn) !== "function") { alert("지원하지 않는 GPT 타입입니다."); return; }
+    fn(model, leftRira);
+  }
   //저장
   const handleSaveOnClick = (event) => {
     event.preventDefault();
@@ -343,7 +347,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
             </HiddenWrapper>
           </AnimMaxHightOpacity>
           {/* 교사 버튼 영역 */}
-          {gptRes !== "loading" ? <BtnWrapper>
+          <BtnWrapper>
             {/* 활동 생성 */}
             {!state && <MainBtn onClick={handleSaveOnClick}>생성</MainBtn>}
             {/* 활동 수정 */}
@@ -357,7 +361,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
             </>}
             {/* 활동 업기 */}
             {(state && (state?.acti.uid !== user.uid)) && <MainBtn onClick={handleCopyOnClick}>업어가기</MainBtn>}
-          </BtnWrapper> : <Row style={{ justifyContent: "center" }}><Spinner /></Row>}
+          </BtnWrapper>
         </ActiSection>}
     </Container >
     {/* 모달  */}
@@ -367,6 +371,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
       record={_record}
       list={recordListMap[gptType]}
       setList={recordSetterMap[gptType]}
+      isInnerModal={isRiraModal || isGptLoading}
       setIsRiraModal={setIsRiraModal}
       from={sort}
       type={gptType}
@@ -376,6 +381,11 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
       show={isRiraModal}
       onHide={() => setIsRiraModal(false)}
       onApprove={askGptOnApprove}
+    />
+    <GptIngModal
+      show={isGptLoading}
+      status={gptStatus}
+      progress={gptProgress}
     />
   </>
   )

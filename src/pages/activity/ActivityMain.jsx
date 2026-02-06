@@ -1,16 +1,17 @@
 //라이브러리
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 //컴포넌트
+import MainContainer from '../../components/Styled/MainContainer'
+import MainWrapper from '../../components/Styled/MainWrapper'
+import SearchBar from '../../components/Bar/SearchBar'
 import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
 import CardList from '../../components/List/CardList'
 import TabBtn from '../../components/Btn/TabBtn'
-import SearchBar from '../../components/Bar/SearchBar'
 import Pagenation from '../../components/Pagenation'
 import HorizontalMobileAd from '../../components/Ads/HorizontalMobileAd'
-import MainWrapper from '../../components/Styled/MainWrapper'
 //hooks
 import useFireActiData from '../../hooks/Firebase/useFireActiData'
 import useTeacherAuth from '../../hooks/useTeacherAuth'
@@ -29,10 +30,10 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   const navigate = useNavigate();
   //활동관리-전체 활동 선택된 과목
   const [selectedSubj, setSelectedSubj] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   //전체 활동-교과 목록
   const [subjectList, setSubjectList] = useState(null);
-  useEffect(() => { extractSubjFromData() }, [subjectGroupList])
+  useEffect(() => { extractSubjFromData() }, []);
   //모든 활동, 업어온 활동, 내 활동
   const { fetchCopiesData } = useFireUserData();
   const { fetchAllActis } = useFireActiData();
@@ -42,7 +43,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   const [_myQuizActiList, setMyQuizActiList] = useState([]);
   const [copiedList, setCopiedList] = useState([]);
   //실시간 활동 정보
-  const { subjActiList, homeActiList, quizActiList } = useFetchRtActiData(user.uid);
+  const { subjActiList, homeActiList, quizActiList } = useFetchRtActiData(user?.uid);
   useEffect(() => {
     setMySubjActiList(subjActiList)
     setMyHomeActiList(homeActiList)
@@ -50,7 +51,6 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   }, [subjActiList, homeActiList, quizActiList])
   //진입 경로
   const location = useLocation();
-  useEffect(() => { fetchDataByLocation() }, [location, selectedSubj]);
   //페이지네이션
   const itemsPerPage = 30;
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,28 +67,30 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   //------함수부------------------------------------------------
   //교과 제목 추출
   const extractSubjFromData = () => {
-    let subjList = subjectGroupList.reduce((acc, curSubjObj) => {
+    const subjList = subjectGroupList.reduce((acc, curSubjObj) => {
       acc.push(...Object.keys(curSubjObj));
       return acc
     }, []);
     setSubjectList(subjList)
   }
-
+  //------useMemo, useCallback---------------------------------
   //진입 경로에 따라 다른 데이터 가져오기
-  const fetchDataByLocation = () => {
-    if (!location.state) { //활동관리-나의활동
-      fetchCopiesData().then((copiedList) => { setCopiedList(copiedList) })
-      setIsLoading(false)
-    } else { //활동관리-전체 활동-과목 선택
-      fetchAllActis("subject", selectedSubj, "isPrivate", false).then((actiList) => {
-        actiList.sort((a, b) => a.title.localeCompare(b.title));
-        setPageData(actiList.slice(0, itemsPerPage));
-        setAllActiList(actiList);
-        setCurrentPage(1);
-        setIsLoading(false);
-      })
-    }
-  }
+  const fetchDataByLocation = useCallback(
+    () => {
+      if (!location.state) { //활동관리-나의활동
+        fetchCopiesData().then((copiedList) => { setCopiedList(copiedList) })
+        setIsLoading(false)
+      } else { //활동관리-전체 활동-과목 선택
+        fetchAllActis("subject", selectedSubj, "isPrivate", false).then((actiList) => {
+          actiList.sort((a, b) => a.title.localeCompare(b.title));
+          setPageData(actiList.slice(0, itemsPerPage));
+          setAllActiList(actiList);
+          setCurrentPage(1);
+          setIsLoading(false);
+        })
+      }
+    }, [location, selectedSubj, itemsPerPage, fetchCopiesData, fetchAllActis]);
+  useEffect(() => { fetchDataByLocation() }, []);
   //활동 클릭
   const handleActiOnClick = (item) => {
     if (item.subject === "담임") { navigate(`/activities/${item.id}?sort=homeroom`, { state: { acti: item } }) }  //담임
@@ -97,7 +99,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
   }
 
   return (
-    <Container $clientheight={clientHeight}>
+    <MainContainer>
       {/* 교사: 활동관리 - 나의활동 */}
       {(user.isTeacher && !location.state) && <MainWrapper>
         <SearchBar title="교과 활동" type="acti" list={_mySubjActiList} setList={setMySubjActiList} />
@@ -130,7 +132,7 @@ const ActivityMain = () => { //진입 경로 총 3곳: 교사 2(활동 관리 - 
           </PageWrapper>}
         </MainWrapper>
       </>}
-    </Container>
+    </MainContainer>
   )
 }
 const Row = styled.div`
@@ -138,16 +140,6 @@ const Row = styled.div`
 `
 const Column = styled(Row)` 
   flex-direction: column;
-`
-const Container = styled(Column)`
-  box-sizing: border-box;
-  background-color: #efefef;
-  min-height: 100dvh;
-  align-items: center;
-  @media screen and (max-width: 768px) {
-    height: ${(props) => props.$clientheight}px;
-    overflow-y: scroll;
-  }
 `
 const TabBtnContainer = styled(Row)`
   align-items: center;

@@ -6,6 +6,8 @@ import MainBtn from "../../components/Btn/MainBtn";
 //hooks
 import useFetchRtMyUserData from "../../hooks/RealTimeData/useFetchRtMyUserData";
 import useFireBasic from "../../hooks/Firebase/useFireBasic";
+import MainContainer from "../../components/Styled/MainContainer";
+import MainWrapper from "../../components/Styled/MainWrapper";
 //생성(251020)
 const PurchaseFailPage = () => {
   const [searchParams] = useSearchParams();
@@ -20,8 +22,8 @@ const PurchaseFailPage = () => {
     setIsReport(true);
   }
   return (
-    <Container>
-      <Wrapper>
+    <MainContainer styles={{ paddingTop: "20px" }}>
+      <MainWrapper styles={{ width: "65%" }}>
         <img width="100px" src="https://static.toss.im/lotties/error-spot-no-loop-space-apng.png" alt="에러 이미지" style={{ alignSelf: "center" }} />
         <h2 style={{ textAlign: "center" }}>결제에 실패했어요</h2>
         <div className="p-grid typography--p" style={{ marginTop: "50px" }}>
@@ -32,8 +34,8 @@ const PurchaseFailPage = () => {
         </div>
         <MainBtn styles={{ margin: "50px 0 0 0" }} onClick={handleOnClick} disabled={isReport}
         >{!isReport ? "관리자에게 에러 전송하기" : "전송 완료"}</MainBtn>
-      </Wrapper>
-    </Container>
+      </MainWrapper>
+    </MainContainer>
   );
 }
 
@@ -42,18 +44,5 @@ const Row = styled.div`
 `
 const Column = styled(Row)` 
   flex-direction: column;
-`
-const Container = styled(Column)`
-  box-sizing: border-box;
-  background-color : #efefef;
-  min-height: 100dvh;
-  align-items: center;
-  gap: 10px;
-`
-const Wrapper = styled(Column)`
-  width: 60%;
-  background-color: white;
-  border-radius: 6px;
-  padding: 15px;
 `
 export default PurchaseFailPage;

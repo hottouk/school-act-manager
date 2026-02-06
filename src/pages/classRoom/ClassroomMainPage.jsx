@@ -11,7 +11,7 @@ import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd';
 import HorizontalMobileAd from '../../components/Ads/HorizontalMobileAd';
 import MainWrapper from '../../components/Styled/MainWrapper';
 //hooks
-import useFetchRtMyClassData from '../../hooks/RealTimeData/useFetchRtMyClassData';
+import useFireClassData from '../../hooks/Firebase/useFireClassData';
 import useClientHeight from '../../hooks/useClientHeight';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useMediaQuery from '../../hooks/useMediaQuery';
@@ -24,11 +24,13 @@ const ClassRoomMainPage = () => {
   const dispatcher = useDispatch();
   const isMobile = useMediaQuery("(max-width: 767px)");
   //교사
-  const { classList } = useFetchRtMyClassData();
+  const { klassListRtData, klassListDataListener } = useFireClassData();
+  useEffect(() => { klassListDataListener(user.uid); }, []);
+  useEffect(() => sortTeacherKlass(klassListRtData), [klassListRtData]);
   const [subjKlassList, setSubjKlassList] = useState(null);
   const [homeroomKlassList, setHomerooomKlassList] = useState(null);
   const [coTeachingList, setCoTeachingList] = useState(null);
-  useEffect(() => { sortTeacherKlass() }, [classList]);
+  const [legacyList, setLegacyList] = useState(null);
   //학생
   const { fetchUserData } = useFireUserData();
   const [appplyKlass, setApplyKlass] = useState([]);
@@ -48,26 +50,32 @@ const ClassRoomMainPage = () => {
   //------교사용------------------------------------------------  
   //교과, 담임반 분류
   const sortTeacherKlass = () => {
-    let subjClassList = [];
-    let homeroomClassList = [];
-    classList.forEach(item => {
-      if (!item.type || item.type === "subject") subjClassList.push(item)
-      else homeroomClassList.push(item)
+    if (!klassListRtData) return;
+    const subjClassList = [];
+    const homeroomClassList = [];
+    const legacyList = [];
+    klassListRtData.forEach(item => {
+      const year = item.createdTime?.toDate?.().getFullYear();
+      const isthisYear = year === 2026;
+      if (item.type === "subject" && isthisYear) subjClassList.push(item);
+      else if (item.type === "subject" && !isthisYear) subjClassList.push(item);
+      else if (item.type === "homeroom") homeroomClassList.push(item);
     })
-    setSubjKlassList(subjClassList)
-    dispatcher(setAllSubjClasses(subjClassList)) //교과반 전역 변수화
-    setHomerooomKlassList(homeroomClassList)
+    setSubjKlassList(subjClassList);
+    dispatcher(setAllSubjClasses(subjClassList));
+    setHomerooomKlassList(homeroomClassList);
+    setLegacyList(legacyList);
   }
   //코티칭 클릭
   const handleCoTeachingOnClick = (item) => {
     if (item.isApproved) { navigate(`/classrooms/${item.id}`, { state: { ...item } }) }
-    else { window.alert("승인 대기중 입니다.") }
+    else { alert("승인 대기중 입니다."); }
   }
   //------학생용------------------------------------------------  
   //가입 신청, 승인 클래스 분류
   const sortStudentKlass = (list) => {
-    const approved = []
-    const applied = []
+    const approved = [];
+    const applied = [];
     list?.forEach((item) => {
       if (item.isApproved) approved.push(item)
       else applied.push(item)

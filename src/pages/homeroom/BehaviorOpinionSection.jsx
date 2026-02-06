@@ -120,7 +120,7 @@ const BehaviorOpinionSection = ({ behaviorRec, setBehaviorRec, isModifying, setI
   };
   return (
     <>
-      <Container>
+      <Section>
         <Header>{titleByStep[step]}</Header>
         {step === 0 && <IntroWrapper>
           <Textarea
@@ -227,7 +227,7 @@ const BehaviorOpinionSection = ({ behaviorRec, setBehaviorRec, isModifying, setI
             </BtnWrapper>
           </StepWrapper>
         </AnimOpacity>
-      </Container>
+      </Section>
       <ImgModal
         show={isImgModal}
         onHide={() => setIsImgModal(false)}
@@ -236,7 +236,7 @@ const BehaviorOpinionSection = ({ behaviorRec, setBehaviorRec, isModifying, setI
       <ChargeRiraModal
         show={isRiraModal}
         onHide={() => setIsRiraModal(false)}
-        onApprove={(model) => askBehavioralOp(_selectedSpec, model)}
+        onApprove={({ model, leftRira }) => askBehavioralOp(_selectedSpec, model, leftRira)}
       />
       <GptIngModal
         show={isLoading}
@@ -255,7 +255,7 @@ const Column = styled(Row)`
 const Center = styled(Row)`
   justify-content: center;
 `
-const Container = styled.div`
+const Section = styled.div`
   margin: 10px auto;
   @media screen and (max-width: 767px){
     width: 80px;

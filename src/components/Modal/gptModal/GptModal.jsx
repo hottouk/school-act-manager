@@ -1,5 +1,5 @@
 //라이브러리
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components';
 import { Spinner } from 'react-bootstrap';
 import Modal from 'react-bootstrap/Modal';
@@ -12,6 +12,8 @@ import ByteCalculator from '../../Etc/ByteCalculator';
 import MidBtn from '../../Btn/MidBtn';
 import ModalBtn from '../../Btn/ModalBtn';
 import ChargeRiraModal from '../ChargeRiraModal';
+import InnerLayer from '../../Styled/InnerLayer';
+import InnerOverlay from '../../Styled/InnerOverlay';
 //hooks
 import useChatGpt from '../../../hooks/useChatGpt';
 import useFireStorage from '../../../hooks/useFireStorage';
@@ -20,10 +22,12 @@ import { academicAbility, subjectCareerAbility, subjectCoopAbility } from '../..
 //img
 import plusIcon from '../../../image/icon/plus.png'
 import arrowsIcon from '../../../image/icon/arrows_icon.png'
+import GptIngModal from './GptIngModal';
+import { GPT_RESPONSE } from '../../../constants/gpt';
 //수정(240904) => 보고서탭(241203) => OCR(250327) -> 과금(260112)
 const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const { uploadFile, findFile } = useFireStorage();
-  const { askGptPersonalize, askPersonalizeOnReport, gptAnswer, gptRes } = useChatGpt();
+  const { askGptOnTrait, askGptOnReport, gptAnswer, gptRes, gptStatus, gptProgress } = useChatGpt();
   //역량
   const [acadList, setAcadList] = useState([])      //학업
   const [careerList, setCareerList] = useState([])  //진로
@@ -36,13 +40,13 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const [inputValues, setInputValues] = useState({});
   //탭 
   const [tab, setTab] = useState(1);
-  const gptPromptByTapMap = {
-    1: (model) => {
+  const gptPromptByTap = {
+    1: (model, rira) => {
       const resultArray = convertObjectToArray(inputValues);
-      askGptPersonalize(acti, resultArray, model);
+      askGptOnTrait(acti?.subject, acti?.record, resultArray, model, rira);
     },
-    2: (model) => askPersonalizeOnReport(acti?.record, report, model),
-    3: (model) => askPersonalizeOnReport(acti?.record, extracted, model),
+    2: (model, rira) => askGptOnReport(acti?.record, report, model, rira),
+    3: (model, rira) => askGptOnReport(acti?.record, extracted, model, rira),
   }
   //숨기기 토글
   const [isAcadShown, setIsAcadShown] = useState(false)
@@ -63,7 +67,9 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const [loadingStage, setLoadingStage] = useState(null);
   const inputFileRef = useRef(null);
   //추가 모달
-  const [isInnerModal, setIsInnerModal] = useState(false);
+  const [isRiraModal, setIsRiraModal] = useState(false);
+  //------useMemo------------------------------------------------ 
+  const isGptLoading = useMemo(() => gptRes === GPT_RESPONSE.LOADING, [gptRes]);
   //------함수부------------------------------------------------  
   //능력 분류
   const sortAbilityList = (list, type) => {
@@ -123,8 +129,14 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   //gpt
   const handleGptOnClick = () => {
     if (!check()) return;
-    setIsInnerModal(true);
+    setIsRiraModal(true);
   };
+  //GPT 승인 시
+  const askGptOnApprove = ({ model, leftRira }) => {
+    const fn = gptPromptByTap[tab];
+    if (typeof (fn) !== "function") { alert("지원하지 않는 GPT 타입입니다."); return; }
+    fn(model, leftRira);
+  }
   //inputValues중 값이 있는 항목만 배열로 변경
   const convertObjectToArray = (obj) => {
     return Object.entries(obj)
@@ -325,12 +337,17 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
       </Column>
       }
       {/* 추가 모달 */}
-      {isInnerModal && <InnerLayer>
-        <InnerOverlay onClick={() => setIsInnerModal(false)} />
+      {(isRiraModal || isGptLoading) && <InnerLayer>
+        <InnerOverlay />
         <ChargeRiraModal
-          show={isInnerModal}
-          onHide={() => setIsInnerModal(false)}
-          onApprove={gptPromptByTapMap[tab]}
+          show={isRiraModal}
+          onHide={() => setIsRiraModal(false)}
+          onApprove={askGptOnApprove}
+        />
+        <GptIngModal
+          show={isGptLoading}
+          status={gptStatus}
+          progress={gptProgress}
         />
       </InnerLayer>}
     </Modal.Body >
@@ -408,19 +425,4 @@ const Textarea = styled.textarea`
   padding: 5px;
   border-radius: 5px;
 `
-// 내부모달
-const InnerLayer = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 1056; /* 부모 모달(보통 1055)보다 크게 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-const InnerOverlay = styled.div`
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-`;
-
 export default GptModal

@@ -1,12 +1,12 @@
 import styled from "styled-components"
 
-const UpperTab = ({ className, children, value, top, left, onClick, disabled }) => {
+const UpperTab = ({ className, children, value, onClick, disabled }) => {
   const handleOnClick = () => {
     if (disabled) return;
     onClick();
   }
   return (
-    <Container className={className} $tab={value || 1} $top={top || "0"} $left={left || "0"} onClick={handleOnClick} $disabled={disabled}>
+    <Container className={className} $tab={value || 1} onClick={handleOnClick} $disabled={disabled}>
       {children || "샘플"}
     </Container >)
 }

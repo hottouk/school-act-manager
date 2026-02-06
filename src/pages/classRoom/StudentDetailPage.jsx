@@ -6,6 +6,8 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 //섹션
 import PetInfoSection from './PetInfoSection';
+import BehaviorOpinionSection from '../homeroom/BehaviorOpinionSection';
+import ActiTableSection from './ActiTableSection';
 //컴포넌트
 import MainContainer from '../../components/Styled/MainContainer';
 import SubNav from '../../components/Bar/SubNav';
@@ -15,38 +17,30 @@ import ArrowBtn from '../../components/Btn/ArrowBtn';
 import BackBtn from '../../components/Btn/BackBtn';
 import ClickableIcon from '../../components/Styled/ClickableIcon';
 //hooks
-import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import useFirePetData from '../../hooks/Firebase/useFirePetData';
-import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useMediaQuery from '../../hooks/useMediaQuery';
 //이미지
 import arrows_icon from "../../image/icon/arrows_icon.png"
 //효과
 import AnimRotation from '../../anim/AnimRotation';
-import ActiTableSection from './ActiTableSection';
-import BehaviorOpinionSection from '../homeroom/BehaviorOpinionSection';
+import { ERROR_MSG } from '../../constants/errMsg';
 //코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223) -> 수정 요청 기능(251104) -> 담임반 통합(260120)
 const StudentDetailPage = () => {
   //준비
   const { id: klassId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { petId, semester, klassType } = location.state;
+  const { petId, semester, klassType } = location.state ?? {};
   //학급
-  useEffect(() => { petDataListener(klassId, petId); setSemester(semester || null); }, [location.state]);
+  useEffect(() => { petDataListener(klassId, petId); setSemester(semester || null); }, [klassId, petId, semester]);
   //유저
   const user = useSelector(({ user }) => user);
   //학생
-  const allStudentList = useSelector((state) => state.allStudents);
-  const { petRtData, petDataListener, updatePetInfo } = useFirePetData();
-  const { fetchUserData } = useFireUserData();
+  const allStudentFrozenList = useSelector(({ allStudents }) => allStudents);
+  const { petRtData, petDataListener } = useFirePetData();
   useEffect(() => {
-    checkUser();
-    setNthStudent(allStudentList.findIndex(({ id }) => { return id === petId })); //전체 학생에서 몇 번째인지 index 찾기
-    syncPetInfo();
-    fetchPetInfo();
-    bindActiData();
-  }, [petRtData]);
+    bindInitData(); checkMaster(); setNthStudent(allStudentFrozenList.findIndex(({ id }) => id === petId)); //전체 학생에서 몇 번째인지 index 찾기
+  }, [petRtData, user]);
   //탭
   const [_recordType, setRecordType] = useState(1);
   const [_semester, setSemester] = useState(1);
@@ -55,10 +49,10 @@ const StudentDetailPage = () => {
   //편집 모드 
   const [isModifying, setIsModifying] = useState(false);
   const [isBehavioring, setIsBehavioring] = useState(false);
-  const { deleteStudent, updateStudent } = useAddUpdFireData("classRooms");
+  const { deletePet, updatePetInfo } = useFirePetData();
   //학생 정보
   const [nthStudent, setNthStudent] = useState(null);
-  const [_writtenName, setWrittenName] = useState('미등록');
+  const [_writtenName, setWrittenName] = useState('');
   const [_actiList, setActiList] = useState(null);
   const [_behaviorRecord, setBehaviorRecord] = useState('');
   const [isMaster, setIsMaster] = useState(false);
@@ -67,20 +61,21 @@ const StudentDetailPage = () => {
   //에니메이션
   const [isAnimating, setIsAnimating] = useState(false);
   //------함수부------------------------------------------------  
-  const bindActiData = () => {
+  const bindInitData = () => {
     if (!petRtData) return;
     const { behaviorOpinion } = petRtData;
     const actList = petRtData.actList ?? [];
     let list;
     if (klassType === "subject") list = actList.filter((acti) => acti.semester !== 2) ?? [];
     else list = actList.filter(acti => acti.subjDetail === "자율");
+    setWrittenName(petRtData.writtenName || '미등록');
     setBehaviorRecord(behaviorOpinion || '');
     setActiList(list);
   }
   //탭 전환
   const changeActiList = (value) => {
     if (!klassType) return;
-    const { actList } = petRtData || [];
+    const actList = petRtData?.actList ?? [];
     setActiList(() => {
       if (klassType === "subject") {
         if (value === 2) return actList?.filter((acti) => acti.semester === 2);
@@ -94,34 +89,11 @@ const StudentDetailPage = () => {
     });
   }
   //학생 본인 id가 아닐 경우 back
-  const checkUser = () => {
+  const checkMaster = () => {
     if (user.isTeacher || !petRtData) return;
     const { master } = petRtData;
     if (master?.studentId === user.uid) { setIsMaster(true); }
     else { navigate(-1); }
-  }
-  //펫 동기화(학생)
-  const syncPetInfo = () => {
-    if (user.isTeacher || !petRtData || !user) return;
-    const confirm = window.confirm("펫 정보를 동기화 하시겠습니까?")
-    if (confirm) {
-      const myPetList = user.myPetList;
-      if (!myPetList) return;
-      const myPet = myPetList.find((item) => item.petId === petId);
-      updatePetInfo(klassId, petId, myPet); //pet 업데이트
-    }
-  }
-  //펫 동기화(교사)
-  const fetchPetInfo = () => {
-    if (!user.isTeacher) return;
-    const masterId = petRtData?.master?.studentId;
-    if (!masterId) return;
-    fetchUserData(masterId).then((info) => {
-      const petList = info.myPetList;
-      if (!petList) return;
-      const thisPet = petList.find((item) => item.petId === petId);
-      updatePetInfo(klassId, petId, thisPet); //pet 업데이트
-    })
   }
   //실시간 acc
   const getAccRec = (list) => list.reduce((acc, cur) => acc + " " + cur.record, '')
@@ -130,7 +102,7 @@ const StudentDetailPage = () => {
     if (isAnimating) return;
     setIsAnimating(true);
     setTimeout(() => {
-      navigate(`/classrooms/${klassId}/student`, { state: { semester: _semester, petId: student.id, klassType } })
+      navigate(`/classrooms/${klassId}/student`, { state: { semester: _semester, petId: student.id, klassType } });
       setIsAnimating(false);
     }, 500); // 애니메이션 시간과 동일하게 설정
   }
@@ -139,43 +111,36 @@ const StudentDetailPage = () => {
     if (!window.confirm('학생정보를 이대로 저장하시겠습니까?')) return;
     const list = petRtData.actList ?? [];
     let rest;
-    let newStudentInfo;
+    let newPetInfo;
     if (klassType === "subject") {
       if (_semester === 2) rest = list.filter(item => item.semester !== 2) ?? [];
       else rest = list.filter(item => item.semester === 2) ?? [];
-      newStudentInfo = { writtenName: _writtenName, actList: [..._actiList, ...rest] };
+      newPetInfo = { writtenName: _writtenName, actList: [..._actiList, ...rest] };
     } else {
       if (_recordType === 1) rest = list?.filter(item => item.subjDetail !== "자율");
       else if (_recordType === 2) rest = list.filter(item => item.subjDetail !== "진로");
       else rest = list;
-      newStudentInfo = { writtenName: _writtenName, actList: [..._actiList, ...rest,], behaviorOpinion: _behaviorRecord };
+      newPetInfo = { writtenName: _writtenName, actList: [..._actiList, ...rest,], behaviorOpinion: _behaviorRecord };
     }
-    updateStudent(newStudentInfo, klassId, petId);
+    updatePetInfo(klassId, petId, newPetInfo);
     setIsModifying(false);
   }
-  //취소
+  //수정 취소
   const handleCancelOnClick = () => {
-    bindActiData();
+    bindInitData();
     setIsModifying(false);
-  }
-  //학생 삭제
-  const handleStudentDeleteOnClick = () => {
-    if (window.confirm('학생을 삭제하시겠습니까? 삭제한 학생은 복구할 수 없습니다.')) {
-      deleteStudent(klassId, petId) //데이터 통신
-      navigate(-1);
-    }
   }
   //화살표 버튼
   const handleArrowBtnOnClick = (event, index) => {
     switch (event.target.id) {
       case "right_arw_btn":
-        if (nthStudent === allStudentList.length - 1) { alert("마지막 학생입니다."); return; }
-        const nextStudent = allStudentList[nthStudent + 1];
+        if (nthStudent === allStudentFrozenList.length - 1) { alert("마지막 학생입니다."); return; }
+        const nextStudent = allStudentFrozenList[nthStudent + 1];
         moveStudent(nextStudent);
         break;
       case "left_arw_btn":
         if (nthStudent === 0) { alert("첫번째 학생입니다."); return; }
-        const previousStudent = allStudentList[nthStudent - 1];
+        const previousStudent = allStudentFrozenList[nthStudent - 1];
         moveStudent(previousStudent);
         break;
       case "up_arw_btn":
@@ -185,13 +150,21 @@ const StudentDetailPage = () => {
       default: return
     }
   }
+  //학생 삭제
+  const handlePetDeleteOnClick = async () => {
+    if (!window.confirm('학생을 삭제하시겠습니까? 삭제한 학생은 복구할 수 없습니다.')) return;
+    try {
+      await deletePet(klassId, petId);
+      navigate(-1);
+    } catch (err) { alert(ERROR_MSG.deletePet, err) }
+  };
   return (<>
     <MainContainer>
       <SubNav styles={{ padding: "10px" }}>
         {user.isTeacher && <Select
           placeholder="학생 바로 이동"
-          options={allStudentList.map((student) => ({ label: `${student.studentNumber} ${student.writtenName || '미등록'}`, value: student.id }))}
-          onChange={(event) => { moveStudent(allStudentList.find((student) => student.id === event.value)) }}
+          options={allStudentFrozenList.map((student) => ({ label: `${student.studentNumber} ${student.writtenName || '미등록'}`, value: student.id }))}
+          onChange={(event) => { moveStudent(allStudentFrozenList.find((student) => student.id === event.value)) }}
           isDisabled={isModifying} />}
         {!user.isTeacher && <BackBtn />}
       </SubNav>
@@ -204,11 +177,10 @@ const StudentDetailPage = () => {
             <ArrowWrapper style={{ top: "50%", right: "-5%" }}><ArrowBtn id="right_arw_btn" onClick={handleArrowBtnOnClick} /></ArrowWrapper>
           </>}
           {/* 펫 데이터 */}
-          {petRtData && <PetInfoSection pet={petRtData} writtenName={_writtenName} isModifiying={isModifying} setWrittenName={setWrittenName} />}
+          {petRtData && <PetInfoSection pet={petRtData} writtenName={_writtenName} isModifiying={isModifying} setWrittenName={setWrittenName} handlePetDeleteOnClick={handlePetDeleteOnClick} />}
           {(user.isTeacher || isMaster) && <GrayBotPannel>
             {(!isModifying && !isBehavioring) && <Row style={{ justifyContent: "flex-end" }}>
               <ClickableIcon className='fa-solid fa-edit' onClick={() => setIsModifying(!isModifying)}></ClickableIcon>
-              <ClickableIcon className='fa-solid fa-trash' onClick={handleStudentDeleteOnClick}></ClickableIcon>
             </Row>}
             {(isModifying && !isBehavioring) && <Row style={{ justifyContent: "flex-end" }}>
               <ClickableIcon className='fa-solid fa-check' onClick={handleSaveOnClick}></ClickableIcon>
@@ -220,7 +192,6 @@ const StudentDetailPage = () => {
               <UpperTab className={"tab2"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(2)} disabled={isModifying}>{klassType === "subject" ? "2학기" : "진로"}</UpperTab>
               {klassType === "homeroom" && <UpperTab className={"tab3"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(3)} disabled={isModifying}>행발</UpperTab>}
             </Row>}
-            {/* 테이블 todo tabVlue 지우고 hadling 손보기*/}
             {_recordType !== 3 && <><ActiTableSection actiList={_actiList} setActiList={setActiList} type={klassType}
               tabValue={recByType[klassType].value}
               getAccRec={getAccRec} petRtData={petRtData}
@@ -271,9 +242,8 @@ const GrayBotPannel = styled.div`
   padding: 15px;
   background-color: #efefef;
   border-radius: 15px;
-  display; flex;
+  display: flex;
   flex-direction: column;
-  overflow-y: scroll;
   @media screen and (max-width: 767px){
     width: 100%;
     display: flex;
@@ -281,8 +251,9 @@ const GrayBotPannel = styled.div`
   }
 `
 const AccWrapper = styled.div`
+  width: 100%;
   margin: 10px auto;
-  border: 1px solid #ddd;
+  border: 1px solid #78787890;
   border-radius: 10px;
   padding: 5px;
 `

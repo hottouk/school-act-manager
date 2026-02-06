@@ -7,14 +7,12 @@ import styled from "styled-components"
 import { setAllStudents } from "../../store/allStudentsSlice"
 //페이지
 import SignupSection from "./SignupSection"
-import MySchoolSelectorSection from "./MySchoolSelectorSection"
 //컴포넌트
 import MainPanel from "../../components/MainPanel"
 import CardList from "../../components/List/CardList"
 import ClassMemberModal from "../../components/Modal/ApplyClassModal"
 import SearchBar from "../../components/Bar/SearchBar"
 import Pagenation from "../../components/Pagenation"
-import UpperTab from "../../components/UpperTab"
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity"
 //hooks
 import useFireBasic from "../../hooks/Firebase/useFireBasic"
@@ -26,16 +24,13 @@ import useFetchRtMyUserData from "../../hooks/RealTimeData/useFetchRtMyUserData"
 import useFireUserData from "../../hooks/Firebase/useFireUserData"
 import useFireSchoolData from "../../hooks/Firebase/useFireSchoolData"
 import useFireActiData from "../../hooks/Firebase/useFireActiData"
-
+import MainContainer from "../../components/Styled/MainContainer"
+import MainWrapper from "../../components/Styled/MainWrapper"
 //생성(250121) -> 로직 수정(250216)-> 가입 섹션 분리(250218)
 const MySchoolPage = () => {
   //준비
   const { myUserData: user } = useFetchRtMyUserData();
-  useEffect(() => {
-    if (!user) return;
-    setMySchool(user?.school);
-    fetchAllActis("uid", user?.uid, "subject", "담임").then((actiList) => { setActiList(actiList); });
-  }, [user])
+  useEffect(() => { if (!user) return; setMySchool(user?.school); }, [user]);
   const dispatcher = useDispatch();
   const navigate = useNavigate();
   const { fetchDoc } = useFireBasic("school");
@@ -48,7 +43,6 @@ const MySchoolPage = () => {
   //시작
   const [_mySchool, setMySchool] = useState(null);                       //가입된 학교
   useEffect(() => {
-    fetchHomeroomListInfo();                                             //가입 학교 담임반    
     fetchSchoolInfo();                                                   //가입 학교 정보
   }, [_mySchool]);
   const [_findSchool, setFindSchool] = useState(null);                   //검색된 학교
@@ -70,10 +64,6 @@ const MySchoolPage = () => {
   const [currentStudentPage, setCurrentStudentPage] = useState(1);
   const [studentPageData, setStudentPageData] = useState([]);
   useEffect(() => { devideDataToPage(); }, [currentStudentPage]);
-  //자율/진로 입력창
-  const [tab, setTab] = useState(1);
-  const [homeroomList, setHomeroomList] = useState([]);
-  const [actiList, setActiList] = useState([]);
   //모달
   const [isKlassMemberModal, setIsKlassMemberModal] = useState(false);
   //반응형
@@ -89,12 +79,6 @@ const MySchoolPage = () => {
     setSelectedSchool(null);
     setSubjKlassList([]);
     setTeacherList([]);
-  }
-  //학교 담임반 가져오기
-  const fetchHomeroomListInfo = () => {
-    const code = _mySchool?.schoolCode ?? null;
-    if (!code) return;
-    fetchClassrooms("schoolCode", code).then((list) => { setHomeroomList(list); });
   }
   //선택 멤버 변경시
   const onSelectedMemberUpdate = () => {
@@ -222,10 +206,10 @@ const MySchoolPage = () => {
   }
   return (
     <>
-      <Container $clientheight={clientHeight}>
+      <MainContainer $clientheight={clientHeight}>
         {/* 학교 가입자 */}
         {_mySchool && <>
-          <MainPanel>
+          <MainWrapper>
             <TitleText>{_mySchool?.schoolName}</TitleText>
             <p>{_mySchool?.eduOfficeName}</p>
             <p>{_mySchool?.address}</p>
@@ -240,9 +224,9 @@ const MySchoolPage = () => {
               <ClickableText onClick={handleChangeOnClick}>학교 탈퇴</ClickableText>
               <ClickableText onClick={() => { alert("학교 탈퇴 후에 회원 탈퇴를 진행하실 수 있습니다") }}>쫑알이 회원 탈퇴</ClickableText>
             </Row>
-          </MainPanel>
+          </MainWrapper>
           {/* 교사/학생명단 */}
-          <MainPanel>
+          <MainWrapper>
             {/* PC */}
             {!isMobile && <>
               <TitleText>{_mySchool?.schoolName} 등록 교사 명단</TitleText>
@@ -257,49 +241,23 @@ const MySchoolPage = () => {
             {(isMobile && !_selectedMember) && <><TitleText>{_mySchool?.schoolName} 등록 교사 명단</TitleText>
               {_mySchool && <CardList dataList={teacherList} type="member" onClick={handleMemberOnClick} selected={_selectedMember?.uid} />}</>}
             {(isMobile && _selectedMember) && <><TitleText onClick={handleUnSelect} style={{ textDecoration: "underLine", color: "royalBlue" }}>교사 목록 돌아가기</TitleText></>}
-          </MainPanel>
+          </MainWrapper>
           {/* 교과반/학생정보 */}
-          {_selectedMember?.isTeacher && <MainPanel>
+          {_selectedMember?.isTeacher && <MainWrapper>
             {!isMobile && <SearchBar title="교과반 목록" type="classroom" list={subjKlassList} setList={setSubjKlassList} />}
             <CardList dataList={subjKlassList} type="classroom" onClick={handleKlassOnClick} />
-          </MainPanel>}
-          {/* 자율/진로 입력 */}
-          {user?.isTeacher && <MainPanel styles={{ marginTop: "55px" }}>
-            <TabWrapper>
-              <UpperTab className="tab1" value={tab} top="-70px" onClick={() => { setTab(1) }}>자율</UpperTab>
-              <UpperTab className="tab2" value={tab} top="-70px" left="59px" onClick={() => { setTab(2) }}>진로</UpperTab>
-              <TitleText>자율/진로 입력창</TitleText>
-              <MySchoolSelectorSection tab={tab} homeroomList={homeroomList} actiList={actiList} />
-            </TabWrapper>
-          </MainPanel>}
+          </MainWrapper>}
         </>}
         {/* 학교 미가입자 */}
         {!_mySchool && <SignupSection myUserData={user} findSchool={_findSchool} selectedSchool={_selectedSchool} setFindSchool={setFindSchool} TitleText={TitleText} ClickableText={ClickableText} />}
-      </Container >
+      </MainContainer >
       {isKlassMemberModal && <ClassMemberModal show={isKlassMemberModal} onHide={() => { setIsKlassMemberModal(false) }} klass={_klass} myUserData={user} />}
     </>
   )
 }
 
-const Container = styled.div`
-  box-sizing: border-box;
-  width: 80%;
-  min-height: 350px;
-  margin: 0 auto 50px;
-  @media (max-width: 768px){
-    margin: 0;
-    position: fixed;
-    width: 100%;
-    height: ${(props) => props.$clientheight}px;
-    padding-bottom: 20px;
-    overflow-y: scroll;
-  }
-`
 const Row = styled.div`
   display: flex;
-`
-const TabWrapper = styled.div`
-  position: relative;
 `
 const TitleText = styled.h5`
   display: flex;

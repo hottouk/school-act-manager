@@ -4,7 +4,6 @@ import styled from 'styled-components'
 import TermsModal from '../Modal/TermsModal'
 //hooks
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
-import useMediaQuery from '../../hooks/useMediaQuery';
 //생성(251016)
 const Footer = () => {
   const { myUserData } = useFetchRtMyUserData();
@@ -19,8 +18,9 @@ const Footer = () => {
     <Container>
       <Wrapper>
         <Text>
-          사업자등록번호 858-59-00843 | 대표: 강건<br />
-          화성 동탄원천로 350 | 고객센터: 010-6554-4161<br /><br />
+          상호명: 쫑알이에듀(JREdu)<br />
+          사업자등록번호: 858-59-00843 | 대표: 강건<br />
+          화성 동탄원천로 350 509호 | 고객센터: 010-6554-4161<br /><br />
           Copyright © 생기부쫑아리 All Rights Reserved. <br />
           생기부 쫑알이는 수업에 전념할 수 있는 교사를 위해 교사 1인 개발자가 만들었습니다.
         </Text>

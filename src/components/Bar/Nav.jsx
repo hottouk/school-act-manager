@@ -7,14 +7,12 @@ import { Badge } from 'react-bootstrap';
 import styled from 'styled-components';
 //컴포넌트
 import DropDownBtn from '../Btn/DropDownBtn';
-import MyInfoModal from '../Modal/MyInfoModal';
 //hooks
 import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
 import useMediaQuery from '../../hooks/useMediaQuery';
 //이미지
 import brandLogo from "../../image/icon/h-logo.png";
 import unknown from '../../image/icon/unkown_icon.png';
-
 //240222(생성) -> 250202(갱신) -> 250215(모바일 수정)
 const Nav = () => {
   //준비
@@ -24,7 +22,6 @@ const Nav = () => {
   //모드
   const isMobile = useMediaQuery("(max-width: 768px)");
   //모달
-  const [isMyInfoShow, setIsMyInfoShow] = useState(false);
   const [isNew, setIsNew] = useState(false); //새소식 아이콘
   useEffect(() => { bindData(); }, [myUserData]);
   //------함수부------------------------------------------------ 
@@ -49,11 +46,9 @@ const Nav = () => {
     {(user.isTeacher && !isMobile) && <>
       {/* PC 교사 */}
       <LogoImg src={brandLogo} alt="로고" />
-      <BrandTitle>생기부 쫑알이</BrandTitle>
+      <Link to="/"><BrandTitle>생기부 쫑알이</BrandTitle></Link>
       <Row style={{ alignItems: "center" }}><p style={{ margin: "0 20px" }}>{user.name} 선생님 사랑합니다.</p></Row>
       <MenuWrapper>
-        <li><Link to="/"><Icon className="fa-solid fa-house"></Icon>
-          <span>Home</span></Link></li>
         {!isMobile && <li id="acti_btn" ><Icon className="fa-solid fa-scroll"></Icon>
           <DropDownBtn btnName={"활동 관리"}
             dropDownItems={[
@@ -91,15 +86,17 @@ const Nav = () => {
           <span>상점</span></Link></li>}
         {user.isMaster && <li id="master_btn" ><Link to="/master"><Icon className="fa-solid fa-key"></Icon>
           <span>마스터</span></Link></li>}
-        {user.isMaster && <li id="master_btn" ><Link to="/purchase"><Icon className="fa-solid fa-key"></Icon>
-          <span>충전</span></Link></li>}
+        <li><Link to="/purchase"><Icon className="fa-solid fa-key"></Icon>
+          <span>충전</span></Link></li>
         <NewsWrapper >
           {isNew && <NewIcon><Badge bg="danger">new</Badge></NewIcon>}
           <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
         </NewsWrapper>
       </MenuWrapper>
-      {_profileImg && <ProfileImg className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
-      {!_profileImg && <ProfileImg className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
+      <Link to="/myinfo">
+        {_profileImg && <ProfileImg className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => { }} />}
+        {!_profileImg && <ProfileImg className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => { }} />}
+      </Link>
     </>}
     {/* PC 학생 */}
     {(user.uid && !user.isTeacher && !isMobile) && <>
@@ -120,8 +117,8 @@ const Nav = () => {
           <Link to="/news" ><Icon className="fa-solid fa-bell" /></Link>
         </NewsWrapper>
       </MenuWrapper>
-      {_profileImg && <ProfileImg className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
-      {!_profileImg && <ProfileImg className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => setIsMyInfoShow(true)} />}
+      {_profileImg && <ProfileImg className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => { }} />}
+      {!_profileImg && <ProfileImg className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => { }} />}
 
     </>}
     {/* 모바일 교사*/}
@@ -133,7 +130,7 @@ const Nav = () => {
           {isNew && <NewDot>.</NewDot>}
           <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
         </NewsWrapper>
-        <MoebileLi><Icon className="fa-solid fa-user" onClick={() => setIsMyInfoShow(true)}></Icon></MoebileLi>
+        <MoebileLi><Icon className="fa-solid fa-user" onClick={() => { }}></Icon></MoebileLi>
       </MenuWrapper>
     </>}
     {/* 모바일 학생 */}
@@ -142,19 +139,13 @@ const Nav = () => {
         <MoebileLi><Link to="/"><Icon className="fa-solid fa-house"></Icon></Link></MoebileLi>
         <MoebileLi><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon></Link></MoebileLi>
         <MoebileLi><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon></Link></MoebileLi>
-        <MoebileLi><Icon className="fa-solid fa-user" onClick={() => setIsMyInfoShow(true)}></Icon></MoebileLi>
+        <MoebileLi><Icon className="fa-solid fa-user" onClick={() => { }}></Icon></MoebileLi>
         <NewsWrapper>
           {isNew && <NewDot>.</NewDot>}
           <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
         </NewsWrapper>
       </MenuWrapper>
     </>}
-    {/*개인 정보 수정 Modal 창 */}
-    <MyInfoModal
-      show={isMyInfoShow}
-      onHide={() => setIsMyInfoShow(false)}
-      isMobile={isMobile}
-    />
   </Container >
   )
 }

@@ -67,3 +67,8 @@ const Container = styled(Column)`
   align-items: center;
   gap: 10px;
 `
+
+//testId
+email: tossTest@naver.com
+password: tosstest2026
+

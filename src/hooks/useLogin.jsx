@@ -9,15 +9,16 @@ import { setTempUser } from '../store/tempUserSlice';
 import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore';
 //hooks
 import useStudent from './useStudent';
+import useFireBasic from './Firebase/useFireBasic';
 
 const useLogin = () => {
   const auth = appAuth;
   const db = appFireStore;
   const dispatcher = useDispatch();
   const { createStudentNumber } = useStudent();
+  const { fetchData } = useFireBasic("user");
   const [isPending, setIsPending] = useState(false);
   const [err, setErr] = useState(null);
-  const [emailMsg, setEmailMsg] = useState('');
 
   //기존 유저 검사(240221)
   const findUser = async (userInfo, sns) => {
@@ -62,33 +63,14 @@ const useLogin = () => {
       console.error(err)
     }
   }
-  //이메일 로그인(20240730)
-  const emailLogin = async (email, password) => {
-    try {
-      let userCredential = await signInWithEmailAndPassword(auth, email, password);
-      let user = userCredential.user
-      if (user) {
-        findUser(user, "email").then(({ _, userInfofromServer }) => {
-          dispatcher(setUser(userInfofromServer))
-        })
-        window.alert("로그인 성공");
-      }
-    } catch (err) {//오류 처리
-      switch (err.code) {
-        case 'auth/user-not-found':
-          setEmailMsg("회원 가입되지 않은 id 입니다.");
-          break;
-        case 'auth/wrong-password':
-          setEmailMsg("비밀번호가 틀렸습니다.");
-          break;
-        case 'auth/invalid-email':
-          setEmailMsg("올바른 이메일 형식이 아닙니다.");
-          break;
-        default:
-          setEmailMsg(`이 메세지를 캡쳐해서 hottouk로 보내주세요. Error: ${err.message}`);
-          break;
-      }
-    }
+  //test 로그인(20240730)
+  const testLogin = async (email, password) => {
+    const userInfo = await fetchData("email", email);
+    console.log(userInfo)
+    const isMatch = String(userInfo[0].password) === String(password);
+    if (!userInfo || !isMatch) { alert("이메일 또는 비밀번호가 올바르지 않습니다."); return; }
+    dispatcher(setUser(userInfo[0]));
+    alert("로그인 성공");
   }
 
   //구글 팝업 로그인(240221)
@@ -136,7 +118,7 @@ const useLogin = () => {
       if (isUserExist !== true) { openModal(true) }                             //신규
       else {                                                                    //기존
         dispatcher(setUser(userInfofromServer))
-        window.alert(`${userInfofromServer.name}으로 로그인 되었습니다.`)
+        alert(`${userInfofromServer.name}으로 로그인 되었습니다.`)
       }
       setErr(null)
       setIsPending(false)
@@ -162,7 +144,7 @@ const useLogin = () => {
       } else { return null; }
     }
   }
-  return { addUser, googleLogin, kakaoLogin, emailLogin, classifyUserInfo, emailMsg, isPending, err, }
+  return { addUser, googleLogin, kakaoLogin, testLogin, classifyUserInfo, isPending, err, }
 }
 
 export default useLogin

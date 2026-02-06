@@ -1,32 +1,36 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import useFireBasic from "../../hooks/Firebase/useFireBasic";
 import { useSelector } from "react-redux";
 import { Spinner } from "react-bootstrap";
 import styled from "styled-components";
+//components
+import MainContainer from "../../components/Styled/MainContainer";
+import MainWrapper from "../../components/Styled/MainWrapper";
 import MainBtn from "../../components/Btn/MainBtn";
-
+//hooks
+import useFireBasic from "../../hooks/Firebase/useFireBasic";
+//생성(260205)
 const WidgetSuccessPage = () => {
   const user = useSelector(({ user }) => user);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [responseData, setResponseData] = useState(null);
-  const [res, setRes] = useState(null);
+  const [loadingStatus, setLoadingStatus] = useState(null);
   const TOSS_API_URL = process.env.REACT_APP_TOSS_PAYMENT_URL;
   const { fetchDoc, deleteData } = useFireBasic("paymentcheck");
   useEffect(() => {
     (async () => {
       try {
-        setRes("결제 요청 무결성 검사");
+        setLoadingStatus("결제 요청 무결성 검사");
         const req = await checkRequest();
         if (!req) return;
-        setRes("승인 중");
+        setLoadingStatus("승인 중");
         const data = await confirm(req);
         setResponseData(data);
-        setRes(null);
+        setLoadingStatus(null);
       } catch (error) {
         deleteData(searchParams.get("orderId")); //임시 데이터 삭제
-        setRes(null);
+        setLoadingStatus(null);
         alert(error);
         console.log(error);
         navigate(`/purchase/fail?message=${error}`);
@@ -53,6 +57,7 @@ const WidgetSuccessPage = () => {
   }
   //승인 요청 
   const confirm = async (req) => {
+    //백엔드 함수로 요청
     const response = await fetch(TOSS_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", },
@@ -64,11 +69,11 @@ const WidgetSuccessPage = () => {
     return json;
   }
   return (
-    <Container>
-      <Wrapper>
+    <MainContainer styles={{ paddingTop: "20px" }}>
+      <MainWrapper styles={{ width: "65%", }}>
         <img width="100px" src="https://static.toss.im/illusts/check-blue-spot-ending-frame.png" alt="결재 완료" style={{ alignSelf: "center" }} />
-        <h2 style={{ textAlign: "center" }}>{res || "결제가 완료되었습니다"}</h2>
-        {res && <Spinner style={{ alignSelf: "center" }} />}
+        <h2 style={{ textAlign: "center" }}>{loadingStatus || "결제가 완료되었습니다"}</h2>
+        {loadingStatus && <Spinner style={{ alignSelf: "center" }} />}
         <div className="p-grid typography--p" style={{ marginTop: "50px" }}>
           <div className="p-grid-col text--left">
             <b>결제금액</b>
@@ -93,9 +98,9 @@ const WidgetSuccessPage = () => {
             {`${searchParams.get("paymentKey")}`}
           </div>
         </div>
-      </Wrapper>
-      <MainBtn onClick={() => { navigate('/'); }}>홈으로</MainBtn>
-    </Container>
+        <MainBtn onClick={() => { navigate('/'); }}>홈으로</MainBtn>
+      </MainWrapper>
+    </MainContainer>
   );
 }
 
@@ -104,18 +109,5 @@ const Row = styled.div`
 `
 const Column = styled(Row)` 
   flex-direction: column;
-`
-const Container = styled(Column)`
-  box-sizing: border-box;
-  background-color : #efefef;
-  min-height: 100dvh;
-  align-items: center;
-  gap: 10px;
-`
-const Wrapper = styled(Column)`
-  width: 60%;
-  background-color: white;
-  border-radius: 6px;
-  padding: 15px;
 `
 export default WidgetSuccessPage

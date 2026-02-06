@@ -1,5 +1,5 @@
 //라이브러리
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import Select from 'react-select';
@@ -13,13 +13,11 @@ import useGetByte from '../../hooks/useGetByte';
 //이미지
 import x_btn from "../../image/icon/x_btn.png"
 //분리(260121)
-const ActiTableSection = ({ actiList, setActiList, tabValue, getAccRec, petRtData, isModifying, isMobile, }) => {
+const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRec, petRtData, isModifying, isMobile, }) => {
   //유저
   const user = useSelector(({ user }) => user);
   //활동
   const allActivityList = useSelector((state) => state.allActivities);
-  //객체 접근
-  const selectRef = useRef({});
   //바이트
   const { getByteLengthOfString } = useGetByte();
   const [gptRecord, setGptRecord] = useState('');
@@ -31,13 +29,11 @@ const ActiTableSection = ({ actiList, setActiList, tabValue, getAccRec, petRtDat
   //------함수부-----------------------------------------------  
   //활동 순서 변경(241224)
   const moveActiItem = (index, direction) => {
-    setActiList((prevActiList) => {
-      const newActiList = [...prevActiList];
+    setActiList((prev) => {
+      const newActiList = [...prev];
       const targetIndex = direction === 'up' ? index - 1 : index + 1;
-      // 범위를 벗어나면 이동하지 않음
-      if (targetIndex < 0 || targetIndex >= newActiList.length) return prevActiList;
-      // swap
-      [newActiList[index], newActiList[targetIndex]] = [newActiList[targetIndex], newActiList[index]];
+      if (targetIndex < 0 || targetIndex >= newActiList.length) return prev; // 범위 내에서만 이동
+      [newActiList[index], newActiList[targetIndex]] = [newActiList[targetIndex], newActiList[index]]; // swap
       return newActiList;
     });
   };
@@ -50,7 +46,11 @@ const ActiTableSection = ({ actiList, setActiList, tabValue, getAccRec, petRtDat
   const handleAddActiOnClick = () => {
     const assignedDate = new Date().toISOString().split("T")[0];
     const cryptoId = crypto.randomUUID();
-    const newActiItem = { title: "임의기록", record: '', id: cryptoId, uid: user.uid, assignedDate, madeBy: user.name, semester: tabValue };
+    const common = { title: "임의기록", record: '', id: cryptoId, uid: user.uid, madeBy: user.name, assignedDate, };
+    let specific = {};
+    if (type === "homeroom") specific = { subjDetail: tabValue === 1 ? "자율" : "진로" };
+    else if (type === "subject") specific = { semester: tabValue };
+    const newActiItem = { ...common, ...specific };
     const newList = [...actiList, newActiItem];
     setActiList(newList);
   }
@@ -121,7 +121,7 @@ const ActiTableSection = ({ actiList, setActiList, tabValue, getAccRec, petRtDat
       </GridRow>)
   }
   return (<>
-    <GridContainer>
+    <GridTableSection>
       <GridRow>
         {!isMobile && <Header>연번</Header>}
         <Header>활동</Header>
@@ -153,7 +153,6 @@ const ActiTableSection = ({ actiList, setActiList, tabValue, getAccRec, petRtDat
               {/* 2열 */}
               <GridItem>
                 <Select
-                  ref={(ele) => selectRef.current[index] = ele}
                   options={allActivityList.map((item) => ({ label: item.title, value: item }))}
                   onChange={(event) => { handleSelectOnchange(event, index) }} />
               </GridItem>
@@ -165,10 +164,10 @@ const ActiTableSection = ({ actiList, setActiList, tabValue, getAccRec, petRtDat
               </GridItem>
               {/* 4열 */}
               <GridItem>{perfRecordList && <SmallBtnWrapper>
-                <SmallBtn btnName="상" btnOnClick={() => { changeAccRecord(index, perfRecordList[0]) }} />
-                <SmallBtn btnName="중" btnOnClick={() => { changeAccRecord(index, perfRecordList[1]) }} />
-                <SmallBtn btnName="하" btnOnClick={() => { changeAccRecord(index, perfRecordList[2]) }} />
-                <SmallBtn btnName="최하" btnOnClick={() => { changeAccRecord(index, perfRecordList[3]) }} />
+                <SmallBtn onClick={() => { changeAccRecord(index, perfRecordList[0]) }}>상</SmallBtn>
+                <SmallBtn onClick={() => { changeAccRecord(index, perfRecordList[1]) }}>중</SmallBtn>
+                <SmallBtn onClick={() => { changeAccRecord(index, perfRecordList[2]) }}>하</SmallBtn>
+                <SmallBtn onClick={() => { changeAccRecord(index, perfRecordList[3]) }}>최하</SmallBtn>
               </SmallBtnWrapper>}</GridItem>
               {/* 5열 */}
               <GridItem>
@@ -188,7 +187,7 @@ const ActiTableSection = ({ actiList, setActiList, tabValue, getAccRec, petRtDat
           <ClickableIcon className='fa-solid fa-plus' onClick={handleAddActiOnClick} />
         </GridItem>
       </GridRow>}
-    </GridContainer>
+    </GridTableSection>
     {/* 모달 */}
     {isGptModal && <GptModal
       show={isGptModal}
@@ -211,7 +210,8 @@ const Row = styled.div`
 const Column = styled(Row)`
   flex-direction: column;
 `
-const GridContainer = styled.div`
+const GridTableSection = styled.div`
+  width: 100%;
   margin: 10px auto;
   border: 1px solid #ddd;
   border-radius: 10px;
@@ -221,8 +221,10 @@ const GridContainer = styled.div`
     grid-template-columns: 1fr 5fr;
   }
 `
-const GridItem = styled.div`
-  display: flex;
+const GridRow = styled.div`
+  display: contents;
+`
+const GridItem = styled(Row)`
   background-color: #efefef;
   padding: 10px;
   color: black;
@@ -240,15 +242,10 @@ const GridItem = styled.div`
   &.left-align { 
     text-align: left;
     justify-content: flex-start;
-    overflow-y: scroll;
   }
 `
-const GridRow = styled.div`
-  display: contents;
-`
-const Header = styled.div`
+const Header = styled(Row)`
   height: 40px;
-  display: flex;
   background-color: #3454d1b1; 
   color: white;
   padding: 10px;
@@ -263,9 +260,7 @@ const Textarea = styled.textarea`
   padding: 5px;
   border-radius: 5px;
 `
-const SmallBtnWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
+const SmallBtnWrapper = styled(Column)`
   gap: 2px;
   margin: 2px;
   &.gpt { gap: 12px; }

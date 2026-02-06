@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 //컴포넌트
 import MainContainer from '../../components/Styled/MainContainer';
-import ImportExcelFile from '../../components/ImportExcelFile';
+import ImportExcelFileSection from '../../components/ImportExcelFile';
 import CSInfoSelect from '../../components/Select/CSInfoSelect';
 import SubjectSelects from '../../components/Select/SubjectSelects';
 import DotTitle from '../../components/Title/DotTitle';
@@ -126,7 +126,7 @@ const ClassroomFormPage = () => {
           <DotTitle title={"안내 사항"} />
           <TextInput id="class_explanation" type="text" value={_intro} onChange={(event) => { setIntro(event.target.value) }} placeholder="강건고 1-1 공통영어1" required />
           {(how === "with_neis") && <>
-            <ImportExcelFile getData={setXlsxData} />
+            <ImportExcelFileSection getData={setXlsxData} />
           </>}
           {(how === "with_number") && <Row>
             <DotTitle title={"학생 수 입력"} />

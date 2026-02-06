@@ -6,6 +6,7 @@ const useFireClassData = () => {
   const db = appFireStore;
   const colRef = collection(db, "classRooms");
   const [klassRtData, setKlassRtData] = useState(null);
+  const [klassListRtData, setKlassListRtData] = useState(null);
   //1. 클래스 추가(250205 이동)
   const addClassroom = async (klassInfo, studentPetList) => {
     const { subject, type } = klassInfo;
@@ -33,7 +34,22 @@ const useFireClassData = () => {
     });
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
   };
-  //2-1. 클래스 정보 실시간 구독
+  //2-1 클래스 리스트 실시간 구독(260202)
+  const klassListDataListener = (uid) => {
+    if (!uid) return
+    const q = query(colRef, where("uid", "==", uid));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const list = [];
+      snapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+      console.log(list)
+      list.sort((a, b) => a.grade.localeCompare(b.grade)).sort((a, b) => a.classNumber.localeCompare(b.classNumber)) //2차 소팅
+      setKlassListRtData(list);
+    })
+    return () => unsubscribe();
+  }
+  //2-2. 클래스 정보 실시간 구독
   const klassDataListener = (id) => {
     if (!id) return
     const klassDocRef = doc(colRef, id);
@@ -143,8 +159,8 @@ const useFireClassData = () => {
   }
 
   return ({
-    addClassroom, fetchClassrooms, klassDataListener, updateKlassroom, addStudent, copyKlassroom,
-    updateKlassroomInfo, updateKlassroomArrayInfo, deleteKlassroomArrayInfo, addSeatMap, deleteSeatMap, sortClassrooms, klassRtData
+    addClassroom, fetchClassrooms, klassListDataListener, klassDataListener, updateKlassroom, addStudent, copyKlassroom,
+    updateKlassroomInfo, updateKlassroomArrayInfo, deleteKlassroomArrayInfo, addSeatMap, deleteSeatMap, sortClassrooms, klassRtData, klassListRtData
   })
 }
 

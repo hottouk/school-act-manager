@@ -9,7 +9,7 @@ import DotTitle from '../Title/DotTitle';
 //hooks
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 //상수
-import { GPT_OPTION_LIST } from '../../constants/gptMode';
+import { GPT_OPTION_LIST } from '../../constants/gpt';
 //이미지
 import icon_ria from '../../image/money.png';
 //생성(260106)
@@ -25,9 +25,9 @@ const ChargeRiraModal = ({ show, onHide, onApprove, isMulti, multiList }) => {
   //------useMemo------------------------------------------------ 
   //가격
   const bindPriceByModel = (model) => {
-    if (!_selectedModel) return;
+    if (!model) return;
     if (!multiInterface) return _selectedModel.price;
-    else return (_selectedModel.price * multiList.length);
+    else return (model.price * multiList.length);
   }
   const priceByModel = useMemo(() => bindPriceByModel(_selectedModel), [_selectedModel]);
   //------함수부------------------------------------------------ 
@@ -44,7 +44,7 @@ const ChargeRiraModal = ({ show, onHide, onApprove, isMulti, multiList }) => {
   const handleApproveOnClick = () => {
     const { result, leftRira } = check();
     if (!result) return;
-    onApprove(_selectedModel?.value, leftRira);
+    onApprove({ model: _selectedModel?.value, leftRira });
     onHide();
   }
   //취소

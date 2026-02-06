@@ -15,7 +15,6 @@ import useFileCheck from '../../hooks/useFileCheck';
 import useStorage from '../../hooks/useStorage';
 //이미지
 import unknown from '../../image/icon/unkown_icon.png'
-
 //241124 1차 수정(코드 정리) -> 250223(학교 변경 삭제)
 const MyInfoModal = ({ show, onHide, isMobile }) => {
   const user = useSelector(({ user }) => user)
@@ -116,6 +115,15 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
     setEmail(user.email ? user.email : '')
     setPhoneNumber(user.phoneNumber ? user.phoneNumber : '')
   }
+  //클립보드 복사
+  const handleCopyToClipboard = (text, label) => {
+    navigator.clipboard.writeText(text).then(() => {
+      window.alert(`${label}이(가) 복사되었습니다.`)
+    }).catch((err) => {
+      window.alert("복사에 실패했습니다.")
+      console.error(err)
+    })
+  }
   //로그아웃
   const handleLogoutOnClick = () => {
     onHide();
@@ -132,9 +140,18 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
         {/* 일반 */}
         {!isModifying && <UpperSection>
           <Row style={{ flexDirection: "column", gap: "10px" }}>
-            <p>고유번호: {user.uid}</p>
-            <p>이메일: {user.email ? user.email : "없음"}</p>
-            <p>연락처: {user.phoneNumber ? user.phoneNumber : "없음"}</p>
+            <InfoRow>
+              <p>고유번호: {user.uid}</p>
+              <CopyBtn onClick={() => handleCopyToClipboard(user.uid, '고유번호')}>복사</CopyBtn>
+            </InfoRow>
+            <InfoRow>
+              <p>이메일: {user.email ? user.email : "없음"}</p>
+              {user.email && <CopyBtn onClick={() => handleCopyToClipboard(user.email, '이메일')}>복사</CopyBtn>}
+            </InfoRow>
+            <InfoRow>
+              <p>연락처: {user.phoneNumber ? user.phoneNumber : "없음"}</p>
+              {user.phoneNumber && <CopyBtn onClick={() => handleCopyToClipboard(user.phoneNumber, '연락처')}>복사</CopyBtn>}
+            </InfoRow>
             <p>회원구분: {user.isTeacher ? "교사 회원" : "학생 회원"}</p>
           </Row>
           {!isMobile && <ProfileImgWrapper>
@@ -146,7 +163,10 @@ const MyInfoModal = ({ show, onHide, isMobile }) => {
         {isModifying && <fieldset style={{ padding: "0" }}>
           <UpperSection>
             <Row style={{ flexDirection: "column", gap: "10px" }}>
-              <p>고유번호: {user.uid}</p>
+              <InfoRow>
+                <p>고유번호: {user.uid}</p>
+                <CopyBtn onClick={() => handleCopyToClipboard(user.uid, '고유번호')}>복사</CopyBtn>
+              </InfoRow>
               <Row>
                 <p>이메일: &nbsp;&nbsp;</p>
                 <StyledInput type="text" value={_email} placeholder='hottouk@naver.com' onChange={(event) => { setEmail(event.target.value) }} />
@@ -216,6 +236,29 @@ const StyledInput = styled.input`
    height: 35px;
     border-radius: 5px;
     border: 1px solid rgba(120, 120, 120, 0.5)
+`
+const InfoRow = styled(Row)`
+  justify-content: space-between;
+  align-items: center;
+  p { margin: 0; }
+`
+const CopyBtn = styled.button`
+  padding: 4px 10px;
+  font-size: 12px;
+  background-color: #3454d1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #2a42a8;
+  }
+  
+  &:active {
+    background-color: #1f3080;
+  }
 `
 
 export default MyInfoModal

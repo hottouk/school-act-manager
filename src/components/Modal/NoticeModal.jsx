@@ -6,7 +6,6 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/esm/Button';
 import ModalBtn from '../Btn/ModalBtn';
 //hooks
-import useAddUpdFireData from '../../hooks/Firebase/useAddUpdFireData';
 import useFetchFireData from '../../hooks/Firebase/useFetchFireData';
 
 //디자인 수정(250213)
@@ -17,7 +16,7 @@ const NoticeModal = ({ show, onHide, onDismissed }) => {
   const [isModi, setIsModi] = useState(false)
   const [notice, setNotice] = useState('')
   //데이터 통신
-  const { addNotice } = useAddUpdFireData("notice") //서버 기록
+  // const { addNotice } = useAddUpdFireData("notice") //서버 기록 todo
   const { fetchDoc } = useFetchFireData()        //기록 불러오기
   const [noticeList, setNoticeList] = useState(null)  //불러온 기록 배열
   useEffect(() => { fetchDoc("notice", "notice").then((data) => { setNoticeList(data.noticeList) }) }, [])
@@ -33,7 +32,7 @@ const NoticeModal = ({ show, onHide, onDismissed }) => {
         setIsModi(true)
         break;
       case "save_btn":
-        addNotice(splitTxtToArr(notice))
+        // addNotice(splitTxtToArr(notice))
         setIsModi(false)
         break;
       default:

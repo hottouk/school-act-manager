@@ -5,6 +5,8 @@ import styled from "styled-components";
 import WidgetCheckout from "../../components/Toss/WidgetCheckout";
 //hooks
 import useFetchRtMyUserData from "../../hooks/RealTimeData/useFetchRtMyUserData";
+import MainContainer from "../../components/Styled/MainContainer";
+import MainWrapper from "../../components/Styled/MainWrapper";
 //생성(251020)
 const WidgetCheckoutPage = () => {
   const location = useLocation();
@@ -15,15 +17,15 @@ const WidgetCheckoutPage = () => {
   }, [location]);
   const { myUserData } = useFetchRtMyUserData();
   return (
-    <Container>
-      <AmWrapper>
-        <h4 style={{ fontSize: "20px", fontWeight: "bold" }}>결제 금액</h4>
+    <MainContainer styles={{ gap: "10px", paddingTop: "20px" }}>
+      <MainWrapper styles={{ width: "65%" }}>
+        <Title>결제 금액</Title>
         <BasicText style={{ fontSize: "28px", fontWeight: "bold", textAlign: "center" }}>{amount.toLocaleString()}원</BasicText>
-      </AmWrapper>
-      <Wrapper>
+      </MainWrapper>
+      <MainWrapper styles={{ width: "65%" }}>
         <WidgetCheckout customerKey={myUserData?.uid} name={myUserData?.name} payment={{ currency: "KRW", value: amount }} />
-      </Wrapper>
-    </Container >
+      </MainWrapper>
+    </MainContainer >
   );
 }
 const Row = styled.div`
@@ -32,21 +34,11 @@ const Row = styled.div`
 const Column = styled(Row)` 
   flex-direction: column;
 `
-const Container = styled(Column)`
-  box-sizing: border-box;
-  background-color : #efefef;
-  min-height: 100dvh;
-  align-items: center;
-  gap: 10px;
-`
-const Wrapper = styled(Column)`
-  width: 60%;
-  background-color: white;
-  border-radius: 6px;
-  padding: 15px;
-`
-const AmWrapper = styled(Wrapper)`
-  padding: 30px;
+const Title = styled.h4`
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
 `
 const BasicText = styled.p`
   margin: 0;

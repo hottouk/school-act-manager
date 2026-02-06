@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Modal, Spinner } from 'react-bootstrap'
+import { Modal } from 'react-bootstrap'
 import styled from 'styled-components';
 //컴포넌트
 import MainBtn from '../../Btn/MainBtn';
@@ -9,10 +9,16 @@ import DotTitle from '../../Title/DotTitle';
 import useChatGpt from '../../../hooks/useChatGpt';
 //이미지
 import arrow_icon from '../../../image/icon/arrows_icon.png'
+import InnerLayer from '../../Styled/InnerLayer';
+import InnerOverlay from '../../Styled/InnerOverlay';
+import ChargeRiraModal from '../ChargeRiraModal';
+import GptIngModal from './GptIngModal';
+import { GPT_RESPONSE } from '../../../constants/gpt';
 //생성(250106)
-const GptRetocuhModal = ({ show, onHide, size, type, passage, optionList, setPassage, setOptionList, retocuhCount, setRetouchCount }) => {
-  const { retouchPassage, retouchOptions, gptAnswer, setGptAnswer, gptRes } = useChatGpt();
+const GptRetocuhModal = ({ show, onHide, size, type, passage, optionList, setPassage, setOptionList }) => {
+  const { retouchPassage, retouchOptions, gptAnswer, setGptAnswer, gptRes, gptStatus, gptProgress } = useChatGpt();
   const [request, setRequest] = useState('');
+  const [isInnerModal, setIsInnerModal] = useState(false);
   const firstBtnStyles = { btnColor: "royalblue", hoverColor: "#3454d1" };
   //------함수부---------------------------------------------------
   //유효성 검사 
@@ -22,15 +28,11 @@ const GptRetocuhModal = ({ show, onHide, size, type, passage, optionList, setPas
     return err;
   }
   //리터칭 요청
-  const handleRetouchOnClick = () => {
+  const handleRetouchOnClick = ({ model, leftRira }) => {
     const err = check();
     if (err) { alert(err); return; } else {
-      const result = window.confirm("AI 리터칭을 사용할까요? 리터칭 횟수가 1회 차감됩니다.");
-      if (!result) return;
-      if (retocuhCount <= 0) { alert("리터칭 횟수가 부족합니다."); return; }
-      setRetouchCount(retocuhCount - 1);
-      if (type === "passage") { retouchPassage(passage, request) }
-      else if (type === "options") { retouchOptions(optionList, request) }
+      if (type === "passage") { retouchPassage(passage, request, model, leftRira) }
+      else if (type === "options") { retouchOptions(optionList, request, model, leftRira) }
     }
   }
   //확인 클릭
@@ -61,17 +63,26 @@ const GptRetocuhModal = ({ show, onHide, size, type, passage, optionList, setPas
           {type === "passage" && gptAnswer}
           {type === "options" && gptAnswer.split("</li>").map((item, index) => <BasicText key={index}>{item}</BasicText>)}
         </InnerCol>}
-        <Row>
-          <DotTitle title={"리터칭 횟수"} />{retocuhCount} 회 남음
-        </Row>
         <Column>
           <DotTitle title={"요청 사항"} />
-          <TextInput value={request} onChange={(event) => setRequest(event.target.value)} disabled={gptRes === "loading"} />
+          <Textarea value={request} onChange={(event) => setRequest(event.target.value)} />
         </Column>
-        {gptRes === "loading"
-          ? <Column style={{ alignItems: "center" }}><Spinner /> </Column>
-          : <MainBtn onClick={handleRetouchOnClick}>AI 리터칭</MainBtn>}
+        <MainBtn onClick={() => setIsInnerModal(true)}>AI 리터칭</MainBtn>
       </Modal.Body>
+      {/* 내부 모달 */}
+      {(isInnerModal || gptRes === GPT_RESPONSE.LOADING) && <InnerLayer>
+        <InnerOverlay />
+        <ChargeRiraModal
+          show={isInnerModal}
+          onHide={() => setIsInnerModal(false)}
+          onApprove={handleRetouchOnClick}
+        />
+        <GptIngModal
+          show={gptRes === GPT_RESPONSE.LOADING}
+          status={gptStatus}
+          progress={gptProgress}
+        />
+      </InnerLayer>}
       <Modal.Footer style={{ backgroundColor: "#efefef" }}>
         {gptAnswer !== '' && <ModalBtn styles={firstBtnStyles} onClick={handleConfirmOnClick}>{"확인"}</ModalBtn>}
         <ModalBtn onClick={onHide}>{"취소"}</ModalBtn>
@@ -93,9 +104,11 @@ const InnerCol = styled(Column)`
   border-radius: 2px;
   padding: 5px;
 `
-const TextInput = styled.input`
+const Textarea = styled.input`
 	width: 100%;
-	height: 3dvh;
+	height: 5dvh;
 	margin-top: 10px;
+  border-radius: 5px;
+  border: none;
 `
 export default GptRetocuhModal

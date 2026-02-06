@@ -2,7 +2,7 @@ import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, whe
 import { appFireStore, timeStamp } from '../../firebase/config'
 import { useSelector } from 'react-redux'
 
-//2024.12.05 생성(firebase 기본 기능)
+//생성(241205)
 const useFireBasic = (col) => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore;
@@ -28,15 +28,6 @@ const useFireBasic = (col) => {
       console.error(err)
     }
   }
-  //삭제
-  const deleteData = async (docId) => {
-    try {
-      let docRef = doc(db, col, docId)
-      await deleteDoc(docRef, null)
-    } catch (err) {
-      console.error(err)
-    }
-  }
   //문서 하나
   const fetchDoc = async (id) => {
     let docRef = doc(colRef, id)
@@ -48,8 +39,8 @@ const useFireBasic = (col) => {
     }
   }
   //문서 여러개
-  const fetchData = async (field) => {
-    let q = query(colRef, where(field, "==", String(user.uid)));
+  const fetchData = async (field, value = String(user.uid)) => {
+    let q = query(colRef, where(field, "==", value));
     try {
       let querySnapshot = await getDocs(q);
       return querySnapshot.docs
@@ -58,7 +49,15 @@ const useFireBasic = (col) => {
       console.log(err)
     }
   }
-
+  //삭제
+  const deleteData = async (docId) => {
+    try {
+      let docRef = doc(db, col, docId)
+      await deleteDoc(docRef, null)
+    } catch (err) {
+      console.error(err)
+    }
+  }
   return ({ addData, setData, fetchData, fetchDoc, deleteData })
 }
 

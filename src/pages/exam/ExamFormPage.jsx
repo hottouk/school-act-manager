@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useSelector } from 'react-redux'
+import Select from 'react-select';
 //컴포넌트
 import ExamEditSection from './ExamEditSection.jsx'
+import MainContainer from '../../components/Styled/MainContainer.jsx'
+import SubNav from '../../components/Bar/SubNav.jsx';
 import MainWrapper from '../../components/Styled/MainWrapper'
+import FormHeader from '../../components/Form/FormHeader.jsx'
 import DotTitle from '../../components/Title/DotTitle'
 import MainBtn from '../../components/Btn/MainBtn'
-import Select from 'react-select';
-import { Spinner } from 'react-bootstrap'
+import GptIngModal from '../../components/Modal/gptModal/GptIngModal.jsx'
+import ChargeRiraModal from '../../components/Modal/ChargeRiraModal.jsx'
 import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity.jsx'
 //hooks
 import useChatGpt from '../../hooks/useChatGpt.jsx'
 import useFireBasic from '../../hooks/Firebase/useFireBasic.jsx'
 //data
-import { numbers, typeData } from '../../data/examData.jsx'
-import ChargeRiraModal from '../../components/Modal/ChargeRiraModal.jsx'
+import { monthList, numbers, typeData } from '../../data/examData.jsx'
+import { GPT_RESPONSE } from '../../constants/gpt.jsx'
 //생성(251222)
 const ExamFormPage = () => {
 	const user = useSelector(({ user }) => user);
@@ -32,7 +36,6 @@ const ExamFormPage = () => {
 	const [grade, setGrade] = useState(null);
 	useEffect(() => { setMonth(null); setExam(null); }, [grade]);
 	//월
-	const monthList = [{ label: "3월", value: "3월" }, { label: "10월", value: "10월" },];
 	const [month, setMonth] = useState(null);
 	useEffect(() => { fetchExamData(); }, [month]);
 	//기출 문항
@@ -63,13 +66,13 @@ const ExamFormPage = () => {
 	const typeOptList = Object.entries(typeData).map((item) => ({ label: item[0], value: item[1] }));
 	const [question, setQuestion] = useState('');
 	const [passage, setPassage] = useState('');
-	const { makeExamQuestion, gptAnswer, setGptAnswer, gptRes } = useChatGpt();
+	const { makeExamQuestion, gptAnswer, setGptAnswer, gptRes, gptStatus, gptProgress } = useChatGpt();
 	//특수 문형
 	const [target, setTarget] = useState(''); //감정, 함축의미
 	const circleNumber = ["①", "②", "③", "④", "⑤"];
 	const [sentenceList, setSentenceList] = useState([]); //무관한 문장
 	const [circleAnswer, setCircleAnswer] = useState(null);
-	//관리자
+	//관리자(Master)
 	const [m_options, setOptions] = useState('');
 	const [m_question, setMasterQuestion] = useState('');
 	const [m_passage, setMasterPassage] = useState('');
@@ -124,20 +127,18 @@ const ExamFormPage = () => {
 		const confirm = window.confirm(`${subject}${number}: ${m_question}${m_options}${m_passage},`);
 		if (!confirm || !number) return;
 		const optionList = m_options.split("/", 5);
-		const question = {
-			question: m_question, optionList,
-			...(isOriginal
-				? { original: m_passage }
-				: { passage: m_passage })
-		};
+		const question = isOriginal
+			? { original: m_passage }
+			: { question: m_question, optionList, passage: m_passage };
 		const data = { [number]: question };
 		setData(data, `${year}${grade}${month}${subject}`);
 	}
 	return (<>
-		<Container>
+		<MainContainer styles={{ gap: "50px" }}>
+			<SubNav />
 			{/* 기출 */}
-			<MainWrapper styles={{ width: "60%", gap: "10px" }}>
-				<TestSubBar>지문 선택</TestSubBar>
+			<MainWrapper styles={{ width: "60%", gap: "10px", position: "relative" }}>
+				<FormHeader styles={{ top: "-30px" }}>지문 선택</FormHeader>
 				<Row>
 					<DotTitle>과목</DotTitle>
 					<Select
@@ -186,61 +187,60 @@ const ExamFormPage = () => {
 				</AnimMaxHightOpacity>
 			</MainWrapper>
 			{/* 제작대 */}
-			<AnimMaxHightOpacity isVisible={subject && !gptAnswer} styles={{ width: "60%", margin: "20px 0 0 0", alignSelf: "center" }}>
-				<MainWrapper styles={{ width: "100%", gap: "10px" }}>
-					<TestSubBar>제작대</TestSubBar>
-					{passage !== '' && <Row style={{ justifyContent: "space-between" }}>
-						<Row>
-							<DotTitle>제작 문항 유형</DotTitle>
+			<Column>
+				<AnimMaxHightOpacity isVisible={subject && !gptAnswer} styles={{ width: "60%", alignSelf: "center" }}>
+					<MainWrapper styles={{ width: "100%", gap: "10px", position: "relative" }}>
+						<FormHeader styles={{ top: "-30px" }}>지문 선택</FormHeader>
+						{passage !== '' && <Row style={{ justifyContent: "space-between" }}>
+							<Row>
+								<DotTitle>제작 문항 유형</DotTitle>
+								<Select
+									onChange={(event) => {
+										setType(event.label)
+										setQuestion(typeData[event.label])
+									}}
+									options={typeOptList}
+									placeholder={"유형 선택"} />
+							</Row>
+							{type && <h5 style={{ margin: "10px 0" }}>[발문] {typeData[type]}</h5>}
+						</Row>}
+						{passage !== '' && <Row>
+							<DotTitle>제작 문항 수준</DotTitle>
 							<Select
-								onChange={(event) => {
-									setType(event.label)
-									setQuestion(typeData[event.label])
-								}}
-								options={typeOptList}
-								placeholder={"유형 선택"} />
-						</Row>
-						{type && <h5 style={{ margin: "10px 0" }}>[발문] {typeData[type]}</h5>}
-					</Row>}
-					{passage !== '' && <Row>
-						<DotTitle>제작 문항 수준</DotTitle>
-						<Select
-							onChange={(event) => setLevel(event.value)}
-							options={gradeList}
-							placeholder={"수준 선택"} />
-					</Row>}
-					{["심경, 분위기", "함축 의미"].includes(type) && <Row>
-						<DotTitle>대상</DotTitle>
-						<TextInput style={{ width: "30%" }} value={target} onChange={(event) => setTarget(event.target.value)} />
-					</Row>}
-					{["무관한 문장"].includes(type) && <Column>
-						<DotTitle>[선택] 정답을 몇번으로 지정할까요?</DotTitle>
-						<Row style={{ gap: "20px" }}>
-							{circleNumber.map((item, index) =>
-								<Row key={item} style={{ gap: "3px" }}><input type='radio' name='answer' value={index} onClick={() => setCircleAnswer(index)} />{item}</Row>)}
-						</Row>
-					</Column>}
-					<Textarea
-						value={passage}
-						placeholder={"문항을 만들 지문을 선택 또는 작성하세요"}
-						onChange={(event) => setPassage(event.target.value.replace(/(\r\n|\n|\r)/g, " "))}
-					/>
-					{gptRes !== "loading" && <Column>
-						<MainBtn onClick={handleMakeOnClick}>AI 문제 생성</MainBtn>
-					</Column>}
-					{gptRes === "loading" && <Row style={{ justifyContent: "center", margin: "10px 0" }}>
-						<Spinner />
-					</Row>}
-				</MainWrapper>
-			</AnimMaxHightOpacity>
-			{/* 결과물 */}
-			{gptAnswer &&
-				<ExamEditSection gptAnswer={gptAnswer} setGptAnswer={setGptAnswer}
-					question={question} passage={passage} subject={subject} type={type} level={level}
-					sentenceList={sentenceList} circleAnswer={circleAnswer} />}
+								onChange={(event) => setLevel(event.value)}
+								options={gradeList}
+								placeholder={"수준 선택"} />
+						</Row>}
+						{["심경, 분위기", "함축 의미"].includes(type) && <Row>
+							<DotTitle>대상</DotTitle>
+							<TextInput style={{ width: "30%" }} value={target} onChange={(event) => setTarget(event.target.value)} />
+						</Row>}
+						{["무관한 문장"].includes(type) && <Column>
+							<DotTitle>[선택] 정답을 몇번으로 지정할까요?</DotTitle>
+							<Row style={{ gap: "20px" }}>
+								{circleNumber.map((item, index) =>
+									<Row key={item} style={{ gap: "3px" }}><input type='radio' name='answer' value={index} onClick={() => setCircleAnswer(index)} />{item}</Row>)}
+							</Row>
+						</Column>}
+						<Textarea
+							value={passage}
+							placeholder={"문항을 만들 지문을 선택 또는 작성하세요"}
+							onChange={(event) => setPassage(event.target.value.replace(/(\r\n|\n|\r)/g, " "))}
+						/>
+						{gptRes !== "loading" && <Column>
+							<MainBtn onClick={handleMakeOnClick}>AI 문제 생성</MainBtn>
+						</Column>}
+					</MainWrapper>
+				</AnimMaxHightOpacity>
+				{/* 결과물 */}
+				{gptAnswer &&
+					<ExamEditSection gptAnswer={gptAnswer} setGptAnswer={setGptAnswer}
+						question={question} passage={passage} subject={subject} type={type} level={level}
+						sentenceList={sentenceList} circleAnswer={circleAnswer} />}
+			</Column>
 			{/* 관리자 */}
-			{user.isMaster && <MainWrapper styles={{ width: "60%", margin: "20px 0 0 0", gap: "5px" }}>
-				<TestSubBar>관리자</TestSubBar>
+			{user.isMaster && <MainWrapper styles={{ width: "60%", margin: "20px 0 0 0", gap: "5px", position: "relative" }}>
+				<FormHeader>관리자</FormHeader>
 				<TextInput
 					type='text'
 					value={m_question}
@@ -260,13 +260,18 @@ const ExamFormPage = () => {
 					onChange={(event) => setOptions(event.target.value)}
 					placeholder={"선택지 구분자'/'"}
 				/>
-				<MainBtn styles={{ margin: "15px 0 0 0" }} onClick={(handleMasterOnClick)}>서버 업로드</MainBtn>
+				<MainBtn styles={{ margin: "15px 0 0 0" }} onClick={handleMasterOnClick}>서버 업로드</MainBtn>
 			</MainWrapper>}
-		</Container>
+		</MainContainer>
 		<ChargeRiraModal
 			show={isChargeModal}
 			onHide={() => setIsChargeModal(false)}
-			onApprove={(model) => makeExamQuestion(type, question, passage, level, target, model)}
+			onApprove={({ model, leftRira }) => makeExamQuestion(type, question, passage, level, target, model, leftRira)}
+		/>
+		<GptIngModal
+			show={gptRes === GPT_RESPONSE.LOADING}
+			status={gptStatus}
+			progress={gptProgress}
 		/>
 	</>
 	)
@@ -276,12 +281,6 @@ const Row = styled.div`
 `
 const Column = styled(Row)`
 	flex-direction: column;
-`
-const Container = styled(Column)`
-	box-sizing: border-box;
-	min-height: 100dvh;
-  background-color: #efefef;
-	padding: 20px 0 0 0;
 `
 const QuestionText = styled.p`
 	font-size: 18px;
@@ -295,16 +294,8 @@ const Textarea = styled.textarea`
 	word-break: break-word;
 	border-radius: 5px;
 `
-const TestSubBar = styled(Row)`
-	background-color: #3454d1;
-	justify-content: space-between;
-	border-radius: 10px 10px 0 0;
-	margin: -15px -15px 0 -15px;
-	padding: 5px 15px;
-	color: white;
-`
 const QuestionWrapper = styled.div`
-	width: 50%;
+	width: 500px;
 	margin: 0 auto;
 	padding: 10px;
 	border: 1px solid gray;	

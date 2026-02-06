@@ -9,7 +9,7 @@ import useFireBasic from "../../hooks/Firebase/useFireBasic";
 // @docs https://docs.tosspayments.com/sdk/v2/js#토스페이먼츠-초기화
 const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
 // 난수 생성
-const generateRandomString = () => { return window.btoa(Math.random().toString()).slice(0, 20); }
+const generateRandomString = () => { return window.btoa(Math.random().toString()).slice(0, 20); };
 const WidgetCheckout = ({ payment, customerKey, name, }) => {
 	const [ready, setReady] = useState(false);
 	const [widgets, setWidgets] = useState(null);
@@ -75,7 +75,6 @@ const WidgetCheckout = ({ payment, customerKey, name, }) => {
 				// customerMobilePhone: "01012341234",
 			});
 		} catch (error) {
-			// 에러 처리하기
 			console.error(error);
 			await deleteData(orderId);
 		}

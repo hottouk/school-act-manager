@@ -1,6 +1,5 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { Timestamp, getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -28,5 +27,8 @@ const storage = getStorage(app, "gs://school-act-manager.appspot.com");
 const timeStamp = Timestamp;
 export const functions = getFunctions(app, "asia-northeast3");
 export const callAskGPT = httpsCallable(functions, "askGPT");
+export const callAskGptOnly = httpsCallable(functions, "askGptOnly");
+export const callCalculateRira = httpsCallable(functions, "calculateRira");
+export const callEnrollCoupon = httpsCallable(functions, "enrollCoupon");
 
 export { app, appFireStore, appAuth, storage, timeStamp }

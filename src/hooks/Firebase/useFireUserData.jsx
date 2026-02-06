@@ -4,10 +4,12 @@ import { appFireStore } from '../../firebase/config'
 import { setUser } from '../../store/userSlice';
 //hooks
 import useFireBasic from './useFireBasic';
+import { useState } from 'react';
 //user collection 함수 모음
 const useFireUserData = () => {
   const user = useSelector(({ user }) => user);
   const dispatcher = useDispatch();
+  const [userRtData, setUserRtData] = useState(null);
   const db = appFireStore;
   const col = collection(db, "user");
   const { addData } = useFireBasic("error");
@@ -21,12 +23,13 @@ const useFireUserData = () => {
     return userDoc.data();
   }
   //1-1. 유저 정보 실시간 구독
-  const userDataListener = (id, callback) => {
+  const userDataListener = (id = user.uid, callback = () => { }) => {
     if (!id) return
     const userDocRef = doc(col, id);
     const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
       if (snapshot.exists()) {
         callback(snapshot.data());
+        setUserRtData(snapshot.data());
         dispatcher(setUser(snapshot.data()));
       }
       else { callback(null); }
@@ -156,20 +159,15 @@ const useFireUserData = () => {
   }
   //8. 학생 클래스 탈퇴
   const exportKlassTransaction = async (studentId, klassId) => {
-    const studentRef = doc(col, studentId);
-    await runTransaction(db, async (transaction) => {
-      const studentDoc = await transaction.get(studentRef);
-      if (!studentDoc.exists()) throw new Error("학생 정보 없음");
-      const myClassList = studentDoc.data().myClassList || [];
+    const petDocRef = doc(col, studentId);
+    await runTransaction(db, async (tx) => {
+      const petDoc = await tx.get(petDocRef);
+      if (!petDoc.exists()) throw new Error("학생 정보 없음");
+      const myClassList = petDoc.data().myClassList || [];
       const deleted = myClassList.filter((item) => item.id !== klassId);
-      transaction.update(studentRef, { myClassList: deleted });
-    }).then(() => { alert("학생이 클래스에서 탈퇴되었습니다."); })
-      .catch(err => {
-        alert(`관리자에게 문의하세요(useFireUserData_08), ${err}`);
-        console.log(err);
-      })
+      tx.update(petDocRef, { myClassList: deleted });
+    })
   }
-
   //09. 리라 차감 임시 코드(260104) 
   const TempDeductRira = async (amount) => {
     const userDocRef = doc(col, user.uid);
@@ -265,6 +263,7 @@ const useFireUserData = () => {
     }
   }
   return ({
+    userRtData,
     fetchUserData, userDataListener, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem, applyKlassTransaction, approveKlassTransaction, exportKlassTransaction,
     TempDeductRira,
   })

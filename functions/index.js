@@ -54,14 +54,14 @@ const encryptedWidgetSecretKey = "Basic " + Buffer.from(widgetSecretKey + ":").t
  * 역할: 서버에서 orderId 생성 & Firestore에 status: "ready"로 기록(금액 고정)
  */
 // 결제위젯 승인
-app.post("/confirm/widget", (req, res, next) => {
+app.post("/confirm/widget", (req, _res, next) => {
   console.log("Headers:", req.headers["content-type"]);
   console.log("Body type:", typeof req.body, "value:", req.body);
   next();
 }, async (req, res) => {
   try {
     const { paymentKey, orderId, amount, userId } = req.body ?? {};
-    if (!paymentKey || !orderId || amount == null) res.status(400).json({ code: "파라미터 오류", message: "missing params" });
+    if (!paymentKey || !orderId || amount == null) return res.status(400).json({ code: "파라미터 오류", message: "missing params" });
     const response = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
       method: "POST",
       headers: {
@@ -81,8 +81,8 @@ app.post("/confirm/widget", (req, res, next) => {
       const payRef = db.doc(`purchases/${orderId}`);
       const userRef = db.doc(`user/${userId}`);
       const checkRef = db.doc(`paymentcheck/${orderId}`);
+      //서버에서 리라 충전, 결제기록 생성, 임시 기록 삭제
       batch.set(userRef, { rira: FieldValue.increment(Number(amount)) }, { merge: true });
-      batch.delete(checkRef);
       batch.set(payRef,
         {
           orderId: result.orderId,
@@ -92,18 +92,53 @@ app.post("/confirm/widget", (req, res, next) => {
           currency: result.currency,
           totalAmount: result.totalAmount,
           method: result.method,
+          uid: userId,
           createdAt: FieldValue.serverTimestamp()
         }, { merge: true }
       );
+      batch.delete(checkRef);
       //한 번에 커밋
       await batch.commit();
     }
   } catch (e) {
     console.error("confirm/widget error:", e);
-    return res.status(500).json({ code: "SERVER_ERROR", message: String(e?.message || e) });
+    return res.status(500).json({ code: "서버_오류", message: String(e?.message || e) });
   }
 });
 export const api = onRequest({ region: REGION }, app);
+//쿠폰 등록
+export const enrollCoupon = onCall(
+  { region: REGION },
+  async (req) => {
+    const { couponCode, uid } = req.data || {};
+    const batch = db.batch();
+    const userRef = db.doc(`user/${uid}`);
+    const payRef = db.collection(`purchases`).doc();
+    await db.runTransaction(async (tx) => {
+      if (couponCode !== "26신학기준비맞이연수쿠폰") throw new HttpsError("invalid-argument", "유효하지 않은 쿠폰 코드입니다.");
+      const userSnap = await tx.get(userRef);
+      if (!userSnap.exists) throw new HttpsError("not-found", "사용자 정보를 찾을 수 없습니다.");
+      const userData = userSnap.data() || {};
+      const usedCouponList = userData.usedCouponList || [];
+      if (usedCouponList.includes(couponCode)) throw new HttpsError("already-used", "이미 사용한 쿠폰입니다.");
+      usedCouponList.push(couponCode);
+      tx.update(userRef, { usedCouponList });
+      const newRira = Number(userData.rira || 0) + 3000;
+      tx.update(userRef, { rira: newRira });
+      tx.set(payRef,
+        {
+          orderId: payRef.id,
+          orderName: "3,000리라 쿠폰",
+          paymentKey: null,
+          easyPay: null,
+          currency: "KRW",
+          totalAmount: 3000,
+          method: "coupon",
+          uid: uid,
+          createdAt: FieldValue.serverTimestamp()
+        }, { merge: true });
+    });
+  });
 //gpt 호출 
 export const askGPT = onCall(
   { region: REGION, secrets: [OPENAI_API_KEY] },
@@ -111,7 +146,7 @@ export const askGPT = onCall(
     const apiKey = OPENAI_API_KEY.value();
     const openai = new OpenAI({ apiKey: apiKey }); // 안전하게 사용
     //todo 보안
-    const { messages, type, model = "gpt-5-mini", temperature = 1.0, uid, rira: expected } = req.data || {};
+    const { messages, type = "basic", model = "gpt-5-mini", temperature = 1.0, uid, rira: expected } = req.data || {};
     const requestId = uuidv4();
     //유효성 검사
     if (!uid) throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
@@ -121,7 +156,7 @@ export const askGPT = onCall(
     const ledgerRef = db.collection("rira_ledger").doc(requestId);
     //1. 비용 차감
     const charged = getGptPrice(model, type);
-    console.log(`User ${uid} - Model: ${model}, Type: ${type}, Charged: ${charged}`);
+    console.log(`Log1: User ${uid} - Model: ${model}, Type: ${type}, `);
     await db.runTransaction(async (tx) => {
       const ledgerSnap = await tx.get(ledgerRef);
       const userSnap = await tx.get(userRef);
@@ -129,6 +164,7 @@ export const askGPT = onCall(
       if (!userSnap.exists) throw new HttpsError("not-found", "사용자 정보를 찾을 수 없습니다.");
       const userData = userSnap.data() || {};
       const userRira = Number(userData.rira || 0);
+      console.log(`Log2: UserRira_S:${userRira}, Charged_S: ${charged}, LeftRira_C: ${expected}`);
       //잔액 부족
       if (userRira - charged !== expected) throw new HttpsError("failed-precondition", "예상 차액과 서버 응답이 다릅니다. 재로그인해주세요.");
       if (charged > userRira) throw new HttpsError("failed-precondition", "리라 잔액이 부족합니다.");
@@ -137,11 +173,7 @@ export const askGPT = onCall(
     });
     //2. OpenAI API 호출
     try {
-      const completion = await openai.chat.completions.create({
-        model,
-        messages,
-        temperature,
-      });
+      const completion = await openai.chat.completions.create({ model, messages, temperature, });
       const content = completion.choices?.[0]?.message?.content ?? "";
       const usage = completion.usage || "gpt 사용량 정보 없음";
       // 성공 처리: 장부 status 업데이트
@@ -166,7 +198,45 @@ export const askGPT = onCall(
       throw new HttpsError("internal", "문장 생성 중 서버 오류가 발생했습니다., 차감된 리라는 환불 처리됩니다.");
     }
   });
-
+//gpt만 호출
+export const askGptOnly = onCall(
+  { region: REGION, secrets: [OPENAI_API_KEY] },
+  async (req) => {
+    const apiKey = OPENAI_API_KEY.value();
+    const openai = new OpenAI({ apiKey: apiKey });
+    const { messages, model, temperature = 1.0, } = req.data || {};
+    const completion = await openai.chat.completions.create({ model, messages, temperature, });
+    const content = completion.choices?.[0]?.message?.content ?? "";
+    const usage = completion.usage || { completion_tokens: 0, prompt_tokens: 0 };
+    return { content, usage };
+  });
+//리라 증감
+export const calculateRira = onCall({ region: REGION }, async (req) => {
+  const { uid, model = "gpt-5-mini", type = "basic", status, times = 1, expectedRira, } = req.data || {};
+  if (!uid) throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+  const requestId = uuidv4();
+  const charged = getGptPrice(model, type) * times;
+  const userRef = db.doc(`user/${uid}`);
+  const ledgerRef = db.collection("rira_ledger").doc(requestId);
+  return await db.runTransaction(async (tx) => {
+    const ledgerSnap = await tx.get(ledgerRef);
+    const userSnap = await tx.get(userRef);
+    if (!userSnap.exists) throw new HttpsError("not-found", "사용자 정보를 찾을 수 없습니다.");
+    if (status !== "refunded" && ledgerSnap.exists) return; // 중복 방지
+    if (status === "refunded" && !ledgerSnap.exists) return;
+    console.log(`Log1. 중복 증감 없음. ${charged} 증감 실시`);
+    const userData = userSnap.data() || {};
+    const userRira = Number(userData.rira || 0);
+    //잔액 오류
+    if (status === "pending") {
+      if (userRira - charged !== expectedRira) throw new HttpsError("failed-precondition", "예상 차액과 서버 응답이 다릅니다. 재로그인해주세요.");
+    }
+    if (charged > userRira) throw new HttpsError("failed-precondition", "리라 잔액이 부족합니다.");
+    tx.update(userRef, { rira: userRira - charged });
+    tx.set(ledgerRef, { uid, model, amount: charged, status, times, createdAt: FieldValue.serverTimestamp() });
+    return { success: true, charged };
+  });
+});
 //jpg OCR
 export const extractText = onRequest(
   { region: REGION },

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { appFireStore } from '../../firebase/config'
-import { addDoc, collection, deleteField, doc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, deleteField, doc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 //생성(250122)
 const useFirePetData = () => {
   const db = appFireStore;
@@ -38,7 +38,7 @@ const useFirePetData = () => {
     const petRef = doc(db, "classRooms", klassId, "students", petId);
     await updateDoc(petRef, { ...info });
   }
-  //4. Pet 전체 업데이트(260120)
+  //3. Pet 전체 업데이트(260120)
   const updateAllPetInfo = async (klassId, infoList) => {
     if (!klassId || !infoList) throw new Error("parameter Error, 변수 확인 필요");
     const petColRef = collection(db, "classRooms", klassId, "students");
@@ -49,7 +49,12 @@ const useFirePetData = () => {
     });
     await Promise.all(promises);
   }
-  //4. 특정 필드 삭제(250720)
+  //4. 펫 삭제(260126)
+  const deletePet = async (klassId, petId) => {
+    let petDocRef = doc(db, "classRooms", klassId, 'students', petId);
+    await deleteDoc(petDocRef);
+  }
+  //4_1. 특정 필드 삭제(250720)
   const deletePetField = async (klassId, petId, field) => {
     const petRef = doc(db, "classRooms", klassId, "students", petId);
     await updateDoc(petRef, { [field]: deleteField() }).catch((error) => {
@@ -57,7 +62,7 @@ const useFirePetData = () => {
       console.log(error);
     })
   }
-  return ({ petRtData, petDataListener, addPet, fetchPets, updatePetInfo, updateAllPetInfo, deletePetField, })
+  return ({ petRtData, petDataListener, addPet, fetchPets, updatePetInfo, updateAllPetInfo, deletePet, deletePetField, })
 }
 
 export default useFirePetData

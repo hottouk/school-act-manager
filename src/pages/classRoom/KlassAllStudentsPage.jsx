@@ -30,7 +30,7 @@ const ClassAllStudents = () => {
   const { semester } = state || {};
   const thisKlass = useSelector(({ classSelected }) => classSelected);
   //탭
-  const [_semester, setSemester] = useState(semester || null);
+  const [_semester, setSemester] = useState(semester || 1);
   const [_tabType, setTabType] = useState(1);
   //활동
   const allActivityList = useSelector((state) => state.allActivities);
@@ -53,7 +53,6 @@ const ClassAllStudents = () => {
   //css
   const nameFontStyle = { cursor: "pointer", fontWeight: "bold", textDecoration: "underline" };
   //------함수부------------------------------------------------
-  //학생 정보(todo 담임반)
   const bindStudentInfo = () => {
     if (!studentDataList) return;
     const infoList = studentDataList.map(student => {
@@ -101,7 +100,7 @@ const ClassAllStudents = () => {
       ? (_semester === 1 ? "firstList" : "secondList")
       : (_tabType === 1 ? "firstList" : _tabType === 2 ? "secondList" : "thirdList");
   }
-  //기록 추가 버튼
+  //활동 추가
   const handleAddActiOnClick = (id) => {
     const assignedDate = new Date().toISOString();
     setStudentActiInfoList(prev => prev.map((student) => {
@@ -211,7 +210,7 @@ const ClassAllStudents = () => {
       </SubNav>
       <AnimWrapper $isVisible={isVisible}>
         <GridContainer style={{ position: "relative" }} ref={printRef}>
-          {_semester && <Row style={{ position: "absolute", top: "-34px", left: "28px" }}>
+          {thisKlass.type === "subject" && <Row style={{ position: "absolute", top: "-34px", left: "28px" }}>
             <UpperTab className={"tab1"} top={"-33px"} left={"15px"} value={_semester} onClick={() => setSemester(1)}>1학기</UpperTab>
             <UpperTab className={"tab2"} top={"-33px"} left={"83px"} value={_semester} onClick={() => setSemester(2)}>2학기</UpperTab>
           </Row>}
@@ -277,6 +276,7 @@ const ClassAllStudents = () => {
               </GridItem>
               {/* 바이트 */}
               <GridItem>{bytes}</GridItem>
+              {/* 수정 */}
               <GridItem>
                 {(!isModifying && ["master", "coTeacher"].includes(user.userStatus)) && <Column>
                   <ClickableIcon className={"fa-solid fa-edit"} onClick={() => handleEditOnClick(key)} />

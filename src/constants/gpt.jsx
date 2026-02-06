@@ -1,6 +1,10 @@
-export const GPT_MULTI_MODE = Object.freeze({
-	general: "MULTI_GENERAL",
-	trans: "MULTI_TRANS",
+export const GPT_MODE = Object.freeze({
+	MULTI_GENERAL: "multiGeneral",
+	MULTI_TRANS: "multiTrans",
+	TRANS: "translate",
+	REPORT: "report",
+	FILLER: "filler",
+	KEYWORD: "keyword",
 });
 //charge-rara 모달
 export const GPT_OPTION_LIST = [
@@ -17,3 +21,8 @@ export const GPT_OPTION_LIST = [
 		recommend: "단어 추출, 간단 문장 변환, 단순 요약 등 반복 작업 시"
 	}
 ];
+//로딩 상태
+export const GPT_RESPONSE = {
+	LOADING: "loading",
+	COMPLETE: "complete"
+}

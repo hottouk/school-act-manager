@@ -3,4 +3,3 @@ export const GUIDE_IMG_PATH = Object.freeze({
     career: "images/guide2.png",
     cooperation: "images/guide3.png"
 });
-

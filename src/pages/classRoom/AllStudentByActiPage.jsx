@@ -13,13 +13,14 @@ import BackBtn from '../../components/Btn/BackBtn';
 import SmallBtn from '../../components/Btn/SmallBtn';
 import ChargeRiraModal from '../../components/Modal/ChargeRiraModal';
 import GptIngModal from '../../components/Modal/gptModal/GptIngModal';
+import ClickableIcon from '../../components/Styled/ClickableIcon';
 //hooks
 import useAcc from '../../hooks/useAcc';
 import useGetByte from '../../hooks/useGetByte';
 import useChatGpt from '../../hooks/useChatGpt';
 import useFireStorage from '../../hooks/useFireStorage';
 //data
-import { GPT_MULTI_MODE } from "../../constants/gptMode";
+import { GPT_MODE, GPT_RESPONSE } from "../../constants/gpt";
 import { academicAbility, subjectCareerAbility, subjectCoopAbility } from '../../data/abilityList'
 //효과
 import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity';
@@ -42,8 +43,8 @@ const AllStudentByActiPage = () => {
 	}, [_recordMap]);
 	const { getByteLengthOfString } = useGetByte();
 	//gpt
-	const { askPersonalizeOnReport, askPersonalizeOnKeywords, askMultipleWork, askTranslate, gptRes, gptStatus, gptProgress, gptAnswer, gptAnswerList } = useChatGpt();
-	useEffect(() => setIsLoading(gptRes === "loading"), [gptRes]);
+	const { askGptOnReport, askGptOnKeywords, playMultipleGpt, askTranslate, gptRes, gptStatus, gptProgress, gptAnswer, gptAnswerList } = useChatGpt();
+	useEffect(() => setIsLoading(gptRes === GPT_RESPONSE.LOADING), [gptRes]);
 	useEffect(() => setLoadingMsg(gptStatus), [gptStatus]);
 	const [gptTarget, setGptTarget] = useState({ idx: null, mode: null });
 	useEffect(() => bindGptAnaswer(), [gptAnswer, gptAnswerList]);
@@ -90,7 +91,7 @@ const AllStudentByActiPage = () => {
 	const initData = () => {
 		if (!studentList) return;
 		setRecordMap(createMatrix(studentList, ''));
-		setPersonalInfoMap(createMatrix(studentList, { mode: "report", fillerMap: {}, blankList: [], keywordList: [], }));
+		setPersonalInfoMap(createMatrix(studentList, { mode: GPT_MODE.REPORT, fillerMap: {}, blankList: [], keywordList: [], }));
 		// if (setSavedActi) { setSelectedActi(savedActi); }
 		// else { setSelectedActi(null); }
 	};
@@ -135,7 +136,7 @@ const AllStudentByActiPage = () => {
 		const { mode, idx } = gptTarget;
 		if (gptAnswer) {
 			if (idx == null) return;
-			if (mode === "translate") setPersonalInfoMap(prev => {
+			if (mode === GPT_MODE.TRANS) setPersonalInfoMap(prev => {
 				const { report, ...rest } = prev[idx];
 				return { ...prev, [idx]: { ...rest, report: gptAnswer } };
 			});
@@ -143,7 +144,7 @@ const AllStudentByActiPage = () => {
 		} else {
 			gptAnswerList.forEach((item) => {
 				const { idx, answer } = item;
-				if (mode === GPT_MULTI_MODE.trans) setPersonalInfoMap(prev => {
+				if (mode === GPT_MODE.MULTI_TRANS) setPersonalInfoMap(prev => {
 					const { report, ...rest } = prev[idx];
 					return { ...prev, [idx]: { ...rest, report: answer } };
 				});
@@ -162,7 +163,7 @@ const AllStudentByActiPage = () => {
 		setPersonalInfoMap(prev =>
 			Object.fromEntries(
 				Object.entries(prev).map(([key, value]) => {
-					const nextMode = { report: "filler", filler: "keyword", keyword: "report" }[value.mode];
+					const nextMode = { report: GPT_MODE.FILLER, filler: GPT_MODE.KEYWORD, keyword: GPT_MODE.REPORT }[value.mode];
 					return [key, { ...value, mode: nextMode }];
 				}))
 		);
@@ -171,7 +172,7 @@ const AllStudentByActiPage = () => {
 	const handleModeOnClick = (idx) => {
 		setPersonalInfoMap(prev => {
 			const { mode, ...rest } = prev[idx];
-			const nextMode = { report: "filler", filler: "keyword", keyword: "report" }[mode];
+			const nextMode = { report: GPT_MODE.FILLER, filler: GPT_MODE.KEYWORD, keyword: GPT_MODE.REPORT }[mode];
 			return ({ ...prev, [idx]: { ...rest, mode: nextMode } });
 		});
 	}
@@ -213,13 +214,13 @@ const AllStudentByActiPage = () => {
 	const check = (mode, idx) => {
 		const { report, fillerMap, keywordList } = _personalInfoMap[idx];
 		if (!_recordMap[idx]) { alert("문구를 입력하세요."); return false; }
-		if (mode === "report" || mode === "translate") {
+		if (mode === GPT_MODE.REPORT || mode === GPT_MODE.TRANS) {
 			if (!report) { alert("활동 보고서를 채워주세요."); return false; }
 			return true;
-		} else if (mode === "filler") {
+		} else if (mode === GPT_MODE.FILLER) {
 			if (Object.keys(fillerMap).length === 0) { alert("빈칸을 채워주세요."); return false; }
 			return true;
-		} else if (mode === "keyword") {
+		} else if (mode === GPT_MODE.KEYWORD) {
 			if (keywordList.length === 0) { alert("키워드가 없습니다."); return false; }
 			return true;
 		}
@@ -234,13 +235,13 @@ const AllStudentByActiPage = () => {
 	const multiCheck = (multiMode) => {
 		if (selectedList?.length === 0) { alert("선택된 사람이 없습니다."); return false; }
 		if (selectedList.some(item => !item.record?.trim())) { alert("문구를 입력하세요."); return false; }
-		if (multiMode === GPT_MULTI_MODE.trans) if (selectedList.some(item => item.mode !== "report")) { alert("번역은 레포트 모드만 가능합니다."); return false; }
+		if (multiMode === GPT_MODE.MULTI_TRANS) if (selectedList.some(item => item.mode !== GPT_MODE.REPORT)) { alert("번역은 레포트 모드만 가능합니다."); return false; }
 		const invalid = selectedList.some(item => {
 			let inner = false
 			const { mode, report, fillerMap, keywordList } = item;
-			if (mode === "report") { if (!report) { alert("활동 보고서가 비어 있는 셀이 있습니다."); inner = true; } }
-			else if (mode === "filler") { if (Object.keys(fillerMap).length === 0) { alert("비어 있는 셀이 있습니다."); inner = true; } }
-			else if (mode === "keyword") { if (keywordList.length === 0) { alert("키워드가 없는 셀이 있습니다."); inner = true; } }
+			if (mode === GPT_MODE.REPORT) { if (!report) { alert("활동 보고서가 비어 있는 셀이 있습니다."); inner = true; } }
+			else if (mode === GPT_MODE.FILLER) { if (Object.keys(fillerMap).length === 0) { alert("비어 있는 셀이 있습니다."); inner = true; } }
+			else if (mode === GPT_MODE.KEYWORD) { if (keywordList.length === 0) { alert("키워드가 없는 셀이 있습니다."); inner = true; } }
 			return inner;
 		});
 		if (invalid) return false;
@@ -253,22 +254,23 @@ const AllStudentByActiPage = () => {
 		setIsRiraModal(true);
 	}
 	//gpt 승인 함수
-	const getHandleOnApprove = (model) => {
+	const getHandleOnApprove = ({ model, leftRira }) => {
 		const { idx, mode } = gptTarget;
-		if (mode === GPT_MULTI_MODE.general || mode === GPT_MULTI_MODE.trans) askMultipleWork(selectedList, model, mode).then(() => setIsMulti(false));
+		if (mode === GPT_MODE.MULTI_GENERAL || mode === GPT_MODE.MULTI_TRANS) playMultipleGpt(selectedList, mode, model, leftRira)
+			.then(() => setIsMulti(false));
 		if (idx === null) return; // 개별					
 		const record = _recordMap[idx] || '';
 		const target = _personalInfoMap[idx] || {};
 		if (mode === "report") {
-			askPersonalizeOnReport(record, target.report || '', model)
+			askGptOnReport(record, target.report || '', model, leftRira);
 		} else if (mode === "filler") {
 			const fillers = Object.values(target.fillerMap).join(',');
-			askPersonalizeOnKeywords(record, fillers, model);
+			askGptOnKeywords(record, fillers, model, leftRira);
 		} else if (mode === "keyword") {
 			const keywords = (target.keywordList ?? []).join(',');
-			askPersonalizeOnKeywords(record, keywords, model);
+			askGptOnKeywords(record, keywords, model, leftRira);
 		} else if (mode === "translate") {
-			askTranslate(target.report || '', model);
+			askTranslate(target.report || '', model, leftRira);
 		}
 	}
 	//gpt 다중 선택
@@ -376,15 +378,15 @@ const AllStudentByActiPage = () => {
 						</AnimMaxHightOpacity>
 						<span style={{ textDecoration: "underline", cursor: "pointer", display: 'block', width: "100%" }} onClick={() => setIsOcrMenu(!isOcrMenu)}>{String(pdfFile.name).slice(0, 10)}...</span>
 					</div>}
-					<Icon className='fa-solid fa-file-pdf' onClick={handlePdfOnClick} />
+					<ClickableIcon className='fa-solid fa-file-pdf' onClick={handlePdfOnClick} />
 					<input type='file' ref={inputFileRef} onChange={(event) => setPdfFile(event.target.files[0])} accept="application/pdf" style={{ display: "none" }} />
-					<Icon className='fa-solid fa-floppy-disk' onClick={handleSaveOnClick} />
-					<Icon className='fa-solid fa-rotate' onClick={handleAllModeOnClick} />
-					<Icon className='fa-solid fa-user-group' onClick={() => setIsMulti(true)} />
+					<ClickableIcon className='fa-solid fa-floppy-disk' onClick={handleSaveOnClick} />
+					<ClickableIcon className='fa-solid fa-rotate' onClick={handleAllModeOnClick} />
+					<ClickableIcon className='fa-solid fa-user-group' onClick={() => setIsMulti(true)} />
 				</> : <>
-					<Icon className='fa-solid fa-brain' onClick={() => hadnleMultiGptOnClick(GPT_MULTI_MODE.general)} />
-					<Icon className='fa-solid fa-language' onClick={() => hadnleMultiGptOnClick(GPT_MULTI_MODE.trans)} />
-					<Icon className='fa-solid fa-user' onClick={() => { setIsMulti(false); setSelectedList([]); }} />
+					<ClickableIcon className='fa-solid fa-brain' onClick={() => hadnleMultiGptOnClick(GPT_MODE.MULTI_GENERAL)} />
+					<ClickableIcon className='fa-solid fa-language' onClick={() => hadnleMultiGptOnClick(GPT_MODE.MULTI_TRANS)} />
+					<ClickableIcon className='fa-solid fa-user' onClick={() => { setIsMulti(false); setSelectedList([]); }} />
 				</>}
 			</Row>
 		</SubNav>
@@ -419,11 +421,11 @@ const AllStudentByActiPage = () => {
 					</GridItem>
 					<GridItem>{studentNumber}</GridItem>
 					<GridItem>{name}</GridItem>
-					<GridItem style={{ gap: "5px" }}>{radioList?.map((item) => {
+					<GridItem style={{ gap: "5px" }}>{radioList?.map((item, radioIdx) => {
 						const { type, label, value } = item;
 						const groupName = `record-${idx}`;
 						const inputId = `record-${idx}-${label ?? 'basic'}`;
-						return <Row key={`${idx}${value}`} style={{ gap: "5px", justifyContent: "flex-start" }}>
+						return <Row key={`${idx}${radioIdx}`} style={{ gap: "5px", justifyContent: "flex-start" }}>
 							<input
 								id={inputId}
 								type='radio'
@@ -494,7 +496,7 @@ const AllStudentByActiPage = () => {
 						{!isMulti && <>
 							<i className='fa-solid fa-rotate' style={{ cursor: "pointer", color: "#3454d1", fontSize: "18px" }} onClick={() => handleModeOnClick(idx)} />
 							<i className='fa-solid fa-brain' style={{ cursor: "pointer", color: "#3454d1", fontSize: "18px" }} onClick={() => handleGptOnClick(mode, idx)} />
-							<i className='fa-solid fa-language' style={{ cursor: "pointer", color: "#3454d1", fontSize: "18px" }} onClick={() => handleGptOnClick("translate", idx)} />
+							<i className='fa-solid fa-language' style={{ cursor: "pointer", color: "#3454d1", fontSize: "18px" }} onClick={() => handleGptOnClick(GPT_MODE.TRANS, idx)} />
 						</>}
 					</GridItem>
 					<GridItem>{getByteLengthOfString(record)} byte</GridItem>
@@ -511,7 +513,6 @@ const AllStudentByActiPage = () => {
 		/>
 		<GptIngModal
 			show={isLoading}
-			onHide={() => { setIsLoading(false); }}
 			status={loadingMsg}
 			progress={gptProgress}
 		/>
@@ -522,16 +523,6 @@ const Row = styled.div`
 `
 const Column = styled(Row)`
 	flex-direction: column;
-`
-const Icon = styled.i`
-	font-size: 23px;
-	cursor: pointer;
-	border-radius: 30px;
-	padding: 6px;
-	&:hover {
-  background-color: #3454d130;;
-	transition-duration: .35s;
-  }
 `
 const OcrWrapper = styled(Column)`
 	position: absolute;

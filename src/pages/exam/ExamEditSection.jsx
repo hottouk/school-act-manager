@@ -5,14 +5,15 @@ import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 //컴포넌트
 import MainWrapper from '../../components/Styled/MainWrapper'
+import FormHeader from '../../components/Form/FormHeader'
 import MainBtn from '../../components/Btn/MainBtn'
 import DotTitle from '../../components/Title/DotTitle'
 import GptRetocuhModal from '../../components/Modal/gptModal/GptRetocuhModal'
 //hooks
 import useFireTestData from '../../hooks/Firebase/useFireTestData'
+import useDocxFile from '../../hooks/useDocxFile'
 //이미지
 import edit_icon from '../../image/icon/edit_icon.png'
-import useDocxFile from '../../hooks/useDocxFile'
 //생성(251219)
 const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, type, level, examItem, sentenceList, circleAnswer }) => {
 	const { addTestArrItem, updateTestQuestion } = useFireTestData();
@@ -28,7 +29,6 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 	const [_optionList, setOptionList] = useState([]);
 	const [_explanation, setExplanation] = useState('');
 	const [itemType, setItemType] = useState(null);
-	const [retocuhCount, setRetouchCount] = useState(0);
 	//편집 여부
 	const [isEditing, setIsEditing] = useState(false);
 	const [prevInfo, setPrevInfo] = useState(null);
@@ -39,19 +39,18 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 	const [isExplainEdit, setIsExplainEdit] = useState(false);
 	//모달
 	const [modalType, setModalType] = useState('');
-	const [isGptModal, setIsGptModal] = useState(false);
+	const [isRetouchModal, setIsRetouchModal] = useState(false);
 	//------함수부------------------------------------------------
 	const bindTestItem = () => {
 		if (!examItem) return;
 		console.log(examItem)
-		const { title, question, passage, optionList, explanation, type, retocuhCount } = examItem;
+		const { title, question, passage, optionList, explanation, type, } = examItem;
 		setTitle(title);
 		setItemType(type);
 		setQuestion(question);
 		setPassage(passage.replace(/(\r\n|\n|\r)/g, " "));
 		setOptionList(optionList.slice(0, 5));
 		setExplanation(explanation);
-		setRetouchCount(retocuhCount || 0);
 	}
 	//gpt 분석
 	const gptParser = (gptAnswer) => {
@@ -133,7 +132,7 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 			if (!result) return;
 			const changed = {
 				...examItem,
-				title: _title, question: _question, passage: _passage, optionList: _optionList, explanation: _explanation, retocuhCount: retocuhCount
+				title: _title, question: _question, passage: _passage, optionList: _optionList, explanation: _explanation,
 			};
 			const newArr = questionList?.map(((item) => item.id === examItem?.id ? changed : item));
 			updateTestQuestion("questions", newArr);
@@ -142,10 +141,7 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 			const title = prompt("문항 제목을 작성하세요");
 			if (title === "" || title === null) alert("빈칸입니다.");
 			else {
-				const question = {
-					subject, title, type, level, retocuhCount: retocuhCount,
-					question: _question, passage: _passage, optionList: _optionList, explanation: _explanation,
-				};
+				const question = { subject, title, type, level, question: _question, passage: _passage, optionList: _optionList, explanation: _explanation, };
 				addTestArrItem("questions", question);
 			}
 		}
@@ -168,8 +164,8 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 		updateTestQuestion("questions", deleted, navigate("/exam"));
 	}
 	return (<>
-		<MainWrapper styles={{ width: "60%", margin: "20px 0 0 0", gap: "15px" }}>
-			<TestSubBar>생성 문제 편집 및 저장</TestSubBar>
+		<MainWrapper styles={{ width: "60%", gap: "15px", position: "relative" }}>
+			<FormHeader styles={{ top: "-30px" }}>생성 문제 편집 및 저장</FormHeader>
 			{examItem && <Row style={{ justifyContent: "space-between", alignItems: "center" }}>
 				{!isTitleEdit
 					? <DotTitle>{_title}</DotTitle>
@@ -201,7 +197,7 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 				{(!isPassageEdit && !isEditing) && <IconWrapper>
 					<ImgIcon src={edit_icon} alt="편집" onClick={() => handleEditOnClick("passage", true)} />
 					<i className="fa-solid fa-brain" style={{ cursor: "pointer" }}
-						onClick={() => { setIsGptModal(true); setModalType("passage"); }} />
+						onClick={() => { setIsRetouchModal(true); setModalType("passage"); }} />
 				</IconWrapper>}
 				{isPassageEdit && <IconWrapper>
 					<i className="fa-solid fa-check" style={{ cursor: "pointer" }} onClick={() => handleEditOnClick("passage", true)} />
@@ -223,7 +219,7 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 					</ul>
 					{(!isOptionsEdit && !isEditing) && <IconWrapper>
 						<ImgIcon src={edit_icon} alt="편집" onClick={() => handleEditOnClick("options", true)} />
-						<i className="fa-solid fa-brain" style={{ cursor: "pointer" }} onClick={() => { setIsGptModal(true); setModalType("options"); }} />
+						<i className="fa-solid fa-brain" style={{ cursor: "pointer" }} onClick={() => { setIsRetouchModal(true); setModalType("options"); }} />
 					</IconWrapper>}
 					{isOptionsEdit && <IconWrapper>
 						<i className="fa-solid fa-check" style={{ cursor: "pointer" }} onClick={() => handleEditOnClick("options", true)} />
@@ -245,16 +241,14 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 			{examItem && <MainBtn onClick={handleDelOnClick}>문제 삭제</MainBtn>}
 		</MainWrapper >
 		<GptRetocuhModal
-			show={isGptModal}
-			onHide={() => setIsGptModal(false)}
+			show={isRetouchModal}
+			onHide={() => setIsRetouchModal(false)}
 			size={"lg"}
 			type={modalType}
 			passage={_passage}
 			optionList={_optionList}
 			setPassage={setPassage}
 			setOptionList={setOptionList}
-			retocuhCount={retocuhCount}
-			setRetouchCount={setRetouchCount}
 		/>
 	</>)
 }
@@ -264,22 +258,13 @@ const Row = styled.div`
 const Column = styled(Row)` 
   flex-direction: column;
 `
-const TestSubBar = styled(Row)`
-	background-color: #3454d1;
-	justify-content: space-between;
-	border-radius: 10px 10px 0 0;
-	margin: -15px -15px 0 -15px;
-	padding: 5px 15px;
-	color: white;
-`
 const QuestionWrapper = styled.div`
-	width: 50%;
+	width: 480px;
 	margin: 0 auto;
 	padding: 10px;
 	border: 1px solid gray;	
 	border-radius: 5px;
 `
-
 const Textarea = styled.textarea`
 	margin-top: 10px;
 	min-height: 20dvh;

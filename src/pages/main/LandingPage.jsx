@@ -1,27 +1,25 @@
 //라이브러리
 import { useEffect, useState } from 'react'
 import styled from 'styled-components'
+import { useSelector } from 'react-redux'
 //컴포넌트
-import NoticeModal from '../../components/Modal/NoticeModal'
-import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
+import HeroSection from './HeroSection'
+import IntroSection from './IntroSection'
 import HorizontalMobileAd from '../../components/Ads/HorizontalMobileAd'
+import NoticeModal from '../../components/Modal/NoticeModal'
 import SupplementInfoModal from '../../components/Modal/SupplementInfoModal'
 //hooks
 import useClientHeight from '../../hooks/useClientHeight'
 import useMediaQuery from '../../hooks/useMediaQuery'
-//이미지
-import main from '../../image/main.png'
-import { useSelector } from 'react-redux'
-//정비(240720) -> 모바일감지(250213)
-const ClassMain = () => {
+import { useFloatOnScroll } from '../../hooks/useFloatOnScroll';
+//정비(240720) -> 모바일감지(250213) => 리모델링(260203)
+const LandingPage = () => {
   const user = useSelector(({ user }) => user);
+  const { ref: ref0, isVisible: v0 } = useFloatOnScroll();
   //모달
   const [isNoticeModal, setIsNoticeModal] = useState(false); //공지사항
   const [isSupplement, setIsSupplement] = useState(false);   //무결성
-  useEffect(() => {
-    fetchNotice();
-    checkUserInfo();
-  }, [])
+  useEffect(() => { fetchNotice(); checkUserInfo(); }, []);
   const isMobile = useMediaQuery('(max-width: 768px)'); //화면 크기 감지
   const clientHeight = useClientHeight(document.documentElement)
   //------함수부------------------------------------------------
@@ -55,35 +53,24 @@ const ClassMain = () => {
   };
 
   return (<>
-    {!isMobile && <Container $clientheight={clientHeight}>
-      <LandingBg>
-        <Wrapper>
-          <h1>App For the Teacher, by the Teacher, of the Teacher</h1>
-          <p>체계적 세특 관리, 쫑알이로 시작하자!</p>
-          <LandingImage className='landing_img' src={main} alt="랜딩이미지" />
-        </Wrapper>
-      </LandingBg>
-      <WhiteBg>
-        <SubTitleText>{2682}명의 선생님, {287}명의 학생이 이용중!!</SubTitleText>
-      </WhiteBg>
-      <BottomBg>
-        <BibleText className='bible'>네 길을 여호와께 맡기라 그를 의지하면 그가 이루시고 네 의를 빛 같이 나타내시며 네 공의를 정오의 빛 같이 하시리로다. 시편 37:5-6</BibleText>
-      </BottomBg>
-      <Row style={{ justifyContent: "center" }}>
-        <HorizontalBannerAd />
-      </Row>
+    {!isMobile && <Container $clHi={clientHeight}>
+      <HeroSection />
+      <GraySection style={{ justifyContent: "center" }}>
+        <SubHeader style={{ textAlign: "center" }}>{2682}명의 선생님, {287}명의 학생이 이용중!!<br />많은 교사의 선택에는 이유가 있습니다.<br /></SubHeader>
+      </GraySection>
+      <BibleSection>
+        <BibleText ref={ref0} $visible={v0}>주 예수를 믿으라 그리하면 너와 네 집이 구원을 얻으리라 <br />사도행전 16:31</BibleText>
+      </BibleSection>
+      <IntroSection />
     </Container>}
     {isMobile && <MobileContainer>
-      <LandingBg $clientheight={clientHeight}>
-        <h1>생기부쫑알이</h1>
-        <LandingImage className='landing_img' src={main} alt="랜딩이미지" />
-      </LandingBg>
-      <WhiteBg>
-        <SubTitleText>{2682}명의 선생님, {287}명의 학생이 이용중!!</SubTitleText>
-      </WhiteBg>
-      <BottomBg>
+      <HeroSection />
+      <GraySection>
+        <SubHeader>{2682}명의 선생님, {287}명의 학생이 이용중!!</SubHeader>
+      </GraySection>
+      <BibleSection>
         <BibleText className='bible'>네 길을 여호와께 맡기라 그를 의지하면 그가 이루시고 네 의를 빛 같이 나타내시며 네 공의를 정오의 빛 같이 하시리로다. 시편 37:5-6</BibleText>
-      </BottomBg>
+      </BibleSection>
       <Row style={{ justifyContent: "center" }}>
         <HorizontalMobileAd />
       </Row>
@@ -106,62 +93,25 @@ const ClassMain = () => {
 const Container = styled.div`
   display: grid;
   box-sizing: border-box;
-  grid-template-columns: 20% 60% 20%;
-  grid-template-rows: 548px 120px 120px 90px;
+  grid-template-rows: ${({ $clHi }) => $clHi}px 400px 300px ${({ $clHi }) => $clHi * 1.2}px;
 `
 const MobileContainer = styled.div`
   overflow-y: scroll;
 `
 const Row = styled.div`
   display: flex;
-  grid-column: 1/4;
 `
-const Wrapper = styled.div`
-  margin: 0 auto;
-`
-const LandingBg = styled(Row)`
+const Column = styled(Row)` 
   flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  color: #efefef;
-  background-image: linear-gradient(to top, #499add, #3454d1);
-  justify-content: center;
-  @media(max-width: 768px) {
-    position: relative;
-    height: ${({ $clientheight }) => $clientheight / 100 * 55}px;
-    justify-content: space-between;  
-  }
 `
-const LandingImage = styled.img`
-  float: right;
-  width: 400px;
-  position: relative;
-  right: 20px;
-  bottom: -12px;
-  @media(max-width: 768px) {
-    position: absolute;
-    width: 300px;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-  }
-`
-const WhiteBg = styled(Row)`
+const GraySection = styled(Column)`
   background-color: #efefef;
-  padding-top: 10px;
-  align-items: center;
-`
-const BottomBg = styled(Row)`
-  background-color: #499add;
-  color: #efefef;
-  padding: 20px;
-`
-const SubTitleText = styled.h3`
-  position: relative;
+  `
+const SubHeader = styled.h3`
   width: 100%;
-  display: flex;
-  justify-content: center;
+  font-size: 32px;
+  line-height: 1.4;
+  font-weight: 500;
   @media (max-width: 767px) {
     font-size: 20px;
     top: 0;
@@ -169,14 +119,23 @@ const SubTitleText = styled.h3`
     text-align: center;
   }
 `
+const BibleSection = styled(Column)`
+  background-color: white;
+  margin: 20px auto;
+  gap: 20px;
+`
 const BibleText = styled.p`
   width: 400px;
+  color: #black;
   margin: auto;
   text-align: center;
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transform: ${({ $visible }) => ($visible ? 'translateY(0)' : 'translateY(36px)')};
+  transition: opacity 1500ms ease, transform 1200ms ease;
+  will-change: opacity, transform;
   @media (max-width: 768px) {
     width: 100%;
     font-size: 14px;
   }
 `
-
-export default ClassMain
+export default LandingPage

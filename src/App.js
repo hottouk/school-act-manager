@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 //로그인
 import LoginPage from './pages/login/LoginPage';
 //대문
-import ClassMain from './pages/main/ClassMain';
+import LandingPage from './pages/main/LandingPage';
 import Nav from './components/Bar/Nav';
 //활동 관리
 import ActivityMain from './pages/activity/ActivityMain';
@@ -17,7 +17,7 @@ import ActivitySortPage from './pages/activity/ActivitySortPage';
 import ClassroomMainPage from './pages/classroom/ClassroomMainPage';
 import ClassroomDetailsPage from './pages/classroom/ClassroomDetailsPage';
 import StudentDetailPage from './pages/classroom/StudentDetailPage';
-import ClassAllStudentsPage from './pages/classroom/ClassAllStudentsPage';
+import KlassAllStudentsPage from './pages/classroom/KlassAllStudentsPage';
 //담임반
 import HomeroomDetailsPage from './pages/homeroom/HomeroomDetailsPage';
 import ClassSortSelection from './pages/classSetting/ClassSortSelection';
@@ -48,6 +48,7 @@ import Footer from './components/Bar/Footer';
 import styled from 'styled-components';
 import ExamItemPage from './pages/exam/ExamItemPage';
 import AllStudentByActiPage from './pages/classroom/AllStudentByActiPage';
+import MyInfoPage from './pages/myInfo/MyInfoPage';
 function App() {
   const user = useSelector(({ user }) => { return user; })
   const uid = user.uid;
@@ -67,7 +68,7 @@ function App() {
           <Nav />
           <Main>
             <Routes>
-              <Route path="/" element={uid ? <ClassMain /> : <Navigate replace={true} to='/login' />} />
+              <Route path="/" element={uid ? <LandingPage /> : <Navigate replace={true} to='/login' />} />
               {/* 활동 관리 */}
               <Route path="/activities" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
               <Route path="/activities_all" element={uid ? <ActivityMain /> : <Navigate replace={true} to='/login' />} />
@@ -79,19 +80,18 @@ function App() {
               {/* 담임반 관리 */}
               <Route path="/homeroom/:id" element={uid ? <HomeroomDetailsPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/homeroom/:id/student" element={uid ? <StudentDetailPage /> : <Navigate replace={true} to='/login' />} />
-              <Route path="/homeroom/:id/allStudents" element={uid ? <ClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
+              <Route path="/homeroom/:id/allStudents" element={uid ? <KlassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/homeroom/:id/allstudents/acti" element={uid ? <AllStudentByActiPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/homeroom/:id/seat" element={uid ? <HomeSeatChange /> : <Navigate replace={true} to='/login' />} />
               {/* 클래스 관리 */}
               <Route path="/classrooms" element={uid ? <ClassroomMainPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/classrooms/:id" element={uid ? <ClassroomDetailsPage /> : <Navigate replace={true} to='/login' />} />
-              <Route path="/classrooms/:id/allstudents" element={uid ? <ClassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
+              <Route path="/classrooms/:id/allstudents" element={uid ? <KlassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/classrooms/:id/allstudents/acti" element={uid ? <AllStudentByActiPage /> : <Navigate replace={true} to='/login' />} />
               <Route path="/classrooms/:id/student" element={uid ? <StudentDetailPage /> : <Navigate replace={true} to='/login' />} />
               {/* 클래스 만들기, 교사 회원만 가능 */}
               <Route path="/classrooms_setting" element={user.isTeacher ? <ClassSortSelection /> : <Navigate replace={true} to='/' />} />
               <Route path="/classrooms_setting_details" element={user.isTeacher ? <ClassroomFormPage /> : <Navigate replace={true} to='/' />} />
-              {/* 학생 관리 */}
               {/* 단어 관리 */}
               {/* <Route path="/lab" element={uid ? <Lab /> : <Navigate replace={true} to='/login' />} /> */}
               <Route path="/quiz" element={uid ? <QuizMainPage /> : <Navigate replace={true} to='/login' />} />
@@ -116,10 +116,12 @@ function App() {
               {/* 관리자 */}
               <Route path="/master" element={user.isMaster ? <MasterPage /> : <Navigate replace={true} to='/' />} />
               {/* 충전하기 */}
-              <Route path="/purchase" element={user.isMaster ? <AmountSelectPage /> : <Navigate replace={true} to='/' />} />
-              <Route path="/purchase/widget" element={user.isMaster ? <WidgetCheckoutPage /> : <Navigate replace={true} to='/' />} />
-              <Route path="/purchase/success" element={user.isMaster ? <WidgetSuccessPage /> : <Navigate replace={true} to='/' />} />
-              <Route path="/purchase/fail" element={user.isMaster ? <PurchaseFailPage /> : <Navigate replace={true} to='/' />} />
+              <Route path="/purchase" element={user.isTeacher ? <AmountSelectPage /> : <Navigate replace={true} to='/' />} />
+              <Route path="/purchase/widget" element={user.isTeacher ? <WidgetCheckoutPage /> : <Navigate replace={true} to='/' />} />
+              <Route path="/purchase/success" element={user.isTeacher ? <WidgetSuccessPage /> : <Navigate replace={true} to='/' />} />
+              <Route path="/purchase/fail" element={user.isTeacher ? <PurchaseFailPage /> : <Navigate replace={true} to='/' />} />
+              {/* 충전하기 */}
+              <Route path="/myinfo" element={uid ? <MyInfoPage /> : <Navigate replace={true} to='/' />} />
             </Routes>
           </Main>
           {uid && <Footer />}
