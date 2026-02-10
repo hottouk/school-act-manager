@@ -3,7 +3,6 @@ import styled from 'styled-components'
 const AnimMaxHightOpacity = ({ isVisible, content, children, styles }) => {
   const width = styles?.width || "100%";
   const margin = styles?.margin || "0";
-  const gap = styles?.gap || "0";
   const alignSelf = styles?.alignSelf || '';
   return (
     <AnimationWrapper $isVisible={isVisible} $width={width} $margin={margin} $alignSelf={alignSelf}>

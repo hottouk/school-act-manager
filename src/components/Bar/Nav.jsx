@@ -39,11 +39,11 @@ const Nav = () => {
         crossorigin="anonymous"
         referrerpolicy="no-referrer" />
     </Helmet>
-    {!user.uid && <>
+    {!user.uid &&
       <MenuWrapper>
         <li><Link to='/login'><Icon className="fa-solid fa-key"></Icon> <span>로그인</span></Link></li>
-      </MenuWrapper></>}
-    {(user.isTeacher && !isMobile) && <>
+      </MenuWrapper>}
+    {(user.uid && user.isTeacher && !isMobile) && <>
       {/* PC 교사 */}
       <LogoImg src={brandLogo} alt="로고" />
       <Link to="/"><BrandTitle>생기부 쫑알이</BrandTitle></Link>
@@ -94,8 +94,7 @@ const Nav = () => {
         </NewsWrapper>
       </MenuWrapper>
       <Link to="/myinfo">
-        {_profileImg && <ProfileImg className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => { }} />}
-        {!_profileImg && <ProfileImg className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => { }} />}
+        <ProfileImg className="profileImg" src={_profileImg || unknown} alt="프로필 이미지" />
       </Link>
     </>}
     {/* PC 학생 */}
@@ -117,9 +116,9 @@ const Nav = () => {
           <Link to="/news" ><Icon className="fa-solid fa-bell" /></Link>
         </NewsWrapper>
       </MenuWrapper>
-      {_profileImg && <ProfileImg className="profileImg" src={_profileImg} alt="프로필 이미지" onClick={() => { }} />}
-      {!_profileImg && <ProfileImg className="profileImg" src={unknown} alt="프로필 이미지" onClick={() => { }} />}
-
+      <Link to="/myinfo">
+        {_profileImg && <ProfileImg className="profileImg" src={_profileImg || unknown} alt="프로필 이미지" />}
+      </Link>
     </>}
     {/* 모바일 교사*/}
     {(user.isTeacher && isMobile) && <>
@@ -150,21 +149,21 @@ const Nav = () => {
   )
 }
 const Row = styled.div`
-  display: flex;
-`
+    display: flex;
+    `
 const Container = styled(Row)`
-  background-color: #3454d1;
-  align-items: center;
-  padding: 20px 30px;
-  color: #efefef;
-  a {
+    background-color: #3454d1;
+    align-items: center;
+    padding: 20px 30px;
     color: #efefef;
+    a {
+      color: #efefef;
     text-decoration: none;
   }
-  @media screen and (max-width: 768px){
-    width: 100%;
+    @media screen and (max-width: 768px){
+      width: 100%;
     display: flex;
-    position: fixed; 
+    position: fixed;
     bottom: 0;
     height: 10%;
     background-color: #efefef;
@@ -173,71 +172,71 @@ const Container = styled(Row)`
     border-top: 1px solid #949192;
     a {
       color: #3454d1;
-      font-size: 12px;
+    font-size: 12px;
     }
-`
+    `
 const NewsWrapper = styled.li`
-  position: relative;
-`
+    position: relative;
+    `
 const LogoImg = styled.img`
-  width: 30px;
-  height: 30px;
-  margin-right: 10px;
-`
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    `
 const BrandTitle = styled.h3`
-  margin: 0;
-  display: flex;
-  align-items: center;
-  color: #efefef;
-  font-weight: bold;   
-`
+    margin: 0;
+    display: flex;
+    align-items: center;
+    color: #efefef;
+    font-weight: bold;
+    `
 const MenuWrapper = styled.ul`
-  margin-bottom: 0;
-  padding: 0 30px;
-  flex-grow: 2;
-  display: flex;
-  justify-content: right;
-  align-items: center;
-  gap: 30px;
-  @media (max-width: 768px) {
-    width: 100%;
+    margin-bottom: 0;
+    padding: 0 30px;
+    flex-grow: 2;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    gap: 30px;
+    @media (max-width: 768px) {
+      width: 100%;
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
     padding: 0;
     gap: 0;
   }
-`
+    `
 const Icon = styled.i`
-  margin-right: 5px;
-  @media (max-width: 768px) {
-    font-size: 25px;
+    margin-right: 5px;
+    @media (max-width: 768px) {
+      font - size: 25px;
     margin: 0;
   }
-`
+    `
 const NewIcon = styled.div`
-  position: absolute;
-  top: -25px;
-  right: -8px;
-`
+    position: absolute;
+    top: -25px;
+    right: -8px;
+    `
 const ProfileImg = styled.img`
-  width: 50px;
-  height: 50px;
-  border-radius: 25px;
-  cursor: pointer;
-`
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    cursor: pointer;
+    `
 const MoebileLi = styled.li`
-  color: #3454d1;
-  display: flex;
-`
+    color: #3454d1;
+    display: flex;
+    `
 const NewDot = styled.div`
-  position: absolute;
-  top: -10px;
-  left: 20px;
-  background-color: red;
-  width: 10px;
-  height: 10px;
-  border-radius: 10px;
-  color: #efefef;
-`
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background-color: red;
+    width: 10px;
+    height: 10px;
+    border-radius: 10px;
+    color: #efefef;
+    `
 export default Nav

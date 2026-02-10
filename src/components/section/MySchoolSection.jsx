@@ -1,46 +1,60 @@
 import React from 'react'
-import Title from '../Title/Title'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+//Components
+import DotTitle from '../Title/DotTitle'
+import Title from '../Title/Title'
 import ClickableText from '../Styled/ClickableText'
-import useFireBasic from '../../hooks/Firebase/useFireBasic'
-import { useSelector } from 'react-redux'
-
-const MySchoolSection = ({ schoolInfo }) => {
-	const user = useSelector(({ user }) => user);
-	const [schoolMaster, setSchoolMaster] = React.useState(null);
-	const [memberList, setMemberList] = React.useState([]);
-	const { fetchDoc } = useFireBasic("school");
-	//학교 정보 가져오기_(내 학교 정보)school Col
-	const fetchSchoolInfo = async () => {
-		// initData();
-		const code = schoolInfo?.schoolCode;
-		if (!code) return;
-		fetchDoc(code).then((info) => {
-			setSchoolMaster(info?.schoolMaster ?? null);
-			setMemberList(info?.memberList ?? []);
-		})
-	}
-
+//생성(260207)
+const MySchoolSection = ({ mySchooInfo, leaveSchoolTx, isFromInfoPage }) => {
+	const navigate = useNavigate();
+	//학교 탈퇴
+	const handleLeaveOnClick = async () => {
+		const msg = window.prompt("현재 학교로 개설된 모든 클래스와 학생정보가 삭제되며 복구할 수 없습니다. 진행하려면 '탈퇴합니다'를 입력해주세요");
+		if (msg !== "탈퇴합니다") { alert("문구가 제대로 입력되지 않았습니다."); return; }
+		try {
+			await leaveSchoolTx(mySchooInfo.schoolCode);
+			alert("학교를 탈퇴했습니다.");
+		} catch (error) {
+			alert("학교를 탈퇴 중 오류가 발생했습니다.");
+		}
+	};
 	return (
 		<section>
-			<Title>{schoolInfo?.schoolName}</Title>
-			<p>{schoolInfo?.eduOfficeName}</p>
-			<p>{schoolInfo?.address}</p>
-			<p>{schoolInfo?.schoolTel}</p>
-			{schoolInfo && <p>학교 코드: {schoolInfo?.schoolCode}</p>}
-			{/* <p>담당자: {schoolMaster?.slice(0, 4) + "******" || "없음"}</p> */}
-			<Row style={{ justifyContent: "flex-end", gap: "20px" }}>
-				{/* {user.uid === schoolMaster && <>
-					<ClickableText onClick={() => { }}>교사 학생 변경</ClickableText>
-					<ClickableText onClick={() => { }}>담당자 변경</ClickableText>
-				</>} */}
-				<ClickableText onClick={() => { }}>학교 탈퇴</ClickableText>
-				<ClickableText onClick={() => { alert("학교 탈퇴 후에 회원 탈퇴를 진행하실 수 있습니다") }}>쫑알이 회원 탈퇴</ClickableText>
-			</Row>
+			<Column style={{ gap: "15px" }}>
+				<Title>{mySchooInfo?.schoolName || "학교 정보 없음"}</Title>
+				<Row>
+					<DotTitle>교육 지원청</DotTitle>
+					<span>{mySchooInfo?.eduOfficeName || "없음"}</span>
+				</Row>
+				<Row>
+					<DotTitle>학교 주소</DotTitle>
+					<span>{mySchooInfo?.address || "없음"}</span>
+				</Row>
+				<Row>
+					<DotTitle>학교 전화</DotTitle>
+					<span>{mySchooInfo?.schoolTel || "없음"}</span>
+				</Row>
+				<Row>
+					<DotTitle>학교 코드</DotTitle>
+					<span>{mySchooInfo?.schoolCode || "없음"}</span>
+				</Row>
+				<Row>
+					<DotTitle>담당자</DotTitle>
+					<span>{mySchooInfo?.schoolMaster || "없음"}</span>
+				</Row>
+				<Row style={{ justifyContent: "flex-end", gap: "20px" }}>
+					{(!mySchooInfo && isFromInfoPage) && <ClickableText onClick={() => navigate("school")}>학교 등록</ClickableText>}
+					{(mySchooInfo && isFromInfoPage) && <ClickableText onClick={handleLeaveOnClick}>학교 탈퇴</ClickableText>}
+				</Row>
+			</Column>
 		</section>
 	)
 }
 const Row = styled.div`
   display: flex;
+`
+const Column = styled(Row)`
+	flex-direction: column;
 `
 export default MySchoolSection

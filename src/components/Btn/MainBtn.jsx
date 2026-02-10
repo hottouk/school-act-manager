@@ -5,8 +5,9 @@ const MainBtn = ({ children, onClick, type, styles, disabled }) => {
   const margin = styles?.margin ?? "0";
   const zIndex = styles?.zIndex ?? "999";
   const alignSelf = styles?.alignSelf ?? "none";
+  const width = styles?.width ?? "100%";
   return (
-    <StyledBtn $zIndex={zIndex} $alignSelf={alignSelf} $margin={margin} $disabled={disabled}
+    <StyledBtn $zIndex={zIndex} $alignSelf={alignSelf} $margin={margin} $disabled={disabled} $width={width}
       type={type || "button"}
       onClick={onClick}
       disabled={disabled}
@@ -30,7 +31,7 @@ const StyledBtn = styled.button`
   font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
   font-size: 15px;
   font-weight: 500;
-  width: 100%;
+  width: ${({ $width }) => $width};
   height: 50px;
   letter-spacing: normal;
   line-height: 1.5;

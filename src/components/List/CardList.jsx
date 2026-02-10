@@ -170,32 +170,33 @@ const CardList = ({ dataList, type, onClick, selected }) => {
   }
   return (
     <Container>
-      <CardWrapper>
-        {/* 데이터 없음 */}
-        {(!dataList?.length) && <EmptyResult comment={"데이터가 없어요"} />}
-        {/* 시험 문제 */}
-        {(type === "exam") && dataList?.map((item) => <ExamCard key={item.id} item={item} onClick={() => { navigate(`/exam_item`, { state: item }) }} />)}
-        {/* 멤버 */}
-        {(type === "member") && dataList?.map((item) => <MemberCard key={item.uid} item={item} onClick={onClick} />)}
-        {/* 교과반 */}
-        {(type === "classroom" || type === "appliedClassList") && dataList?.map((item) => (<SubectKlassCard key={item.id} item={item} onClick={onClick} />))}
-        {/* 담임반 */}
-        {(type === "homeroom") && dataList?.map((item) => { return (<HomeActiCard key={item.id} item={item} onClick={onClick} />) })}
-        {/* 교과활동 */}
-        {type === "activity" && dataList?.map((item) => (<SubjectActiCard key={item.id} item={item} onClick={onClick} />))}
-        {/* 업어온 활동 */}
-        {type === "copiedActi" && dataList?.map((item) => (<CopiedActiCard key={item.id} item={item} onClick={() => { navigate(`/activities/${item.id}`, { state: { acti: item } }) }} styles={{ hoverColor: "rgba(255, 105, 180, 0.2)" }} />))}
-        {/* 퀴즈 활동*/}
-        {type === "quizActi" && dataList?.map((item) => (<QuizActiCard key={item.id} item={item} onClick={onClick} styles={{ hoverColor: "rgba(9, 138, 15,0.2)" }} />))}
-        {/* 단어 세트 */}
-        {(type === "quiz") && dataList?.map((item) => (<QuizCard key={item.id} item={item} onClick={() => { navigate('/quiz_setting', { state: item }) }} />))}
-        {/*펫*/}
-        {(type === "pet") && dataList?.map((item, index) => <PetCard key={item.petId} item={item} onClick={() => { onClick(item, index) }} />)}
-        {/*몬스터*/}
-        {(type === "monster") && dataList?.map((item) => <MonsterCard key={item.level} item={item} onClick={onClick} />)}
-        {/*게임방*/}
-        {(type === "multiroom") && dataList?.map((item) => <MultiroomCard key={item.gameId} item={item} onClick={onClick} />)}
-      </CardWrapper>
+      {/* 데이터 없음 */}
+      {(!dataList?.length)
+        ? <Ceneter><EmptyResult comment={"데이터가 없어요"} /></Ceneter>
+        : <CardWrapper>
+          {/* 시험 문제 */}
+          {(type === "exam") && dataList?.map((item) => <ExamCard key={item.id} item={item} onClick={() => { navigate(`/exam_item`, { state: item }) }} />)}
+          {/* 멤버 */}
+          {(type === "member") && dataList?.map((item) => <MemberCard key={item.uid} item={item} onClick={onClick} />)}
+          {/* 교과반 */}
+          {(type === "classroom" || type === "appliedClassList") && dataList?.map((item) => (<SubectKlassCard key={item.id} item={item} onClick={onClick} />))}
+          {/* 담임반 */}
+          {(type === "homeroom") && dataList?.map((item) => { return (<HomeActiCard key={item.id} item={item} onClick={onClick} />) })}
+          {/* 교과활동 */}
+          {type === "activity" && dataList?.map((item) => (<SubjectActiCard key={item.id} item={item} onClick={onClick} />))}
+          {/* 업어온 활동 */}
+          {type === "copiedActi" && dataList?.map((item) => (<CopiedActiCard key={item.id} item={item} onClick={() => { navigate(`/activities/${item.id}`, { state: { acti: item } }) }} styles={{ hoverColor: "rgba(255, 105, 180, 0.2)" }} />))}
+          {/* 퀴즈 활동*/}
+          {type === "quizActi" && dataList?.map((item) => (<QuizActiCard key={item.id} item={item} onClick={onClick} styles={{ hoverColor: "rgba(9, 138, 15,0.2)" }} />))}
+          {/* 단어 세트 */}
+          {(type === "quiz") && dataList?.map((item) => (<QuizCard key={item.id} item={item} onClick={() => { navigate('/quiz_setting', { state: item }) }} />))}
+          {/*펫*/}
+          {(type === "pet") && dataList?.map((item, index) => <PetCard key={item.petId} item={item} onClick={() => { onClick(item, index) }} />)}
+          {/*몬스터*/}
+          {(type === "monster") && dataList?.map((item) => <MonsterCard key={item.level} item={item} onClick={onClick} />)}
+          {/*게임방*/}
+          {(type === "multiroom") && dataList?.map((item) => <MultiroomCard key={item.gameId} item={item} onClick={onClick} />)}
+        </CardWrapper>}
     </Container>
   )
 }
@@ -213,6 +214,16 @@ const Container = styled.div`
     border-bottom: 1px solid #3454d1;
   }
 `
+const Row = styled.div`
+  display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
+`
+const Ceneter = styled(Column)`
+  justify-content: center;
+  align-items: center;
+`
 const CardWrapper = styled.ul`
   display: flex;
   flex-wrap: wrap;
@@ -229,12 +240,6 @@ const Card = styled.li`
   &: hover {
     background - color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
   }
-`
-const Row = styled.div`
-  display: flex;
-`
-const Column = styled(Row)`
-  flex-direction: column;
 `
 const BasicText = styled.p`
   margin: 0;
@@ -282,5 +287,4 @@ const QuizNumber = styled.p`
   text-align: right;
   color: rgb(52, 84, 209, 0.3);
 `
-
 export default CardList

@@ -11,7 +11,6 @@ import useLogout from './useLogout'
 const useFireTransaction = () => {
   const user = useSelector(({ user }) => { return user })
   const db = appFireStore
-  const actiCol = collection(db, "activities");
   const userCol = collection(db, "user");
   const schoolCol = collection(db, "school");
   const { makeUniqueArrWithEle, replaceItem } = useGetRidOverlap();
@@ -64,8 +63,6 @@ const useFireTransaction = () => {
       console.log(err);
     })
   }
-
-
   //10. 교사/학생 변경
   const changeIsTeacherTransaction = async (schoolCode, memberId) => {
     const schoolDoc = doc(schoolCol, schoolCode);
@@ -283,43 +280,10 @@ const useFireTransaction = () => {
     })
   }
 
-  //11. 회원 탈퇴
-  const deleteUserTransaction = async () => {
-    const auth = appAuth;
-    const firebaseUser = auth.currentUser;
-    const userDoc = doc(userCol, user.uid);
-    if (firebaseUser) {
-      try {
-        await deleteUser(firebaseUser);
-        console.log("파이어베이스 계정이 삭제되었습니다.");
-      } catch (error) {
-        console.error("회원 탈퇴 중 오류 발생:", error);
-        return;
-      }
-    } else {
-      //파이어베이스 인증된 계정이 아닌 경우
-      console.error("로그인된 사용자가 없습니다.");
-    }
-    const q = query(actiCol, where("uid", "==", user.uid));
-    const actiSnapshots = await getDocs(q);
-    if (actiSnapshots.empty) { console.log("삭제할 문서가 없습니다."); }
-    await runTransaction(db, async (transaction) => {
-      //활동 삭제
-      actiSnapshots.forEach((actiSnap) => { transaction.delete(doc(actiCol, actiSnap.id)); })
-      //유저 삭제
-      transaction.delete(userDoc);
-    }).catch((error) => {
-      alert(`관리자에게 문의하세요(useFireTransaction_11),${error}`);
-      console.log(error);
-    }).then(() => {
-      console.log("쫑알이 계정이 삭제되었습니다.");
-      logout();
-    })
-  }
 
   return {
     changeIsTeacherTransaction, copyActiTransaction, delCopiedActiTransaction, approvWinTransaction, approveEditTransaction,
-    denyTransaction, confirmDenialTransaction, leaveSchoolTransaction, approveCoteahingTransaction, deleteUserTransaction
+    denyTransaction, confirmDenialTransaction, leaveSchoolTransaction, approveCoteahingTransaction,
   }
 }
 

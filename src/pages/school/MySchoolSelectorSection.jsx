@@ -12,7 +12,6 @@ import SelectedDialogModal from '../../components/Modal/SelectedDialogModal';
 import useAcc from '../../hooks/useAcc';
 import useGetByte from '../../hooks/useGetByte';
 import useFirePetData from '../../hooks/Firebase/useFirePetData';
-
 //자율/진로 입력창 생성(250526)
 const MySchoolSelectorSection = ({ tab, homeroomList, actiList }) => {
 	const dispatcher = useDispatch();

@@ -49,6 +49,7 @@ import styled from 'styled-components';
 import ExamItemPage from './pages/exam/ExamItemPage';
 import AllStudentByActiPage from './pages/classroom/AllStudentByActiPage';
 import MyInfoPage from './pages/myInfo/MyInfoPage';
+import SchoolSignUpPage from './pages/myInfo/SchoolSignUpPage';
 function App() {
   const user = useSelector(({ user }) => { return user; })
   const uid = user.uid;
@@ -120,8 +121,9 @@ function App() {
               <Route path="/purchase/widget" element={user.isTeacher ? <WidgetCheckoutPage /> : <Navigate replace={true} to='/' />} />
               <Route path="/purchase/success" element={user.isTeacher ? <WidgetSuccessPage /> : <Navigate replace={true} to='/' />} />
               <Route path="/purchase/fail" element={user.isTeacher ? <PurchaseFailPage /> : <Navigate replace={true} to='/' />} />
-              {/* 충전하기 */}
+              {/* 내정보 */}
               <Route path="/myinfo" element={uid ? <MyInfoPage /> : <Navigate replace={true} to='/' />} />
+              <Route path="/myinfo/school" element={uid ? <SchoolSignUpPage /> : <Navigate replace={true} to='/' />} />
             </Routes>
           </Main>
           {uid && <Footer />}

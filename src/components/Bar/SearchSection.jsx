@@ -1,6 +1,5 @@
 import React from 'react'
 import styled from 'styled-components'
-
 //생성(250217)
 const SearchSection = ({ keyword, placeholder, onChange, onClick }) => {
 	return (

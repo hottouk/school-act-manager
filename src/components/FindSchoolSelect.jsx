@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import axios from 'axios';
 //css
 import styled from 'styled-components';
+import LongW100Btn from './Btn/LongW100Btn';
 
 const FindSchoolSelect = ({ setSchool }) => {
   const [_schoolList, setSchoolList] = useState('')
@@ -103,13 +104,13 @@ const FindSchoolSelect = ({ setSchool }) => {
       <input id="school_name_input" type="text" value={_schoolName} onChange={handleOnChange} placeholder="학교명" />
     </Row>
     <div className="bot_section">
-      <StyledSearchBtn id="search_school_btn" type="button" onClick={handleOnClick}>검색</StyledSearchBtn>
+      <LongW100Btn id="search_school_btn" type="button" onClick={handleOnClick}>검색</LongW100Btn>
     </div>
     <SchoolListWrapper $isSeacrh={_isSearch}>
       {_message && _message}
-      <ul>
+      <ul style={{ margin: "10px 0" }}>
         {_schoolList && _schoolList.map((item) => {
-          let schoolInfo = { //필요 정보
+          const schoolInfo = { //필요 정보
             eduOfficeCode: item.ATPT_OFCDC_SC_CODE,
             eduOfficeName: item.ATPT_OFCDC_SC_NM,
             address: item.ORG_RDNMA,
@@ -117,10 +118,10 @@ const FindSchoolSelect = ({ setSchool }) => {
             schoolName: item.SCHUL_NM,
             schoolTel: item.ORG_TELNO
           }
-          return (<li key={item.SD_SCHUL_CODE} className="schul_item" id="schul_item" onClick={() => { setSchool(schoolInfo) }}>
+          return (<SchoolRow key={item.SD_SCHUL_CODE} onClick={() => { setSchool(schoolInfo) }}>
             <p className="schul_nm">{item.SCHUL_NM}</p>
             <p className="schul_address">{item.ORG_RDNMA}</p>
-          </li>)
+          </SchoolRow>)
         })}
       </ul>
     </SchoolListWrapper>
@@ -140,29 +141,16 @@ const Row = styled.div`
   display: flex;
   margin-bottom: 10px;
 `
-const StyledSearchBtn = styled.button`
-  width: 100%;
-  height: 35px;
-  margin: 10px 0;
-  padding: 10px 15px;
-  border-radius: 15px;
-  border: 2px solid gray;
-  background-color: transparent;
-  font-size: 12px;
-  color: black;
-`
 const SchoolListWrapper = styled.div`
   width: 100%;
-  background-color: white;
-  height: ${({ $isSeacrh }) => { return $isSeacrh ? "200px" : "0" }};
+  background-color: #efefef;
+  height: ${({ $isSeacrh }) => { return $isSeacrh ? "250px" : "0" }};
+  border-radius: 0 10px;
   transition: height 0.3s;
   overflow-y: scroll;
   color: black;
   li.schul_item {
-    cursor: pointer;
-    &:hover {
-      color: blue;
-    }
+  
   }
   p.schul_nm {
     margin: 0;
@@ -170,5 +158,9 @@ const SchoolListWrapper = styled.div`
   p.schul_address {
     font-size: 13px;
   }
+`
+const SchoolRow = styled.li`
+  cursor: pointer;
+  &:hover { color: #3454d1;}
 `
 export default FindSchoolSelect

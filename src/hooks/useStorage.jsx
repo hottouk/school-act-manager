@@ -1,33 +1,17 @@
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
-import { storage, timeStamp } from "../firebase/config"
+import { storage, } from "../firebase/config"
 import { useSelector } from "react-redux"
 
 const useStorage = () => {
   const user = useSelector(({ user }) => user)
-
-  //프로필 변경
+  //프로필 사진 업로드(260209)
   const saveProfileImgStorage = async (file) => {
-    const profileRef = ref(storage, `profile/${user.uid}`)
-    const createdTime = timeStamp.fromDate(new Date());
-    await uploadBytes(profileRef, file).then((snapshot) => {
-      console.log('Uploaded a blob or file!', snapshot, createdTime);
-    }).catch((err) => {
-      window.alert(err)
-      console.log(err)
-    })
-  }
-
-  //프로필 url
-  const getProfileImgUrl = async (setProfileImg, voidImg) => {
-    let url
-    const profileRef = ref(storage, `profile/${user.uid}`)
-    await getDownloadURL(profileRef).then((downloadUrl) => {
-      url = downloadUrl
-    }).catch((err) => {
-      console.log(err);
-    })
-    return (url)
-  }
+    if (!file) throw new Error("업로드할 파일이 없습니다.");
+    const profileRef = ref(storage, `profile/${user.uid}`);
+    const snapshot = await uploadBytes(profileRef, file);
+    const url = await getDownloadURL(snapshot.ref);
+    return url;
+  };
 
   const getImgUrl = async (fileName, actId, prevImgRef, studentId) => { //이미지가 있다면 그
     if (user.isTeacher) { //교사
@@ -47,7 +31,7 @@ const useStorage = () => {
     }
   }
 
-  return ({ getImgUrl, saveProfileImgStorage, getProfileImgUrl })
+  return ({ getImgUrl, saveProfileImgStorage, })
 }
 
 export default useStorage

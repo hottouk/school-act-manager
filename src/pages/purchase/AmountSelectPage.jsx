@@ -26,7 +26,7 @@ const AmountSelectPage = () => {
   const [couponCode, setCouponCode] = useState("");
   const { fetchData } = useFireBasic("purchases");
   useEffect(() => { bindChargeData(); }, []);
-  //------함수부------------------------------------------------
+  //**함수부
   //충전내역 binding
   const bindChargeData = async () => {
     const list = await fetchData("uid");
@@ -74,7 +74,7 @@ const AmountSelectPage = () => {
         </div>}
       </MainWrapper>
       <MainWrapper styles={{ width: "65%" }}>
-        <MyinfoSection myUserData={userRtData} />
+        <MyinfoSection userRtData={userRtData} />
       </MainWrapper>
       <MainWrapper styles={{ width: "65%" }}>
         <BasicText style={{ textAlign: "center" }}>현재 리라</BasicText>

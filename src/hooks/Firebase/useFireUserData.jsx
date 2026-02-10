@@ -1,10 +1,12 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { collection, doc, getDoc, runTransaction, updateDoc, arrayUnion, arrayRemove, getDocFromCache, getDocFromServer, setDoc, onSnapshot, } from 'firebase/firestore'
-import { appFireStore } from '../../firebase/config'
+import { collection, doc, getDoc, runTransaction, updateDoc, arrayUnion, arrayRemove, getDocFromCache, getDocFromServer, setDoc, onSnapshot, query, getDocs, where, } from 'firebase/firestore'
+import { appAuth, appFireStore } from '../../firebase/config'
 import { setUser } from '../../store/userSlice';
 //hooks
 import useFireBasic from './useFireBasic';
 import { useState } from 'react';
+import { deleteUser } from 'firebase/auth';
+import useLogout from '../useLogout';
 //user collection 함수 모음
 const useFireUserData = () => {
   const user = useSelector(({ user }) => user);
@@ -12,6 +14,7 @@ const useFireUserData = () => {
   const [userRtData, setUserRtData] = useState(null);
   const db = appFireStore;
   const col = collection(db, "user");
+  const { logout } = useLogout();
   const { addData } = useFireBasic("error");
   //1. 유저 정보 하나 가져오기
   const fetchUserData = async (id) => {
@@ -37,15 +40,10 @@ const useFireUserData = () => {
     return () => unsubscribe();
   }
   //2. 유저 기본 업데이트(250217)
-  const updateUserInfo = async (field, info, otherId) => {
-    let userDocRef = doc(col, user.uid);
-    if (otherId) { userDocRef = doc(col, otherId); }
-    else { userDocRef = doc(col, user.uid); }
-    await setDoc(userDocRef, { [field]: info }, { merge: true })
-      .catch((error) => {
-        alert(`관리자에게 문의하세요(useFireUserData_02), ${error}`);
-        console.log(error);
-      })
+  const updateUserInfo = async (info, id = user.uid) => {
+    console.log(info);
+    const userDocRef = doc(col, id);
+    await setDoc(userDocRef, { ...info }, { merge: true });
   }
   //3. 유저 배열형 정보 추가(250127)
   const updateUserArrayInfo = async (id, field, info) => {
@@ -187,7 +185,6 @@ const useFireUserData = () => {
         console.log(err);
       })
   }
-
   //해당 유저 펫 업데이트(250127) 게임
   const updateUserPetGameInfo = async (pId, levelInfo, resultInfo) => {
     const userDocRef = doc(col, user.uid);
@@ -215,7 +212,6 @@ const useFireUserData = () => {
       window.alert(error);
     }
   }
-
   //해당 유저 펫 진화(250427)
   const updateUserPetInfo = async (pId, nextMon, submitItem) => {
     const userDocRef = doc(col, user.uid);
@@ -241,7 +237,6 @@ const useFireUserData = () => {
       window.alert(err)
     })
   }
-
   //퍼온 Acti 리스트 - 활동관리(250210) 이동
   const fetchCopiesData = async () => {
     const userRef = doc(db, "user", String(user.uid))
@@ -262,10 +257,41 @@ const useFireUserData = () => {
       }
     }
   }
+  //11. 회원 탈퇴(활동, 유저 삭제)
+  const deleteUserTransaction = async () => {
+    const auth = appAuth;
+    const actiColRef = collection(db, "activities");
+    const firebaseUser = auth.currentUser;
+    const userDoc = doc(col, user.uid);
+    if (firebaseUser) {
+      try {
+        await deleteUser(firebaseUser);
+        console.log("파이어베이스 계정이 삭제되었습니다.");
+      } catch (error) {
+        console.error("회원 탈퇴 중 오류 발생:", error);
+        return;
+      }
+    } else { console.error("로그인된 사용자가 없습니다."); }
+    //파이어베이스 인증된 계정이 아닌 경우
+    const q = query(actiColRef, where("uid", "==", user.uid));
+    const actiSnapshots = await getDocs(q);
+    if (actiSnapshots.empty) { console.log("삭제할 문서가 없습니다."); }
+    await runTransaction(db, async (tx) => {
+      actiSnapshots.forEach((acti) => { tx.delete(doc(actiColRef, acti.id)); });
+      tx.delete(userDoc);
+    }).catch((error) => {
+      alert(`관리자에게 문의하세요(useFireTransaction_11),${error}`);
+      console.log(error);
+    }).then(() => {
+      console.log("쫑알이 계정이 삭제되었습니다.");
+      logout();
+    })
+  }
+
   return ({
     userRtData,
     fetchUserData, userDataListener, updateUserInfo, updateUserPetInfo, updateUserPetGameInfo, updateUserArrayInfo, deleteUserArrayInfo, fetchCopiesData, updateMyInfo, purchaseShopItem, applyKlassTransaction, approveKlassTransaction, exportKlassTransaction,
-    TempDeductRira,
+    TempDeductRira, deleteUserTransaction
   })
 }
 

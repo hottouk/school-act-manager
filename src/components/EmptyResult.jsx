@@ -1,13 +1,12 @@
 import crying_cat from '../image/cat.png'
 import styled from 'styled-components'
-
-//24.01.24
+//생성(240124)
 const EmptyResult = ({ comment, color, styles }) => {
-  let border = styles?.border || "none";
-  let maxWidth = styles?.maxWidth || "540px";
-
+  const border = styles?.border || "none";
+  const maxWidth = styles?.maxWidth || "540px";
+  const margin = styles?.margin || "0";
   return (
-    <Container $color={color} $border={border} $maxWidth={maxWidth}>
+    <Container $color={color} $border={border} $maxWidth={maxWidth} $margin={margin}>
       <img src={crying_cat} alt="우는고양이" />
       <p>{comment}</p>
     </Container>
@@ -19,6 +18,7 @@ const Container = styled.div`
   max-width: ${(props) => props.$maxWidth};
   border: ${(props) => props.$border};
   border-radius: 10px;
+  margin : ${(props) => props.$margin};
   img {
     display: block;
     width: 160px;

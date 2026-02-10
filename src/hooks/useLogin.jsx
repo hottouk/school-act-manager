@@ -10,7 +10,6 @@ import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firesto
 //hooks
 import useStudent from './useStudent';
 import useFireBasic from './Firebase/useFireBasic';
-
 const useLogin = () => {
   const auth = appAuth;
   const db = appFireStore;
@@ -19,7 +18,6 @@ const useLogin = () => {
   const { fetchData } = useFireBasic("user");
   const [isPending, setIsPending] = useState(false);
   const [err, setErr] = useState(null);
-
   //기존 유저 검사(240221)
   const findUser = async (userInfo, sns) => {
     let isUserExist;
@@ -128,20 +126,17 @@ const useLogin = () => {
       setIsPending(false)
     })
   }
-
-  //유저 가입(240730) -> 이메일 가입 삭제(260106)
-  const classifyUserInfo = ({ uid, school, isTeacher, name, email, phoneNumber, profileImg, classNumber, grade, number, isMyTermAgree }) => {
+  //생성(240730) -> 이메일 가입 삭제(260106) -> 학교 정보 제거(260209)
+  const classifyUserInfo = ({ uid, isTeacher, name, email, phoneNumber, profileImg, classNumber, grade, number, isMyTermAgree }) => {
     if (isTeacher) { //교사
-      const teacherUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, isMyTermAgree }
-      if (window.confirm(`교사회원으로 가입 하시겠습니까?`)) {
-        return teacherUserInfo
-      } else { return null; }
+      const teacherUserInfo = { uid, isTeacher, name, email, phoneNumber, profileImg, isMyTermAgree }
+      if (window.confirm(`교사회원으로 가입 하시겠습니까?`)) { return teacherUserInfo }
+      else { return null; }
     } else { //학생
-      const studentNumber = createStudentNumber(number - 1, grade, classNumber)
-      const studentUserInfo = { uid, school, isTeacher, name, email, phoneNumber, profileImg, studentNumber, isMyTermAgree }
-      if (window.confirm(`${school?.schoolName ?? "그외 학교"} 학번 ${studentNumber}로 회원가입 하시겠습니까?`)) {
-        return studentUserInfo
-      } else { return null; }
+      const studentNumber = createStudentNumber(number - 1, grade, classNumber);
+      const studentUserInfo = { uid, isTeacher, name, email, phoneNumber, profileImg, studentNumber, isMyTermAgree };
+      if (window.confirm(`학번 ${studentNumber}로 회원가입 하시겠습니까?`)) { return studentUserInfo; }
+      else { return null; }
     }
   }
   return { addUser, googleLogin, kakaoLogin, testLogin, classifyUserInfo, isPending, err, }

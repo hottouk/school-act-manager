@@ -7,13 +7,13 @@ const CSInfoSelect = ({ grade, classNumber, number, handleOnChange, classMode })
   return (
     <Container>
       <select id="class_grade" value={grade} onChange={handleOnChange} required>
-        <option selected disabled>학년</option>
+        <option value="default" disabled>학년</option>
         <option value="1">1학년</option>
         <option value="2">2학년</option>
         <option value="3">3학년</option>
       </select>
       <select id="class_number" value={classNumber} onChange={handleOnChange} required>
-        <option selected disabled>반</option>
+        <option value="default" disabled>반</option>
         {classNumberList.map((classNumber) => {
           const key = Object.keys(classNumber);
           const value = Object.values(classNumber);

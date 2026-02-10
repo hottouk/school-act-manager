@@ -1,22 +1,29 @@
 import { appFireStore } from '../../firebase/config'
-import { arrayUnion, collection, doc, getDoc, getDocs, limit, query, startAfter, updateDoc, where } from 'firebase/firestore';
+import { arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, limit, onSnapshot, query, runTransaction, startAfter, updateDoc, where, writeBatch } from 'firebase/firestore';
 import useFireBasic from './useFireBasic';
-
+import { useSelector } from 'react-redux';
+import { useState } from 'react';
 const useFireSchoolData = () => {
   const db = appFireStore;
+  const user = useSelector(({ user }) => user);
+  const [schoolRtData, setSchoolRtData] = useState(null);
   const { setData } = useFireBasic("school");
   const col = collection(db, "school")
-
   //01. 학교 데이터 검색
   const fetchSchoolByCode = async (code) => {
-    const schoolDoc = doc(col, code);
-    const schoolSnapshot = await getDoc(schoolDoc).catch((error) => {
-      alert(`관리자에게 문의하세요(useFireSchoolData_01),${error}`)
-      console.log(error);
-    })
-    return schoolSnapshot.data();
+    const schoolDocRef = doc(col, code);
+    const snapshot = await getDoc(schoolDocRef);
+    return snapshot.data();
   }
-  
+  //01-1 학교 데이터 실시간 구독
+  const schoolDataListener = (code) => {
+    const skulDocRef = doc(col, code);
+    const unsubscribe = onSnapshot(skulDocRef, (snapshot) => {
+      if (!snapshot.exists()) return;
+      setSchoolRtData(snapshot.data());
+    })
+    return () => unsubscribe();
+  };
   //학교 검색(250218)
   const searchSchoolByField = async (field, value) => {
     try {
@@ -47,28 +54,18 @@ const useFireSchoolData = () => {
       console.log(error);
     }
   }
-  //학교 가입(250218)
-  const joinSchool = (code, userInfo) => {
-    const { email, isTeacher, name, profileImg, uid } = userInfo;
-    const memberInfo = { email, isTeacher, name, profileImg, uid };
+  //학교 가입(260209)
+  const joinSchool = async (code, userInfo) => {
+    const { email, isTeacher, name, uid } = userInfo;
+    const memberInfo = { email, isTeacher, name, uid };
     const schoolRef = doc(col, code);
-    try { updateDoc(schoolRef, { memberList: arrayUnion(memberInfo) }) }
-    catch (error) {
-      window.alert(error);
-      console.log(error);
-    }
+    await updateDoc(schoolRef, { memberList: arrayUnion(memberInfo) });
   }
   //5. 교사 담당자 권한 변경(250514)
   const changeSchoolMaster = async (code, newId) => {
-    console.log(code, newId)
     const schoolDoc = doc(col, code);
-    await updateDoc(schoolDoc, { schoolMaster: newId })
-      .catch((error) => {
-        alert(`관리자에게 문의하세요(useFireSchoolData_05),${error}`)
-        console.log(error);
-      })
+    await updateDoc(schoolDoc, { schoolMaster: newId });
   }
-
   //전체 학교 첫번째 교사 담당자 권한 부여(250514)
   const addFieldToAllDocs = async () => {
     try {
@@ -107,8 +104,46 @@ const useFireSchoolData = () => {
     } finally {
     }
   };
-
-  return ({ fetchSchoolByCode, signUpSchool, joinSchool, searchSchoolByField, addFieldToAllDocs, changeSchoolMaster })
+  //5. 학교 탈퇴
+  const leaveSchoolTx = async (schoolCode) => {
+    const userDoc = doc(db, "user", user.uid);
+    const schoolDoc = doc(col, schoolCode);
+    const klassroomsCol = collection(db, "classRooms");
+    try {
+      await runTransaction(db, async (tx) => {
+        //1. read
+        const userSnapshot = await tx.get(userDoc);
+        const schoolSnapshot = await tx.get(schoolDoc);
+        if (!userSnapshot.exists()) { throw new Error("유저 정보 없음"); };
+        if (!schoolSnapshot.exists()) { throw new Error("학교 정보 없음"); };
+        //2. write
+        const memberList = schoolSnapshot.data().memberList || [];
+        const deleted = memberList.filter((item) => item.uid !== user.uid);
+        tx.update(userDoc, { school: deleteField(), coTeachingList: deleteField() });
+        tx.update(schoolDoc, { memberList: deleted });
+      })
+      //3. classroom 컬렉션에서 특정 uid를 가진 문서들 삭제
+      const q = query(klassroomsCol, where("uid", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+      for (const klassSnapshot of querySnapshot.docs) {
+        const klassId = klassSnapshot.id;
+        const petsRef = collection(db, "classRooms", klassId, "students");
+        while (true) { //무한 반복                                                                         
+          const petSnapshots = await getDocs(petsRef);
+          const innerBatch = writeBatch(db);
+          if (petSnapshots.empty) break;
+          petSnapshots.forEach((petSnapshot) => {
+            innerBatch.delete(doc(db, "classRooms", klassSnapshot.id, "students", petSnapshot.id)); //subCollection 하위 문서 삭제
+          })
+          await innerBatch.commit(); // 🔥 subCollection 문서 반복 삭제
+        }
+        await deleteDoc(doc(db, "classRooms", klassSnapshot.id));
+      }
+    } catch (err) {
+      //todo 에러 로그 기록
+    }
+  }
+  return ({ schoolRtData, fetchSchoolByCode, schoolDataListener, signUpSchool, joinSchool, searchSchoolByField, addFieldToAllDocs, changeSchoolMaster, leaveSchoolTx })
 }
 
 export default useFireSchoolData

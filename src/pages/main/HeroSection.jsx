@@ -6,7 +6,7 @@ import landingImg from '../../image/landing/landingMain.png'
 const HeroSection = ({ children }) => {
   return (
     <Section>
-      <Header>교직의 즐거움<br /> 쫑알이에서 시작됩니다</Header>
+      <Header>교직의 즐거움,<br /> 쫑알이에서 시작됩니다</Header>
       {children}
       <LandingImg src={landingImg} alt="랜딩이미지" $children={children} />
     </Section >
