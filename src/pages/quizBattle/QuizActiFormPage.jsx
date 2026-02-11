@@ -8,7 +8,6 @@ import FormFrame from '../../components/Form/FormFrame'
 import FormHeader from '../../components/Form/FormHeader'
 import ImagePicker from '../../components/Form/ImagePicker'
 import DotTitle from '../../components/Title/DotTitle'
-import CommonTextarea from '../../components/CommonTextArea'
 import LongW100Btn from '../../components/Btn/LongW100Btn'
 import BackBtn from '../../components/Btn/BackBtn'
 import SubNav from '../../components/Bar/SubNav'
@@ -225,7 +224,7 @@ const QuizActiFormPage = () => {
           </LevelWrapper>
         </>}
         {/* 설명 */}
-        <CommonTextarea title="활동 설명" onChange={(e) => { setContent(e.target.value) }} value={_content}
+        <textarea title="활동 설명" onChange={(e) => { setContent(e.target.value) }} value={_content}
           placeholder={"단어세트를 선택하세요"} disabled={!isModifying} />
 
         {!quizActiInfo && <BtnWrapper>

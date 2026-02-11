@@ -98,8 +98,8 @@ const WhatsNewPage = () => {
         <Hilit> {petLabel}</Hilit>을 구독 신청하셨습니다. 학번과 이름이 맞으면 수락을 눌러주세요
       </BasicText></GridItem>
       <GridItem>{applyDate}</GridItem>
-      <GridItem><SmallBtn btnOnClick={() => { handleApproveJoinOnClick(item) }}>O</SmallBtn></GridItem>
-      <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }} >X</SmallBtn></GridItem>
+      <GridItem><SmallBtn onClick={() => { handleApproveJoinOnClick(item) }}>O</SmallBtn></GridItem>
+      <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" onClick={() => { handleDenyOnClick(item) }} >X</SmallBtn></GridItem>
     </>
   }
   const TeacherKlassJoinBubble = ({ index, item }) => {
@@ -113,8 +113,8 @@ const WhatsNewPage = () => {
       </BubbleText>
       <Row style={{ justifyContent: "flex-end" }}>{applyDate}</Row>
       <Row style={{ marginTop: "20px", gap: "5px" }}>
-        <SmallBtn styles={{ width: "50%" }} btnOnClick={() => { handleApproveJoinOnClick(item) }}>수락</SmallBtn>
-        <SmallBtn btnColor="#9b0c2480" styles={{ width: "50%" }} btnOnClick={() => { handleDenyOnClick(item) }} >거절</SmallBtn>
+        <SmallBtn styles={{ width: "50%" }} onClick={() => { handleApproveJoinOnClick(item) }}>수락</SmallBtn>
+        <SmallBtn btnColor="#9b0c2480" styles={{ width: "50%" }} onClick={() => { handleDenyOnClick(item) }} >거절</SmallBtn>
       </Row>
     </BubbleWrapper>
   }
@@ -134,8 +134,8 @@ const WhatsNewPage = () => {
         </BasicText>
       </GridItem >
       <GridItem>{date.split("T")[0]}</GridItem>
-      <GridItem><SmallBtn btnOnClick={() => approveEditTransaction(item)}>O</SmallBtn></GridItem>
-      <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => handleDenyOnClick(item)} >X</SmallBtn></GridItem>
+      <GridItem><SmallBtn onClick={() => approveEditTransaction(item)}>O</SmallBtn></GridItem>
+      <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" onClick={() => handleDenyOnClick(item)} >X</SmallBtn></GridItem>
     </>
   }
   const TeacherEditRecordBubble = ({ index, item }) => {
@@ -150,8 +150,8 @@ const WhatsNewPage = () => {
       </BubbleText>
       <Row style={{ justifyContent: "flex-end" }}>{date.split("T")[0] || "날짜 정보 없음"}</Row>
       <Row style={{ marginTop: "20px", gap: "5px" }}>
-        <SmallBtn styles={{ width: "50%" }} btnOnClick={() => { approveEditTransaction(item) }}>수락</SmallBtn>
-        <SmallBtn btnColor="#9b0c2480" styles={{ width: "50%" }} btnOnClick={() => { handleDenyOnClick(item) }} >거절</SmallBtn>
+        <SmallBtn styles={{ width: "50%" }} onClick={() => { approveEditTransaction(item) }}>수락</SmallBtn>
+        <SmallBtn btnColor="#9b0c2480" styles={{ width: "50%" }} onClick={() => { handleDenyOnClick(item) }} >거절</SmallBtn>
       </Row>
     </BubbleWrapper>
   }
@@ -168,8 +168,8 @@ const WhatsNewPage = () => {
         "{actiRecord}"
       </BubbleText></GridItem>
       <GridItem>{date || "날짜 정보 없음"}</GridItem>
-      <GridItem><SmallBtn btnOnClick={() => { handleApproveWinOnClick(item) }}>O</SmallBtn></GridItem>
-      <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }}>X</SmallBtn></GridItem>
+      <GridItem><SmallBtn onClick={() => { handleApproveWinOnClick(item) }}>O</SmallBtn></GridItem>
+      <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" onClick={() => { handleDenyOnClick(item) }}>X</SmallBtn></GridItem>
     </>
   }
   const TeacherWinBubble = ({ index, item }) => {
@@ -183,8 +183,8 @@ const WhatsNewPage = () => {
       </BubbleText>
       <Row style={{ justifyContent: "flex-end" }}>{date || "날짜 정보 없음"}</Row>
       <Row style={{ marginTop: "20px", gap: "5px" }}>
-        <SmallBtn styles={{ width: "50%" }} btnOnClick={() => { handleApproveWinOnClick(item) }}>수락</SmallBtn>
-        <SmallBtn btnColor="#9b0c2480" styles={{ width: "50%" }} btnOnClick={() => { handleDenyOnClick(item) }} >거절</SmallBtn>
+        <SmallBtn styles={{ width: "50%" }} onClick={() => { handleApproveWinOnClick(item) }}>수락</SmallBtn>
+        <SmallBtn btnColor="#9b0c2480" styles={{ width: "50%" }} onClick={() => { handleDenyOnClick(item) }} >거절</SmallBtn>
       </Row>
     </BubbleWrapper>
   }
@@ -201,8 +201,8 @@ const WhatsNewPage = () => {
         </BasicText>
       </GridItem>
       <GridItem>{applyDate}</GridItem>
-      <GridItem><SmallBtn btnOnClick={() => { handleApproveCoteachingOnClick(item) }}>O</SmallBtn></GridItem>
-      <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" btnOnClick={() => { handleDenyOnClick(item) }} >X</SmallBtn></GridItem>
+      <GridItem><SmallBtn onClick={() => { handleApproveCoteachingOnClick(item) }}>O</SmallBtn></GridItem>
+      <GridItem><SmallBtn btnColor="#9b0c24" hoverBtnColor="red" onClick={() => { handleDenyOnClick(item) }} >X</SmallBtn></GridItem>
     </>
   }
   const CoteachingBubble = ({ index, item }) => {
@@ -215,8 +215,8 @@ const WhatsNewPage = () => {
       </BubbleText>
       <Row style={{ justifyContent: "flex-end" }}>{applyDate || "날짜 정보 없음"}</Row>
       <Row style={{ marginTop: "20px", gap: "5px" }}>
-        <SmallBtn styles={{ width: "50%" }} btnOnClick={() => { handleApproveCoteachingOnClick(item) }}>수락</SmallBtn>
-        <SmallBtn btnColor="#9b0c2480" styles={{ width: "50%" }} btnOnClick={() => { handleDenyOnClick(item) }} >거절</SmallBtn>
+        <SmallBtn styles={{ width: "50%" }} onClick={() => { handleApproveCoteachingOnClick(item) }}>수락</SmallBtn>
+        <SmallBtn btnColor="#9b0c2480" styles={{ width: "50%" }} onClick={() => { handleDenyOnClick(item) }} >거절</SmallBtn>
       </Row>
     </BubbleWrapper>
   }
@@ -230,7 +230,7 @@ const WhatsNewPage = () => {
         <Hilit>{subject} {klassTitle}</Hilit> 공동 교사 등록이 거부되었습니다.{`\n`}사유: {reason}
       </BubbleText></GridItem>
       <GridItem>{applyDate}</GridItem>
-      <GridItem style={{ gridColumn: "6/8", justifyContent: "center" }}><SmallBtn btnOnClick={() => { confirmDenialTransaction(item) }}>O</SmallBtn></GridItem>
+      <GridItem style={{ gridColumn: "6/8", justifyContent: "center" }}><SmallBtn onClick={() => { confirmDenialTransaction(item) }}>O</SmallBtn></GridItem>
     </>
   }
   const TeacherDenialBubble = ({ index, item }) => {
@@ -242,7 +242,7 @@ const WhatsNewPage = () => {
         - 사유: {reason}
       </BubbleText>
       <Row style={{ marginTop: "20px" }}>
-        <SmallBtn styles={{ width: "100%" }} btnOnClick={() => { confirmDenialTransaction(item) }}>확인</SmallBtn>
+        <SmallBtn styles={{ width: "100%" }} onClick={() => { confirmDenialTransaction(item) }}>확인</SmallBtn>
       </Row>
     </BubbleWrapper>
   }
@@ -388,7 +388,8 @@ const WhatsNewPage = () => {
             <Header>승인</Header>
             <Header>반려</Header>
           </TableHeaderWrapper>
-          {(!onSubmitList || onSubmitList?.length === 0) && <GridRow><EmptyResult comment={"새로운 알림이 없어요"} /></GridRow>}
+          {(!onSubmitList || onSubmitList?.length === 0) &&
+            <GridRow><Center><EmptyResult comment={"새로운 알림이 없어요"} /></Center></GridRow>}
           {pageData?.map((item, index) => {
             const renderer = teacherRenderes[item.type];
             return renderer ? renderer(item, index) : null;
@@ -446,6 +447,12 @@ const WhatsNewPage = () => {
 
 const Row = styled.div`
   display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
+`
+const Center = styled(Column)`
+  align-items: center;
 `
 const Container = styled(Row)`
   box-sizing: border-box;

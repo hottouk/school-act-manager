@@ -11,11 +11,12 @@ const SubjectSelects = ({ sort, selectedGroup, selectedDetail, setSelectedGroup,
   useEffect(() => {
     const selectedSubjList = groupList.find((sbujGrp) => Object.keys(sbujGrp)[0] === selectedGroup) || [];
     setDetailList(...Object.values(selectedSubjList))
-    if (!selectedDetail) setSelectedDetail(null);
+    if (!selectedDetail) setSelectedDetail('');
   }, [selectedGroup])
   return (
     <Container>
-      <StyledSelect className="acti_subjGrp"
+      <StyledSelect
+        className="acti_subjGrp"
         value={selectedGroup}
         onChange={(event) => { setSelectedGroup(event.target.value) }}
         required
@@ -27,7 +28,8 @@ const SubjectSelects = ({ sort, selectedGroup, selectedDetail, setSelectedGroup,
           return <option key={subject} value={subject}>{subject}과</option>
         })}
       </StyledSelect>
-      <StyledSelect className="acti_subj"
+      <StyledSelect
+        className="acti_subj"
         value={selectedDetail}
         onChange={(event) => { setSelectedDetail(event.target.value) }}
         required

@@ -1,6 +1,7 @@
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore'
 import { appFireStore, timeStamp } from '../../firebase/config'
 import { useSelector } from 'react-redux'
+import { useCallback } from 'react'
 
 //생성(241205)
 const useFireBasic = (col) => {
@@ -8,15 +9,10 @@ const useFireBasic = (col) => {
   const db = appFireStore;
   const colRef = collection(db, col);
   //새로 생성
-  const addData = async (data) => {
-    try {
-      let createdTime = timeStamp.fromDate(new Date());
-      await addDoc(colRef, { ...data, createdTime, uid: String(user.uid) })
-      console.log("저장 성공")
-    } catch (err) {
-      console.error(err)
-    }
-  }
+  const addData = useCallback(async (data) => {
+    const createdTime = timeStamp.fromDate(new Date());
+    await addDoc(colRef, { ...data, createdTime, uid: String(user.uid) });
+  }, []);
   //수정 or 경로지정 생성
   const setData = async (data, docId) => {
     try {

@@ -80,8 +80,8 @@ const Nav = () => {
         </li>
         <li><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon>
           <span>나의 학교</span></Link></li>
-        {/* {user.isMaster && <li id="lab_btn" ><Link to="/lab"><Icon className="fa-solid fa-khanda"></Icon>
-          <span>실험실</span></Link></li>} */}
+        {user.isMaster && <li id="lab_btn" ><Link to="/lab"><Icon className="fa-solid fa-khanda"></Icon>
+          <span>실험실</span></Link></li>}
         {user.isMaster && <li><Link to="/store"><Icon className="fa-solid fa-store"></Icon>
           <span>상점</span></Link></li>}
         {user.isMaster && <li id="master_btn" ><Link to="/master"><Icon className="fa-solid fa-key"></Icon>

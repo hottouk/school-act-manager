@@ -2,7 +2,7 @@ import { appFireStore } from '../../firebase/config'
 import { arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, limit, onSnapshot, query, runTransaction, startAfter, updateDoc, where, writeBatch } from 'firebase/firestore';
 import useFireBasic from './useFireBasic';
 import { useSelector } from 'react-redux';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 const useFireSchoolData = () => {
   const db = appFireStore;
   const user = useSelector(({ user }) => user);
@@ -62,10 +62,10 @@ const useFireSchoolData = () => {
     await updateDoc(schoolRef, { memberList: arrayUnion(memberInfo) });
   }
   //5. 교사 담당자 권한 변경(250514)
-  const changeSchoolMaster = async (code, newId) => {
+  const changeSchoolMaster = useCallback(async (code, newId) => {
     const schoolDoc = doc(col, code);
     await updateDoc(schoolDoc, { schoolMaster: newId });
-  }
+  }, []);
   //전체 학교 첫번째 교사 담당자 권한 부여(250514)
   const addFieldToAllDocs = async () => {
     try {

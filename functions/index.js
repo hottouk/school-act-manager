@@ -27,11 +27,12 @@ initializeApp();
 const REGION = "asia-northeast3";
 const db = getFirestore(); // ✅ firestore는 함수 형태로 가져와야 함
 const storage = new Storage();
-// --- (1) openAI
+//보안 키
+const TOSS_WIDGET_SECRET_KEY = defineSecret("TOSS_WIDGET_SECRET_KEY");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
-// --- (2) 구글 비젼
+// --- 구글 비젼
 const client = new vision.ImageAnnotatorClient();
-// --- (3) gpt 인앱 재화 결제(GPT) model pricing (server-side only)
+// --- gpt 인앱 재화 결제(GPT) model pricing (server-side only)
 const GPT_MODEL_PRICING = Object.freeze({
   "gpt-5.1": { basic: 70 },
   "gpt-5-mini": { basic: 20 },
@@ -46,8 +47,6 @@ app.use(cors);
 app.use(express.json());
 // 시크릿은 이 export에만 연결
 // NOTE: 토스 키는 문자열 기반 secrets를 권장(또는 defineSecret로 교체 가능)
-const widgetSecretKey = "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6";
-const encryptedWidgetSecretKey = "Basic " + Buffer.from(widgetSecretKey + ":").toString("base64");
 /**
  * POST /api/prepare-order
  * body: { userId, amount, name }
@@ -60,6 +59,7 @@ app.post("/confirm/widget", (req, _res, next) => {
   next();
 }, async (req, res) => {
   try {
+    const encryptedWidgetSecretKey = "Basic " + Buffer.from(TOSS_WIDGET_SECRET_KEY.value() + ":").toString("base64");
     const { paymentKey, orderId, amount, userId } = req.body ?? {};
     if (!paymentKey || !orderId || amount == null) return res.status(400).json({ code: "파라미터 오류", message: "missing params" });
     const response = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
@@ -105,7 +105,7 @@ app.post("/confirm/widget", (req, _res, next) => {
     return res.status(500).json({ code: "서버_오류", message: String(e?.message || e) });
   }
 });
-export const api = onRequest({ region: REGION }, app);
+export const api = onRequest({ region: REGION, secrets: [TOSS_WIDGET_SECRET_KEY] }, app);
 //쿠폰 등록
 export const enrollCoupon = onCall(
   { region: REGION },

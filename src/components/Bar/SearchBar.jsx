@@ -41,13 +41,6 @@ const SearchBar = ({ title, type, list, setList, isMobile }) => {
     setList(onlyThisYear);
     setClicked("thisYear");
   }
-
-  //필터링 이전
-  const showAll = () => {
-    setList(originalList);
-    setClicked(null);
-  }
-
   return (
     <Container>
       <p>{title}</p>
@@ -66,16 +59,9 @@ const SearchBar = ({ title, type, list, setList, isMobile }) => {
           <SmallBtn btnColor="#3454d1" btnName="제목" btnOnClick={() => { sortDataList("title") }} />
           <SmallBtn btnColor="#3454d1" btnName="교사" btnOnClick={() => { sortDataList("madeBy") }} />
         </>}
-        {(type === "classroom" && !isMobile) && <>
-          {clicked === null && <SmallBtn btnColor="#3454d1" btnName="2025" btnOnClick={() => { showOnlythisYear(2025); }} />}
-          {clicked === "thisYear" && <SmallBtn btnColor="#3454d1" btnName="전체반" btnOnClick={showAll} />}
-          <SmallBtn btnColor="#3454d1" btnName="과목" btnOnClick={() => { sortDataList("subject") }} />
-          <SmallBtn btnColor="#3454d1" btnName="반이름" btnOnClick={() => { sortDataList("classNumber") }} />
-        </>}
       </BtnWrapper>
     </Container>)
 }
-
 const Container = styled.div`
   display: flex;
   justify-content: space-between;

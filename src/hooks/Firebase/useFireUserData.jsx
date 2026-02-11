@@ -4,7 +4,7 @@ import { appAuth, appFireStore } from '../../firebase/config'
 import { setUser } from '../../store/userSlice';
 //hooks
 import useFireBasic from './useFireBasic';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { deleteUser } from 'firebase/auth';
 import useLogout from '../useLogout';
 //user collection 함수 모음
@@ -26,7 +26,7 @@ const useFireUserData = () => {
     return userDoc.data();
   }
   //1-1. 유저 정보 실시간 구독
-  const userDataListener = (id = user.uid, callback = () => { }) => {
+  const userDataListener = useCallback((id = user.uid, callback = () => { }) => {
     if (!id) return
     const userDocRef = doc(col, id);
     const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
@@ -38,7 +38,7 @@ const useFireUserData = () => {
       else { callback(null); }
     })
     return () => unsubscribe();
-  }
+  }, []);
   //2. 유저 기본 업데이트(250217)
   const updateUserInfo = async (info, id = user.uid) => {
     console.log(info);

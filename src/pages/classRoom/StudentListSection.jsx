@@ -3,10 +3,10 @@ import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import styled from "styled-components"
 //컴포넌트
-import SquareListItem from './ListItem/SquareListItem'
-import PlusBtn from '../Btn/PlusBtn'
+import SquareListItem from '../../components/List/ListItem/SquareListItem'
+import PlusBtn from '../../components/Btn/PlusBtn'
 //모달 창, 제목 상위 page 이동(240923) -> 250126(리펙토링) -> 학생 클릭 분기(250207)
-const StudentList = ({ petList, plusBtnOnClick, klassType, setIsPetInfoModal, setPetInfo, semester }) => {
+const StudentListSection = ({ petList, plusBtnOnClick, klassType, setIsPetInfoModal, setPetInfo, semester }) => {
   const user = useSelector(({ user }) => user);
   //반 id
   const classId = useParams();
@@ -19,21 +19,18 @@ const StudentList = ({ petList, plusBtnOnClick, klassType, setIsPetInfoModal, se
       else { navigate(`/homeroom/${classId.id}/student`, { state: { petId, klassType } }) }
     } else {              // 학생
       if (user.uid === masterId) { navigate(`/classrooms/${classId.id}/${petId}`) }
-      else {
-        setPetInfo(pet);
-        setIsPetInfoModal(true);
-      }
+      else { setPetInfo(pet); setIsPetInfoModal(true); }
     }
   }
   return (
-    <Container>
-      {petList.map((pet, index) => (<SquareListItem key={pet.id} item={pet} index={index} onClick={handleOnClick} type="student" />))}
+    <Section>
+      {petList.map((pet, index) => <SquareListItem key={pet.id} item={pet} index={index} onClick={handleOnClick} type="student" />)}
       {/* 학생 추가 버튼 */}
       {user.isTeacher && <PlusBtn onClick={() => { plusBtnOnClick(true) }} />}
-    </Container>
+    </Section>
   )
 }
-const Container = styled.ul`
+const Section = styled.ul`
   display: flex;
   flex-wrap: wrap;
   margin: 0;
@@ -43,4 +40,4 @@ const Container = styled.ul`
     padding: 0;
   }
 `
-export default StudentList
+export default StudentListSection

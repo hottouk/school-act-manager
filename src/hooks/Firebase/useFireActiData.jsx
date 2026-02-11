@@ -1,20 +1,20 @@
 import { addDoc, arrayUnion, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { appFireStore, timeStamp } from '../../firebase/config'
-import { useSelector } from 'react-redux'
-import useFireUserData from './useFireUserData'
+import { useCallback } from 'react'
 
 const useFireActiData = () => {
-  const user = useSelector(({ user }) => user)
-  const { fetchUserData } = useFireUserData();
   const db = appFireStore
   const colRef = collection(db, "activities")
-  //1. 모든 활동(250125)
-  const fetchAllActis = async (field, value, field2 = null, value2 = null) => {
-    let q = query(colRef, value, where(field, "==", value))
-    if (field2 !== null && value2 !== null) { q = query(q, where(field2, "==", value2)); }
+  //1. 모든 활동(260211)
+  const fetchAllActis = useCallback(async (field, value, field2 = null, value2 = null) => {
+    const constraints = [where(field, "==", value)];
+    if (field2 !== null && value2 !== null) {
+      constraints.push(where(field2, "==", value2));
+    }
+    const q = query(colRef, ...constraints)
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  }
+  }, [colRef]);
   //활동 생성(250419_이동)
   const addActi = async (acti) => {
     const createdTime = timeStamp.fromDate(new Date());
@@ -32,28 +32,18 @@ const useFireActiData = () => {
       console.log(err);
     })
   }
-  //3. 과목 클라스 활동 조합(250125)
-  const getSubjKlassActiList = async (id, subject) => {
-    const allActiListSnap = await fetchAllActis("uid", id) ?? [];          //교과 + 담임 + 퀴즈
-    const myDataSnap = await fetchUserData(user.uid) || null;
-    if (!myDataSnap) { throw new Error("유저 정보가 없습니다. useFireActi_03"); }
-    const copied = myDataSnap.copiedActiList || [];                        //업어온 활동
-    const combined = allActiListSnap.concat(copied);
-    const filtered = filterActiBySubject(combined, subject);               //같은 과목만
-    return sortActiType(filtered);
-  };
   //활동 타입으로 분류(250125)
-  const sortActiType = (list) => {
-    const homeActiList = []
-    const subjActiList = []
-    const quizActiList = []
+  const sortActiType = useCallback((list) => {
+    const homeActiList = [];
+    const subjActiList = [];
+    const quizActiList = [];
     list.forEach((item) => {
       if (item.subject === "담임") { homeActiList.push(item) }
       else if (item.monster) { quizActiList.push(item) }
       else { subjActiList.push(item) }
     })
     return { homeActiList, subjActiList, quizActiList }
-  }
+  }, []);
 
   //과목 필터링(250125)
   const filterActiBySubject = (list, subject) => {
@@ -80,7 +70,7 @@ const useFireActiData = () => {
   }
 
   return (
-    { fetchAllActis, addActi, updateActi, deleteActi, sortActiType, filterActiBySubject, getSubjKlassActiList, updateGameResult, }
+    { fetchAllActis, addActi, updateActi, deleteActi, sortActiType, filterActiBySubject, updateGameResult, }
   )
 }
 

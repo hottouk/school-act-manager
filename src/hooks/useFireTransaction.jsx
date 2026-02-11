@@ -6,6 +6,7 @@ import useAcc from './useAcc'
 import { appAuth } from '../firebase/config'
 import { deleteUser } from "firebase/auth";
 import useLogout from './useLogout'
+import { useCallback } from 'react'
 
 //복합 collection 함수 모음
 const useFireTransaction = () => {
@@ -64,7 +65,7 @@ const useFireTransaction = () => {
     })
   }
   //10. 교사/학생 변경
-  const changeIsTeacherTransaction = async (schoolCode, memberId) => {
+  const changeIsTeacherTransaction = useCallback(async (schoolCode, memberId) => {
     const schoolDoc = doc(schoolCol, schoolCode);
     const memberDoc = doc(userCol, memberId);
     await runTransaction(db, async (transaction) => {
@@ -86,7 +87,7 @@ const useFireTransaction = () => {
       alert(`관리자에게 문의하세요(useFireTransaction_10),${error}`)
       console.log(error);
     })
-  }
+  }, []);
   //9. 코티칭 교사 가입 승인 
   const approveCoteahingTransaction = async (teacherId, klassId) => {
     const coTeacherRef = doc(userCol, teacherId);

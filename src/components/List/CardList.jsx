@@ -9,7 +9,6 @@ import iconImg from '../../image/icon/like_icon.png'
 import unknownIcon from '../../image/icon/unkown_icon.png'
 import recycleIcon from '../../image/icon/recycle_icon.png'
 import { useSelector } from 'react-redux'
-
 //생성(240109) -> onClick 로직 분리(250122) -> 정리(251216)
 const CardList = ({ dataList, type, onClick, selected }) => {
   const user = useSelector(({ user }) => user)

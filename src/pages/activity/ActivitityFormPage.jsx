@@ -28,6 +28,7 @@ import { GPT_RESPONSE } from "../../constants/gpt";
 //애니
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
 import GptIngModal from "../../components/Modal/gptModal/GptIngModal";
+import LongW100Btn from "../../components/Btn/LongW100Btn";
 //실시간 바이트 갱신(240706) -> 담임반 활동(241221)
 const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
   useEffect(() => { setIsVisible(true) }, []);
@@ -318,7 +319,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                 moreRecList={_perfRecList}
                 noListText="수행 성취도에 따라 각기 다른 문구를 설정합니다."
                 isBtnShown={_record && _subjDetail && isEdit}
-                btnOnClick={() => { if (!check()) return; setIsAddMoreRecModal(true); setGptType("perf"); }} />
+                onClick={() => { if (!check()) return; setIsAddMoreRecModal(true); setGptType("perf"); }} />
             </HiddenWrapper>
           </AnimMaxHightOpacity>
           <Row style={{ marginBottom: "10px" }}>
@@ -330,7 +331,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                 moreRecList={_extraRecList}
                 noListText="표현만 약간 다른 같은 내용의 돌려쓸 문구를 설정합니다."
                 isBtnShown={_record && _subjDetail && isEdit}
-                btnOnClick={() => { if (!check()) return; setIsAddMoreRecModal(true); setGptType("extra"); }} />
+                onClick={() => { if (!check()) return; setIsAddMoreRecModal(true); setGptType("extra"); }} />
             </HiddenWrapper>
           </AnimMaxHightOpacity>
           <Row style={{ marginBottom: "10px" }}>
@@ -343,7 +344,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                 moreRecList={_repeatInfoList?.map((item) => item.record)}
                 noListText="반복 수행 횟수에 따라 각기 다른 문구를 설정합니다."
                 isBtnShown={_record && _subjDetail && isEdit}
-                btnOnClick={() => { if (!check()) return; setIsAddMoreRecModal(true); setGptType("repeat"); }} />
+                onClick={() => { if (!check()) return; setIsAddMoreRecModal(true); setGptType("repeat"); }} />
             </HiddenWrapper>
           </AnimMaxHightOpacity>
           {/* 교사 버튼 영역 */}
@@ -354,8 +355,14 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
             {(state?.acti.uid === user.uid) && <>
               {!state.acti.madeById && <>
                 {!isEdit
-                  ? <><MainBtn type="button" onClick={() => setIsEdit(!isEdit)}>수정</MainBtn><MainBtn onClick={handleDeleteOnClick}>삭제</MainBtn></>
-                  : <><MainBtn onClick={handleSaveOnClick}>저장</MainBtn><MainBtn onClick={() => { bindData(); setIsEdit(!isEdit); }}>취소</MainBtn></>
+                  ? <>
+                    <MainBtn type="button" onClick={() => setIsEdit(!isEdit)}>수정</MainBtn>
+                    <LongW100Btn onClick={handleDeleteOnClick}>삭제</LongW100Btn>
+                  </>
+                  : <>
+                    <MainBtn onClick={handleSaveOnClick}>저장</MainBtn>
+                    <LongW100Btn onClick={() => { bindData(); setIsEdit(!isEdit); }}>취소</LongW100Btn>
+                  </>
                 }</>}
               {state.acti.madeById && <MainBtn onClick={(() => handleDeleteOnClick(state.acti.id))}>삭제</MainBtn>}
             </>}

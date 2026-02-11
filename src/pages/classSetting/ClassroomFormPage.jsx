@@ -16,36 +16,36 @@ import BackBtn from '../../components/Btn/BackBtn';
 //hooks
 import useStudent from '../../hooks/useStudent';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
+import { ERROR_MSG } from '../../constants/errMsg';
+import useFireErrData from '../../hooks/Firebase/useFireErrData';
 //클래스 타입 추가,ux,css정리(241103) -> 코드 간소화(250212) -> 코드 경량화(260120)
 const ClassroomFormPage = () => {
-  //인증
+  const navigate = useNavigate();
   useEffect(() => { setIsVisible(true) }, []);
   const user = useSelector(({ user }) => { return user });
-  //데이터 통신 변수
   const { addClassroom } = useFireClassData();
-  //교실에 필요한 속성 값
+  const { makeStudent } = useStudent();
+  const { errorHandler } = useFireErrData();
+  const { state } = useLocation();
+  //교실 속성 값
   const [_classTitle, setClassTitle] = useState('');
-  const [_subjGroup, setSubjGroup] = useState(null);
-  const [_subjDetail, setSubjDetail] = useState(null);
-  const [_grade, setGrade] = useState(null);
-  const [_classNumber, setClassNumber] = useState(null);
+  const [_subjGroup, setSubjGroup] = useState('');
+  const [_subjDetail, setSubjDetail] = useState('');
+  const [_grade, setGrade] = useState('');
+  const [_classNumber, setClassNumber] = useState('');
   const [_numberOfStudent, setNumberOfStudent] = useState(0);
   const [_intro, setIntro] = useState('');
-  const [xlsxData, setXlsxData] = useState(null); //가공된 학생 정보 from Excel
-  //hooks
-  const navigate = useNavigate();
-  const { makeStudent } = useStudent();
-  //반 생성 종류에 따라 
-  const { state } = useLocation();
-  const [how, setHow] = useState('');             //만드는 방법
-  const [classType, setClassType] = useState(''); //만드는 반 종류
+  const [xlsxData, setXlsxData] = useState(null);
+  //반 생성 종류
+  const [how, setHow] = useState('');
+  const [classType, setClassType] = useState('');
   useEffect(() => {
     setHow(state.how);
     setClassType(state.type);
   }, [state]);
   //애니메이션
   const [isVisible, setIsVisible] = useState(false);
-  //------함수부------------------------------------------------  
+  //**함수**
   const handleOnChange = (event) => {
     if (event.target.id === 'class_grade') {
       setGrade(event.target.value)
@@ -76,10 +76,10 @@ const ClassroomFormPage = () => {
     if (!check()) return;
     const confirm = window.confirm('클래스를 생성하시겠습니까?');
     if (!confirm) return;
-    makeClass(classType);
+    makeKlass(classType);
   };
   //반 생성
-  const makeClass = (type) => {
+  const makeKlass = async (type) => {
     let studentList;
     let klassInfo;
     switch (how) {
@@ -95,12 +95,17 @@ const ClassroomFormPage = () => {
       default: return;
     }
     if (type === "subject") {
-      klassInfo = { uid: user.uid, classTitle: _classTitle, type, subject: _subjGroup, subjDetail: _subjDetail, grade: _grade, classNumber: _classNumber, intro: _intro };
+      klassInfo = { uid: user.uid, classTitle: _classTitle, type, grade: _grade, classNumber: _classNumber, intro: _intro, subject: _subjGroup, subjDetail: _subjDetail, };
     } else if (type === "homeroom") {
-      klassInfo = { uid: user.uid, classTitle: _classTitle, type, grade: _grade, classNumber: _classNumber, intro: _intro, schoolCode: user.school.schoolCode };
+      klassInfo = { uid: user.uid, classTitle: _classTitle, type, grade: _grade, classNumber: _classNumber, intro: _intro, };
     }
-    addClassroom(klassInfo, studentList);
-    navigate("/classRooms");
+    try {
+      await addClassroom(klassInfo, studentList);
+      navigate("/classRooms");
+    } catch (error) {
+      alert(ERROR_MSG.addKlass);
+      await errorHandler(error, "makeClass");
+    }
   }
   return (
     <MainContainer>
@@ -119,10 +124,10 @@ const ClassroomFormPage = () => {
             <CSInfoSelect grade={_grade} classNumber={_classNumber} subject={_subjDetail} handleOnChange={handleOnChange} classMode={true} />
           </Row>
           {/* 클래스 타입 */}
-          {classType === "subject" && <Row>
+          {classType === "subject" && <>
             <DotTitle title={"교과/과목"} />
-          </Row>}
-          <SubjectSelects sort={classType} selectedGroup={_subjGroup} selectedDetail={_subjDetail} setSelectedGroup={setSubjGroup} setSelectedDetail={setSubjDetail} />
+            <SubjectSelects sort={classType} selectedGroup={_subjGroup} selectedDetail={_subjDetail} setSelectedGroup={setSubjGroup} setSelectedDetail={setSubjDetail} />
+          </>}
           <DotTitle title={"안내 사항"} />
           <TextInput id="class_explanation" type="text" value={_intro} onChange={(event) => { setIntro(event.target.value) }} placeholder="강건고 1-1 공통영어1" required />
           {(how === "with_neis") && <>

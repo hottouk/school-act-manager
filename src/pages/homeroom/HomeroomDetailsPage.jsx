@@ -5,13 +5,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { setAllStudents } from '../../store/allStudentsSlice';
 import styled from 'styled-components';
 import { setAllActivities } from '../../store/allActivitiesSlice';
-//페이지
+//section
 import KlassBoardSection from '../classroom/KlassBoardSection';
 import MainSelectorSection from '../classroom/MainSelectorSection';
+import StudentListSection from '../classroom/StudentListSection';
 //컴포넌트
 import MidBtn from '../../components/Btn/MidBtn';
 import EmptyResult from '../../components/EmptyResult';
-import StudentList from '../../components/List/StudentList';
 import AddNewStudentModal from '../../components/Modal/AddNewStudentModal';
 import UpperTab from '../../components/UpperTab';
 import MainWrapper from '../../components/Styled/MainWrapper';
@@ -103,7 +103,7 @@ const HomeroomDetailsPage = () => {
               <>{/* 학생 목록 없을 때 */}
                 <EmptyResult comment="등록된 학생이 없습니다." />
                 <MidBtn onClick={() => { setIsAddStuModalShown(true) }}>학생 추가</MidBtn>
-              </> : <StudentList
+              </> : <StudentListSection
                 petList={studentList}
                 plusBtnOnClick={() => { setIsAddStuModalShown(true) }}
                 klassType={"homeroom"}

@@ -87,7 +87,6 @@ const MySchoolPage = () => {
       fetchKlassrooms();
     }
   }, [mode, selectedMember, fetchClassrooms, sortClassrooms]);
-  console.log("check")
   //페이지네이션 데이터 나누기
   useEffect(() => {
     const devideDataToPage = () => {
@@ -134,15 +133,11 @@ const MySchoolPage = () => {
     else { setIsKlassMemberModal(true); }
   }
   //**모드별 핸들러**
-  //멤버 클릭
+  //멤버 선택
   const handleMemberOnClick = useCallback((item) => {
-    if (selectedMember) {
-      setSelectedMember(null);
-      setSelectedKlass(null);
-    }
-    else setSelectedMember(item);
-  }, [])
-  //교사 학생 변경
+    setSelectedMember(prev => prev === item ? null : item);
+  }, []);
+  //교사/학생 변경
   const handleRoleChangeOnClick = useCallback(async (member) => {
     let confirm;
     if (member.isTeacher) { confirm = window.confirm(`${member.name} 교사를 학생으로 바꾸시겠습니까?`); }
@@ -150,17 +145,17 @@ const MySchoolPage = () => {
     if (!confirm) return;
     await changeIsTeacherTransaction(schoolRtData?.schoolCode, member.uid);
     alert("변경되었습니다.");
-  }, [schoolRtData, changeIsTeacherTransaction]);
+  }, [schoolRtData?.schoolCode, changeIsTeacherTransaction]);
   //담당자 변경
   const handleMasterChangeOnClick = useCallback(async (member) => {
     if (!member.isTeacher) { alert("학생은 담당자로 변경할 수 없습니다.🙅‍♂️"); return; }
     const prompt = window.prompt(`담당자를 ${member.name} 교사로 바꾸시겠습니까? 진행하려면 '변경합니다'를 입력해주세요`);
     if (prompt !== "변경합니다") { alert("문구가 제대로 입력되지 않았습니다."); return; }
-    await changeSchoolMaster(schoolRtData?.schoolCode, member.uid)
+    await changeSchoolMaster(schoolRtData?.schoolCode, member.uid);
     alert("변경 되었습니다.");
     setMode("general");
-  }, [schoolRtData, changeSchoolMaster]);
-  //핸들러 변경
+  }, [schoolRtData?.schoolCode, changeSchoolMaster]);
+  //종합
   const handleByMode = useCallback((item) => {
     if (mode === "roleChange") return handleRoleChangeOnClick(item);
     if (mode === "masterChange") return handleMasterChangeOnClick(item);

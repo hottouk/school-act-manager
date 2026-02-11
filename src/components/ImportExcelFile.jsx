@@ -14,7 +14,7 @@ const ImportExcelFileSection = ({ getData }) => {
   const { getStudentInfo } = useProcessXlsxData()
   const [selectedFile, setSelectedFile] = useState(null);
   const [isHiSkul, setIsHiSkul] = useState(true); //중학교 고등학교 출석부
-  useEffect(() => { if (selectedFile) procesXltoStuInfo(selectedFile) }, [selectedFile, isHiSkul])
+  useEffect(() => { if (selectedFile) procesXltoStuInfo(selectedFile) }, [selectedFile, isHiSkul]);
   //1. xl->json->studentInfo로 바꿈.
   const procesXltoStuInfo = (file) => {
     const fileTypeCheck = file ? (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) : null;
@@ -26,12 +26,12 @@ const ImportExcelFileSection = ({ getData }) => {
         const wb = xlsx.read(data, { type: 'array' });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const xlsToJson = xlsx.utils.sheet_to_json(ws, { header: 1 });
-        const studentInfo = getStudentInfo(xlsToJson, isHiSkul)
+        const studentInfo = getStudentInfo(xlsToJson, isHiSkul);
         getData(studentInfo);
         console.log(studentInfo);
       }
     } else {
-      window.alert("엑셀 파일이 아닙니다.")
+      alert("엑셀 파일이 아닙니다.");
       getData(null);
     }
   }

@@ -1,8 +1,9 @@
 import styled from "styled-components";
 import { appFireStore } from "../../firebase/config";
 import { collection, getDocs, setDoc, doc, getDoc, updateDoc, arrayUnion, deleteField } from "firebase/firestore";
+import LoadingSpinner from "../../components/Commons/LoadingSpinner";
+import HexagonRadarChartDemo from "../../components/Chart/HexagonRadarChartDemo";
 const Lab = () => {
-
   const db = appFireStore;
   // const deleteMemberList = async () => {
   //   try {
@@ -65,6 +66,7 @@ const Lab = () => {
 
   return (
     <Container>
+      <HexagonRadarChartDemo />
       <button onClick={() => { addUserInfoToSchool() }}>migrate 실행</button>
       <button onClick={() => { }}>member 삭제 실행</button>
     </Container>

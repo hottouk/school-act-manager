@@ -5,12 +5,10 @@ import styled from 'styled-components'
 import PetImg from '../../PetImg'
 //이미지
 import exclamationMark from '../../../image/icon/exclamation.png'
-
 // 리펙토링(250126) -> 등록, 미등록자 구분(250205)
 const SquareListItem = ({ item, onClick, type }) => {
-  const { master, subject, title, writtenName, level, path, studentNumber } = item;
-  let name = writtenName || "미등록";
-  if (master) name = master.studentName;
+  const { master, subject, title, writtenName, level, path, studentNumber } = item || {};
+  const name = (writtenName || "미등록")
   return (
     <Container>
       {type === "student" && <>
