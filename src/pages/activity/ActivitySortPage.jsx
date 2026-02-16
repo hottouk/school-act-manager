@@ -6,12 +6,13 @@ import SubNav from '../../components/Bar/SubNav'
 import BackBtn from '../../components/Btn/BackBtn'
 //hooks
 import { useNavigate } from 'react-router-dom'
-import useClientHeight from '../../hooks/useClientHeight'
+import MainContainer from '../../components/Styled/MainContainer'
+import useMediaQuery from '../../hooks/useMediaQuery'
 
 //생성(240808)
 const ActivitySortPage = () => {
-  const navigate = useNavigate()
-  const clientHeight = useClientHeight(document.documentElement)
+  const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const handleCardBtnClick = (event) => {
     switch (event.target.id) {
       case "subjectActi":
@@ -35,12 +36,12 @@ const ActivitySortPage = () => {
   ]
 
   return (
-    <Container $clientheight={clientHeight}>
-      <SubNav><BackBtn /></SubNav>
+    <MainContainer>
+      {!isMobile && <SubNav><BackBtn /></SubNav>}
       <CardWrapper>
         <CardSortForm itemList={actiSortList} handleCardBtnClick={handleCardBtnClick} />
       </CardWrapper>
-    </Container>
+    </MainContainer>
   )
 }
 export default ActivitySortPage
@@ -52,24 +53,9 @@ const Column = styled(Row)`
   flex-direction: column;
 `
 const CardWrapper = styled(Row)`
-  width: 80%;
   height: 40dvh;
-  margin: 20px auto;
+  margin: 80px auto;
   border-radius: 10px;
   align-items: center;
   justify-content: space-around;
-`
-const Container = styled(Column)`
-  box-sizing: border-box;
-  min-height: 100dvh;
-  background-color: #efefef;
-  @media screen and (max-width: 767px){
-    position: fixed;
-    width: 100%;
-    height: ${(props) => props.$clientheight}px;
-    top: 0;
-    gap: 20px;
-    padding-bottom: 20px;
-    overflow-y: scroll;
-  }
 `

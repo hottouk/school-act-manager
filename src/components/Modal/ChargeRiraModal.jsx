@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Modal } from 'react-bootstrap';
-import { useSelector } from 'react-redux'
 import Select from 'react-select';
 import styled from 'styled-components';
 //컴포넌트  
@@ -14,28 +13,28 @@ import { GPT_OPTION_LIST } from '../../constants/gpt';
 import icon_ria from '../../image/money.png';
 //생성(260106)
 const ChargeRiraModal = ({ show, onHide, onApprove, isMulti, multiList }) => {
-  const user = useSelector(({ user }) => user);
-  const { userDataListener } = useFireUserData();
-  useEffect(() => { userDataListener(user.uid, setUserInfo) }, [user.uid]);
-  const [userInfo, setUserInfo] = useState(null);
+  //유저 정보
+  const { userRtData, userDataListener } = useFireUserData();
+  useEffect(() => { userDataListener() }, [userDataListener]);
+  const userRira = useMemo(() => { //유저 리라
+    if (!userRtData) return 0;
+    return userRtData.rira || 0;
+  }, [userRtData])
   //다수
   const multiInterface = isMulti && multiList;
-  //모델, 가격
+  //모델 가격
   const [_selectedModel, setSelectedModel] = useState(null);
-  //------useMemo------------------------------------------------ 
-  //가격
-  const bindPriceByModel = (model) => {
-    if (!model) return;
+  const priceByModel = useMemo(() => {
+    if (!_selectedModel) return;
     if (!multiInterface) return _selectedModel.price;
-    else return (model.price * multiList.length);
-  }
-  const priceByModel = useMemo(() => bindPriceByModel(_selectedModel), [_selectedModel]);
-  //------함수부------------------------------------------------ 
+    else return (_selectedModel.price * multiList.length);
+  }, [_selectedModel, multiInterface, multiList]);
+  //**함수부**
   //유효성 검사 
   const check = () => {
-    if (!userInfo) { alert("잘못된 접근입니다."); return false; }
+    if (!userRtData) { alert("잘못된 접근입니다."); return false; }
     if (!_selectedModel) { alert("모델을 선택해주세요"); return false; }
-    const curRira = userInfo.rira || 0;
+    const curRira = userRtData.rira || 0;
     if (curRira < priceByModel) { alert("리라가 부족합니다."); return false; }
     const leftRira = curRira - priceByModel;
     return { leftRira, result: true }
@@ -84,7 +83,7 @@ const ChargeRiraModal = ({ show, onHide, onApprove, isMulti, multiList }) => {
             나의 리라
             <div>
               <img src={icon_ria} alt="rira" width="20px" />
-              {userInfo.rira?.toLocaleString()}
+              {userRira?.toLocaleString()}
             </div>
           </Row>
           <Row style={{ justifyContent: "space-between" }}>
@@ -103,7 +102,7 @@ const ChargeRiraModal = ({ show, onHide, onApprove, isMulti, multiList }) => {
             결제 후 리라 잔액
             <div>
               <img src={icon_ria} alt="rira" width="20px" />
-              {(userInfo.rira - priceByModel)?.toLocaleString()}
+              {(userRira - priceByModel)?.toLocaleString()}
             </div>
           </Row>
         </WhiteWrapper>}
@@ -137,5 +136,4 @@ const Highlight = styled.span`
   color: #3454d1;
   font-style: italic;
 `
-
 export default ChargeRiraModal

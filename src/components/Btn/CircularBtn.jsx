@@ -13,13 +13,13 @@ export default CircularBtn
 
 const StyledBtn = styled.button`
   position: relative;
-  height: 36px;
-  width: 36px;
+  height: 24px;
+  width: 24px;
   border: none;
   border-radius: 18px;
   background-color: ${({ $color }) => $color ? $color : "#3454d1"};
   color: white;
-  font-size: 25px;
+  font-size: 16px;
   font-weight: 700;
 `
 const Text = styled.p`

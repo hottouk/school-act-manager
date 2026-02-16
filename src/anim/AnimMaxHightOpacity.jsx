@@ -14,7 +14,6 @@ const AnimationWrapper = styled.div`
   width: ${({ $width }) => $width};
   margin : ${({ $margin }) => $margin};
   align-self: ${({ $alignSelf }) => $alignSelf};
-  max-height: ${({ $isVisible }) => ($isVisible ? '1500px' : '0')}; /* max-height를 동적으로 설정 */
   opacity: ${({ $isVisible }) => ($isVisible ? 1 : 0)};
   transition: max-height 0.5s ease, opacity 0.5s ease;
 `

@@ -2,33 +2,40 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 //컴포넌트
 import EmptyResult from '../../components/EmptyResult';
 import EvolutionModal from '../../components/Modal/EvolutionModal';
 import SmallBtn from '../../components/Btn/SmallBtn';
+import Pagenation from '../../components/Pagenation';
+import EditRecordModal from '../../components/Modal/EditRecordModal';
 //hooks
-import useFetchRtMyUserData from '../../hooks/RealTimeData/useFetchRtMyUserData';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useFireTransaction from '../../hooks/useFireTransaction';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
-import EditRecordModal from '../../components/Modal/EditRecordModal';
-import { useNavigate } from 'react-router-dom';
-import Pagenation from '../../components/Pagenation';
 //240201 갱신 -> 모바일(250215)
 const WhatsNewPage = () => {
-  const user = useSelector(({ user }) => { return user });
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const { myUserData } = useFetchRtMyUserData();          //실시간 유저 정보 구독
-  useEffect(() => { bindData(); }, [myUserData]);
+  const user = useSelector(({ user }) => { return user });
+  const { updateKlassroomArrayInfo } = useFireClassData();
+  const { approvWinTransaction, denyTransaction, confirmDenialTransaction, approveCoteahingTransaction, approveEditTransaction } = useFireTransaction();
+  //실시간 유저 정보
+  const { userRtData, userDataListener, deleteUserArrayInfo, approveKlassTransaction } = useFireUserData();
+  useEffect(() => { userDataListener(); }, [userDataListener]);
+  useEffect(() => {
+    const bindData = () => {
+      if (!userRtData) return;
+      setPageData(userRtData.onSubmitList?.slice(0, itemsPerPage));
+      setOnSubmitList(userRtData.onSubmitList);
+    }
+    bindData();
+  }, [userRtData]);
   //새소식
   const [onSubmitList, setOnSubmitList] = useState([]);
   const [reward, setReward] = useState(null);
   const [isRewardModal, setIsRewardModal] = useState(false);
-  const { updateKlassroomArrayInfo } = useFireClassData();
-  const { approvWinTransaction, denyTransaction, confirmDenialTransaction, approveCoteahingTransaction, approveEditTransaction } = useFireTransaction();
-  const { deleteUserArrayInfo, approveKlassTransaction } = useFireUserData();
   //세특 수정
   const [isEditModal, setIsEditModal] = useState(false);
   const [newRecordInfo, setNewRecordInfo] = useState(null);
@@ -40,14 +47,8 @@ const WhatsNewPage = () => {
     const start = (currentPage - 1) * itemsPerPage;
     const end = currentPage * itemsPerPage;
     setPageData(onSubmitList?.slice(start, end));
-  }, [currentPage]);
+  }, [currentPage, onSubmitList]);
   //------함수부------------------------------------------------ 
-  //데이터 바인딩
-  const bindData = () => {
-    if (!myUserData) return;
-    setPageData(myUserData.onSubmitList.slice(0, itemsPerPage));
-    setOnSubmitList(myUserData.onSubmitList);
-  }
   //교사: 가입 승인
   const handleApproveJoinOnClick = (item) => {
     const { classId, petId, pet } = item;
@@ -362,7 +363,6 @@ const WhatsNewPage = () => {
       </Row>
     </BubbleWrapper>
   }
-
   const studentRenderes = {
     denial: (item, index) => (<StudentResultRow key={item.reason} index={index} item={item} />),
     evolution: (item, index) => (<StudentEvolutionRow key={`${index}${item.reason}${item.petLabel}`} index={index} item={item} />),
@@ -373,7 +373,6 @@ const WhatsNewPage = () => {
     evolution: (item, index) => (<StudentEvolutionBubble key={`${index}${item.reason}${item.petLabel}`} index={index} item={item} />),
     confirm: (item, index) => (<StudentApprovalBubble key={item.message} index={index} item={item} />),
   }
-
   return (<>
     <Container>
       {/* 교사용 */}

@@ -1,23 +1,23 @@
 //라이브러리
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useEffect, useMemo, useState } from 'react';
 import { setAllSubjClasses } from '../../store/allClassesSlice';
 import styled from 'styled-components';
 //컴포넌트
+import MainContainer from '../../components/Styled/MainContainer';
+import MainWrapper from '../../components/Styled/MainWrapper';
 import CardList from '../../components/List/CardList';
 import SearchBar from '../../components/Bar/SearchBar';
 import Title from '../../components/Title/Title';
 import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd';
 import HorizontalMobileAd from '../../components/Ads/HorizontalMobileAd';
-import MainWrapper from '../../components/Styled/MainWrapper';
+import MainBtn from '../../components/Btn/MainBtn';
 import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity';
 //hooks
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
-import useClientHeight from '../../hooks/useClientHeight';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useMediaQuery from '../../hooks/useMediaQuery';
-import MainContainer from '../../components/Styled/MainContainer';
 //수정(240918) -> 학생 파트 수정(250121) -> 코티칭(250218) -> 디자인(251108)
 const ClassRoomMainPage = () => {
   const navigate = useNavigate();
@@ -31,24 +31,24 @@ const ClassRoomMainPage = () => {
   const { isTeacher = false, coTeachingList = [] } = userRtData || {};
   const isMobile = useMediaQuery("(max-width: 767px)");
   //교사용 교실
-  const { subjKlassList, homeroomKlassList, legacyList } = useMemo(() => {
-    if (!klassListRtData) return { subjKlassList: [], homeroomKlassList: [], legacyList: [] };
+  const { subjKlassList, homeroomKlassList, legacySubjList, legacyHomeList } = useMemo(() => {
+    if (!klassListRtData) return { subjKlassList: [], homeroomKlassList: [], legacySubjList: [], legacyHomeList: [] };
     const subj = [];
     const homeroom = [];
-    const legacy = [];
+    const legacySubj = [];
+    const legacyHome = [];
     klassListRtData.forEach(item => {
       const year = item.createdTime?.toDate?.().getFullYear();
       const isthisYear = year === 2026;
       if (item.type === "subject" && isthisYear) subj.push(item);
       else if (item.type === "homeroom" && isthisYear) homeroom.push(item);
-      else if (!isthisYear) legacy.push(item);
+      else if (item.type === "subject" && !isthisYear) legacySubj.push(item);
+      else if (item.type === "homeroom" && !isthisYear) legacyHome.push(item);
     })
-    return { subjKlassList: subj, homeroomKlassList: homeroom, legacyList: legacy };
+    return { subjKlassList: subj, homeroomKlassList: homeroom, legacySubjList: legacySubj, legacyHomeList: legacyHome };
   }, [klassListRtData]);
   useEffect(() => { dispatcher(setAllSubjClasses(subjKlassList)); }, [subjKlassList, dispatcher]);
   const [isOpen, setIsOpen] = useState(false);
-  //모니터 높이
-  const clientHeight = useClientHeight(document.documentElement);
   //**함수**
   //교과반 이동
   const handleSubjClassOnClick = (item) => navigate(`/classrooms/${item.id}`, { state: { ...item } });
@@ -60,24 +60,28 @@ const ClassRoomMainPage = () => {
     else { alert("승인 대기중 입니다."); }
   }
   //가입 신청, 승인 클래스 분류
-  return (<MainContainer>
+  return (<MainContainer styles={{ gap: "10px" }}>
     {/* 교사 */}
-    {isTeacher && <><MainWrapper styles={{ margin: "20px 0" }}>
+    {isTeacher && <><MainWrapper >
       <SearchBar title="교과 클래스" type="classroom" list={subjKlassList} setList={() => { }} isMobile={isMobile} />
-      <CardList dataList={subjKlassList} type="classroom" onClick={handleSubjClassOnClick} />
+      <CardList dataList={subjKlassList} type="subjKlass" onClick={handleSubjClassOnClick} />
       <SearchBar title="코티칭 클래스" />
-      <CardList dataList={coTeachingList} type="classroom" onClick={handleCoTeachingOnClick} />
+      <CardList dataList={coTeachingList} type="subjKlass" onClick={handleCoTeachingOnClick} />
       {!isMobile ? <HorizontalBannerAd /> : <HorizontalMobileAd />}
-      {!isMobile && <SearchBar title="담임 클래스" />}
-      {!isMobile && <CardList dataList={homeroomKlassList} type="homeroom" onClick={handleHomeroomOnClick} />}
+      <SearchBar title="담임 클래스" />
+      <CardList dataList={homeroomKlassList} type="homeroom" onClick={handleHomeroomOnClick} />
     </MainWrapper>
+      {isMobile && <MainBtn onClick={() => navigate("/classrooms_setting", { state: { step: "first" } })}>클래스 생성하기</MainBtn>}
       <MainWrapper>
         <Row style={{ gap: "10px" }}>
           <Title>과거 클래스</Title>
           <p style={{ cursor: "pointer" }} onClick={() => setIsOpen(!isOpen)}>{!isOpen ? "▼" : "▲"}</p>
         </Row>
         <AnimMaxHightOpacity isVisible={isOpen}>
-          <CardList dataList={legacyList} type="classroom" onClick={handleSubjClassOnClick} />
+          <SearchBar title="교과 클래스" />
+          <CardList dataList={legacySubjList} type="subjKlass" onClick={handleSubjClassOnClick} />
+          <SearchBar title="담임반 클래스" />
+          <CardList dataList={legacyHomeList} type="homeroom" onClick={handleHomeroomOnClick} />
         </AnimMaxHightOpacity>
       </MainWrapper>
     </>

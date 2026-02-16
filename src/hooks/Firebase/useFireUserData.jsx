@@ -26,13 +26,12 @@ const useFireUserData = () => {
     return userDoc.data();
   }
   //1-1. 유저 정보 실시간 구독
-  const userDataListener = useCallback((id = user.uid, callback = () => { }) => {
+  const userDataListener = useCallback((id = user.uid, callback = setUserRtData) => {
     if (!id) return
     const userDocRef = doc(col, id);
     const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
       if (snapshot.exists()) {
         callback(snapshot.data());
-        setUserRtData(snapshot.data());
         dispatcher(setUser(snapshot.data()));
       }
       else { callback(null); }
@@ -238,7 +237,7 @@ const useFireUserData = () => {
     })
   }
   //퍼온 Acti 리스트 - 활동관리(250210) 이동
-  const fetchCopiesData = async () => {
+  const fetchCopiesData = useCallback(async () => {
     const userRef = doc(db, "user", String(user.uid))
     try {
       const userDoc = await getDocFromCache(userRef);
@@ -256,7 +255,7 @@ const useFireUserData = () => {
         console.log(err)
       }
     }
-  }
+  }, [db])
   //11. 회원 탈퇴(활동, 유저 삭제)
   const deleteUserTransaction = async () => {
     const auth = appAuth;

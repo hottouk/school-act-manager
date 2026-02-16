@@ -12,15 +12,17 @@ import TestLoginSection from './TestLoginSection';
 import useLogin from '../../hooks/useLogin';
 //이미지
 import googleIcon from '../../image/icon/g-logo.png'
+import useMediaQuery from '../../hooks/useMediaQuery';
 //생성(240221) -> 리모델링(260203)
 const LoginPage = () => {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const { err, isPending, googleLogin, testLogin } = useLogin();
   //모달
   const [isSnsModal, setIsSnsModal] = useState(false);
   return (
     <Container>
       <HeroSection>
-        <TestLoginSection login={testLogin} />
+        {!isMobile && <TestLoginSection login={testLogin} />}
         <Column style={{ gap: "20px" }}>
           {/* 구글 로그인 */}
           <GoogleLoginBtn onClick={() => { googleLogin((open) => { setIsSnsModal(open) }) }}>
@@ -29,16 +31,16 @@ const LoginPage = () => {
           {/* 카카오 */}
           <KakaoSocialLogin openModal={setIsSnsModal} />
         </Column>
-        {isPending && <strong>로그인 중 입니다.</strong>}
+        {isPending && <strong style={{ color: "white" }}>로그인 중 입니다.</strong>}
         {err && <strong>{err}</strong>}
       </HeroSection>
+      <IntroSection isMobile={isMobile} />
       {/* 모달 */}
       {isSnsModal && <SignUpWithSnsModal
         show={isSnsModal}
         backdrop="static"
         onHide={() => setIsSnsModal(false)}
       />}
-      <IntroSection />
     </Container >
   )
 }

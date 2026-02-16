@@ -2,38 +2,80 @@
 import { useEffect, useState } from 'react'
 import { Spinner } from 'react-bootstrap';
 import Modal from 'react-bootstrap/Modal';
+import Select from 'react-select';
+import styled from 'styled-components';
+
 //컴포넌트
 import ModalBtn from '../../Btn/ModalBtn';
 import MidBtn from '../../Btn/MidBtn';
-import styled from 'styled-components';
+import MockExamSelect from '../../Select/MockExamSelect';
+import DotTitle from '../../Title/DotTitle';
 import CircularBtn from '../../Btn/CircularBtn';
 //hooks
 import useChatGpt from '../../../hooks/useChatGpt';
-
+import useFireBasic from '../../../hooks/Firebase/useFireBasic';
+import GptIngModal from './GptIngModal';
 //생성(250616)
 const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow }) => {
+  //준비
+  const { fetchDoc } = useFireBasic("exam");
+  //모의고사 지문
+  const subjectList = [{ label: "과목", value: '' }, { label: "영어", value: "eng" },];
+  const [subject, setSubject] = useState(null);
+  useEffect(() => { setYear(null); }, [subject]);
+  const [year, setYear] = useState(null);
+  useEffect(() => { setGrade(null); }, [year]);
+  const [grade, setGrade] = useState(null);
+  useEffect(() => { setMonth(null); setExam(null); }, [grade]);
+  const [month, setMonth] = useState(null);
+  useEffect(() => {
+    //모고 불러오기
+    const fetchExamData = async () => {
+      setNumber(null);
+      const docId = `${year}${grade}${month}${subject}`;
+      const examInfo = await fetchDoc(docId);
+      if (examInfo) {
+        const { uid, createdTime, ...rest } = examInfo;
+        setExam(rest);
+      } else {
+        setExam(null);
+      }
+    }
+    fetchExamData();
+  }, [month]);
+  //기출 문항
+  const [exam, setExam] = useState(null);
+  const [number, setNumber] = useState(null);
+  useEffect(() => {
+    if (!number || !exam) return;
+    setText(exam[number]?.original?.replace(/(\r\n|\n|\r)/g, " ") ?? exam[number]?.passage.replace(/(\r\n|\n|\r)/g, " ") ?? '');
+  }, [number]);
   //지문
   const [text, setText] = useState('');
   //gpt
-  const { extractVocab, gptAnswer, gptRes } = useChatGpt();
-  useEffect(() => { renderGptAnswer(); }, [gptAnswer]);
+  const { extractVocab, gptAnswer, gptRes, gptStatus, gptProgress } = useChatGpt();
+  //gpt 응답 가공
+  useEffect(() => {
+    const renderGptAnswer = () => {
+      if (gptAnswer === '') return
+      const list = gptAnswer.split("^").map((item) => {
+        const wordMeaning = item.split("#");
+        return { word: wordMeaning[0], meaning: wordMeaning[1] }
+      })
+      setVocabList(list);
+    }
+    renderGptAnswer();
+  }, [gptAnswer]);
   //추가된 단어
   const [vocabList, setVocabList] = useState([]);
-  //------함수부------------------------------------------------  
-  const renderGptAnswer = () => {//gpt 응답 가공
-    if (gptAnswer === '') return
-    const list = gptAnswer.split("^").map((item) => {
-      const wordMeaning = item.split("#");
-      return { word: wordMeaning[0], meaning: wordMeaning[1] }
-    })
-    setVocabList(list);
-  }
+
+  //**함수부**
   //빈칸 체크
   const checkVacant = (list) => {
     let result = true;
     list.forEach((item, index) => {
       if (item.word === '' || item.meaning === '') {
-        alert(`${index + 1}번째 칸이 비어있습니다. 삭제하거나 채워주세요.`)
+        alert(`${index + 1}번째 칸이 비어있습니다. 삭제하거나 채워주세요.`);
         result = false;
       }
     });
@@ -82,7 +124,25 @@ const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow
       onHide={onHide}
       backdrop='static'>
       <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>스마트 단어 추가</Modal.Header>
-      <Modal.Body>
+      <Modal.Body style={{ backgroundColor: "#efefef", }}>
+        <Row style={{ marginBottom: "10px" }}>
+          <DotTitle>과목</DotTitle>
+          <Select
+            onChange={(event) => setSubject(event.value)}
+            options={subjectList}
+            placeholder={"과목"}
+          />
+        </Row>
+        {subject && <Row style={{ marginBottom: "10px" }}>
+          <DotTitle>기출 모의고사</DotTitle>
+          <MockExamSelect year={year}
+            setYear={setYear}
+            grade={grade}
+            setGrade={setGrade}
+            month={month}
+            setMonth={setMonth}
+            setNumber={setNumber} />
+        </Row>}
         <Textarea
           value={text}
           placeholder='여기에 지문을 복사/붙여넣기 하세요'
@@ -114,10 +174,15 @@ const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow
           </Row>
         </Row>)}
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer style={{ backgroundColor: "#efefef", borderRadius: "5px" }}>
         <ModalBtn onClick={() => { onHide() }}>취소</ModalBtn>
         <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirmOnClick}>확인</ModalBtn>
       </Modal.Footer>
+      <GptIngModal
+        show={gptStatus}
+        onHide={gptStatus === ''}
+        status={gptStatus}
+        progress={gptProgress} />
     </Modal >
   )
 }

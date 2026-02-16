@@ -1,5 +1,5 @@
 //라이브러리
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Select from 'react-select';
 import { useSelector } from 'react-redux';
@@ -26,75 +26,81 @@ import AnimRotation from '../../anim/AnimRotation';
 import { ERROR_MSG } from '../../constants/errMsg';
 //코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223) -> 수정 요청 기능(251104) -> 담임반 통합(260120)
 const StudentDetailPage = () => {
-  //준비
+  console.log(1)
+  //즌비
   const { id: klassId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { petId, semester, klassType } = location.state ?? {};
-  //학급
-  useEffect(() => { petDataListener(klassId, petId); setSemester(semester || null); }, [klassId, petId, semester]);
-  //유저
   const user = useSelector(({ user }) => user);
-  //학생
+  const { petId, semester, klassType } = location.state ?? {};
+  //전체 학생
   const allStudentFrozenList = useSelector(({ allStudents }) => allStudents);
-  const { petRtData, petDataListener } = useFirePetData();
+  //n번째 학생
+  const nthStudent = useMemo(() => {
+    if (!allStudentFrozenList) return null;
+    return allStudentFrozenList.findIndex(({ id }) => id === petId)
+  }, [allStudentFrozenList, petId])
+  //실시간 펫
+  const { petRtData, petDataListener, updatePetInfo, deletePet } = useFirePetData();
+  useEffect(() => { petDataListener(klassId, petId); setSemester(semester || null); }, [klassId, petId, semester, petDataListener]);
+  //펫 정보
+  const bindInitData = useCallback(() => {
+    if (!petRtData) return;
+    const { behaviorOpinion = '', actList = [], writtenName = "미등록" } = petRtData;
+    let list;
+    if (klassType === "subject") list = actList.filter((acti) => acti.semester !== 2) ?? [];
+    else list = actList.filter(acti => acti.subjDetail === "자율");
+    setWrittenName(writtenName);
+    setBehaviorRecord(behaviorOpinion);
+    setActiList(list);
+  }, [klassType, petRtData]);
   useEffect(() => {
-    bindInitData(); checkMaster(); setNthStudent(allStudentFrozenList.findIndex(({ id }) => id === petId)); //전체 학생에서 몇 번째인지 index 찾기
-  }, [petRtData, user]);
+    bindInitData();
+    //학생 본인 id가 아닐 경우 back
+    const checkMaster = () => {
+      if (user.isTeacher || !petRtData) return;
+      const { master } = petRtData;
+      if (master?.studentId === user.uid) { setIsMaster(true); }
+      else { navigate(-1); }
+    }
+    checkMaster();
+  }, [petRtData, user, navigate, bindInitData]);
+  //로컬 펫 정보
+  const [writtenName, setWrittenName] = useState('');
+  const [actiList, setActiList] = useState(null);
+  const [behaviorRecord, setBehaviorRecord] = useState('');
+  const [isMaster, setIsMaster] = useState(false);
   //탭
-  const [_recordType, setRecordType] = useState(1);
+  const [recordType, setRecordType] = useState(1);
   const [_semester, setSemester] = useState(1);
-  useEffect(() => changeActiList(recByType[klassType].value), [_semester, _recordType, petRtData,]);
-  const recByType = { subject: { value: _semester, setter: setSemester }, homeroom: { value: _recordType, setter: setRecordType } };
+  useEffect(() => {
+    const changeActiList = () => {
+      if (!klassType) return;
+      const actList = petRtData?.actList ?? [];
+      setActiList(() => {
+        if (klassType === "subject") {
+          if (_semester === 2) return actList?.filter((acti) => acti.semester === 2);
+          else return actList?.filter((acti) => acti.semester !== 2)
+        }
+        else if (klassType === "homeroom") {
+          if (recordType === 1) return actList?.filter((acti) => acti.subjDetail === "자율");
+          else if (recordType === 2) return actList?.filter((acti) => acti.subjDetail === "진로");
+          else if (recordType === 3) return [];
+        }
+      });
+    }
+    changeActiList();
+  },
+    [petRtData, klassType, _semester, recordType,]);
+  const recByType = { subject: { value: _semester, setter: setSemester }, homeroom: { value: recordType, setter: setRecordType } };
   //편집 모드 
   const [isModifying, setIsModifying] = useState(false);
   const [isBehavioring, setIsBehavioring] = useState(false);
-  const { deletePet, updatePetInfo } = useFirePetData();
-  //학생 정보
-  const [nthStudent, setNthStudent] = useState(null);
-  const [_writtenName, setWrittenName] = useState('');
-  const [_actiList, setActiList] = useState(null);
-  const [_behaviorRecord, setBehaviorRecord] = useState('');
-  const [isMaster, setIsMaster] = useState(false);
   //모바일
   const isMobile = useMediaQuery("(max-width: 768px)");
   //에니메이션
   const [isAnimating, setIsAnimating] = useState(false);
-  //------함수부------------------------------------------------  
-  const bindInitData = () => {
-    if (!petRtData) return;
-    const { behaviorOpinion } = petRtData;
-    const actList = petRtData.actList ?? [];
-    let list;
-    if (klassType === "subject") list = actList.filter((acti) => acti.semester !== 2) ?? [];
-    else list = actList.filter(acti => acti.subjDetail === "자율");
-    setWrittenName(petRtData.writtenName || '미등록');
-    setBehaviorRecord(behaviorOpinion || '');
-    setActiList(list);
-  }
-  //탭 전환
-  const changeActiList = (value) => {
-    if (!klassType) return;
-    const actList = petRtData?.actList ?? [];
-    setActiList(() => {
-      if (klassType === "subject") {
-        if (value === 2) return actList?.filter((acti) => acti.semester === 2);
-        else return actList?.filter((acti) => acti.semester !== 2)
-      }
-      else if (klassType === "homeroom") {
-        if (value === 1) return actList?.filter((acti) => acti.subjDetail === "자율");
-        else if (value === 2) return actList?.filter((acti) => acti.subjDetail === "진로");
-        else if (value === 3) return [];
-      }
-    });
-  }
-  //학생 본인 id가 아닐 경우 back
-  const checkMaster = () => {
-    if (user.isTeacher || !petRtData) return;
-    const { master } = petRtData;
-    if (master?.studentId === user.uid) { setIsMaster(true); }
-    else { navigate(-1); }
-  }
+  //**함수**
   //실시간 acc
   const getAccRec = (list) => list.reduce((acc, cur) => acc + " " + cur.record, '')
   //학생 이동(241202)
@@ -115,12 +121,12 @@ const StudentDetailPage = () => {
     if (klassType === "subject") {
       if (_semester === 2) rest = list.filter(item => item.semester !== 2) ?? [];
       else rest = list.filter(item => item.semester === 2) ?? [];
-      newPetInfo = { writtenName: _writtenName, actList: [..._actiList, ...rest] };
+      newPetInfo = { writtenName: writtenName, actList: [...actiList, ...rest] };
     } else {
-      if (_recordType === 1) rest = list?.filter(item => item.subjDetail !== "자율");
-      else if (_recordType === 2) rest = list.filter(item => item.subjDetail !== "진로");
+      if (recordType === 1) rest = list?.filter(item => item.subjDetail !== "자율");
+      else if (recordType === 2) rest = list.filter(item => item.subjDetail !== "진로");
       else rest = list;
-      newPetInfo = { writtenName: _writtenName, actList: [..._actiList, ...rest,], behaviorOpinion: _behaviorRecord };
+      newPetInfo = { writtenName: writtenName, actList: [...actiList, ...rest,], behaviorOpinion: behaviorRecord };
     }
     updatePetInfo(klassId, petId, newPetInfo);
     setIsModifying(false);
@@ -177,7 +183,7 @@ const StudentDetailPage = () => {
             <ArrowWrapper style={{ top: "50%", right: "-5%" }}><ArrowBtn id="right_arw_btn" onClick={handleArrowBtnOnClick} /></ArrowWrapper>
           </>}
           {/* 펫 데이터 */}
-          {petRtData && <PetInfoSection pet={petRtData} writtenName={_writtenName} isModifiying={isModifying} setWrittenName={setWrittenName} handlePetDeleteOnClick={handlePetDeleteOnClick} />}
+          {petRtData && <PetInfoSection pet={petRtData} writtenName={writtenName} isModifiying={isModifying} setWrittenName={setWrittenName} handlePetDeleteOnClick={handlePetDeleteOnClick} />}
           {(user.isTeacher || isMaster) && <GrayBotPannel>
             {(!isModifying && !isBehavioring) && <Row style={{ justifyContent: "flex-end" }}>
               <ClickableIcon className='fa-solid fa-edit' onClick={() => setIsModifying(!isModifying)}></ClickableIcon>
@@ -192,17 +198,21 @@ const StudentDetailPage = () => {
               <UpperTab className={"tab2"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(2)} disabled={isModifying}>{klassType === "subject" ? "2학기" : "진로"}</UpperTab>
               {klassType === "homeroom" && <UpperTab className={"tab3"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(3)} disabled={isModifying}>행발</UpperTab>}
             </Row>}
-            {_recordType !== 3 && <><ActiTableSection actiList={_actiList} setActiList={setActiList} type={klassType}
+            {recordType !== 3 && <><ActiTableSection actiList={actiList} setActiList={setActiList} type={klassType}
               tabValue={recByType[klassType].value}
               getAccRec={getAccRec} petRtData={petRtData}
               isModifying={isModifying} isMobile={isMobile} />
               <Row style={{ justifyContent: "center" }}><img src={arrows_icon} alt="아래화살표" /></Row>
-              <AccWrapper>{_actiList?.length > 0 ? getAccRec(_actiList) : "기록 없음"}</AccWrapper>
+              <AccWrapper>{actiList?.length > 0 ? getAccRec(actiList) : "기록 없음"}</AccWrapper>
             </>}
-            {_recordType === 3 && <BehaviorOpinionSection isModifying={isModifying} setIsBehavioring={setIsBehavioring} behaviorRec={_behaviorRecord} setBehaviorRec={setBehaviorRecord} />}
+            {recordType === 3 && <BehaviorOpinionSection
+              isModifying={isModifying}
+              setIsBehavioring={setIsBehavioring}
+              behaviorRec={behaviorRecord}
+              setBehaviorRec={setBehaviorRecord} />}
           </GrayBotPannel>}
-          {_actiList?.length > 0 && <ByteWrapper>
-            <ByteCalculator str={getAccRec(_actiList)} styles={{ justifyContent: "center", fontSize: "22px", fontColor: "white", width: "81px" }}></ByteCalculator>
+          {actiList?.length > 0 && <ByteWrapper>
+            <ByteCalculator str={getAccRec(actiList)} styles={{ justifyContent: "center", fontSize: "22px", fontColor: "white", width: "81px" }}></ByteCalculator>
           </ByteWrapper>}
         </PannelContainer>
       </AnimRotation>

@@ -16,6 +16,7 @@ import useDocxFile from '../../hooks/useDocxFile'
 import edit_icon from '../../image/icon/edit_icon.png'
 //생성(251219)
 const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, type, level, examItem, sentenceList, circleAnswer }) => {
+	console.log(gptAnswer);
 	const { addTestArrItem, updateTestQuestion } = useFireTestData();
 	const { downloadQuestionDocx } = useDocxFile();
 	const questionList = useSelector(({ exam }) => exam["questions"]); //전체 문제

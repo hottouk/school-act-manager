@@ -9,9 +9,12 @@ import BackBtn from '../../components/Btn/BackBtn'
 import useClientHeight from '../../hooks/useClientHeight'
 //css
 import styled from 'styled-components'
+import MainContainer from '../../components/Styled/MainContainer'
+import useMediaQuery from '../../hooks/useMediaQuery'
 //state에 반type 생성, css제목 변경(240915)
 const ClassSortSelection = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const { state } = useLocation(); //=>에 따라 보여줄 화면 결정
   useEffect(() => {
     setStep(state.step)
@@ -58,29 +61,15 @@ const ClassSortSelection = () => {
   ]
 
   return (
-    <Container $clientheight={clientHeight}>
-      <SubNav><BackBtn /></SubNav>
+    <MainContainer>
+      {!isMobile && <SubNav><BackBtn /></SubNav>}
       <CardWrapper>
         {(step === "first") && <CardSortForm itemList={classSortList} handleCardBtnClick={handleCardBtnClick} />}
         {(step === "second") && <CardSortForm itemList={howtoMakeList} handleCardBtnClick={handleCardBtnClick} />}
       </CardWrapper>
-    </Container>
+    </MainContainer>
   )
 }
-const Container = styled.div`
-  box-sizing: border-box;
-  min-height: 100dvh;
-  background-color: #efefef;
-  @media screen and (max-width: 767px){
-    position: fixed;
-    width: 100%;
-    height: ${(props) => props.$clientheight}px;
-    top: 0;
-    gap: 20px;
-    padding-bottom: 20px;
-    overflow-y: scroll;
-  }
-`
 const Row = styled.div`
   display: flex;
 `
@@ -88,9 +77,8 @@ const Column = styled(Row)`
   flex-direction: column;
 `
 const CardWrapper = styled(Row)`
-  width: 80%;
   height: 40dvh;
-  margin: 20px auto;
+  margin: 80px auto;
   border-radius: 10px;
   align-items: center;
   justify-content: space-around;

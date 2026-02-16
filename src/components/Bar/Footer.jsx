@@ -57,7 +57,7 @@ const Wrapper = styled(Row)`
   @media screen and (max-width: 768px){
     width: 100%;
     flex-direction: column;
-    padding: 10px 10px 90px 10px;
+    padding: 10px;
   }
 `
 const Text = styled.p`

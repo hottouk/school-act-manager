@@ -42,7 +42,7 @@ const useFireClassData = () => {
     return () => unsubscribe();
   }, []);
   //2-2. 클래스 정보 실시간 구독
-  const klassDataListener = (id) => {
+  const klassDataListener = useCallback((id) => {
     if (!id) return
     const klassDocRef = doc(colRef, id);
     const unsubscribe = onSnapshot(klassDocRef, (snapshot) => {
@@ -50,7 +50,7 @@ const useFireClassData = () => {
       else setKlassRtData(null);
     })
     return () => unsubscribe();
-  }
+  }, []);
   //3. 클래스 업데이트(260120)
   const updateKlassroom = async (klassInfo, id) => {
     const klassDocRef = doc(colRef, id);

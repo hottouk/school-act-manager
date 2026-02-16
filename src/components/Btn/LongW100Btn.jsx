@@ -19,6 +19,7 @@ const LongW100Btn = ({ id, btnName, type, btnOnClick, styles, children, onClick 
 const StyledButton = styled.button`
   display: inline;
   width: 100%;
+  height: 50px;
   padding: 10px 15px;
   border-radius: 10px;
   border: ${(props) => props.$border};

@@ -5,25 +5,26 @@ import styled from 'styled-components';
 //섹션
 import BehaviorChkBox from './BehaviorChkBox';
 //컴포넌트
-import MainBtn from '../../components/Btn/MainBtn';
-import SmallTitle from '../../components/Title/SmallTitle';
 import EmptyResult from '../../components/EmptyResult';
 import ByteCalculator from '../../components/Etc/ByteCalculator';
+import LongW100Btn from '../../components/Btn/LongW100Btn';
+import MidBtn from '../../components/Btn/MidBtn';
+import DotTitle from '../../components/Title/DotTitle';
+import SmallTitle from '../../components/Title/SmallTitle';
+import ChargeRiraModal from '../../components/Modal/ChargeRiraModal';
+import GptIngModal from '../../components/Modal/gptModal/GptIngModal';
+import ImgModal from '../../components/Modal/ImgModal';
 //hooks
 import useChatGpt from '../../hooks/useChatGpt';
 import useFirePetData from '../../hooks/Firebase/useFirePetData';
+import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg';
 //css
 import AnimOpacity from '../../anim/AnimOpacity';
 import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity';
 //이미지
 import arrows_icon from '../../image/icon/arrows_icon.png';
-import MidBtn from '../../components/Btn/MidBtn';
-import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg';
+//상수
 import { GUIDE_IMG_PATH } from '../../constants/path'
-import ImgModal from '../../components/Modal/ImgModal';
-import DotTitle from '../../components/Title/DotTitle';
-import ChargeRiraModal from '../../components/Modal/ChargeRiraModal';
-import GptIngModal from '../../components/Modal/gptModal/GptIngModal';
 //생성(241016)-> 회전효과 추가(241201)-> 통신 일원화(250104)-> legacy(250223) -> 기능 축소 분화(261221)
 const BehaviorOpinionSection = ({ behaviorRec, setBehaviorRec, isModifying, setIsBehavioring }) => {
   //준비
@@ -130,10 +131,10 @@ const BehaviorOpinionSection = ({ behaviorRec, setBehaviorRec, isModifying, setI
             disabled={!isModifying}
           />
           <Row style={{ justifyContent: "flex-end" }}><ByteCalculator str={behaviorRec} styles={{ width: "70px" }} /></Row>
-          <MainBtn onClick={() => {
+          <LongW100Btn onClick={() => {
             setIsBehavioring(true);
             setStep(1)
-          }} disabled={isModifying}>행발 작성 도우미</MainBtn>
+          }} disabled={isModifying}>행발 작성 도우미</LongW100Btn>
         </IntroWrapper>}
         {/* 1단계 */}
         <AnimOpacity isVisible={step === 1}>
@@ -255,7 +256,8 @@ const Column = styled(Row)`
 const Center = styled(Row)`
   justify-content: center;
 `
-const Section = styled.div`
+const Section = styled.section`
+  width: 100%;
   margin: 10px auto;
   @media screen and (max-width: 767px){
     width: 80px;

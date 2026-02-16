@@ -41,10 +41,6 @@ const Container = styled.li`
   margin: 10px;
   @media screen and (max-width: 767px){
     margin: 8px;
-    img {
-      width: 70px;
-      height: 70px;
-    }
   }
 `
 const ImgWrapper = styled.div`

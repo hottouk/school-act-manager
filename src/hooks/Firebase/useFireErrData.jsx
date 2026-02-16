@@ -1,6 +1,6 @@
 import { addDoc, collection, doc } from 'firebase/firestore';
 import React, { useCallback } from 'react'
-import { appFireStore, timeStamp } from '../../firebase/config';
+import { appFireStore, } from '../../firebase/config';
 import { useSelector } from 'react-redux';
 //생성(260211)
 const useFireErrData = () => {
@@ -9,7 +9,6 @@ const useFireErrData = () => {
 	const colRef = collection(db, "errorLogs");
 	//01. 기본 에러 핸들러
 	const errorHandler = useCallback(async (err, context = "unknown") => {
-		console.log(err, context, user);
 		try {
 			await addDoc(colRef,
 				{

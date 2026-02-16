@@ -25,9 +25,8 @@ const Container = styled.main`
   min-height: 100dvh;
   padding-top: ${({ $paddingTop }) => $paddingTop};
   padding-bottom: 20px;
-
   @media screen and (max-width: 767px){ 
-    padding-bottom: 0;
+    padding-top: 55px;
   }  
 `
 export default MainContainer

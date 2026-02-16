@@ -23,22 +23,13 @@ const Section = styled(Column)`
   gap: 20px;
   justify-content: space-between;
   background-image: linear-gradient(to top, #499add, #3454d1);
-  @media(max-width: 768px) {
-    position: relative;
-    height: ${({ $clientheight }) => $clientheight / 100 * 55}px;
-    justify-content: space-between;  
-  }
 `
 const LandingImg = styled.img`
   width: 100%;
-  margin-top: ${props => props.$children ? "60px" : "130px"};
+  margin-top: ${({ $children }) => $children ? "60px" : "130px"};
   @media(max-width: 768px) {
-    position: absolute;
-    width: 300px;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
+    width: 140%;
+    margin-left: -40%;
   }
 `
 const Header = styled.p`
@@ -48,5 +39,8 @@ const Header = styled.p`
   line-height: 1.4;
   color: #efefef;
   text-align: center;
+  @media(max-width: 768px) {
+    font-size: 33px;
+  }
 `
 export default HeroSection

@@ -29,7 +29,8 @@ const AllStudentByActiPage = () => {
 	useEffect(() => initData(), [])
 	//학생
 	const { state } = useLocation();
-	const { studentList, klassId } = state;
+	console.log(state);
+	const { petListRtData, klassId } = state;
 	//활동
 	const actiList = useSelector(({ allActivities }) => allActivities);
 	const [selectedActi, setSelectedActi] = useState(null);
@@ -89,9 +90,9 @@ const AllStudentByActiPage = () => {
 	const coopOptList = useMemo(() => abilityToOptions(subjectCoopAbility), [subjectCoopAbility]);
 	//------함수부--------------------------------------------------
 	const initData = () => {
-		if (!studentList) return;
-		setRecordMap(createMatrix(studentList, ''));
-		setPersonalInfoMap(createMatrix(studentList, { mode: GPT_MODE.REPORT, fillerMap: {}, blankList: [], keywordList: [], }));
+		if (!petListRtData) return;
+		setRecordMap(createMatrix(petListRtData, ''));
+		setPersonalInfoMap(createMatrix(petListRtData, { mode: GPT_MODE.REPORT, fillerMap: {}, blankList: [], keywordList: [], }));
 		// if (setSavedActi) { setSelectedActi(savedActi); }
 		// else { setSelectedActi(null); }
 	};
@@ -106,7 +107,7 @@ const AllStudentByActiPage = () => {
 		if (!selectedActi) return;
 		const actiId = selectedActi.id;
 		const nextMap = {};
-		studentList.forEach((student, idx) => {
+		petListRtData.forEach((student, idx) => {
 			nextMap[idx] =
 				student.actList?.find((acti) => acti.id === actiId)?.record ?? '';
 		})
@@ -348,7 +349,7 @@ const AllStudentByActiPage = () => {
 	const handleSaveOnClick = () => {
 		if (!selectedActi) { alert("선택된 활동이 없습니다."); return; }
 		if (!window.confirm("저장하시겠습니까?")) return;
-		writeByActiDataOnDB(studentList, klassId, selectedActi, _recordMap).then(() => { alert("저장되었습니다.") });
+		writeByActiDataOnDB(petListRtData, klassId, selectedActi, _recordMap).then(() => { alert("저장되었습니다.") });
 	}
 	return <><MainContainer>
 		<SubNav>
@@ -401,10 +402,10 @@ const AllStudentByActiPage = () => {
 				<Header>AI</Header>
 				<Header>바이트</Header>
 			</GridRowWrapper>
-			{studentList?.length === 0 && <Row style={{ gridColumn: "1/9", backgroundColor: "#78787890", borderRadius: "0 0 5px 5px" }}>
+			{petListRtData?.length === 0 && <Row style={{ gridColumn: "1/9", backgroundColor: "#78787890", borderRadius: "0 0 5px 5px" }}>
 				<EmptyResult comment={"등록된 학생이 없습니다."} color={"#black"} />
 			</Row>}
-			{studentList?.length ? studentList.map((student, idx) => {
+			{petListRtData?.length ? petListRtData.map((student, idx) => {
 				const { id, studentNumber, } = student;
 				const name = (student.writtenName || "미등록");
 				const { mode, blankList, fillerMap, keywordList, report } = _personalInfoMap[idx] ?? {};

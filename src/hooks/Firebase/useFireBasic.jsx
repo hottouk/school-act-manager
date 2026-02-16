@@ -25,7 +25,7 @@ const useFireBasic = (col) => {
     }
   }
   //문서 하나
-  const fetchDoc = async (id) => {
+  const fetchDoc = useCallback(async (id) => {
     let docRef = doc(colRef, id)
     try {
       let docSnapshot = await getDoc(docRef);
@@ -33,9 +33,9 @@ const useFireBasic = (col) => {
     } catch (err) {
       console.log(err)
     }
-  }
+  }, []);
   //문서 여러개
-  const fetchData = async (field, value = String(user.uid)) => {
+  const fetchData = useCallback(async (field, value = String(user.uid)) => {
     let q = query(colRef, where(field, "==", value));
     try {
       let querySnapshot = await getDocs(q);
@@ -44,7 +44,7 @@ const useFireBasic = (col) => {
     } catch (err) {
       console.log(err)
     }
-  }
+  }, []);
   //삭제
   const deleteData = async (docId) => {
     try {

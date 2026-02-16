@@ -1,64 +1,41 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 //라이브러리
 import styled from 'styled-components'
 import { useLocation, useNavigate } from 'react-router-dom'
-import useClientHeight from '../../hooks/useClientHeight'
 //컴포넌트
-import MainBtn from '../../components/Btn/MainBtn'
+import MainContainer from '../../components/Styled/MainContainer'
+import StyledForm from '../../components/Styled/StyledForm'
 import DotTitle from '../../components/Title/DotTitle'
 import SubjectSelects from '../../components/Select/SubjectSelects'
 import SubNav from '../../components/Bar/SubNav'
-import BackBtn from '../../components/Btn/BackBtn'
 import TwoRadios from '../../components/Radio/TwoRadios'
 import Pagenation from '../../components/Pagenation'
+import MainBtn from '../../components/Btn/MainBtn'
+import BackBtn from '../../components/Btn/BackBtn'
+import LongW100Btn from '../../components/Btn/LongW100Btn'
+import CircularBtn from '../../components/Btn/CircularBtn'
+import GptAddVocabModal from '../../components/Modal/gptModal/GptAddVocabModal'
 //hooks
 import useFireBasic from '../../hooks/Firebase/useFireBasic'
+import useFireErrData from '../../hooks/Firebase/useFireErrData'
+//anim
 import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity'
-import GptAddVocabModal from '../../components/Modal/gptModal/GptAddVocabModal'
-import CircularBtn from '../../components/Btn/CircularBtn'
-//생성(250114)->
+//데이터
+import { ERROR_MSG } from '../../constants/errMsg'
+//생성(250114)-> 디자인 통일(260217)
 const QuizFormPage = () => {
   const navigate = useNavigate();
-  const [_quizList, setQuizList] = useState([{ word: '', meaning: '' }]);
-  const [_title, setTitle] = useState('')
-  const [_selectedSubjGroup, setSelectedSubjGroup] = useState('default');
-  const [_selectedSubjDetail, setSelectedSubjDetail] = useState('default');
+  const { errorHandler } = useFireErrData();
+  const [quizList, setQuizList] = useState([{ word: '', meaning: '' }]);
+  const [title, setTitle] = useState('');
+  const [selectedSubjGroup, setSelectedSubjGroup] = useState('');
+  const [selectedSubjDetail, setSelectedSubjDetail] = useState('');
   const inputRefs = useRef([[React.createRef(), React.createRef()]]);
-  const { addData, setData, deleteData } = useFireBasic("quiz")
-  //기존 카드 클릭 
+  const { addData, setData, deleteData } = useFireBasic("quiz");
+  //기존 퀴즈
   const { state: quizSetInfo } = useLocation();
-  useEffect(() => { renderStateData(); }, [quizSetInfo]);
-  //모드
-  const [isModifying, setIsModifying] = useState(!quizSetInfo);
-  const [isVocabShow, setIsVocabShow] = useState(false);
-  //공개
-  const [_isPrivate, setIsPrivate] = useState(false);
-  //페이지네이션
-  const itemsPerPage = 30;
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageDataList, setPageDataList] = useState(_quizList?.slice(0, itemsPerPage));
-  useEffect(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = currentPage * itemsPerPage;
-    setPageDataList(_quizList?.slice(start, end));
-  }, [currentPage, _quizList]);
-  //모달
-  const [isGptModal, setIsGptModal] = useState(false);
-  //todo 모바일
-  const clientHeight = useClientHeight(document.documentElement);
-
-  //------함수부------------------------------------------------  
-  //초기화
-  const initData = () => {
-    setQuizList([{ word: '', meaning: '' }])
-    setTitle('')
-    setSelectedSubjGroup('default')
-    setSelectedSubjDetail('default')
-    inputRefs.current = [[React.createRef(), React.createRef()]]
-  }
-  //기존 데이터 state 랜더링
-  const renderStateData = () => {
-    if (!quizSetInfo) return
+  const bindQuizData = useCallback(() => {
+    if (!quizSetInfo) return;
     setTitle(quizSetInfo.title);
     setSelectedSubjGroup(quizSetInfo.subject);
     setSelectedSubjDetail(quizSetInfo.subjDetail);
@@ -67,8 +44,29 @@ const QuizFormPage = () => {
       return { word: wordMeaning[0], meaning: wordMeaning[1] }
     });
     setQuizList(list);
-  }
-  //index 세자리 수로 만들어주는 함수
+  }, [quizSetInfo]);
+  useEffect(() => {
+    bindQuizData();
+  }, [quizSetInfo, bindQuizData]);
+  //모드
+  const [isEdit, setisEdit] = useState(!quizSetInfo);
+  const [isVocabShow, setIsVocabShow] = useState(false);
+  //공개
+  const [isPrivate, setIsPrivate] = useState(false);
+  //페이지네이션
+  const itemsPerPage = 30;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageDataList, setPageDataList] = useState(quizList?.slice(0, itemsPerPage));
+  useEffect(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = currentPage * itemsPerPage;
+    setPageDataList(quizList?.slice(start, end));
+  }, [currentPage, quizList]);
+  //모달
+  const [isGptModal, setIsGptModal] = useState(false);
+
+  //**함수부**
+  //index 세자리화
   const padNumber = (index, length) => {
     return index.toString().padStart(length, '0');
   }
@@ -82,7 +80,7 @@ const QuizFormPage = () => {
         result = false;
       }
     });
-    return result
+    return result;
   }
   //input 감지
   const handleInputOnChange = (event, index) => {
@@ -103,52 +101,52 @@ const QuizFormPage = () => {
       const newList = [...prev];
       if (index === 29) { newList.splice(currentPage * 30 - 1, 0, quizSet); }
       else { newList.splice((currentPage - 1) * 30 + index + 1, 0, quizSet); }
-      return newList
+      return newList;
     });
   };
   //input 삭제
-  const deleteInputs = (index) => { setQuizList((prev) => prev.filter((_, i) => i !== index)); };
+  const deleteInputs = (index) => {
+    if (quizList.length === 1) { alert("마지막 단어입니다."); return; }
+    setQuizList((prev) => prev.filter((_, i) => i !== index));
+  };
   //입력 확인
   const check = () => {
-    if (_selectedSubjGroup !== "default" && _selectedSubjDetail !== "default") { return true }
-    alert("과목과 교과를 선택하세요.")
-    return false
+    if (!title) { alert("단어장 이름을 입력하세요"); return; }
+    if (selectedSubjGroup === '' || selectedSubjDetail === '') { alert("과목과 교과를 선택하세요."); return; }
+    return true;
   }
   //저장 버튼 클릭
-  const handleSaveOnClick = (event) => {
+  const handleSaveOnClick = async (event) => {
     event.preventDefault();
-    if (!check()) return
-    const result = checkVacant(_quizList);
-    if (!result) return
-    let userConfirmed = window.confirm("현제 세트를 저장하시겠습니까?")
-    if (userConfirmed) {
-      if (!quizSetInfo) {
-        addData(dataToSave()).then(
-          () => {
-            navigate(-1)
-            alert("성공적으로 저장했습니다.")
-          }, (err) => { alert(`에러 ${err}가 발생했습니다. 본 현상이 반복되면 관리자에게 문의하세요.`) })
-      } else {
-        setData(dataToSave(), quizSetInfo.id).then(() => {
-          navigate(-1)
-          alert("성공적으로 변경했습니다.")
-        }, (err) => { alert(`에러 ${err}가 발생했습니다. 본 현상이 반복되면 관리자에게 문의하세요.`) })
-      }
-    } else { alert("저장이 취소되었습니다.") }
+    if (!check()) return;
+    const result = checkVacant(quizList);
+    if (!result) return;
+    const confirm = window.confirm("현제 세트를 저장하시겠습니까?");
+    if (!confirm) return;
+    const info = dataToSave()
+    try {
+      if (!quizSetInfo) await addData(info);
+      if (quizSetInfo) await setData(info, quizSetInfo.id);
+      navigate(-1);
+      alert("성공적으로 저장했습니다.");
+    }
+    catch (err) {
+      alert(ERROR_MSG.addQuizSet);
+      errorHandler(err, "QuizFormPage");
+    }
   }
-  //데이터 형태 정리
+  //데이터 직렳화
   const dataToSave = () => {
-    const quizList = _quizList.reduce((acc, item, index) => {
+    const list = quizList.reduce((acc, item, index) => {
       acc[index] = `${item.word}#${item.meaning}`;
       return acc;
     }, []);
-    return { quizList, title: _title, subject: _selectedSubjGroup, subjDetail: _selectedSubjDetail, isPrivate: _isPrivate }
+    return { quizList: list, title: title, subject: selectedSubjGroup, subjDetail: selectedSubjDetail, isPrivate: isPrivate };
   }
   //수정 취소
-  const handleCancelModiOnClick = () => {
-    initData();
-    renderStateData();
-    setIsModifying(false);
+  const handleCancelOnClick = () => {
+    bindQuizData();
+    setisEdit(false);
   }
   //삭제
   const handleDeleteOnClick = () => {
@@ -158,81 +156,83 @@ const QuizFormPage = () => {
       navigate(-1)
     }
   }
-
   return (<>
-    <SubNav><BackBtn /></SubNav>
-    <Container $clientheight={clientHeight}>
-      <QuizContainer onSubmit={handleSaveOnClick}>
-        <fieldset>
-          <StyledTitle type="text" value={_title} onChange={(e) => setTitle(e.target.value)} placeholder='단어 세트 명' required disabled={!isModifying} />
-          <Row style={{ margin: "13px 0" }}>
-            <DotTitle title="교과/과목" styles={{ dotColor: "#3454d1" }} />
-            <SubjectSelects sort={"subject"}
-              selectedGroup={_selectedSubjGroup} selectedDetail={_selectedSubjDetail}
-              setSelectedGroup={setSelectedSubjGroup} setSelectedDetail={setSelectedSubjDetail}
-              disabled={!isModifying} />
-          </Row>
-          {/* 공개/비공개 */}
-          <Row style={{ justifyContent: "space-between", marginBottom: "22px" }}>
-            <DotTitle title={"공개 여부"} styles={{ dotColor: "#3454d1;" }} />
-            <TwoRadios name="isPrivate_radio"
-              id={["private_radio", "public_radio"]}
-              value={_isPrivate} label={["비공개 활동", "공개 활동"]}
-              onChange={() => { setIsPrivate(!_isPrivate) }}
-              disabled={!isModifying}
-            />
-          </Row>
-          <Row style={{ justifyContent: "space-between", marginBottom: "10px" }}>
-            <DotTitle title={"단어 목록▼"} styles={{ dotColor: "#3454d1;" }} pointer="pointer" onClick={() => { setIsVocabShow(!isVocabShow); }} />
-          </Row>
-          <AnimMaxHightOpacity isVisible={isVocabShow}>
-            {pageDataList?.map((item, index) => {
-              const quizIndex = itemsPerPage * (currentPage - 1) + index;
-              return <Row key={index}>
-                <NumberLabel>{padNumber(quizIndex + 1, 3)}</NumberLabel>
-                <StyledInput
-                  id="word"
-                  type="text"
-                  value={_quizList[quizIndex]?.word ?? ''}
-                  onChange={(event) => handleInputOnChange(event, quizIndex)}
-                  placeholder='단어'
-                  disabled={!isModifying}
-                  required
-                />
-                <StyledInput
-                  id="meaning"
-                  type="text"
-                  value={_quizList[quizIndex]?.meaning ?? ''}
-                  onChange={(event) => handleInputOnChange(event, quizIndex)}
-                  onKeyDown={(e) => handleTabKeyDown(e, index)}
-                  placeholder='의미'
-                  disabled={!isModifying}
-                  required
-                />
-                {isModifying && <Row style={{ gap: "5px", paddingTop: "3px" }}>
-                  <CircularBtn type="button" onClick={() => { addInputs(index); }}>+</CircularBtn>
-                  <CircularBtn styles={{ color: "#9b0c24" }} onClick={() => { deleteInputs(quizIndex) }}>-</CircularBtn>
-                </Row>
-                }
+    <MainContainer>
+      <SubNav><BackBtn /></SubNav>
+      <StyledForm title={"단어장 생성"}>
+        <TextInput type="text" placeholder='단어 세트 명'
+          value={title} onChange={(e) => setTitle(e.target.value)}
+          disabled={!isEdit} />
+        {/* 교과 */}
+        <Column style={{ gap: "10px" }}>
+          <DotTitle title="교과/과목" />
+          <SubjectSelects sort={"subject"}
+            selectedGroup={selectedSubjGroup} selectedDetail={selectedSubjDetail}
+            setSelectedGroup={setSelectedSubjGroup} setSelectedDetail={setSelectedSubjDetail}
+            disabled={!isEdit} />
+        </Column>
+        {/* 공개/비공개 */}
+        <Row style={{ justifyContent: "space-between", }}>
+          <DotTitle title={"공개 여부"} />
+          <TwoRadios name="isPrivate_radio"
+            id={["private_radio", "public_radio"]}
+            value={isPrivate} label={["비공개 활동", "공개 활동"]}
+            onChange={() => { setIsPrivate(!isPrivate) }}
+            disabled={!isEdit}
+          />
+        </Row>
+        <Row style={{ justifyContent: "space-between", marginBottom: "10px" }}>
+          <DotTitle title={"단어 목록 ▼"} pointer="pointer" onClick={() => { setIsVocabShow(!isVocabShow); }} />
+        </Row>
+        <AnimMaxHightOpacity isVisible={isVocabShow}>
+          {pageDataList?.map((item, index) => {
+            const quizIndex = itemsPerPage * (currentPage - 1) + index;
+            return <Row key={index} style={{ width: "100%" }}>
+              <NumberLabel>{padNumber(quizIndex + 1, 3)}</NumberLabel>
+              <WordInput
+                ref={inputRefs[0]}
+                id="word"
+                type="text"
+                value={quizList[quizIndex]?.word ?? ''}
+                onChange={(event) => handleInputOnChange(event, quizIndex)}
+                placeholder='단어'
+                disabled={!isEdit}
+                required
+              />
+              <WordInput
+                ref={inputRefs[1]}
+                id="meaning"
+                type="text"
+                value={quizList[quizIndex]?.meaning ?? ''}
+                onChange={(event) => handleInputOnChange(event, quizIndex)}
+                onKeyDown={(e) => handleTabKeyDown(e, index)}
+                placeholder='의미'
+                disabled={!isEdit}
+                required
+              />
+              {isEdit && <Row style={{ gap: "5px", alignSelf: "center" }}>
+                {quizList.length - 1 === index && <CircularBtn CircularBtn type="button" onClick={() => { addInputs(index); }}>+</CircularBtn>}
+                {quizList.length - 1 !== index && <CircularBtn styles={{ color: "#9b0c24" }} onClick={() => { deleteInputs(quizIndex) }}>-</CircularBtn>}
               </Row>
-            }
-            )}
-            <Row style={{ justifyContent: "center" }}><Pagenation totalItems={_quizList?.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} /></Row>
-          </AnimMaxHightOpacity>
-        </fieldset>
-        {!quizSetInfo && <Row style={{ justifyContent: "center", gap: "40px", }}>
-          <MainBtn type="submit">세트 저장</MainBtn>
-          <MainBtn type="button" onClick={() => { setIsGptModal(true); }}>스마트 단어 추가</MainBtn>
-        </Row>}
-        {quizSetInfo && <Row style={{ justifyContent: "center", gap: "40px", margin: "10px 0" }}>
-          {!isModifying && <MainBtn type="button" onClick={() => { setIsModifying(true) }}>세트 수정</MainBtn>}
-          {!isModifying && <MainBtn type="button" onClick={handleDeleteOnClick}>세트 삭제</MainBtn>}
-          {isModifying && <MainBtn type="submit">변경 저장</MainBtn>}
-          {isModifying && <MainBtn type="button" onClick={() => { setIsGptModal(true); }}>스마트 단어 추가</MainBtn>}
-          {isModifying && <MainBtn type="button" onClick={handleCancelModiOnClick}>수정 취소</MainBtn>}
-        </Row>}
-      </QuizContainer>
-    </Container>
+              }
+            </Row>
+          }
+          )}
+          <Row style={{ justifyContent: "center" }}><Pagenation totalItems={quizList?.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} /></Row>
+        </AnimMaxHightOpacity>
+        {!quizSetInfo && <Column style={{ gap: "10px" }}>
+          <MainBtn onClick={handleSaveOnClick}>세트 저장</MainBtn>
+          <MainBtn onClick={() => { setIsGptModal(true); }}>스마트 단어 추가</MainBtn>
+        </Column>}
+        {quizSetInfo && <Column style={{ gap: "10px", }}>
+          {!isEdit && <MainBtn onClick={() => { setisEdit(true) }}>세트 수정</MainBtn>}
+          {!isEdit && <LongW100Btn onClick={handleDeleteOnClick}>세트 삭제</LongW100Btn>}
+          {isEdit && <MainBtn onClick={handleSaveOnClick}>변경 저장</MainBtn>}
+          {isEdit && <MainBtn onClick={() => { setIsGptModal(true); }}>스마트 단어 추가</MainBtn>}
+          {isEdit && <LongW100Btn onClick={handleCancelOnClick}>수정 취소</LongW100Btn>}
+        </Column>}
+      </StyledForm>
+    </MainContainer >
     <GptAddVocabModal
       show={isGptModal}
       onHide={() => { setIsGptModal(false); }}
@@ -242,50 +242,27 @@ const QuizFormPage = () => {
   </>
   )
 }
-
-const Container = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 4fr 1fr;
-  width: 100%;
-  box-sizing: border-box;
-  margin: 20px auto;
-  margin-bottom: 50px;
-  @media screen and (max-width: 767px) {
-    position: fixed;
-    width: 100%;
-    height: ${(props) => props.$clientheight}px;
-    padding-bottom: 20px;
-    overflow-y: scroll;
-  }
-`
 const Row = styled.div`
   display: flex;
 `
 const Column = styled(Row)`
   flex-direction: column;
 `
-const QuizContainer = styled.form`
-  grid-column: 2/3;
-  margin: auto;
-  width: 95%;
-`
-const StyledTitle = styled.input`
+const TextInput = styled.input`
   height: 40px;
   width: 100%;
   border: none;
-  margin-bottom: 20px;
   border-bottom: 1px solid #aaa;
   &:disabled {
     background-color: #ddd;
   }
-  
 `
 const NumberLabel = styled.label`
   margin-right: 8px;
   color: #3454d1;
   font-weight: bold;
 `
-const StyledInput = styled.input`
+const WordInput = styled.input`
   height: 35px;
   border: 1px solid #aaa;
   flex-grow: 1;

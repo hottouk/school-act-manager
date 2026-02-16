@@ -8,8 +8,9 @@ import classSort5 from '../../image/class/class_sort5.png'
 import classSort6 from '../../image/class/class_sort6.png'
 //css
 import styled from 'styled-components'
-
+import useMediaQuery from '../../hooks/useMediaQuery'
 const CardSortForm = ({ itemList, handleCardBtnClick }) => {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   //샘플 데이터
   const itemSampleList = [
     { id: "sample1", legend: "제목1", subTitle: "설명1", imgNumber: 1 },
@@ -43,7 +44,7 @@ const CardSortForm = ({ itemList, handleCardBtnClick }) => {
         <p>{subTitle}</p>
         {ban && <p className='ban'>추후 서비스</p>}
         {ing && <p className='ban'>현재 제작중</p>}
-        <img src={getImgSrc(imgNumber)} alt="클래스5" id={id} onClick={handleCardBtnClick} />
+        {!isMobile && <img src={getImgSrc(imgNumber)} alt="클래스5" id={id} onClick={handleCardBtnClick} />}
       </Card>
     );
   };
@@ -58,6 +59,10 @@ const Container = styled.div`
   display: flex;
   justify-content: space-even;
   gap: 100px;
+  @media(max-width:768px) {
+    flex-direction: column;
+    gap: 35px;
+  }
 `
 const Card = styled.div`
   width: 250px;
@@ -92,9 +97,8 @@ const Card = styled.div`
     right: 4px;
     left: 4px;
   }
-  @media screen and (max-width: 767px){
-    position: relative;
-    height: 250px;
+  @media(max-width: 768px){
+    height: 150px;
   }
 `
 export default CardSortForm

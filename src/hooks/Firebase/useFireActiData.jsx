@@ -11,10 +11,10 @@ const useFireActiData = () => {
     if (field2 !== null && value2 !== null) {
       constraints.push(where(field2, "==", value2));
     }
-    const q = query(colRef, ...constraints)
+    const q = query(colRef, ...constraints);
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  }, [colRef]);
+  }, []);
   //활동 생성(250419_이동)
   const addActi = async (acti) => {
     const createdTime = timeStamp.fromDate(new Date());

@@ -183,6 +183,9 @@ const FormContainer = styled(Column)`
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   box-shadow: rgba(52, 94, 209, 0.2) 0px 8px 24px, rgba(52, 84, 209, 0.2) 0px 16px 56px, rgba(52, 84, 209, 0.2) 0px 24px 80px;
+  @media(max-width: 768px){
+    width: 100%;
+  }
 `
 const TextInput = styled.input`
   height: 35px;

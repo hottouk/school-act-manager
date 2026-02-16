@@ -5,7 +5,6 @@ import { useSelector } from "react-redux";
 import styled from "styled-components";
 //hooks
 import useChatGpt from "../../hooks/useChatGpt";
-import useClientHeight from "../../hooks/useClientHeight";
 import useFireActiData from "../../hooks/Firebase/useFireActiData";
 import useFireTransaction from "../../hooks/useFireTransaction";
 //모달
@@ -29,6 +28,8 @@ import { GPT_RESPONSE } from "../../constants/gpt";
 import AnimMaxHightOpacity from "../../anim/AnimMaxHightOpacity";
 import GptIngModal from "../../components/Modal/gptModal/GptIngModal";
 import LongW100Btn from "../../components/Btn/LongW100Btn";
+import MainContainer from "../../components/Styled/MainContainer";
+import useMediaQuery from "../../hooks/useMediaQuery";
 //실시간 바이트 갱신(240706) -> 담임반 활동(241221)
 const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
   useEffect(() => { setIsVisible(true) }, []);
@@ -38,14 +39,15 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const sort = queryParams.get("sort");
   const { state } = location; //state.acti는 활동
   useEffect(() => { if (state?.acti) bindData(); else setIsEdit(true); }, [state]);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width: 768px)');
   //유저 정보
   const user = useSelector(({ user }) => { return user })
   //활동 기본 정보 변수
   const [isEdit, setIsEdit] = useState(false);
   const [_title, setTitle] = useState('');
-  const [_subjGroup, setSubjGroup] = useState(null);
-  const [_subjDetail, setSubjDetail] = useState(null);
+  const [_subjGroup, setSubjGroup] = useState('');
+  const [_subjDetail, setSubjDetail] = useState('');
   const [_content, setContent] = useState('');
   const [_record, setRecord] = useState('');
   const [_extraRecList, setExtraRecList] = useState([]);
@@ -106,8 +108,6 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     homeroom: () => setRecord(gptAnswer),
   };
   useEffect(() => { if (gptAnswer !== '') { gptSetterMap[gptType](); } }, [gptAnswer]);
-  //css 및 에니
-  const clientHeight = useClientHeight(document.documentElement)
   const [isVisible, setIsVisible] = useState(false)
   //개별화 함수
   const textareaRef = useRef({});
@@ -230,11 +230,11 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     return result
   };
   return (<>
-    <Container $clientheight={clientHeight} $isVisible={isVisible}>
-      <SubNav><BackBtn /></SubNav>
+    <MainContainer>
+      {!isMobile && <SubNav><BackBtn /></SubNav>}
       {/* 교사 */}
       {user.isTeacher &&
-        <ActiSection onSubmit={handleSaveOnClick}>
+        <ActiSection>
           <FormHeader>{state ? <legend>{_subjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}</FormHeader>
           <Row style={{ margin: "13px 0" }}>
             <DotTitle title={"활동 제목"} styles={{ dotColor: "#3454d1" }} />
@@ -370,7 +370,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
             {(state && (state?.acti.uid !== user.uid)) && <MainBtn onClick={handleCopyOnClick}>업어가기</MainBtn>}
           </BtnWrapper>
         </ActiSection>}
-    </Container >
+    </MainContainer >
     {/* 모달  */}
     < AddMoreRecordModal
       show={isAddMoreRecModal}
@@ -397,20 +397,11 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   </>
   )
 }
-const Container = styled.div`
-  opacity: ${(({ $isVisible }) => $isVisible ? 1 : 0)};
-  transition: opacity 0.7s ease;
-  @media screen and (max-width: 767px){
-    width: 100%;
-    height: ${(props) => { return props.$clientheight }}px;
-    overflow-y: auto;
-  }
-`
 const ActiSection = styled.div`
   position: relative;
   width: 35%;
   max-width: 600px;
-  margin: 80px auto 30px;
+  margin: 40px auto 30px;
   padding: 20px;
   color: black;
   background-color: #efefef;
@@ -418,16 +409,8 @@ const ActiSection = styled.div`
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   box-shadow: rgba(52, 94, 209, 0.2) 0px 8px 24px, rgba(52, 84, 209, 0.2) 0px 16px 56px, rgba(52, 84, 209, 0.2) 0px 24px 80px;
-  @media screen and (max-width: 767px){
-    padding-bottom: 20px;
-    max-width: 100%;
-    margin: 0;
-    padding: 15px;
-    color: #efefef;
-    background-color: #3454d1;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
+  @media (max-width: 768px){
+    width: 100%;
   }
 `
 const Row = styled.div`

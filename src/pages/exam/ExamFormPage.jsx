@@ -17,18 +17,18 @@ import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity.jsx'
 import useChatGpt from '../../hooks/useChatGpt.jsx'
 import useFireBasic from '../../hooks/Firebase/useFireBasic.jsx'
 //data
-import { monthList, numbers, typeData } from '../../data/examData.jsx'
+import { typeData } from '../../data/examData.jsx'
 import { GPT_RESPONSE } from '../../constants/gpt.jsx'
+import MockExamSelect from '../../components/Select/MockExamSelect.jsx';
 //생성(251222)
 const ExamFormPage = () => {
 	const user = useSelector(({ user }) => user);
 	const { setData, fetchDoc } = useFireBasic("exam");
 	//과목
-	const subjectList = [{ label: "영어", value: "eng" }, { label: "국어", value: "kor" }];
+	const subjectList = [{ label: "과목", value: '' }, { label: "영어", value: "eng" },];
 	const [subject, setSubject] = useState(null);
 	useEffect(() => { setYear(null); }, [subject]);
 	//연도
-	const yearList = [{ label: 2025, value: 2025 }];
 	const [year, setYear] = useState(null);
 	useEffect(() => { setGrade(null); }, [year]);
 	//학년
@@ -37,10 +37,23 @@ const ExamFormPage = () => {
 	useEffect(() => { setMonth(null); setExam(null); }, [grade]);
 	//월
 	const [month, setMonth] = useState(null);
-	useEffect(() => { fetchExamData(); }, [month]);
+	useEffect(() => {
+		//모고 불러오기
+		const fetchExamData = async () => {
+			setNumber(null);
+			const docId = `${year}${grade}${month}${subject}`;
+			const examInfo = await fetchDoc(docId);
+			if (examInfo) {
+				const { uid, createdTime, ...rest } = examInfo;
+				setExam(rest);
+			} else {
+				setExam(null);
+			}
+		}
+		fetchExamData();
+	}, [month]);
 	//기출 문항
 	const [exam, setExam] = useState(null);
-	const numberList = numbers.map((item) => ({ label: item, value: item })) || [];
 	const [number, setNumber] = useState(null);
 	useEffect(() => {
 		if (!number || !exam) {
@@ -79,25 +92,12 @@ const ExamFormPage = () => {
 	const [isOriginal, setIsOriginal] = useState(false);
 	//과금 모달
 	const [isChargeModal, setIsChargeModal] = useState(false);
-
 	//초기화
 	const initData = () => {
 		setMockPassage('');
 		setPassage('');
 		setMockQuestion('');
 		setMockOptionList([]);
-	}
-	//모고 불러오기
-	const fetchExamData = async () => {
-		setNumber(null);
-		const docId = `${year}${grade}${month}${subject}`;
-		const examInfo = await fetchDoc(docId);
-		if (examInfo) {
-			const { uid, createdTime, ...rest } = examInfo;
-			setExam(rest);
-		} else {
-			setExam(null);
-		}
 	}
 	//유효성 검사
 	const check = () => {
@@ -144,34 +144,19 @@ const ExamFormPage = () => {
 					<Select
 						onChange={(event) => setSubject(event.value)}
 						options={subjectList}
-						placeholder={"연도"}
+						placeholder={"과목"}
 					/>
 				</Row>
 				<AnimMaxHightOpacity isVisible={subject}>
 					<Row>
 						<DotTitle>기출 모의고사</DotTitle>
-						<Row style={{ gap: "20px" }}>
-							<Select
-								onChange={(event) => setYear(event.value)}
-								options={yearList}
-								placeholder={"연도"}
-							/>
-							{year && <Select
-								onChange={(event) => setGrade(event.value)}
-								options={gradeList}
-								placeholder={"학년"}
-							/>}
-							{grade && <Select
-								onChange={(event) => setMonth(event.value)}
-								options={monthList}
-								placeholder={"월"}
-							/>}
-							{month && <Select
-								onChange={(event) => setNumber(event.value)}
-								options={numberList}
-								placeholder={"문항"}
-							/>}
-						</Row>
+						<MockExamSelect year={year}
+							setYear={setYear}
+							grade={grade}
+							setGrade={setGrade}
+							month={month}
+							setMonth={setMonth}
+							setNumber={setNumber} />
 					</Row>
 				</AnimMaxHightOpacity>
 				{(!number && passage) && <h5>사용자가 입력한 자체 지문입니다.</h5>}

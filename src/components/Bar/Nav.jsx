@@ -19,6 +19,7 @@ const Nav = () => {
   const user = useSelector(({ user }) => { return user });
   const { myUserData } = useFetchRtMyUserData();
   const [_profileImg, setProfileImg] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   //모드
   const isMobile = useMediaQuery("(max-width: 768px)");
   //모달
@@ -121,17 +122,26 @@ const Nav = () => {
       </Link>
     </>}
     {/* 모바일 교사*/}
-    {(user.isTeacher && isMobile) && <>
-      <MenuWrapper>
-        <MoebileLi><Link to="/"><Icon className="fa-solid fa-house"></Icon></Link></MoebileLi>
-        <MoebileLi><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon></Link></MoebileLi>
-        <NewsWrapper>
-          {isNew && <NewDot>.</NewDot>}
-          <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
-        </NewsWrapper>
-        <MoebileLi><Icon className="fa-solid fa-user" onClick={() => { }}></Icon></MoebileLi>
-      </MenuWrapper>
-    </>}
+    {(user.isTeacher && isMobile) &&
+      <Row style={{ width: "100%", padding: "10px", alignItems: "center", justifyContent: "space-between" }}>
+        <Row>
+          <LogoImg src={brandLogo} />
+          <BrandTitle>쫑알이</BrandTitle>
+        </Row>
+        {!isMenuOpen && <i className='fa-solid fa-bars' style={{ fontSize: "1.5rem" }} onClick={() => setIsMenuOpen(true)} />}
+        {isMenuOpen && <i className='fa-solid fa-x' style={{ fontSize: "1.5rem" }} onClick={() => setIsMenuOpen(false)} />}
+      </Row>
+    }
+    <MobileMenuWrapper $open={isMenuOpen}>
+      <MobileMenuList>
+        <MoebileLi><Link to="/activities" onClick={() => setIsMenuOpen(false)}>활동 관리</Link></MoebileLi>
+        <MoebileLi><Link to="/classrooms" onClick={() => setIsMenuOpen(false)}>클래스 관리</Link></MoebileLi>
+        <MoebileLi><Link to="/quiz" onClick={() => setIsMenuOpen(false)}>퀴즈 관리</Link></MoebileLi>
+        <MoebileLi><Link to="/exam" onClick={() => setIsMenuOpen(false)}>문제 관리</Link></MoebileLi>
+        <MoebileLi><Link to="/news" onClick={() => setIsMenuOpen(false)}>알림</Link></MoebileLi>
+        <MoebileLi><Link to="/myinfo" onClick={() => setIsMenuOpen(false)}>내 정보</Link></MoebileLi>
+      </MobileMenuList>
+    </MobileMenuWrapper>
     {/* 모바일 학생 */}
     {(user.uid && !user.isTeacher && isMobile) && <>
       <MenuWrapper>
@@ -149,94 +159,104 @@ const Nav = () => {
   )
 }
 const Row = styled.div`
-    display: flex;
-    `
+  display: flex;
+`
+const MobileMenuWrapper = styled.div`
+  position: fixed;
+  top: 0;
+  width: 100%;
+  margin-top: 12%;
+  overflow: hidden;
+  max-height: ${({ $open }) => ($open ? "420px" : "0")};
+  transform: translateY(${({ $open }) => ($open ? "0" : "-8px")});
+  transition: max-height 280ms ease, opacity 220ms ease, transform 220ms ease;
+  will-change: max-height, transform;
+`;
+const MobileMenuList = styled.ul`
+  list-style: none; 
+  padding: 12px;
+  background: #3454d1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
 const Container = styled(Row)`
-    background-color: #3454d1;
-    align-items: center;
-    padding: 20px 30px;
+  background-color: #3454d1;
+  align-items: center;
+  padding: 20px 30px;
+  color: #efefef;
+  a {
     color: #efefef;
-    a {
-      color: #efefef;
     text-decoration: none;
   }
-    @media screen and (max-width: 768px){
-      width: 100%;
+  @media screen and (max-width: 768px){
+    flex-direction: column;
+    width: 100%;
     display: flex;
     position: fixed;
-    bottom: 0;
-    height: 10%;
-    background-color: #efefef;
-    padding: 5px;
-    z-index: 998;
-    border-top: 1px solid #949192;
-    a {
-      color: #3454d1;
-    font-size: 12px;
-    }
-    `
-const NewsWrapper = styled.li`
-    position: relative;
-    `
-const LogoImg = styled.img`
-    width: 30px;
-    height: 30px;
-    margin-right: 10px;
-    `
-const BrandTitle = styled.h3`
-    margin: 0;
-    display: flex;
-    align-items: center;
-    color: #efefef;
-    font-weight: bold;
-    `
-const MenuWrapper = styled.ul`
-    margin-bottom: 0;
-    padding: 0 30px;
-    flex-grow: 2;
-    display: flex;
-    justify-content: right;
-    align-items: center;
-    gap: 30px;
-    @media (max-width: 768px) {
-      width: 100%;
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
+    top: 0;
+    height: 6%;
     padding: 0;
-    gap: 0;
-  }
-    `
+    z-index: 998;
+    a {
+      color: white;
+      font-size: 12px;
+    }
+`
+const NewsWrapper = styled.li`
+  position: relative;
+`
+const LogoImg = styled.img`
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+`
+const BrandTitle = styled.h3`
+  margin: 0;
+  display: flex;
+  align-items: center;
+  color: #efefef;
+  font-weight: bold;
+`
+const MenuWrapper = styled.ul`
+  margin-bottom: 0;
+  padding: 0 30px;
+  flex-grow: 2;
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  gap: 30px;
+`
 const Icon = styled.i`
-    margin-right: 5px;
-    @media (max-width: 768px) {
-      font - size: 25px;
+  margin-right: 5px;
+  @media (max-width: 768px) {
+    font - size: 25px;
     margin: 0;
   }
-    `
+`
 const NewIcon = styled.div`
-    position: absolute;
-    top: -25px;
-    right: -8px;
-    `
+  position: absolute;
+  top: -25px;
+  right: -8px;
+`
 const ProfileImg = styled.img`
-    width: 50px;
-    height: 50px;
-    border-radius: 25px;
-    cursor: pointer;
-    `
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  cursor: pointer;
+`
 const MoebileLi = styled.li`
-    color: #3454d1;
-    display: flex;
-    `
+  color: white;
+  a { font-size: 15px; }
+`
 const NewDot = styled.div`
-    position: absolute;
-    top: -10px;
-    left: 20px;
-    background-color: red;
-    width: 10px;
-    height: 10px;
-    border-radius: 10px;
-    color: #efefef;
-    `
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  background-color: red;
+  width: 10px;
+  height: 10px;
+  border-radius: 10px;
+  color: #efefef;
+`
 export default Nav

@@ -1,7 +1,6 @@
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { appFireStore } from '../../firebase/config'
-
 //2024.07.09 -> 25.01.18 단어 퀴즈추가
 const useFetchRtMyActiData = (uid) => {
   const db = appFireStore

@@ -66,10 +66,10 @@ const LandingPage = () => {
     {isMobile && <MobileContainer>
       <HeroSection />
       <GraySection>
-        <SubHeader>{2682}명의 선생님, {287}명의 학생이 이용중!!</SubHeader>
+        <SubHeader>{2682}명의 선생님, <br /> {287}명의 학생이 이용중!!<br />많은 교사의 선택에는 이유가 있습니다.</SubHeader>
       </GraySection>
       <BibleSection>
-        <BibleText className='bible'>네 길을 여호와께 맡기라 그를 의지하면 그가 이루시고 네 의를 빛 같이 나타내시며 네 공의를 정오의 빛 같이 하시리로다. 시편 37:5-6</BibleText>
+        <BibleText ref={ref0} $visible={v0}>주 예수를 믿으라 그리하면 너와 네 집이 구원을 얻으리라 <br />사도행전 16:31</BibleText>
       </BibleSection>
       <Row style={{ justifyContent: "center" }}>
         <HorizontalMobileAd />
@@ -106,16 +106,18 @@ const Column = styled(Row)`
 `
 const GraySection = styled(Column)`
   background-color: #efefef;
-  `
+  @media (max-width: 767px) {
+    padding: 50px;
+    justify-content: center;
+  }
+`
 const SubHeader = styled.h3`
   width: 100%;
   font-size: 32px;
   line-height: 1.4;
   font-weight: 500;
   @media (max-width: 767px) {
-    font-size: 20px;
-    top: 0;
-    margin: 5px;
+    font-size: 22px;
     text-align: center;
   }
 `
@@ -123,6 +125,9 @@ const BibleSection = styled(Column)`
   width: 100%;
   background-color: white;
   gap: 20px;
+@media(max-width: 768px) {
+  min-height: 200px;
+}
 `
 const BibleText = styled.p`
   width: 400px;

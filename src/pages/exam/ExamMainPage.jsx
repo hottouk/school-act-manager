@@ -6,19 +6,21 @@ import MainWrapper from '../../components/Styled/MainWrapper'
 import CardList from '../../components/List/CardList'
 //hooks
 import useFireTestData from '../../hooks/Firebase/useFireTestData'
+import SearchBar from '../../components/Bar/SearchBar'
+import MainContainer from '../../components/Styled/MainContainer'
 //생성(260106)
 const ExamMainPage = () => {
-	const user = useSelector(({ user }) => user);
 	const { examDataListener } = useFireTestData();
 	useEffect(() => { examDataListener(setExamData); }, []);
 	//데이터
 	const [examData, setExamData] = useState(null);
 	return (
-		<Container>
+		<MainContainer>
 			<MainWrapper>
+				<SearchBar title={"문항 관리"} />
 				<CardList dataList={examData?.questions} type={"exam"}></CardList>
 			</MainWrapper>
-		</Container>
+		</MainContainer>
 	)
 }
 const Row = styled.div`
@@ -26,12 +28,5 @@ const Row = styled.div`
 `
 const Column = styled(Row)` 
   flex-direction: column;
-`
-const Container = styled(Column)`
-  box-sizing: border-box;
-  background-color: #efefef;
-  min-height: 100dvh;
-  gap: 10px;
-	padding: 20px 0 0 0;
 `
 export default ExamMainPage

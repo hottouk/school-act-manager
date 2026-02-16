@@ -1,20 +1,73 @@
 //라이브러리
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+import { useSelector } from 'react-redux'
 //컴포넌트
 import EmptyResult from '../EmptyResult'
 import PetImg from '../PetImg'
+//hooks
+import useMediaQuery from '../../hooks/useMediaQuery'
 //아이콘
 import iconImg from '../../image/icon/like_icon.png'
 import unknownIcon from '../../image/icon/unkown_icon.png'
 import recycleIcon from '../../image/icon/recycle_icon.png'
-import { useSelector } from 'react-redux'
 //생성(240109) -> onClick 로직 분리(250122) -> 정리(251216)
 const CardList = ({ dataList, type, onClick, selected }) => {
   const user = useSelector(({ user }) => user)
   const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const typeColor = { activity: "#3454d1", copiedActi: "#ff69b4", quizActi: "#098a0f" };
+  const hoverColor = { activity: "#3453d120", copiedActi: "#ff69b420", quizActi: "#098a0f20" };
   //------랜더링----------------------------------------------- 
-  //펫 카드
+  //활동 카드(교과, 담임, 업어온, 퀴즈)
+  const ActiCard = ({ item, onClick }) => {
+    const { title, subject, subjDetail, repeatInfoList, likedCount, madeBy, uid, quizInfo } = item || {};
+    const maskedName = (name) => {
+      if (!uid || uid === user.uid) return name;
+      return name[0] + 'ㅇㅇ';
+    };
+    return <Card onClick={() => { onClick(item); }} $hoverColor={hoverColor[type]}>
+      <Title style={{ color: typeColor[type] }} >{title}</Title>
+      <BasicText>{subject}-{subjDetail ? subjDetail : ''}</BasicText>
+      {!isMobile && <Row style={{ height: "41px", gap: "5px", justifyContent: "flex-end" }}>
+        {repeatInfoList && <IconImg alt='반복형' src={recycleIcon} />}
+        {quizInfo && <BasicText>{quizInfo.quizList?.length || 0} 문제</BasicText>}
+        {type === "activity" && <div>
+          <IconImg src={iconImg} alt={"받은좋아요"} />
+          <p style={{ margin: "4px 0" }}>{likedCount ? likedCount : 0}</p>
+        </div>}
+      </Row>}
+      {!isMobile && <Row style={{ justifyContent: "flex-end", alignItems: "flex-end" }}>
+        <TagText style={{ backgroundColor: typeColor[type] }}>by {madeBy ? `${maskedName(madeBy)} 선생님` : "어떤 선생님"}</TagText>
+      </Row>}
+    </Card >
+  }
+  //클래스 카드(교과,담임)
+  const KlassCard = ({ item, onClick }) => {
+    const { classTitle, intro, subject, subjDetail, grade, classNumber } = item || {};
+    return <Card onClick={() => onClick(item)}>
+      <Title style={{ color: "#3454d1" }}>{classTitle}</Title>
+      <Row style={{ marginBottom: "25px" }}>
+        {type === "subjKlass" && <BasicText>{subject}{subjDetail ? '-' + subjDetail : ''} / </BasicText>}
+        <Row>
+          <Highlight>{grade}</Highlight><BasicText>학년</BasicText>
+          <Highlight>{classNumber}</Highlight><BasicText>반</BasicText>
+        </Row>
+      </Row>
+      {!isMobile && <BasicText>{intro}</BasicText>}
+    </Card>
+  }
+  //단어 카드
+  const QuizCard = ({ item, onClick }) => {
+    return <Card onClick={() => { onClick(item); }}>
+      <Title style={{ color: "#3454d1" }} >{item.title}</Title>
+      <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
+      {!isMobile
+        ? <QuizNumber style={{ margin: "-60px -15px" }}>{item.quizList.length}</QuizNumber>
+        : <BasicText>{item.quizList?.length || 0} 문제</BasicText>}
+    </Card>
+  }
+  //펫
   const PetCard = ({ item, onClick }) => {
     return <Card $backgroundColor={`${item.petId === selected?.petId ? "rgba(52, 84, 209, 0.4)" : "white"}`} onClick={onClick}>
       <Row style={{ justifyContent: "space-between" }}>
@@ -60,25 +113,6 @@ const CardList = ({ dataList, type, onClick, selected }) => {
       </Row>
     </Card>
   }
-  //과목 활동 카드
-  const SubjectActiCard = ({ item, onClick }) => {
-    const { title, subject, subjDetail, repeatInfoList, likedCount, madeBy, uid } = item;
-    const maskedName = (name) => {
-      if (!uid || uid === user.uid) return name
-      if (name.length < 2) return name
-      return name[0] + '○' + name.slice(2);
-    };
-    return <Card onClick={() => { onClick(item); }}>
-      <Title style={{ color: "#3454d1" }} >{title}</Title>
-      <p style={{ margin: "5px 0" }}>{subject}-{subjDetail ? subjDetail : ''}</p>
-      <Row style={{ height: "41px", gap: "5px", justifyContent: "flex-end" }}>
-        {repeatInfoList && <IconImg alt='반복형' src={recycleIcon} />}
-        <IconImg src={iconImg} alt={"받은좋아요"} />
-        <p style={{ margin: "4px 0" }}>{likedCount ? likedCount : 0}</p>
-      </Row>
-      <Row style={{ justifyContent: "flex-end" }}><TagText style={{ backgroundColor: "#3454d1b3" }}>by {madeBy ? `${maskedName(madeBy)} 선생님` : "어떤 선생님"}</TagText></Row>
-    </Card >
-  }
   //멤버 카드
   const MemberCard = ({ item, onClick }) => {
     const { profileImg, name, email } = item;
@@ -114,51 +148,6 @@ const CardList = ({ dataList, type, onClick, selected }) => {
       {/* <BasicText style={{ color: "#3454d1", fontWeight: "bold", position: "absolute", bottom: "-10px", padding: "5px", backgroundColor:"gray" }}>{status}...</BasicText> */}
     </Card>
   }
-  //단어 세트
-  const QuizCard = ({ item, onClick }) => {
-    return <Card onClick={() => { onClick(item); }}>
-      <Title style={{ color: "#3454d1" }} >{item.title}</Title>
-      <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
-      <QuizNumber style={{ margin: "-60px -15px" }}>{item.quizList.length}</QuizNumber>
-    </Card>
-  }
-  //퀴즈 활동
-  const QuizActiCard = ({ item, onClick }) => {
-    return <Card onClick={() => onClick(item)}>
-      <Title style={{ color: "#098a0f" }} >{item.title}</Title>
-      <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
-      <Row style={{ height: "41px", justifyContent: "space-between" }}>
-        <BasicText>{item?.quizInfo?.quizList?.length} 문제</BasicText>
-      </Row>
-      <Row style={{ justifyContent: "flex-end" }}><TagText style={{ backgroundColor: "#098a0f" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</TagText></Row>
-    </Card>
-  }
-  //업어온 활동
-  const CopiedActiCard = ({ item, onClick }) => {
-    return <Card onClick={() => onClick(item)}>
-      <Title style={{ color: "#FF69B4" }} >{item.title}</Title>
-      <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
-      <Row style={{ height: "75px", alignItems: "flex-end", justifyContent: "flex-end" }}><TagText style={{ backgroundColor: "#FF69B4" }}>by {item.madeBy ? `${item.madeBy} 선생님` : "어떤 선생님"}</TagText></Row>
-    </Card>
-  }
-  //담임반 활동
-  const HomeActiCard = ({ item, onClick }) => {
-    return <Card onClick={() => onClick(item)}>
-      <Title style={{ color: "#3454d1" }}>{item.classTitle}</Title>
-      <Row style={{ justifyContent: "flex-start", marginBottom: "20px" }}>
-        <h5 style={{ color: "#3454d1" }}>{item.grade}</h5><span>학년</span>
-        <h5 style={{ color: "#3454d1" }}>{item.classNumber}</h5><span>반</span></Row>
-      <p>{item.intro}</p>
-    </Card>
-  }
-  //교과반
-  const SubectKlassCard = ({ item, onClick }) => {
-    return <Card onClick={() => onClick(item)}>
-      <Title style={{ color: "#3454d1" }}>{item.classTitle}</Title>
-      <p style={{ marginBottom: "20px" }}>{item.intro}</p>
-      <p>{item.subject ? `${item.subject}과` : "교사가 삭제한 클래스입니다."}{item.subjDetail ? '-' + item.subjDetail : ''} </p>
-    </Card>
-  }
   //시험 문제
   const ExamCard = ({ item, onClick }) => {
     return <Card $backgroundColor={`${item.id === selected?.id ? "rgba(52, 84, 209, 0.4)" : "white"}`} onClick={onClick}>
@@ -171,22 +160,22 @@ const CardList = ({ dataList, type, onClick, selected }) => {
     <Container>
       {/* 데이터 없음 */}
       {(!dataList?.length)
-        ? <Ceneter><EmptyResult comment={"데이터가 없어요"} /></Ceneter>
+        ? <Center><EmptyResult comment={"데이터가 없어요"} /></Center>
         : <CardWrapper>
+          {/* 교과/담임 활동 */}
+          {type === "activity" && dataList?.map((item) => (<ActiCard key={item.id} item={item} onClick={onClick} />))}
+          {/* 업어온 활동 */}
+          {type === "copiedActi" && dataList?.map((item) => (<ActiCard key={item.id} item={item} onClick={(item) => onClick(item)} />))}
+          {/* 퀴즈 활동*/}
+          {type === "quizActi" && dataList?.map((item) => (<ActiCard key={item.id} item={item} onClick={onClick} />))}
+          {/* 교과반 */}
+          {(type === "subjKlass" || type === "appliedClassList") && dataList?.map((item) => (<KlassCard key={item.id} item={item} onClick={onClick} />))}
+          {/* 담임반 */}
+          {(type === "homeroom") && dataList?.map((item) => (<KlassCard key={item.id} item={item} onClick={onClick} />))}
           {/* 시험 문제 */}
           {(type === "exam") && dataList?.map((item) => <ExamCard key={item.id} item={item} onClick={() => { navigate(`/exam_item`, { state: item }) }} />)}
           {/* 멤버 */}
           {(type === "member") && dataList?.map((item) => <MemberCard key={item.uid} item={item} onClick={onClick} />)}
-          {/* 교과반 */}
-          {(type === "classroom" || type === "appliedClassList") && dataList?.map((item) => (<SubectKlassCard key={item.id} item={item} onClick={onClick} />))}
-          {/* 담임반 */}
-          {(type === "homeroom") && dataList?.map((item) => { return (<HomeActiCard key={item.id} item={item} onClick={onClick} />) })}
-          {/* 교과활동 */}
-          {type === "activity" && dataList?.map((item) => (<SubjectActiCard key={item.id} item={item} onClick={onClick} />))}
-          {/* 업어온 활동 */}
-          {type === "copiedActi" && dataList?.map((item) => (<CopiedActiCard key={item.id} item={item} onClick={() => { navigate(`/activities/${item.id}`, { state: { acti: item } }) }} styles={{ hoverColor: "rgba(255, 105, 180, 0.2)" }} />))}
-          {/* 퀴즈 활동*/}
-          {type === "quizActi" && dataList?.map((item) => (<QuizActiCard key={item.id} item={item} onClick={onClick} styles={{ hoverColor: "rgba(9, 138, 15,0.2)" }} />))}
           {/* 단어 세트 */}
           {(type === "quiz") && dataList?.map((item) => (<QuizCard key={item.id} item={item} onClick={() => { navigate('/quiz_setting', { state: item }) }} />))}
           {/*펫*/}
@@ -199,6 +188,16 @@ const CardList = ({ dataList, type, onClick, selected }) => {
     </Container>
   )
 }
+const Row = styled.div`
+  display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
+`
+const Center = styled(Column)`
+  justify-content: center;
+  align-items: center;
+`
 const Container = styled.div`
   background-color: white;
   border-top: 1px solid rgba(120, 120, 120, 0.5);;
@@ -207,25 +206,19 @@ const Container = styled.div`
   @media screen and (max-width: 768px){
     flex-direction: column;
     align-items: center;
-    padding: 0;
     border: none;
     border-top: 1px solid #3454d1;
     border-bottom: 1px solid #3454d1;
   }
 `
-const Row = styled.div`
-  display: flex;
-`
-const Column = styled(Row)`
-  flex-direction: column;
-`
-const Ceneter = styled(Column)`
-  justify-content: center;
-  align-items: center;
-`
 const CardWrapper = styled.ul`
   display: flex;
   flex-wrap: wrap;
+  list-style: none;
+  @media screen and (max-width: 768px){
+    padding: 0;
+    margin: 0;
+  }
 `
 const Card = styled.li`
   width: 280px;
@@ -237,12 +230,16 @@ const Card = styled.li`
   cursor: pointer;
   background-color: ${props => props.$backgroundColor || "white"};
   &: hover {
-    background - color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
+    background-color: ${props => props.$hoverColor || "rgb(52, 84, 209, 0.2)"};
   }
-`
-const BasicText = styled.p`
-  margin: 0;
-  text-align: center;
+  @media(max-width: 768px) {
+    width: 95%;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    border-radius: 5px;
+  }
 `
 const Title = styled.h5`
   margin: 0 0 8px;
@@ -250,11 +247,19 @@ const Title = styled.h5`
   overflow: hidden;
   white-space: nowrap;   /* 텍스트를 한 줄로 표시 */
   text-overflow: ellipsis;
+  @media(max-width: 768px){
+    font-size: 17px;
+    margin: 5px 0;
+  }
+`
+const BasicText = styled.p`
+  margin: 5px 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 `
 const Highlight = styled(BasicText)`
   color: #3454d1;
-  font-weight: 700;
-  font-size: larger;
+  font-weight: bold;
 `
 const BigNumber = styled.p`
   font-size: 110px;
