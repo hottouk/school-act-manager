@@ -14,7 +14,6 @@ import TabBtn from '../../components/Btn/TabBtn'
 import Pagenation from '../../components/Pagenation'
 //hooks
 import useFireActiData from '../../hooks/Firebase/useFireActiData'
-import useClientHeight from '../../hooks/useClientHeight'
 import useMediaQuery from '../../hooks/useMediaQuery'
 //데이터
 import { subjectGroupList } from '../../data/subjectGroupList'
@@ -59,10 +58,9 @@ const AllActivityPage = () => {
 		const end = currentPage * itemsPerPage;
 		setPageData(allActiList?.slice(start, end));
 	}, [currentPage, allActiList]);
-	//css
-	const clientHeight = useClientHeight(document.documentElement);
 	//모바일
 	const isMobile = useMediaQuery('(max-width: 768px)');
+
 	//**함수부**
 	//활동 클릭
 	const handleActiOnClick = (item) => {
@@ -75,10 +73,16 @@ const AllActivityPage = () => {
 					{subjectList && <TabBtn tabItems={subjectList} activeTab={selectedSubj} setActiveTab={setSelectedSubj} />}
 				</TabBtnContainer>
 				<MainWrapper>
-					<HorizontalBannerAd />
-					<SearchBar title={`서버에 총 ${allActiList ? allActiList.length : 0}개의 활동이 등록되어 있습니다.`}
-						type="allActi" list={allActiList} setList={setAllActiList} />
-					<CardList dataList={pageData} type="activity" comment="아직 활동이 없습니다. 활동을 생성해주세요" onClick={handleActiOnClick} />
+					{!isMobile ? <HorizontalBannerAd /> : <HorizontalMobileAd />}
+					<SearchBar
+						title={`서버에 총 ${allActiList ? allActiList.length : 0}개의 활동이 등록되어 있습니다.`}
+						type="allActi" list={allActiList}
+						setList={setAllActiList} />
+					<CardList
+						dataList={pageData}
+						type="activity"
+						comment="아직 활동이 없습니다. 활동을 생성해주세요"
+						onClick={handleActiOnClick} />
 					{allActiList?.length > itemsPerPage && <PageWrapper>
 						<Pagenation
 							totalItems={allActiList.length}

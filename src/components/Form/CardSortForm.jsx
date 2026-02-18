@@ -57,7 +57,6 @@ const CardSortForm = ({ itemList, handleCardBtnClick }) => {
 }
 const Container = styled.div`
   display: flex;
-  justify-content: space-even;
   gap: 100px;
   @media(max-width:768px) {
     flex-direction: column;

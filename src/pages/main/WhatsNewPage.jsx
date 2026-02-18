@@ -14,6 +14,8 @@ import useFireUserData from '../../hooks/Firebase/useFireUserData';
 import useFireTransaction from '../../hooks/useFireTransaction';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import useFireClassData from '../../hooks/Firebase/useFireClassData';
+import MainContainer from '../../components/Styled/MainContainer';
+import MainWrapper from '../../components/Styled/MainWrapper';
 //240201 갱신 -> 모바일(250215)
 const WhatsNewPage = () => {
   const navigate = useNavigate();
@@ -374,7 +376,7 @@ const WhatsNewPage = () => {
     confirm: (item, index) => (<StudentApprovalBubble key={item.message} index={index} item={item} />),
   }
   return (<>
-    <Container>
+    <MainContainer>
       {/* 교사용 */}
       {(user.isTeacher && !isMobile) && <>
         <TeacherGridContainer>
@@ -436,7 +438,7 @@ const WhatsNewPage = () => {
           onPageChange={setCurrentPage}
         />
       </PageWrapper>}
-    </Container >
+    </MainContainer>
     {/* 진화모달 */}
     <EvolutionModal show={isRewardModal} onHide={() => setIsRewardModal(false)} info={reward} />
     {/* 재수정 모달 */}
@@ -453,19 +455,6 @@ const Column = styled(Row)`
 const Center = styled(Column)`
   align-items: center;
 `
-const Container = styled(Row)`
-  box-sizing: border-box;
-  flex-direction: column;
-  align-items: center;  
-  width: 100%;
-  min-height: 80vh;
-  padding: 20px 0;
-  background-color: white;
-  @media screen and (max-width: 767px){
-    width: 100%;
-    height: ${(props) => props.$clientheight}px;
-  }
-`
 const GridRow = styled.div`
   grid-column: 1/-1;
   border-bottom-left-radius: 5px;
@@ -479,6 +468,9 @@ const GridContainer = styled.div`
 `
 const TeacherGridContainer = styled(GridContainer)`
   grid-template-columns : 70px 100px 120px 1fr 150px 70px 70px;
+  margin: 20px auto;
+  border: 1px solid #919294a1;
+  border-radius: 5px;
 `
 const StudentGridContainer = styled(GridContainer)`
   grid-template-columns : 70px 100px 1fr 70px;

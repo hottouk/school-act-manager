@@ -5,8 +5,6 @@ import SearchSection from './SearchSection';
 //생성(241215) -> 연도필터링(250416)
 const SearchBar = ({ title, type, list, setList, isMobile }) => {
   const [keyword, setKeyword] = useState('');
-  const [clicked, setClicked] = useState(null);
-  const [originalList, setOriginalList] = useState(null);
   const originalListRef = useRef([]); //상태 변경에도 값을 유지하기 위해서 ref로 받음.
   // 초기 값 저장 (컴포넌트가 처음 렌더링될 때 한 번만 실행)
   if (originalListRef.current.length === 0 && list?.length > 0) {
@@ -29,18 +27,6 @@ const SearchBar = ({ title, type, list, setList, isMobile }) => {
     let results = [...list].filter(item => item[criterion] && item[criterion].toLowerCase().includes(keyword.toLowerCase()));
     setList(results);
   }
-  //해당 연도 생성반만 필터
-  const showOnlythisYear = (thisYear) => {
-    setOriginalList(list);
-    const onlyThisYear = list.filter((klass) => {
-      const timeStamp = klass.createdTime;
-      const date = new Date(timeStamp.seconds * 1000);
-      const year = date.getFullYear();
-      return year === thisYear;
-    })
-    setList(onlyThisYear);
-    setClicked("thisYear");
-  }
   return (
     <Container>
       <p>{title}</p>
@@ -51,10 +37,6 @@ const SearchBar = ({ title, type, list, setList, isMobile }) => {
       {type === "school" &&
         <SearchSection keyword={keyword} placeholder="학교명 검색" onChange={(e) => { setKeyword(e.target.value) }} onClick={() => searchData("classTitle", keyword)} />}
       <BtnWrapper>
-        {type === "acti" && <>
-          <SmallBtn btnColor="#3454d1" btnName="과목" btnOnClick={() => { sortDataList("subject") }} />
-          <SmallBtn btnColor="#3454d1" btnName="제목" btnOnClick={() => { sortDataList("title") }} />
-        </>}
         {type === "allActi" && <>
           <SmallBtn btnColor="#3454d1" btnName="제목" btnOnClick={() => { sortDataList("title") }} />
           <SmallBtn btnColor="#3454d1" btnName="교사" btnOnClick={() => { sortDataList("madeBy") }} />

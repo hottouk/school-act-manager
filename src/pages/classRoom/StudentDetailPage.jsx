@@ -240,7 +240,8 @@ const PannelContainer = styled.div`
   border-radius: 10px;
   border-bottom-right-radius: 0;
   perspective: 1000px; /* 3D 효과를 위한 원근법 */
-  @media screen and (max-width: 767px){
+  @media screen and (max-width: 768px){
+    width: 100%;
     margin-top: 0;
     border: none;
     border-radius: 10px 10px 0 10px;

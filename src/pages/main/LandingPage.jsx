@@ -12,6 +12,8 @@ import SupplementInfoModal from '../../components/Modal/SupplementInfoModal'
 import useClientHeight from '../../hooks/useClientHeight'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import { useFloatOnScroll } from '../../hooks/useFloatOnScroll';
+import MainContainer from '../../components/Styled/MainContainer'
+import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
 //정비(240720) -> 모바일감지(250213) => 리모델링(260203)
 const LandingPage = () => {
   const user = useSelector(({ user }) => user);
@@ -52,29 +54,17 @@ const LandingPage = () => {
     localStorage.setItem("noticeDismissed", tmr.getTime());
   };
 
-  return (<>
-    {!isMobile && <Container $clHi={clientHeight}>
-      <HeroSection />
-      <GraySection style={{ justifyContent: "center" }}>
-        <SubHeader style={{ textAlign: "center" }}>{2682}명의 선생님, {287}명의 학생이 이용중!!<br />많은 교사의 선택에는 이유가 있습니다.<br /></SubHeader>
-      </GraySection>
-      <BibleSection>
-        <BibleText ref={ref0} $visible={v0}>주 예수를 믿으라 그리하면 너와 네 집이 구원을 얻으리라 <br />사도행전 16:31</BibleText>
-      </BibleSection>
-      <IntroSection />
-    </Container>}
-    {isMobile && <MobileContainer>
-      <HeroSection />
-      <GraySection>
-        <SubHeader>{2682}명의 선생님, <br /> {287}명의 학생이 이용중!!<br />많은 교사의 선택에는 이유가 있습니다.</SubHeader>
-      </GraySection>
-      <BibleSection>
-        <BibleText ref={ref0} $visible={v0}>주 예수를 믿으라 그리하면 너와 네 집이 구원을 얻으리라 <br />사도행전 16:31</BibleText>
-      </BibleSection>
-      <Row style={{ justifyContent: "center" }}>
-        <HorizontalMobileAd />
-      </Row>
-    </MobileContainer>}
+  return (<><MainContainer>
+    <HeroSection />
+    <GraySection style={{ justifyContent: "center", height: "400px" }}>
+      <SubHeader style={{ textAlign: "center" }}>{2682}명의 선생님, {287}명의 학생이 이용중!!<br />많은 교사의 선택에는 이유가 있습니다.<br /></SubHeader>
+    </GraySection>
+    <BibleSection>
+      <BibleText ref={ref0} $visible={v0}>주 예수를 믿으라 그리하면 너와 네 집이 구원을 얻으리라 <br />사도행전 16:31</BibleText>
+    </BibleSection>
+    <IntroSection isMobile={isMobile} />
+    {!isMobile ? <HorizontalBannerAd /> : <HorizontalMobileAd />}
+  </MainContainer>
     {/* 공지사항팝업 */}
     <NoticeModal
       show={isNoticeModal}
@@ -90,14 +80,6 @@ const LandingPage = () => {
   )
 }
 
-const Container = styled.div`
-  display: grid;
-  box-sizing: border-box;
-  grid-template-rows: ${({ $clHi }) => $clHi}px 400px 300px ${({ $clHi }) => $clHi * 1.2}px;
-`
-const MobileContainer = styled.div`
-  overflow-y: scroll;
-`
 const Row = styled.div`
   display: flex;
 `
@@ -123,11 +105,12 @@ const SubHeader = styled.h3`
 `
 const BibleSection = styled(Column)`
   width: 100%;
+  height: 200px;
   background-color: white;
   gap: 20px;
-@media(max-width: 768px) {
-  min-height: 200px;
-}
+  @media(max-width: 768px) {
+    min-height: 200px;
+  }
 `
 const BibleText = styled.p`
   width: 400px;

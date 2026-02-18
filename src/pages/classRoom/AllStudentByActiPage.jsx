@@ -1,6 +1,5 @@
 //라이브러리
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import axios from "axios";
 import Select from 'react-select'
@@ -29,10 +28,8 @@ const AllStudentByActiPage = () => {
 	useEffect(() => initData(), [])
 	//학생
 	const { state } = useLocation();
-	console.log(state);
-	const { petListRtData, klassId } = state;
+	const { petListRtData, klassId, actiList } = state;
 	//활동
-	const actiList = useSelector(({ allActivities }) => allActivities);
 	const [selectedActi, setSelectedActi] = useState(null);
 	useEffect(() => bindRecByActi(), [selectedActi]);
 	//개별 문구
@@ -68,7 +65,10 @@ const AllStudentByActiPage = () => {
 	const [isRiraModal, setIsRiraModal] = useState(false);
 	//------useMemo------------------------------------------------
 	//활동 셀렉터
-	const optionList = useMemo(() => (actiList ?? []).map((acti) => ({ label: acti.title, value: acti.record, ...acti })), [actiList]);
+	const optionList = useMemo(
+		() => (actiList ?? [])
+			.map((acti) => ({ label: acti.title, value: acti.record, ...acti }))
+		, [actiList]);
 	//라디오 버튼
 	const renderRadioList = (selected) => {
 		if (!selected) return [];
@@ -85,9 +85,9 @@ const AllStudentByActiPage = () => {
 		(list ?? []).flatMap((item) =>
 			Object.values(item)[0].map((v) => ({ label: v, value: v }))
 		);
-	const acaOptList = useMemo(() => abilityToOptions(academicAbility), [academicAbility]);
-	const careerOptList = useMemo(() => abilityToOptions(subjectCareerAbility), [subjectCareerAbility]);
-	const coopOptList = useMemo(() => abilityToOptions(subjectCoopAbility), [subjectCoopAbility]);
+	const acaOptList = useMemo(() => abilityToOptions(academicAbility), []);
+	const careerOptList = useMemo(() => abilityToOptions(subjectCareerAbility), []);
+	const coopOptList = useMemo(() => abilityToOptions(subjectCoopAbility), []);
 	//------함수부--------------------------------------------------
 	const initData = () => {
 		if (!petListRtData) return;

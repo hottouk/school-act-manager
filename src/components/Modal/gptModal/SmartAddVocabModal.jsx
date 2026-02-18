@@ -4,19 +4,20 @@ import { Spinner } from 'react-bootstrap';
 import Modal from 'react-bootstrap/Modal';
 import Select from 'react-select';
 import styled from 'styled-components';
-
 //컴포넌트
 import ModalBtn from '../../Btn/ModalBtn';
 import MidBtn from '../../Btn/MidBtn';
 import MockExamSelect from '../../Select/MockExamSelect';
 import DotTitle from '../../Title/DotTitle';
 import CircularBtn from '../../Btn/CircularBtn';
+import GptIngModal from './GptIngModal';
 //hooks
 import useChatGpt from '../../../hooks/useChatGpt';
 import useFireBasic from '../../../hooks/Firebase/useFireBasic';
-import GptIngModal from './GptIngModal';
+import InnerOverlay from '../../Styled/InnerOverlay';
+import InnerLayer from '../../Styled/InnerLayer';
 //생성(250616)
-const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow }) => {
+const SmartAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow }) => {
   //준비
   const { fetchDoc } = useFireBasic("exam");
   //모의고사 지문
@@ -82,7 +83,10 @@ const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow
     return result
   }
   //추출 버튼 
-  const extractBtnOnClick = () => { extractVocab(text); }
+  const handleExtractOnClick = () => {
+    if (text === '') { alert("단어를 추출할 지문이 없습니다."); return; }
+    extractVocab(text);
+  }
   //input 감지
   const handleInputOnChange = (event, index) => {
     const { id, value } = event.target;
@@ -97,11 +101,11 @@ const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow
   //input 추가
   const addInputs = (index, quizSet = { word: '', meaning: '' }) => {
     const result = checkVacant(vocabList);
-    if (!result) return
+    if (!result) return;
     setVocabList((prev) => {
       const newInputs = [...prev];
       newInputs.splice(index + 1, 0, quizSet);
-      return newInputs
+      return newInputs;
     });
   };
   //input 삭제
@@ -133,7 +137,7 @@ const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow
             placeholder={"과목"}
           />
         </Row>
-        {subject && <Row style={{ marginBottom: "10px" }}>
+        {subject && <Column style={{ marginBottom: "10px", gap: "10px" }}>
           <DotTitle>기출 모의고사</DotTitle>
           <MockExamSelect year={year}
             setYear={setYear}
@@ -142,35 +146,35 @@ const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow
             month={month}
             setMonth={setMonth}
             setNumber={setNumber} />
-        </Row>}
+        </Column>}
         <Textarea
           value={text}
           placeholder='여기에 지문을 복사/붙여넣기 하세요'
           onChange={(event) => { setText(event.target.value); }}></Textarea>
         <Row style={{ justifyContent: "center", margin: "10px 0" }}>
-          {(gptRes !== "loading") && <MidBtn onClick={extractBtnOnClick}>단어 추출</MidBtn>}
+          {(gptRes !== "loading") && <MidBtn onClick={handleExtractOnClick}>단어 추출</MidBtn>}
           {(gptRes === "loading") && <Spinner />}
         </Row>
-        {vocabList?.length > 0 && vocabList.map((item, index) => <Row key={`${index}`}>
-          <NumberLabel>{padNumber(index + 1, 3)}</NumberLabel>
-          <StyledInput
+        {vocabList?.length > 0 && vocabList.map((item, idx) => <Row key={`${idx}`}>
+          <NumberLabel>{padNumber(idx + 1, 3)}</NumberLabel>
+          <WordInput
             id='word'
             type="text"
             value={item.word}
-            onChange={(e) => handleInputOnChange(e, index)}
+            onChange={(e) => handleInputOnChange(e, idx)}
             placeholder='단어'
           />
-          <StyledInput
+          <WordInput
             id='meaning'
             type="text"
             value={item.meaning}
-            onChange={(e) => handleInputOnChange(e, index)}
-            onKeyDown={(e) => handleTabKeyDown(e, index)}
+            onChange={(e) => handleInputOnChange(e, idx)}
+            onKeyDown={(e) => handleTabKeyDown(e, idx)}
             placeholder='의미'
           />
           <Row style={{ gap: "5px", paddingTop: "3px" }}>
-            <CircularBtn onClick={() => { addInputs(index) }}>+</CircularBtn>
-            <CircularBtn styles={{ color: "#9b0c24" }} onClick={() => { deleteInputs(index) }}>-</CircularBtn>
+            {vocabList.length - 1 === idx && <CircularBtn onClick={() => { addInputs(idx) }}>+</CircularBtn>}
+            {vocabList.length - 1 !== idx && <CircularBtn styles={{ color: "#9b0c24" }} onClick={() => { deleteInputs(idx) }}>-</CircularBtn>}
           </Row>
         </Row>)}
       </Modal.Body>
@@ -178,17 +182,23 @@ const GptAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabShow
         <ModalBtn onClick={() => { onHide() }}>취소</ModalBtn>
         <ModalBtn styles={{ btnColor: "royalblue", hoverColor: "#3454d1" }} onClick={handleConfirmOnClick}>확인</ModalBtn>
       </Modal.Footer>
-      <GptIngModal
-        show={gptStatus}
-        onHide={gptStatus === ''}
-        status={gptStatus}
-        progress={gptProgress} />
+      {gptStatus && <InnerLayer>
+        <InnerOverlay />
+        <GptIngModal
+          show={gptStatus}
+          onHide={gptStatus === ''}
+          status={gptStatus}
+          progress={gptProgress} />
+      </InnerLayer>}
     </Modal >
   )
 }
 
 const Row = styled.div`
   display: flex;
+`
+const Column = styled(Row)`
+  flex-direction: column;
 `
 const Textarea = styled.textarea`
   width: 100%;
@@ -202,7 +212,7 @@ const NumberLabel = styled.label`
   color: #3454d1;
   font-weight: bold;
 `
-const StyledInput = styled.input`
+const WordInput = styled.input`
   height: 35px;
   border: 1px solid #aaa;
   flex-grow: 1;
@@ -218,4 +228,4 @@ const StyledInput = styled.input`
 }
 `
 
-export default GptAddVocabModal
+export default SmartAddVocabModal

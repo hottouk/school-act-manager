@@ -68,15 +68,15 @@ const ActivityMain = () => { //진입 경로 총 2곳: 교사/학생
       {user.isTeacher && <MainWrapper>
         <SearchBar title="교과 활동" type="acti" list={mySubjActiList} setList={setMySubjActiList} isMobile={isMobile} />
         <CardList dataList={mySubjActiList} type="activity" onClick={handleActiOnClick} />
-        {!isMobile ? <HorizontalBannerAd /> : <HorizontalMobileAd />}
         <SearchBar title="담임반 활동" />
         <CardList dataList={myHomeActiList} type="activity" onClick={handleActiOnClick} />
         <SearchBar title="업어온 활동" />
         <CardList dataList={copiedList} type="copiedActi" onClick={(item) => { navigate(`/activities/${item.id}`, { state: { acti: item } }) }} />
         <SearchBar title="퀴즈 활동" />
         <CardList dataList={myQuizActiList} type="quizActi" onClick={handleActiOnClick} />
+        {!isMobile ? <HorizontalBannerAd /> : <HorizontalMobileAd />}
       </MainWrapper>}
-      {isMobile && <MainBtn onClick={() => navigate("/activities_setting")}>활동 생성</MainBtn>}
+      {isMobile && <MainBtn styles={{ margin: "10px 0 0 0" }} onClick={() => navigate("/activities_setting")}>활동 생성</MainBtn>}
     </MainContainer>
   )
 }

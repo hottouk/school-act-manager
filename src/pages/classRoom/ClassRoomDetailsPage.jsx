@@ -65,7 +65,7 @@ const ClassroomDetailsPage = () => {
   }, [thisKlassId, petListDataListener, klassDataListener]);
   //교실 타입
   const klassType = useMemo(() => {
-    if (!klassRtData) return "subbject";
+    if (!klassRtData) return "subject";
     if (klassRtData.type === "homeroom") return "homeroom";
     else return "subject";
   }, [klassRtData]);
@@ -94,6 +94,7 @@ const ClassroomDetailsPage = () => {
     }
     bindActiData();
   }, [klassRtData, dispatcher, errorHandler, fetchAllActis]);
+  //세분화 
   const { homeActiList, subjActiList, quizActiList } = useMemo(() => {
     if (actiList.length === 0) return { homeActiList: [], subjActiList: [], quizActiList: [] };
     return sortActiType(actiList);
@@ -115,10 +116,10 @@ const ClassroomDetailsPage = () => {
   const [isPetInfoModal, setIsPetInfoModal] = useState(false);    //펫
   const [isActiInfoModal, setIsActiInfoModal] = useState(false);  //활동
   const [isAddQuizModal, setIsAddQuizModal] = useState(false);    //게임등록
-  //에니메이션
-  const [isVisible, setIsVisible] = useState(false);
   //모바일
   const isMobile = useMediaQuery("(max-width: 768px)");
+  //에니메이션
+  const [isVisible, setIsVisible] = useState(false);
   //**함수부**
   //클래스 이동
   const moveKlass = (event) => { navigate(`/classrooms/${event.value.id}`, { state: { ...event.value } }) };
@@ -129,7 +130,7 @@ const ClassroomDetailsPage = () => {
       if (tab === 1) return homeActiList.filter((acti) => acti.subjDetail === "자율");
       else return homeActiList.filter((acti) => acti.subjDetail === "진로");
     }
-    else return subjActiList;
+    else return subjActiList.filter(item => item.subject === klassRtData.subject);
   }, [klassRtData, homeActiList, subjActiList, tab]);
   //학기 전환
   const handleSemesterOnClick = () => {
@@ -173,9 +174,7 @@ const ClassroomDetailsPage = () => {
               <UpperTab className="tab2" value={tab} onClick={() => setTab(2)}>진로</UpperTab>
             </Row>
           </>}
-          <Center>
-            <Title>세특 쫑알이</Title>
-          </Center>
+          <Center><Title>세특 쫑알이</Title></Center>
           <MainSelectorSection
             isMobile={isMobile}
             studentList={petListRtData}
@@ -184,11 +183,17 @@ const ClassroomDetailsPage = () => {
             semester={klassRtData?.semester}
           />
         </MainWrapper>
-        {!isMobile && <SubMenu>
-          <LongW100Btn onClick={() => navigate('allStudents/acti', { state: { petListRtData, klassId: thisKlassId } })}>활동별 보기</LongW100Btn>
-          <LongW100Btn onClick={() => navigate('allStudents', { state: { semester: klassRtData?.semester } })}>전체 세특 보기</LongW100Btn>
+        <SubMenu>
+          {!isMobile && <LongW100Btn
+            onClick={() => navigate('allStudents/acti', { state: { petListRtData, klassId: thisKlassId, actiList: getActiByType() } })}>
+            활동별 보기
+          </LongW100Btn>}
+          {!isMobile && <LongW100Btn
+            onClick={() => navigate('allStudents', { state: { semester: klassRtData?.semester } })}>
+            전체 세특 보기
+          </LongW100Btn>}
           {klassType === "subject" && <LongW100Btn onClick={handleSemesterOnClick}>학기 전환</LongW100Btn>}
-        </SubMenu>}
+        </SubMenu>
       </SubWrapper>}
       {/* 학생 상세 보기*/}
       <MainWrapper>
@@ -203,7 +208,7 @@ const ClassroomDetailsPage = () => {
           setPetInfo={setPetInfo} />}
       </MainWrapper>
       {/* 퀴즈 게임부 */}
-      {klassType === "subject" && <KlassQuizSection isMobile={isMobile} quizList={addedQuizList} klassData={klassRtData} onClick={handleMonsterOnClick} setIsAddQuizModal={setIsAddQuizModal} />}
+      {/* {klassType === "subject" && <KlassQuizSection isMobile={isMobile} quizList={addedQuizList} klassData={klassRtData} onClick={handleMonsterOnClick} setIsAddQuizModal={setIsAddQuizModal} />} */}
       {/* 퀘스트 목록(학생) */}
       {(!user.isTeacher && studentKlassData?.isApproved) && <MainPanel>
         <Title>퀘스트 목록</Title>
@@ -258,7 +263,10 @@ const SubWrapper = styled(Row)`
   width: 75%;
   margin: 0 auto;
   align-items: stretch;
-  @media screen and (max-width: 767px){ width: 100%; }  
+  @media screen and (max-width: 767px){ 
+    width: 100%;
+    flex-direction: column-reverse;
+  }  
 `
 const SubMenu = styled(Column)`
   flex: 1;  

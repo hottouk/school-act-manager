@@ -85,7 +85,7 @@ const AmountSelectPage = () => {
       </MainWrapper>
       <MainWrapper styles={{ width: "65%" }}>
         <Row style={{ gap: "10px" }}>
-          <DotTitle>쿠폰 등록</DotTitle>
+          <DotTitle>쿠폰</DotTitle>
           <TextInput type="text" placeholder="쿠폰 코드를 입력하세요" onChange={(e) => setCouponCode(e.target.value)} />
           <SmallBtn onClick={handleCouponOnClick}>등록</SmallBtn>
         </Row>

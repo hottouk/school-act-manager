@@ -9,6 +9,7 @@ import FormHeader from '../../components/Form/FormHeader'
 import MainBtn from '../../components/Btn/MainBtn'
 import DotTitle from '../../components/Title/DotTitle'
 import GptRetocuhModal from '../../components/Modal/gptModal/GptRetocuhModal'
+import LongW100Btn from '../../components/Btn/LongW100Btn'
 //hooks
 import useFireTestData from '../../hooks/Firebase/useFireTestData'
 import useDocxFile from '../../hooks/useDocxFile'
@@ -16,12 +17,24 @@ import useDocxFile from '../../hooks/useDocxFile'
 import edit_icon from '../../image/icon/edit_icon.png'
 //생성(251219)
 const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, type, level, examItem, sentenceList, circleAnswer }) => {
-	console.log(gptAnswer);
 	const { addTestArrItem, updateTestQuestion } = useFireTestData();
 	const { downloadQuestionDocx } = useDocxFile();
 	const questionList = useSelector(({ exam }) => exam["questions"]); //전체 문제
 	const navigate = useNavigate();
-	useEffect(() => { bindTestItem(); }, [examItem]);
+	useEffect(() => {
+		const bindExamItem = () => {
+			if (!examItem) return;
+			console.log(examItem)
+			const { title, question, passage, optionList, explanation, type, } = examItem;
+			setTitle(title);
+			setItemType(type);
+			setQuestion(question);
+			setPassage(passage.replace(/(\r\n|\n|\r)/g, " "));
+			setOptionList(optionList.slice(0, 5));
+			setExplanation(explanation);
+		}
+		bindExamItem();
+	}, [examItem]);
 	useEffect(() => { gptParser(gptAnswer) }, [gptAnswer]);
 	//편집 항목
 	const [_title, setTitle] = useState('');
@@ -42,17 +55,6 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 	const [modalType, setModalType] = useState('');
 	const [isRetouchModal, setIsRetouchModal] = useState(false);
 	//------함수부------------------------------------------------
-	const bindTestItem = () => {
-		if (!examItem) return;
-		console.log(examItem)
-		const { title, question, passage, optionList, explanation, type, } = examItem;
-		setTitle(title);
-		setItemType(type);
-		setQuestion(question);
-		setPassage(passage.replace(/(\r\n|\n|\r)/g, " "));
-		setOptionList(optionList.slice(0, 5));
-		setExplanation(explanation);
-	}
 	//gpt 분석
 	const gptParser = (gptAnswer) => {
 		if (!gptAnswer) return '';
@@ -239,7 +241,7 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 			<MainBtn onClick={handleSaveOnClick}>문제 저장</MainBtn>
 			<MainBtn onClick={handleDownloadOnClick}>docx 파일 다운로드</MainBtn>
 			{!examItem && <MainBtn onClick={handleReworkOnClick}>AI 재생성</MainBtn>}
-			{examItem && <MainBtn onClick={handleDelOnClick}>문제 삭제</MainBtn>}
+			{examItem && <LongW100Btn onClick={handleDelOnClick}>문제 삭제</LongW100Btn>}
 		</MainWrapper >
 		<GptRetocuhModal
 			show={isRetouchModal}
@@ -265,6 +267,9 @@ const QuestionWrapper = styled.div`
 	padding: 10px;
 	border: 1px solid gray;	
 	border-radius: 5px;
+	@media(max-width: 768px){
+		width: 100%;
+	}
 `
 const Textarea = styled.textarea`
 	margin-top: 10px;

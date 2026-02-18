@@ -14,7 +14,7 @@ import MainBtn from '../../components/Btn/MainBtn'
 import BackBtn from '../../components/Btn/BackBtn'
 import LongW100Btn from '../../components/Btn/LongW100Btn'
 import CircularBtn from '../../components/Btn/CircularBtn'
-import GptAddVocabModal from '../../components/Modal/gptModal/GptAddVocabModal'
+import SmartAddVocabModal from '../../components/Modal/gptModal/SmartAddVocabModal'
 //hooks
 import useFireBasic from '../../hooks/Firebase/useFireBasic'
 import useFireErrData from '../../hooks/Firebase/useFireErrData'
@@ -176,7 +176,7 @@ const QuizFormPage = () => {
           <DotTitle title={"공개 여부"} />
           <TwoRadios name="isPrivate_radio"
             id={["private_radio", "public_radio"]}
-            value={isPrivate} label={["비공개 활동", "공개 활동"]}
+            value={isPrivate} label={["비공개", "공개"]}
             onChange={() => { setIsPrivate(!isPrivate) }}
             disabled={!isEdit}
           />
@@ -233,7 +233,7 @@ const QuizFormPage = () => {
         </Column>}
       </StyledForm>
     </MainContainer >
-    <GptAddVocabModal
+    <SmartAddVocabModal
       show={isGptModal}
       onHide={() => { setIsGptModal(false); }}
       padNumber={padNumber}

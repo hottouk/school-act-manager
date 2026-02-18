@@ -15,8 +15,8 @@ const IntroSection = ({ isMobile }) => {
   const pcRowStyle = { width: "100%", textAlign: "right" };
   const mobileRowStyle = { width: "100%", textAlign: "left", marginTop: "20px", };
   return (
-    <Section style={{ padding: "20px", gap: !isMobile ? "50px" : "0", justifyContent: "center" }}>
-      <Header>What's special?</Header>
+    <Section style={{ gap: !isMobile ? "50px" : "0", }}>
+      <Header id="whats-special">What's special?</Header>
       <IntroRow ref={ref1} $visible={v1}>
         <IntroImg src={subLanding1} alt="랜딩이미지1" />
         <Column style={!isMobile ? pcRowStyle : mobileRowStyle}>
@@ -62,6 +62,8 @@ const Column = styled(Row)`
   flex-direction: column;
 `
 const Section = styled(Column)`
+  justifyContent: center;
+  padding: 20px;
   background-color: #efefef;
 `
 const Header = styled.p`
@@ -76,6 +78,7 @@ const Header = styled.p`
     font-size: 2rem;
     width: 100%;
     margin-bottom: 1rem;
+    scroll-margin-top: 80px;
   }
 `
 const IntroRow = styled(Row)`

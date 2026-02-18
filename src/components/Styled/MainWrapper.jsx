@@ -27,8 +27,6 @@ const Container = styled.div`
   padding: 15px;
   @media screen and (max-width: 768px) {
     width: 100%;
-    height: ${(props) => props.$clientheight}px;
-    overflow-y: scroll;
   }
 `
 export default MainWrapper

@@ -22,7 +22,6 @@ const ClassSortSelection = () => {
   }, [state])
   const [step, setStep] = useState('')
   const [type, setType] = useState('')
-  const clientHeight = useClientHeight(document.documentElement)
   //------함수부------------------------------------------------  
   const handleCardBtnClick = (event) => {
     switch (event.target.id) {
@@ -78,10 +77,12 @@ const Column = styled(Row)`
 `
 const CardWrapper = styled(Row)`
   height: 40dvh;
-  margin: 80px auto;
-  border-radius: 10px;
+  margin: 0 auto;
   align-items: center;
-  justify-content: space-around;
+  justify-content: center;
+  @media(max-width: 768px){
+    flex-grow: 1;
+  }
 `
 
 export default ClassSortSelection

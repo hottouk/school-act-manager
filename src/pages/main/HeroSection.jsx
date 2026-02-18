@@ -19,6 +19,7 @@ const Column = styled(Row)`
   flex-direction: column;
 `
 const Section = styled(Column)`
+  height: 100dvh;
   align-items: center;
   gap: 20px;
   justify-content: space-between;
@@ -30,6 +31,7 @@ const LandingImg = styled.img`
   @media(max-width: 768px) {
     width: 140%;
     margin-left: -40%;
+    margin-bottom: 10%;
   }
 `
 const Header = styled.p`

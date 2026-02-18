@@ -1,16 +1,17 @@
 //라이브러리리
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 //컴포넌트
 import MainWrapper from '../../components/Styled/MainWrapper'
 import MainContainer from '../../components/Styled/MainContainer'
+import SearchBar from '../../components/Bar/SearchBar'
 import CardList from '../../components/List/CardList'
 import MainBtn from '../../components/Btn/MainBtn'
 //hooks
 import useFireBasic from '../../hooks/Firebase/useFireBasic'
 import useMediaQuery from '../../hooks/useMediaQuery'
-import { useNavigate } from 'react-router-dom'
 //생성(250104)
 const QuizMainPage = () => {
   //준비
@@ -30,13 +31,13 @@ const QuizMainPage = () => {
   return (
     <MainContainer>
       {user.isTeacher && <MainWrapper>
-        <CardList dataList={quizSetList} type="quiz"
-          comment="아직 퀴즈 세트가 없습니다. 퀴즈 세트를 생성해주세요" />
+        <SearchBar title={"나의 단어장"} />
+        <CardList dataList={quizSetList} type="quiz" />
       </MainWrapper>}
       {isMobile &&
         <MainBtn
           onClick={() => { navigate("/quiz_setting") }}
-          styles={{ margin: "10px 0 0 0" }}>새 퀴즈 만들기
+          styles={{ margin: "10px 0 0 0" }}>새 단어장 만들기
         </MainBtn>}
     </MainContainer>
   )

@@ -2,6 +2,7 @@ import React from 'react'
 import styled from 'styled-components';
 
 const InnerLayer = ({ children }) => {
+    // 이너 레이어 안에 모달과 overLay 함께 넣기
     return <StyledLayer>
         {children}
     </StyledLayer>

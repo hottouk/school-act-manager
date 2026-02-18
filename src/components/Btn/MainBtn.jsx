@@ -3,7 +3,7 @@ import styled from 'styled-components'
 //정비(250722)
 const MainBtn = ({ children, onClick, type, styles, disabled }) => {
   const margin = styles?.margin ?? "0";
-  const zIndex = styles?.zIndex ?? "999";
+  const zIndex = styles?.zIndex ?? "0";
   const alignSelf = styles?.alignSelf ?? "none";
   const width = styles?.width ?? "100%";
   return (

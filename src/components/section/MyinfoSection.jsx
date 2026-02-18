@@ -99,7 +99,7 @@ const MyinfoSection = ({ userRtData, updateUserInfo, isFromInfoPage }) => {
   }
   return (
     <section>
-      <Row>
+      <InfoWrapper>
         <Column style={{ gap: "15px" }}>
           <Title>회원 정보</Title>
           <Row style={{ gap: "10px" }}>
@@ -134,22 +134,24 @@ const MyinfoSection = ({ userRtData, updateUserInfo, isFromInfoPage }) => {
               : <TextInput type='text' onChange={(event) => { setEmail(event.target.value) }} value={email} />}
           </Row>
         </Column>
-        <Column style={{ alignItems: "flex-end", flexGrow: "1", justifyContent: "space-between" }}>
-          <Column style={{ justifyContent: "center", gap: "5px" }}>
-            <ProfileImg src={profileImg || unknown} alt="프로필 이미지" />
-            <input ref={inputFileRef} type="file" onChange={handleInputFileOnChange} accept={"image/*"} style={{ display: "none" }} />
+        <ImgWrapper>
+          <ProfileImg src={profileImg || unknown} alt="프로필 이미지" />
+          <input ref={inputFileRef} type="file" onChange={handleInputFileOnChange} accept={"image/*"} style={{ display: "none" }} />
+          <Column style={{ gap: "6px", width: "120px", marginTop: "5px" }}>
             {isEdit && <Badge bg="primary" onClick={() => inputFileRef.current.click()} style={{ cursor: "pointer" }}>사진 변경</Badge>}
             {isEdit && <Badge bg="primary" onClick={handleImgDeleteOnClcick} style={{ cursor: "pointer" }}>사진 삭제</Badge>}
           </Column>
-          {(!isEdit && isFromInfoPage) && <Row style={{ gap: "20px" }}>
-            <ClickableText onClick={() => setIsEdit(true)}>회원 정보 변경</ClickableText>
-            <ClickableText onClick={handleLeaveOnClick}>쫑알이 회원 탈퇴</ClickableText>
-          </Row>}
-          {isEdit && <Row style={{ gap: "5px" }}>
-            <ClickableIcon className='fa-solid fa-check' onClick={handleSaveOnClick}></ClickableIcon>
-            <ClickableIcon className='fa-solid fa-x' onClick={handleCancelOnClick} ></ClickableIcon>
-          </Row>}
-        </Column>
+        </ImgWrapper>
+      </InfoWrapper>
+      <Row style={{ justifyContent: "flex-end" }}>
+        {(!isEdit && isFromInfoPage) && <Row style={{ gap: "20px" }}>
+          <ClickableText onClick={() => setIsEdit(true)}>회원 정보 변경</ClickableText>
+          <ClickableText onClick={handleLeaveOnClick}>쫑알이 회원 탈퇴</ClickableText>
+        </Row>}
+        {isEdit && <Row style={{ gap: "5px" }}>
+          <ClickableIcon className='fa-solid fa-check' onClick={handleSaveOnClick}></ClickableIcon>
+          <ClickableIcon className='fa-solid fa-x' onClick={handleCancelOnClick} ></ClickableIcon>
+        </Row>}
       </Row>
       {isLoading && <Center><Spinner /></Center>}
     </section >
@@ -163,6 +165,20 @@ const Column = styled(Row)`
 `
 const Center = styled(Row)`
   justify-content: center;
+`
+const InfoWrapper = styled(Row)`
+  @media(max-width: 768px){
+    flex-direction: column;
+  }
+`
+const ImgWrapper = styled(Column)`
+  justify-content: flex-start; 
+  align-items: flex-end;
+  flex-grow: 1;
+   @media(max-width: 768px){
+    align-items: center;
+    margin: 10px 0;
+  }
 `
 const TextInput = styled.input`
   height: 35px;

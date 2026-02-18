@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-
 //샘플탭 정비(240725)
 function TabBtn({ tabItems, activeTab, setActiveTab }) {
   //샘플: 1부터 9까지의 숫자 배열 생성
   const [sampleTab, setSampleTab] = useState("1")
   const tabSamples = Array.from({ length: 9 }, (_, index) => index + 1);
+
   const handleTabClick = (item) => {
     if (!tabItems) { setSampleTab(item); }
     else { setActiveTab(item); }
@@ -13,16 +13,16 @@ function TabBtn({ tabItems, activeTab, setActiveTab }) {
 
   return (
     <Container>
-      {!tabItems && tabSamples.map((tabItem, index) => { //샘플
+      {!tabItems && tabSamples.map((tabItem, idx) => { //샘플
         return <StyledTabBtn
-          key={`${tabItem}${index}`}
+          key={`${idx}`}
           className={`tab-button ${sampleTab === tabItem ? 'active' : ''}`}
           onClick={() => handleTabClick(tabItem)}
         >{tabItem}</StyledTabBtn>
       })}
-      {tabItems && tabItems.map((tabItem, index) => { //실제 데이터 list, 배열
+      {tabItems && tabItems.map((tabItem, idx) => { //실제 데이터 list, 배열
         return <StyledTabBtn
-          key={`${tabItem}${index}`}
+          key={`${idx}`}
           className={`${activeTab === tabItem ? 'active' : ''}`}
           onClick={() => handleTabClick(tabItem)}
         >{tabItem}</StyledTabBtn>
@@ -34,8 +34,12 @@ function TabBtn({ tabItems, activeTab, setActiveTab }) {
 const Container = styled.div`
   display: flex;
   margin: 10px auto;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
 `
 
 const StyledTabBtn = styled.button`
@@ -52,13 +56,16 @@ const StyledTabBtn = styled.button`
   &.active {
     background-color: #ccc;
   }
-  &:first-of-type { //type을 적용한 이유는 앞에 p테그가 있기 때문임.
+  &:first-of-type { /*type을 적용한 이유는 앞에 p테그가 있기 때문임.
     border-top-left-radius: 5px; /* 첫 버튼의 좌측 상단 모서리 둥글게 */
     border-bottom-left-radius: 5px; /* 첫 버튼의 좌측 하단 모서리 둥글게 */
   }
   &:last-child {
     border-top-right-radius: 5px; /* 마지막 버튼의 우측 상단 모서리 둥글게 */
     border-bottom-right-radius: 5px; /* 마지막 버튼의 우측 하단 모서리 둥글게 */
+  }
+  @media(max-width: 768px){
+    white-space: nowrap;
   }
 `
 

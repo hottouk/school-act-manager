@@ -30,11 +30,15 @@ import GptIngModal from "../../components/Modal/gptModal/GptIngModal";
 import LongW100Btn from "../../components/Btn/LongW100Btn";
 import MainContainer from "../../components/Styled/MainContainer";
 import useMediaQuery from "../../hooks/useMediaQuery";
+//constants
+import { ERROR_MSG } from "../../constants/errMsg";
+import useFireErrData from "../../hooks/Firebase/useFireErrData";
 //실시간 바이트 갱신(240706) -> 담임반 활동(241221)
 const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리-활동생성, 활동관리-나의활동, 활동관리-다른교사) 학생 1
   useEffect(() => { setIsVisible(true) }, []);
   //경로 이동
   const location = useLocation();
+  const { errorHandler } = useFireErrData();
   const queryParams = new URLSearchParams(location.search);
   const sort = queryParams.get("sort");
   const { state } = location; //state.acti는 활동
@@ -202,12 +206,18 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     navigate("/activities");
   };
   //삭제
-  const handleDeleteOnClick = (copiedId) => {
+  const handleDeleteOnClick = async (copiedId) => {
     const confirm = window.confirm("이 활동을 정말로 삭제하시겠습니까?");
     if (!confirm) return;
-    if (copiedId) { delCopiedActiTransaction(copiedId); }
-    else { deleteActi(state.acti.id); }
-    navigate("/activities");
+    try {
+      if (copiedId) { await delCopiedActiTransaction(copiedId); }
+      else { await deleteActi(state.acti.id); }
+      alert("활동이 삭제되었습니다.");
+      navigate("/activities");
+    } catch (error) {
+      alert(ERROR_MSG.deleteActi);
+      errorHandler(error, "ActivityFormPage:219");
+    }
   };
   //활동 업어가기
   const handleCopyOnClick = () => {
@@ -231,7 +241,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   };
   return (<>
     <MainContainer>
-      {!isMobile && <SubNav><BackBtn /></SubNav>}
+      <SubNav><BackBtn /></SubNav>
       {/* 교사 */}
       {user.isTeacher &&
         <ActiSection>
@@ -357,7 +367,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                 {!isEdit
                   ? <>
                     <MainBtn type="button" onClick={() => setIsEdit(!isEdit)}>수정</MainBtn>
-                    <LongW100Btn onClick={handleDeleteOnClick}>삭제</LongW100Btn>
+                    <LongW100Btn onClick={() => handleDeleteOnClick()}>삭제</LongW100Btn>
                   </>
                   : <>
                     <MainBtn onClick={handleSaveOnClick}>저장</MainBtn>

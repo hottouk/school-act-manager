@@ -1,6 +1,6 @@
 //라이브러리
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet';
 import { Badge } from 'react-bootstrap';
@@ -13,10 +13,12 @@ import useMediaQuery from '../../hooks/useMediaQuery';
 //이미지
 import brandLogo from "../../image/icon/h-logo.png";
 import unknown from '../../image/icon/unkown_icon.png';
-//240222(생성) -> 250202(갱신) -> 250215(모바일 수정)
+import useLogout from '../../hooks/useLogout';
+//240222(생성) -> 250202(갱신) -> 250215(모바일 수정) -> 260217(학생 삭제)
 const Nav = () => {
   //준비
   const user = useSelector(({ user }) => { return user });
+  const { logout } = useLogout(); //로그아웃
   const { myUserData } = useFetchRtMyUserData();
   const [_profileImg, setProfileImg] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,13 +26,26 @@ const Nav = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   //모달
   const [isNew, setIsNew] = useState(false); //새소식 아이콘
-  useEffect(() => { bindData(); }, [myUserData]);
-  //------함수부------------------------------------------------ 
-  const bindData = () => {
-    setProfileImg(user.profileImg);//프로필 사진
-    if (myUserData?.onSubmitList?.length) { setIsNew(true) } else { setIsNew(false) }
-  }
-
+  useEffect(() => {
+    const bindData = () => {
+      setProfileImg(myUserData?.profileImg || null);//프로필 사진
+      if (myUserData?.onSubmitList?.length) { setIsNew(true) }
+      else { setIsNew(false) }
+    }
+    bindData();
+  }, [myUserData]);
+  //**함수부**
+  //축 이동
+  const scrollToIntroSection = (id) => {
+    const target = document.getElementById(id);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  //소개
+  const handleIntroClick = (event) => {
+    event.preventDefault();
+    setIsMenuOpen(false);
+    scrollToIntroSection("whats-special");
+  };
   return (<Container>
     <Helmet>
       {/*폰트어썸 라이브러리*/}
@@ -40,122 +55,100 @@ const Nav = () => {
         crossorigin="anonymous"
         referrerpolicy="no-referrer" />
     </Helmet>
-    {!user.uid &&
-      <MenuWrapper>
-        <li><Link to='/login'><Icon className="fa-solid fa-key"></Icon> <span>로그인</span></Link></li>
-      </MenuWrapper>}
-    {(user.uid && user.isTeacher && !isMobile) && <>
+    {!isMobile && <>
       {/* PC 교사 */}
-      <LogoImg src={brandLogo} alt="로고" />
-      <Link to="/"><BrandTitle>생기부 쫑알이</BrandTitle></Link>
-      <Row style={{ alignItems: "center" }}><p style={{ margin: "0 20px" }}>{user.name} 선생님 사랑합니다.</p></Row>
-      <MenuWrapper>
-        {!isMobile && <li id="acti_btn" ><Icon className="fa-solid fa-scroll"></Icon>
-          <DropDownBtn btnName={"활동 관리"}
-            dropDownItems={[
-              { href: "activities_setting", label: "새 활동" },
-              { href: "activities", label: "나의 활동" },
-              { href: "activities_all", label: "전체 활동", itemState: "acti_all" }]} />
-        </li>}
-        <li>
-          <Icon className="fa-solid fa-chalkboard"></Icon>
-          <DropDownBtn btnName={"클래스 관리"}
-            dropDownItems={[
-              { href: "classrooms_setting", itemState: { step: "first" }, label: "새 클래스" },
-              { href: "classrooms", label: "나의 클래스" },
-            ]} />
-        </li>
-        <li><Icon className="fa-solid fa-database" />
-          <DropDownBtn btnName={"단어 관리"}
-            dropDownItems={[
-              { href: "quiz_setting", label: "새 퀴즈" },
-              { href: "quiz", label: "나의 퀴즈" },
-            ]} />
-        </li>
-        <li><Icon className="fa-solid fa-star" />
-          <DropDownBtn btnName={"문제 관리"}
-            dropDownItems={[
-              { href: "exam_setting", label: "새 문제" },
-              { href: "exam", label: "나의 문제" },
-            ]} />
-        </li>
-        <li><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon>
-          <span>나의 학교</span></Link></li>
-        {user.isMaster && <li id="lab_btn" ><Link to="/lab"><Icon className="fa-solid fa-khanda"></Icon>
-          <span>실험실</span></Link></li>}
-        {user.isMaster && <li><Link to="/store"><Icon className="fa-solid fa-store"></Icon>
-          <span>상점</span></Link></li>}
-        {user.isMaster && <li id="master_btn" ><Link to="/master"><Icon className="fa-solid fa-key"></Icon>
-          <span>마스터</span></Link></li>}
-        <li><Link to="/purchase"><Icon className="fa-solid fa-key"></Icon>
-          <span>충전</span></Link></li>
-        <NewsWrapper >
-          {isNew && <NewIcon><Badge bg="danger">new</Badge></NewIcon>}
-          <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
-        </NewsWrapper>
-      </MenuWrapper>
-      <Link to="/myinfo">
-        <ProfileImg className="profileImg" src={_profileImg || unknown} alt="프로필 이미지" />
+      <Link to="/" style={{ display: "flex" }}>
+        <LogoImg src={brandLogo} alt="로고" />
+        <BrandTitle>생기부 쫑알이</BrandTitle>
       </Link>
+      {user.uid && <>
+        <Row style={{ alignItems: "center" }}><p style={{ margin: "0 20px" }}>{user.name} 선생님 사랑합니다.</p></Row>
+        <MenuWrapper>
+          {!isMobile && <li id="acti_btn" ><Icon className="fa-solid fa-scroll"></Icon>
+            <DropDownBtn btnName={"활동 관리"}
+              dropDownItems={[
+                { href: "activities_setting", label: "새 활동" },
+                { href: "activities", label: "나의 활동" },
+                { href: "activities_all", label: "전체 활동", itemState: "acti_all" }]} />
+          </li>}
+          <li>
+            <Icon className="fa-solid fa-chalkboard"></Icon>
+            <DropDownBtn btnName={"클래스 관리"}
+              dropDownItems={[
+                { href: "classrooms_setting", itemState: { step: "first" }, label: "새 클래스" },
+                { href: "classrooms", label: "나의 클래스" },
+              ]} />
+          </li>
+          <li><Icon className="fa-solid fa-database" />
+            <DropDownBtn btnName={"단어 관리"}
+              dropDownItems={[
+                { href: "quiz_setting", label: "새 단어장" },
+                { href: "quiz", label: "나의 단어장" },
+              ]} />
+          </li>
+          <li><Icon className="fa-solid fa-star" />
+            <DropDownBtn btnName={"문제 관리"}
+              dropDownItems={[
+                { href: "exam_setting", label: "새 문제" },
+                { href: "exam", label: "나의 문제" },
+              ]} />
+          </li>
+          <li>
+            <Link to="/myschool">
+              <Icon className="fa-solid fa-school"></Icon>
+              <span>나의 학교</span>
+            </Link>
+          </li>
+          {user.isMaster && <li id="lab_btn" ><Link to="/lab"><Icon className="fa-solid fa-khanda"></Icon>
+            <span>실험실</span></Link></li>}
+          {user.isMaster && <li><Link to="/store"><Icon className="fa-solid fa-store"></Icon>
+            <span>상점</span></Link></li>}
+          {user.isMaster && <li id="master_btn" ><Link to="/master"><Icon className="fa-solid fa-key"></Icon>
+            <span>마스터</span></Link></li>}
+          <li><Link to="/purchase"><Icon className="fa-solid fa-key"></Icon>
+            <span>충전</span></Link></li>
+          <NewsWrapper >
+            {isNew && <NewIcon><Badge bg="danger">new</Badge></NewIcon>}
+            <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
+          </NewsWrapper>
+        </MenuWrapper>
+        <Link to="/myinfo">
+          <ProfileImg className="profileImg" src={_profileImg || unknown} alt="프로필 이미지" />
+        </Link>
+      </>}
     </>}
-    {/* PC 학생 */}
-    {(user.uid && !user.isTeacher && !isMobile) && <>
-      <LogoImg src={brandLogo} alt="로고" />
-      <BrandTitle>생기부 쫑알이</BrandTitle>
-      <Row style={{ alignItems: "center" }}><p style={{ margin: "0 20px" }}>{user.name} 학생 사랑합니다.</p></Row>
-      <MenuWrapper>
-        <li><Link to="/"><Icon className="fa-solid fa-house"></Icon>
-          <span>Home</span></Link></li>
-        <li><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon>
-          <span>참여 클래스</span></Link></li>
-        <li><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon>
-          <span>나의 학교</span></Link></li>
-        <li><Link to="/store"><Icon className="fa-solid fa-store"></Icon>
-          <span>상점</span></Link></li>
-        <NewsWrapper>
-          {isNew && <NewIcon><Badge bg="danger">new</Badge></NewIcon>}
-          <Link to="/news" ><Icon className="fa-solid fa-bell" /></Link>
-        </NewsWrapper>
-      </MenuWrapper>
-      <Link to="/myinfo">
-        {_profileImg && <ProfileImg className="profileImg" src={_profileImg || unknown} alt="프로필 이미지" />}
-      </Link>
-    </>}
-    {/* 모바일 교사*/}
-    {(user.isTeacher && isMobile) &&
+    {/* 모바일*/}
+    {isMobile &&
       <Row style={{ width: "100%", padding: "10px", alignItems: "center", justifyContent: "space-between" }}>
-        <Row>
+        <Link to={"/"} style={{ display: "flex" }}>
           <LogoImg src={brandLogo} />
           <BrandTitle>쫑알이</BrandTitle>
+        </Link>
+        <Row style={{ alignItems: "center", gap: "15px" }}>
+          <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
+          {!isMenuOpen && <i className='fa-solid fa-bars' style={{ fontSize: "1.5rem" }} onClick={() => setIsMenuOpen(true)} />}
+          {isMenuOpen && <i className='fa-solid fa-x' style={{ fontSize: "1.5rem" }} onClick={() => setIsMenuOpen(false)} />}
         </Row>
-        {!isMenuOpen && <i className='fa-solid fa-bars' style={{ fontSize: "1.5rem" }} onClick={() => setIsMenuOpen(true)} />}
-        {isMenuOpen && <i className='fa-solid fa-x' style={{ fontSize: "1.5rem" }} onClick={() => setIsMenuOpen(false)} />}
       </Row>
     }
     <MobileMenuWrapper $open={isMenuOpen}>
       <MobileMenuList>
-        <MoebileLi><Link to="/activities" onClick={() => setIsMenuOpen(false)}>활동 관리</Link></MoebileLi>
-        <MoebileLi><Link to="/classrooms" onClick={() => setIsMenuOpen(false)}>클래스 관리</Link></MoebileLi>
-        <MoebileLi><Link to="/quiz" onClick={() => setIsMenuOpen(false)}>퀴즈 관리</Link></MoebileLi>
-        <MoebileLi><Link to="/exam" onClick={() => setIsMenuOpen(false)}>문제 관리</Link></MoebileLi>
-        <MoebileLi><Link to="/news" onClick={() => setIsMenuOpen(false)}>알림</Link></MoebileLi>
-        <MoebileLi><Link to="/myinfo" onClick={() => setIsMenuOpen(false)}>내 정보</Link></MoebileLi>
+        {user.uid && <>
+          <MoebileLi><Link to="/activities" onClick={() => setIsMenuOpen(false)}>활동 관리</Link></MoebileLi>
+          <MoebileLi><Link to="/activities_all" onClick={() => setIsMenuOpen(false)}>전체 활동</Link></MoebileLi>
+          <MoebileLi><Link to="/classrooms" onClick={() => setIsMenuOpen(false)}>클래스 관리</Link></MoebileLi>
+          <MoebileLi><Link to="/quiz" onClick={() => setIsMenuOpen(false)}>단어장 관리</Link></MoebileLi>
+          <MoebileLi><Link to="/exam" onClick={() => setIsMenuOpen(false)}>문제 관리</Link></MoebileLi>
+          <MoebileLi><Link to="/myinfo" onClick={() => setIsMenuOpen(false)}>내 정보</Link></MoebileLi>
+          <MoebileLi><Link to="/purchase" onClick={() => setIsMenuOpen(false)}>충전</Link></MoebileLi>
+          <MoebileLi style={{ fontSize: "15px" }} onClick={() => logout()}>로그아웃</MoebileLi>
+        </>}
+        {!user.uid && <>
+          <MoebileLi><Link to="/activities" onClick={handleIntroClick}>앱 소개</Link></MoebileLi>
+        </>}
       </MobileMenuList>
     </MobileMenuWrapper>
-    {/* 모바일 학생 */}
-    {(user.uid && !user.isTeacher && isMobile) && <>
-      <MenuWrapper>
-        <MoebileLi><Link to="/"><Icon className="fa-solid fa-house"></Icon></Link></MoebileLi>
-        <MoebileLi><Link to="/classRooms"><Icon className="fa-solid fa-chalkboard"></Icon></Link></MoebileLi>
-        <MoebileLi><Link to="/myschool"><Icon className="fa-solid fa-school"></Icon></Link></MoebileLi>
-        <MoebileLi><Icon className="fa-solid fa-user" onClick={() => { }}></Icon></MoebileLi>
-        <NewsWrapper>
-          {isNew && <NewDot>.</NewDot>}
-          <Link to="/news"><Icon className="fa-solid fa-bell"></Icon></Link>
-        </NewsWrapper>
-      </MenuWrapper>
-    </>}
-  </Container >
+  </Container>
   )
 }
 const Row = styled.div`
@@ -230,7 +223,7 @@ const MenuWrapper = styled.ul`
 const Icon = styled.i`
   margin-right: 5px;
   @media (max-width: 768px) {
-    font - size: 25px;
+    font-size: 1.1rem;
     margin: 0;
   }
 `
