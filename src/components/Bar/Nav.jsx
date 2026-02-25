@@ -183,18 +183,14 @@ const Container = styled(Row)`
     text-decoration: none;
   }
   @media screen and (max-width: 768px){
-    flex-direction: column;
-    width: 100%;
-    display: flex;
     position: fixed;
     top: 0;
-    height: 6%;
+    flex-direction: column;
+    width: 100%;
+    height: 50px;
     padding: 0;
     z-index: 998;
-    a {
-      color: white;
-      font-size: 12px;
-    }
+    a { font-size: 12px; }
 `
 const NewsWrapper = styled.li`
   position: relative;

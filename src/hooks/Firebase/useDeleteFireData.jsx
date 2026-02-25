@@ -2,7 +2,7 @@ import { appFireStore } from '../../firebase/config'
 import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
 
 const useDeleteFireData = () => {
-  const db = appFireStore
+  const db = appFireStore;
   const deleteClassWithStudents = async (classId) => {
     // class 문서 참조
     const classDocRef = doc(db, "classRooms", classId);
@@ -15,14 +15,8 @@ const useDeleteFireData = () => {
     studentsSnapshot.forEach((doc) => {
       deletePromises.push(deleteDoc(doc.ref));
     });
-    try {
-      await Promise.all(deletePromises);
-      await deleteDoc(classDocRef);
-    } catch (err) {
-      window.alert("학생 정보 삭제 중 문제가 발생하였습니다. 캡쳐해서 관리자에게 보내주세요.", err)
-      console.log(err)
-    }
-
+    await Promise.all(deletePromises);
+    await deleteDoc(classDocRef);
   };
   return { deleteClassWithStudents }
 }

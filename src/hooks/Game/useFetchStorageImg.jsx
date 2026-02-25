@@ -1,5 +1,5 @@
 import { getDownloadURL, getStorage, ref } from 'firebase/storage'
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 //생성(250117)
 const useFetchStorageImg = () => {
   const storage = getStorage();
@@ -11,7 +11,7 @@ const useFetchStorageImg = () => {
     return pathList;
   }
   //이미지 list 가져오기
-  const fetchImgUrlList = async (pathList, setter = setImgList) => {
+  const fetchImgUrlList = useCallback(async (pathList, setter = setImgList) => {
     if (pathList?.length === 0) return
     let list;
     pathList?.forEach((path) => {
@@ -30,7 +30,7 @@ const useFetchStorageImg = () => {
       }
     })
     return list;
-  }
+  }, [])
   //이미지 하나 가져오기
   const fetchImgUrl = async (path, setter) => {
     if (!path) return

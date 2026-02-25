@@ -8,6 +8,7 @@ import AnimatedProgressBar from '../../components/ProgressBar';
 //이미지
 import qustion_icon from '../../image/icon/question.png'
 import SmallBtn from '../Btn/SmallBtn';
+import { Badge } from 'react-bootstrap';
 //생성(250804)
 const StatusUI = ({ isMaster, myUserData, myPet, mySpec, enmUserData, enmPet, enmSpec, levelInfo, imReady, enmReady, isMobile }) => {
   return (
@@ -28,7 +29,7 @@ const StatusUI = ({ isMaster, myUserData, myPet, mySpec, enmUserData, enmPet, en
             <Row style={{ position: "relative", flexDirection: "column" }}>
               <ProfileImg src={enmUserData?.profileImg || qustion_icon} alt="상대 프로필" />
               {!isMaster && <Icon className="fa-solid fa-crown"></Icon>}
-              {(enmReady && isMobile) && <SmallBtn styles={{ width: "75px" }} btnColor={"#9b0c24"}>준비완료</SmallBtn>}
+              {(enmReady) && <SmallBtn styles={{ width: "75px" }} btnColor={"#9b0c24"}>준비완료</SmallBtn>}
             </Row>
             {!isMobile && < PlayerInfoUI user={enmUserData} pet={enmPet} />}
             {!isMobile && <PetSpecUI spec={enmSpec} />}

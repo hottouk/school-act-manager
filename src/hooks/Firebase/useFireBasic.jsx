@@ -26,9 +26,9 @@ const useFireBasic = (col) => {
   }
   //문서 하나
   const fetchDoc = useCallback(async (id) => {
-    let docRef = doc(colRef, id)
+    const docRef = doc(colRef, id)
     try {
-      let docSnapshot = await getDoc(docRef);
+      const docSnapshot = await getDoc(docRef);
       return docSnapshot.data();
     } catch (err) {
       console.log(err)
@@ -45,6 +45,23 @@ const useFireBasic = (col) => {
       console.log(err)
     }
   }, []);
+  //컬렉션 모든 문서
+  const fetchAllData = useCallback(async (colName) => {
+    const colRef = collection(db, colName);
+    const querySnapshot = await getDocs(colRef);
+    const data = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt ? data.createdAt.toDate() : null,
+        completedAt: data.completedAt ? data.completedAt.toDate() : null,
+        refundedAt: data.refundedAt ? data.refundedAt.toDate() : null,
+      }
+    });
+    return data;
+  }, []);
+
   //삭제
   const deleteData = async (docId) => {
     try {
@@ -54,7 +71,7 @@ const useFireBasic = (col) => {
       console.error(err)
     }
   }
-  return ({ addData, setData, fetchData, fetchDoc, deleteData })
+  return ({ addData, setData, fetchDoc, fetchData, fetchAllData, deleteData })
 }
 
 export default useFireBasic

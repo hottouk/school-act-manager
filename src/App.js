@@ -12,7 +12,7 @@ import LoginPage from './pages/login/LoginPage';
 import LandingPage from './pages/main/LandingPage';
 import Nav from './components/Bar/Nav';
 import Footer from './components/Bar/Footer';
-import LoadingSpinner from './components/Commons/LoadingSpinner';
+import LoadingSpinner from './components/commons/LoadingSpinner';
 //활동 관리
 import ActivityMain from './pages/activity/ActivityMain';
 import ActivityFormPage from './pages/activity/ActivitityFormPage';
@@ -44,12 +44,15 @@ import AmountSelectPage from './pages/purchase/AmountSelectPage';
 //내정보
 import MyInfoPage from './pages/myInfo/MyInfoPage';
 import SchoolSignUpPage from './pages/myInfo/SchoolSignUpPage';
+import EnterroomPage from './pages/quizBattle/EnterroomPage';
 //단어 배틀
 const QuizActiFormPage = lazy(() => import('./pages/quizBattle/QuizActiFormPage'));
 const GameSettingPage = lazy(() => import('./pages/quizBattle/GameSettingPage'));
 const QuizBattleMultiPage = lazy(() => import('./pages/quizBattle/QuizBattleMultiPage'));
 const QuizFormPage = lazy(() => import('./pages/quizBattle/QuizFormPage'));
 const QuizMainPage = lazy(() => import('./pages/quizBattle/QuizMainPage'));
+const BattleroomThrPage = lazy(() => import('./pages/quizBattle/BattleroomThrPage'));
+const BattleroomStuPage = lazy(() => import('./pages/quizBattle/BattleroomStuPage'));
 //상점
 const ShopMainPage = lazy(() => import('./pages/shop/ShopMainPage'));
 //전체 활동
@@ -111,6 +114,8 @@ function App() {
                 {/* <Route path="/school" element={uid ? <SchoolMainPage /> : <Navigate replace={true} to='/login' />} /> */}
                 <Route path="/store" element={uid ? <ShopMainPage /> : <Navigate replace={true} to='/login' />} />
                 {/* 게임 */}
+                <Route path="/battleroom" element={uid ? <BattleroomThrPage /> : <BattleroomStuPage />} />
+                <Route path="/enterroom" element={<EnterroomPage />} />
                 <Route path="/game_setting" element={uid ? <GameSettingPage /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/multiplay" element={uid ? <QuizBattleMultiPage /> : <Navigate replace={true} to='/login' />} />
                 {/* 새소식 관리 */}

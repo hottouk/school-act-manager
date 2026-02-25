@@ -6,13 +6,15 @@ import { useLocation } from 'react-router-dom';
 import MainContainer from '../../components/Styled/MainContainer';
 import SubNav from '../../components/Bar/SubNav';
 import BackBtn from '../../components/Btn/BackBtn';
-
+//생성(260226)
 const ExamItemPage = () => {
   const location = useLocation();
   const { state: examItem } = location;
   return <MainContainer>
     <SubNav><BackBtn /></SubNav>
-    <Column style={{ marginTop: "30px" }}><ExamEditSection examItem={examItem} /></Column>
+    <Column style={{ marginTop: "30px" }}>
+      <ExamEditSection examItem={examItem} />
+    </Column>
   </MainContainer>
 }
 export default ExamItemPage

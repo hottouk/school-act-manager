@@ -66,7 +66,7 @@ const ActivityMain = () => { //진입 경로 총 2곳: 교사/학생
     <MainContainer>
       {/* 교사: 활동관리 - 나의활동 */}
       {user.isTeacher && <MainWrapper>
-        <SearchBar title="교과 활동" type="acti" list={mySubjActiList} setList={setMySubjActiList} isMobile={isMobile} />
+        <SearchBar title="교과 활동" type="title" list={mySubjActiList} setList={setMySubjActiList} isMobile={isMobile} />
         <CardList dataList={mySubjActiList} type="activity" onClick={handleActiOnClick} />
         <SearchBar title="담임반 활동" />
         <CardList dataList={myHomeActiList} type="activity" onClick={handleActiOnClick} />

@@ -1,8 +1,9 @@
 import { Text } from '@pixi/react';
 import React, { useEffect, useState } from 'react'
 //생성(250111) -> 확장(250722)
-const Countdown = ({ isCountdown, count, endCountCallback, x, y }) => {
-  const [_count, setCount] = useState(count);         //카운트다운 상태
+const Countdown = ({ count, endCountCallback, x, y }) => {
+  useEffect(() => setCount(count), [count])
+  const [_count, setCount] = useState(count);    //카운트다운 상태
   const textStyle = {
     fontFamily: "Arial",
     fontSize: 80,
@@ -18,21 +19,16 @@ const Countdown = ({ isCountdown, count, endCountCallback, x, y }) => {
   };
   //카운트다운 
   useEffect(() => {
-    if (isCountdown) {
-      const interval = setInterval(() => {                //초마다 countdown 내리기
-        setCount((prev) => {
-          if (prev > 1) return prev - 1;
-          clearInterval(interval);
-          return 0;
-        });
-      }, 1000);
-      return () => clearInterval(interval);               // 컴포넌트 언마운트 시 정리
-    }
-  }, [isCountdown]);
-  //카운트다운 비활성화
-  useEffect(() => { if (_count === 0) { endCountCallback(); } }, [_count]);
-
-  return (<>{isCountdown && <Text
+    if (_count === 0) { endCountCallback(); return; }
+    const interval = setInterval(() => {                //초마다 countdown 내리기
+      setCount((prev) => {
+        if (prev > 1) return prev - 1;
+        return 0;
+      });
+    }, 1000);
+    return () => clearInterval(interval);               // 컴포넌트 언마운트 시 정리
+  }, [_count, endCountCallback]);
+  return (<>{_count > 0 && <Text
     text={_count}
     x={x}
     y={y}

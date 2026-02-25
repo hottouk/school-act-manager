@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Select from 'react-select'
 import styled from 'styled-components'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { callCreateRoom } from '../../firebase/config'
 //컴포넌트
 import FormFrame from '../../components/Form/FormFrame'
 import FormHeader from '../../components/Form/FormHeader'
@@ -16,6 +17,7 @@ import MonsterModal from '../../components/Modal/MonsterModal'
 import useTeacherAuth from '../../hooks/useTeacherAuth'
 import useFireBasic from '../../hooks/Firebase/useFireBasic'
 import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg'
+
 //이미지
 import temp_icon from '../../image/icon/question.png'
 import { useSelector } from 'react-redux'
@@ -35,7 +37,7 @@ const QuizActiFormPage = () => {
   const { state: quizActiInfo } = useLocation();
   useEffect(() => { bindInfo(); }, [quizActiInfo])
   //랜더링 변수
-  const [_title, setTitle] = useState('');
+  const [title, setTitle] = useState('');
   const [_content, setContent] = useState('');
   const [_highCount, setHighCount] = useState(3);
   useEffect(() => { autoFilRecord("high"); }, [_highCount])
@@ -53,6 +55,7 @@ const QuizActiFormPage = () => {
   //퀴즈 세트 선택
   const [quizOptionList, setQuizOptionList] = useState([]);
   const [_quizSelected, setQuizSelected] = useState(null);
+  console.log(_quizSelected)
   useEffect(() => { autoFill(); }, [_quizSelected])
   //몬스터
   const [monImg, setMonImg] = useState(null);     //이미지
@@ -70,13 +73,7 @@ const QuizActiFormPage = () => {
   const bindInfo = () => {
     if (!quizActiInfo) return;
     // gameRecord: 게임 결과
-    const { title, content, quizInfo, monster, isPrivate, recordList, gameRecord } = quizActiInfo
-    setHighCount(recordList[0].count);
-    setHighRec(recordList[0].record)
-    setMidCount(recordList[1].count);
-    setMidRec(recordList[1].record);
-    setBasicCount(recordList[2].count);
-    setBasicRec(recordList[2].record);
+    const { title, content, quizInfo, monster, isPrivate, gameRecord } = quizActiInfo
     setTitle(title);
     setContent(content);
     setQuizSelected(quizInfo);
@@ -142,7 +139,7 @@ const QuizActiFormPage = () => {
       let confirm = window.confirm(`${quizActiInfo ? "이렇게 변경 저장할까요?" : "이 퀴즈 게임 활동을 생성할까요?"}`)
       if (confirm) {
         const recordList = [{ count: _highCount, record: _highRec }, { count: _midCount, record: _midRec }, { count: _basicCount, record: _basicRec }]
-        const data = { title: _title, recordList, content: _content, subject: subjGroup, subjDetail, quizInfo: _quizSelected, monster: _monster, madeBy: user.name, isPrivate: _isPrivate }
+        const data = { title: title, recordList, content: _content, subject: subjGroup, subjDetail, quizInfo: _quizSelected, monster: _monster, madeBy: user.name, isPrivate: _isPrivate }
         if (!quizActiInfo) {
           addData(data);
           navigate("/activities");
@@ -153,11 +150,14 @@ const QuizActiFormPage = () => {
       }
     } else { window.alert(isValid.message) }
   }
-  //수정 취소
-  const hadleCancelOnClick = () => {
-    bindInfo();
-    setIsModifying(false);
+  //게임방 만들기
+  const handleCreateRoom = async () => {
+    const res = await callCreateRoom({ uid: user.uid, title, maxRounds: 5, quizId: _quizSelected.id });
+    const { data } = res || {}
+    if (!data) return;
+    navigate("/battleroom", { state: { battleCode: data.battleCode, roomId: data.roomId } });
   }
+
   //삭제
   const handleDeleteOnClick = () => {
     const { id } = quizActiInfo
@@ -180,7 +180,7 @@ const QuizActiFormPage = () => {
         </Row>
         <Row style={{ justifyContent: "space-between", margin: "13px 0" }}>
           <DotTitle title={"게임 제목"} styles={{ dotColor: "#3454d1;" }} />
-          <StyledInput type="text" value={_title} onChange={(event) => { setTitle(event.target.value) }} disabled={!isModifying} />
+          <StyledInput type="text" value={title} onChange={(event) => { setTitle(event.target.value) }} disabled={!isModifying} />
         </Row>
         <Row style={{ marginBottom: "10px", justifyContent: "space-between" }}>
           <DotTitle title={"단어 세트"} styles={{ dotColor: "#3454d1;" }} />
@@ -191,19 +191,8 @@ const QuizActiFormPage = () => {
           <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1;" }} />
           {_quizSelected && <StyledText>{subjGroup}교과 {subjDetail}</StyledText>}
         </Row>
-        <Row style={{ marginBottom: "15px", justifyContent: "space-between" }}>
-          <DotTitle title={"공개/비공개"} styles={{ dotColor: "#3454d1;" }} />
-          <TwoRadios
-            name={"isPrivate_radio"}
-            id={["private_radio", "public_radio"]}
-            value={_isPrivate}
-            label={["비공개 활동", "공개 활동"]}
-            onChange={() => { setIsPrivate(!_isPrivate) }}
-            disabled={!isModifying}
-          />
-        </Row>
         {/* 몇번 이겨야? */}
-        {_quizSelected && <>
+        {/* {_quizSelected && <>
           <DotTitle title={"성취도별 문구"} styles={{ dotColor: "#3454d1;" }} />
           <LevelWrapper>
             <Row style={{ gap: "10px", alignItems: "center" }}>
@@ -222,19 +211,19 @@ const QuizActiFormPage = () => {
               <RecordTextArea value={_basicRec} onChange={(event) => { setBasicRec(event.target.value) }} disabled={!isModifying}></RecordTextArea>
             </Row>
           </LevelWrapper>
-        </>}
+        </>} */}
         {/* 설명 */}
         <textarea title="활동 설명" onChange={(e) => { setContent(e.target.value) }} value={_content}
           placeholder={"단어세트를 선택하세요"} disabled={!isModifying} />
 
         {!quizActiInfo && <BtnWrapper>
-          <LongW100Btn btnName="생성" btnOnClick={handleSaveOnClick} />
+          <LongW100Btn onClick={handleCreateRoom}>생성</LongW100Btn>
         </BtnWrapper>}
         {quizActiInfo && <BtnWrapper>
           {(!isModifying && gameRecord) && <LongW100Btn btnName="결과 보기" btnOnClick={() => { setIsRankModal(true) }} />}
           {isModifying && <LongW100Btn btnName="변경 저장" btnOnClick={handleSaveOnClick} />}
           {!isModifying && <LongW100Btn btnName="수정" btnOnClick={() => { setIsModifying(true) }} />}
-          {isModifying && <LongW100Btn btnName="취소" btnOnClick={hadleCancelOnClick} />}
+          {/* {isModifying && <LongW100Btn btnName="취소" btnOnClick={hadleCancelOnClick} />} */}
           {!isModifying && <LongW100Btn btnName="삭제" btnOnClick={handleDeleteOnClick} />}
         </BtnWrapper>}
       </FormFrame>

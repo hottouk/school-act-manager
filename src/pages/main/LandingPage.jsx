@@ -9,7 +9,6 @@ import HorizontalMobileAd from '../../components/Ads/HorizontalMobileAd'
 import NoticeModal from '../../components/Modal/NoticeModal'
 import SupplementInfoModal from '../../components/Modal/SupplementInfoModal'
 //hooks
-import useClientHeight from '../../hooks/useClientHeight'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import { useFloatOnScroll } from '../../hooks/useFloatOnScroll';
 import MainContainer from '../../components/Styled/MainContainer'
@@ -23,7 +22,6 @@ const LandingPage = () => {
   const [isSupplement, setIsSupplement] = useState(false);   //무결성
   useEffect(() => { fetchNotice(); checkUserInfo(); }, []);
   const isMobile = useMediaQuery('(max-width: 768px)'); //화면 크기 감지
-  const clientHeight = useClientHeight(document.documentElement)
   //------함수부------------------------------------------------
   //중요 사항 체크
   const checkUserInfo = () => {

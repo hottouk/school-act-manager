@@ -145,8 +145,7 @@ export const askGPT = onCall(
   async (req) => {
     const apiKey = OPENAI_API_KEY.value();
     const openai = new OpenAI({ apiKey: apiKey }); // 안전하게 사용
-    //todo 보안
-    const { messages, type = "basic", model = "gpt-5-mini", temperature = 1.0, uid, rira: expected } = req.data || {};
+    const { type = "basic", uid, messages, model, verbosity, thinkEffort, leftRira: expected } = req.data || {};
     const requestId = uuidv4();
     //유효성 검사
     if (!uid) throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
@@ -160,7 +159,7 @@ export const askGPT = onCall(
     await db.runTransaction(async (tx) => {
       const ledgerSnap = await tx.get(ledgerRef);
       const userSnap = await tx.get(userRef);
-      if (ledgerSnap.exists) return;// 이미 처리된 요청이면 바로 종료(중복 방지)
+      if (ledgerSnap.exists) return; // 이미 처리된 요청이면 바로 종료(중복 방지)
       if (!userSnap.exists) throw new HttpsError("not-found", "사용자 정보를 찾을 수 없습니다.");
       const userData = userSnap.data() || {};
       const userRira = Number(userData.rira || 0);
@@ -173,7 +172,12 @@ export const askGPT = onCall(
     });
     //2. OpenAI API 호출
     try {
-      const completion = await openai.chat.completions.create({ model, messages, temperature, });
+      const completion = await openai.chat.completions.create({
+        model,
+        messages,
+        reasoning_effort: thinkEffort,
+        verbosity
+      });
       const content = completion.choices?.[0]?.message?.content ?? "";
       const usage = completion.usage || "gpt 사용량 정보 없음";
       // 성공 처리: 장부 status 업데이트
@@ -191,7 +195,7 @@ export const askGPT = onCall(
         if (!userSnap.exists) throw new HttpsError("not-found", "환불에 필요한 사용자 정보를 찾을 수 없습니다, 관리자에게 문의하세요.");
         const currentRira = Number(userSnap.data()?.rira ?? 0);
         tx.update(userRef, { rira: currentRira + charged });
-        tx.set(ledgerRef, { status: "refunded", refundedAt: FieldValue.serverTimestamp(), reason: "gpt_error" },
+        tx.set(ledgerRef, { uid, status: "refunded", refundedAt: FieldValue.serverTimestamp(), reason: "gpt_error" },
         );
       });
       // 클라이언트가 처리하기 쉽게 HttpsError로 변환
@@ -204,8 +208,10 @@ export const askGptOnly = onCall(
   async (req) => {
     const apiKey = OPENAI_API_KEY.value();
     const openai = new OpenAI({ apiKey: apiKey });
-    const { messages, model, temperature = 1.0, } = req.data || {};
-    const completion = await openai.chat.completions.create({ model, messages, temperature, });
+    const { messages, model, thinkEffort, verbosity } = req.data || {};
+    const completion = await openai.chat.completions.create(
+      { model, messages, reasoning_effort: thinkEffort, verbosity }
+    );
     const content = completion.choices?.[0]?.message?.content ?? "";
     const usage = completion.usage || { completion_tokens: 0, prompt_tokens: 0 };
     return { content, usage };
@@ -361,3 +367,15 @@ export const resolveGameTurn = onDocumentUpdated({
     await processEffect({ effect: effects[1], petCurStat: firsResult, docRef, battleTurn, players });
   });
 
+export {
+  createBattleRoom,
+  joinByBattleCode,
+  startGame,
+  phaseManager,
+  setBossStance,
+  submitMyStance,
+  closeStanceCollection,
+  resolveBattleTurn,
+  finalizeGame,
+  cleanupExpiredRooms,
+} from "./battle.js";

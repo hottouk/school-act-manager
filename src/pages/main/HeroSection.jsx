@@ -19,7 +19,6 @@ const Column = styled(Row)`
   flex-direction: column;
 `
 const Section = styled(Column)`
-  height: 100dvh;
   align-items: center;
   gap: 20px;
   justify-content: space-between;
@@ -27,7 +26,7 @@ const Section = styled(Column)`
 `
 const LandingImg = styled.img`
   width: 100%;
-  margin-top: ${({ $children }) => $children ? "60px" : "130px"};
+  margin-top: ${({ $children }) => $children ? "60px" : "130px"};s
   @media(max-width: 768px) {
     width: 140%;
     margin-left: -40%;

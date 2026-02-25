@@ -1,11 +1,12 @@
 import React from 'react'
 import styled from 'styled-components'
 //생성(250217)
-const SearchSection = ({ keyword, placeholder, onChange, onClick }) => {
+const SearchSection = ({ keyword, placeholder, onChange, onClick, initOnClick }) => {
 	return (
 		<Container>
 			<input type="text" value={keyword} placeholder={placeholder} onChange={onChange} />
 			<button onClick={onClick}>검색</button>
+			<button onClick={initOnClick}>초기화</button>
 		</Container>
 	)
 }

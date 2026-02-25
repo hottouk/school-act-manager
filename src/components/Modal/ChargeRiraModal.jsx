@@ -5,6 +5,7 @@ import styled from 'styled-components';
 //컴포넌트  
 import ModalBtn from '../Btn/ModalBtn';
 import DotTitle from '../Title/DotTitle';
+import SpectrumSelector from '../commons/SpectrumSelector';
 //hooks
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 //상수
@@ -12,7 +13,8 @@ import { GPT_OPTION_LIST } from '../../constants/gpt';
 //이미지
 import icon_ria from '../../image/money.png';
 //생성(260106)
-const ChargeRiraModal = ({ show, onHide, onApprove, isMulti, multiList }) => {
+const ChargeRiraModal = ({ show, onHide, onApprove, isMulti, multiList, }) => {
+
   //유저 정보
   const { userRtData, userDataListener } = useFireUserData();
   useEffect(() => { userDataListener() }, [userDataListener]);
@@ -22,13 +24,26 @@ const ChargeRiraModal = ({ show, onHide, onApprove, isMulti, multiList }) => {
   }, [userRtData])
   //다수
   const multiInterface = isMulti && multiList;
-  //모델 가격
+  // 모델 가격
   const [_selectedModel, setSelectedModel] = useState(null);
   const priceByModel = useMemo(() => {
     if (!_selectedModel) return;
     if (!multiInterface) return _selectedModel.price;
     else return (_selectedModel.price * multiList.length);
   }, [_selectedModel, multiInterface, multiList]);
+  // 추론/길이
+  const THINK_EFFORT_OPTIONS = [
+    { label: "낮음", value: "low" },
+    { label: "중간", value: "medium" },
+    { label: "높음", value: "high" },
+  ];
+  const VERBOSITY_OPTIONS = [
+    { label: "낮음", value: "low" },
+    { label: "중간", value: "medium" },
+    { label: "높음", value: "high" },
+  ];
+  const [thinkEffort, setThinkEffort] = useState("low");
+  const [verbosity, setVerbosity] = useState("medium");
   //**함수부**
   //유효성 검사 
   const check = () => {
@@ -37,13 +52,19 @@ const ChargeRiraModal = ({ show, onHide, onApprove, isMulti, multiList }) => {
     const curRira = userRtData.rira || 0;
     if (curRira < priceByModel) { alert("리라가 부족합니다."); return false; }
     const leftRira = curRira - priceByModel;
-    return { leftRira, result: true }
+    return { leftRira, ok: true }
   }
   //승인
-  const handleApproveOnClick = () => {
-    const { result, leftRira } = check();
-    if (!result) return;
-    onApprove({ model: _selectedModel?.value, leftRira });
+  const handleApproveOnClick = async () => {
+    const result = check();
+    if (!result.ok) return;
+    const commonPayload = {
+      model: _selectedModel.value,
+      thinkEffort,
+      verbosity,
+      leftRira: result.leftRira,
+    };
+    await onApprove(commonPayload);
     onHide();
   }
   //취소
@@ -77,6 +98,12 @@ const ChargeRiraModal = ({ show, onHide, onApprove, isMulti, multiList }) => {
               <span>추천 작업: <Highlight>{_selectedModel.recommend}</Highlight></span>
             </WhiteWrapper>}
         </Column>
+        {_selectedModel && <>
+          <DotTitle>추론 정도</DotTitle>
+          <SpectrumSelector options={THINK_EFFORT_OPTIONS} value={thinkEffort} setValue={setThinkEffort} />
+          <DotTitle>생성 길이</DotTitle>
+          <SpectrumSelector options={VERBOSITY_OPTIONS} value={verbosity} setValue={setVerbosity} />
+        </>}
         <DotTitle>결제 정보</DotTitle>
         {_selectedModel && <WhiteWrapper>
           <Row style={{ justifyContent: "space-between" }}>

@@ -44,10 +44,35 @@ const AllStudentByActiPage = () => {
 	const { askGptOnReport, askGptOnKeywords, playMultipleGpt, askTranslate, gptRes, gptStatus, gptProgress, gptAnswer, gptAnswerList } = useChatGpt();
 	useEffect(() => setIsLoading(gptRes === GPT_RESPONSE.LOADING), [gptRes]);
 	useEffect(() => setLoadingMsg(gptStatus), [gptStatus]);
+	useEffect(() => setProgress(gptProgress), [gptProgress]);
 	const [gptTarget, setGptTarget] = useState({ idx: null, mode: null });
-	useEffect(() => bindGptAnaswer(), [gptAnswer, gptAnswerList]);
+	useEffect(() => {
+		const bindGptAnaswer = () => {
+			const { mode, idx } = gptTarget;
+			if (gptAnswer) {
+				if (idx == null) return;
+				if (mode === GPT_MODE.TRANS) setPersonalInfoMap(prev => {
+					const { report, ...rest } = prev[idx];
+					return { ...prev, [idx]: { ...rest, report: gptAnswer } };
+				});
+				else setRecordMap((prev) => ({ ...prev, [idx]: gptAnswer }));
+			} else {
+				gptAnswerList.forEach((item) => {
+					const { idx, answer } = item;
+					if (mode === GPT_MODE.MULTI_TRANS) setPersonalInfoMap(prev => {
+						const { report, ...rest } = prev[idx];
+						return { ...prev, [idx]: { ...rest, report: answer } };
+					});
+					else setRecordMap((prev) => ({ ...prev, [idx]: answer }));
+				})
+			}
+			setGptTarget({ mode: null, idx: null });
+		}
+		bindGptAnaswer();
+	}, [gptAnswer, gptAnswerList]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [loadingMsg, setLoadingMsg] = useState('');
+	const [progress, setProgress] = useState(null);
 	//다중 선택
 	const [isMulti, setIsMulti] = useState(false);
 	const [selectedList, setSelectedList] = useState([]);
@@ -74,7 +99,7 @@ const AllStudentByActiPage = () => {
 		if (!selected) return [];
 		const { record, perfRecordList, extraRecordList, repeatInfoList } = selected;
 		const list = [{ label: "기본 문구", value: record, type: "basic" }];
-		if (perfRecordList?.length > 0) ["샹", "중", "하", "최하"].forEach((item, index) => list.push({ label: item, value: perfRecordList[index], type: "perf" }));
+		if (perfRecordList?.length > 0) ["상", "중", "하", "최하"].forEach((item, index) => list.push({ label: item, value: perfRecordList[index], type: "perf" }));
 		extraRecordList?.forEach((item, index) => list.push({ label: `랜덤문구${index + 1}`, value: item }));
 		repeatInfoList?.forEach(({ times, record }) => list.push({ label: `${times}회 반복문구`, value: record, type: "repeat" }));
 		return list;
@@ -93,8 +118,6 @@ const AllStudentByActiPage = () => {
 		if (!petListRtData) return;
 		setRecordMap(createMatrix(petListRtData, ''));
 		setPersonalInfoMap(createMatrix(petListRtData, { mode: GPT_MODE.REPORT, fillerMap: {}, blankList: [], keywordList: [], }));
-		// if (setSavedActi) { setSelectedActi(savedActi); }
-		// else { setSelectedActi(null); }
 	};
 	//Map 생성
 	const createMatrix = (list, initVal) => {
@@ -131,28 +154,6 @@ const AllStudentByActiPage = () => {
 		if (!map) { window.alert("빈칸을 채워주세요."); return; }
 		let index = 0;
 		return text.replace(/\{\/\*.*?\*\/\}/g, () => map[index++].split(":")[1] || '');
-	}
-	//gpt 
-	const bindGptAnaswer = () => {
-		const { mode, idx } = gptTarget;
-		if (gptAnswer) {
-			if (idx == null) return;
-			if (mode === GPT_MODE.TRANS) setPersonalInfoMap(prev => {
-				const { report, ...rest } = prev[idx];
-				return { ...prev, [idx]: { ...rest, report: gptAnswer } };
-			});
-			else setRecordMap((prev) => ({ ...prev, [idx]: gptAnswer }));
-		} else {
-			gptAnswerList.forEach((item) => {
-				const { idx, answer } = item;
-				if (mode === GPT_MODE.MULTI_TRANS) setPersonalInfoMap(prev => {
-					const { report, ...rest } = prev[idx];
-					return { ...prev, [idx]: { ...rest, report: answer } };
-				});
-				else setRecordMap((prev) => ({ ...prev, [idx]: answer }));
-			})
-		}
-		setGptTarget({ mode: null, idx: null });
 	}
 	//ocr 결과
 	const renderOcrOptions = () => ocrList.map((ocrText, index) => ({ label: `페이지 ${index + 1}: ${ocrText.slice(0, 10)}...`, value: ocrText }));
@@ -234,16 +235,25 @@ const AllStudentByActiPage = () => {
 	}
 	//gpt 다중 유효성 검사
 	const multiCheck = (multiMode) => {
-		if (selectedList?.length === 0) { alert("선택된 사람이 없습니다."); return false; }
-		if (selectedList.some(item => !item.record?.trim())) { alert("문구를 입력하세요."); return false; }
-		if (multiMode === GPT_MODE.MULTI_TRANS) if (selectedList.some(item => item.mode !== GPT_MODE.REPORT)) { alert("번역은 레포트 모드만 가능합니다."); return false; }
+		if (selectedList?.length === 0) { alert("선택된 사람이 없습니다."); return false; };
+		if (multiMode === GPT_MODE.MULTI_TRANS) {
+			if (selectedList.some(item => item.mode !== GPT_MODE.REPORT)) { alert("번역은 레포트 모드만 가능합니다."); return false; }
+		};
+		if (multiMode === GPT_MODE.MULTI_GENERAL) {
+			console.log(3)
+			if (selectedList.some(item => {
+				console.log(item);
+				return !item.record?.trim()
+			})) { alert("문구를 입력하세요."); return false; }
+		};
 		const invalid = selectedList.some(item => {
-			let inner = false
+			console.log(item);
+			let result = false
 			const { mode, report, fillerMap, keywordList } = item;
-			if (mode === GPT_MODE.REPORT) { if (!report) { alert("활동 보고서가 비어 있는 셀이 있습니다."); inner = true; } }
-			else if (mode === GPT_MODE.FILLER) { if (Object.keys(fillerMap).length === 0) { alert("비어 있는 셀이 있습니다."); inner = true; } }
-			else if (mode === GPT_MODE.KEYWORD) { if (keywordList.length === 0) { alert("키워드가 없는 셀이 있습니다."); inner = true; } }
-			return inner;
+			if (mode === GPT_MODE.REPORT && multiMode === GPT_MODE.MULTI_GENERAL) { if (!report) { alert("활동 보고서가 비어 있는 셀이 있습니다."); result = true; } }
+			else if (mode === GPT_MODE.FILLER) { if (Object.keys(fillerMap).length === 0) { alert("비어 있는 셀이 있습니다."); result = true; } }
+			else if (mode === GPT_MODE.KEYWORD) { if (keywordList.length === 0) { alert("키워드가 없는 셀이 있습니다."); result = true; } }
+			return result;
 		});
 		if (invalid) return false;
 		return true;
@@ -255,10 +265,12 @@ const AllStudentByActiPage = () => {
 		setIsRiraModal(true);
 	}
 	//gpt 승인 함수
-	const getHandleOnApprove = ({ model, leftRira }) => {
+	const gptOnApprove = async ({ model, thinkEffort, verbosity, leftRira }) => {
 		const { idx, mode } = gptTarget;
-		if (mode === GPT_MODE.MULTI_GENERAL || mode === GPT_MODE.MULTI_TRANS) playMultipleGpt(selectedList, mode, model, leftRira)
-			.then(() => setIsMulti(false));
+		if (isMulti) {
+			await playMultipleGpt({ infoList: selectedList, multiMode: mode, model, thinkEffort, verbosity, leftRira });
+			setIsMulti(false);
+		}
 		if (idx === null) return; // 개별					
 		const record = _recordMap[idx] || '';
 		const target = _personalInfoMap[idx] || {};
@@ -301,40 +313,45 @@ const AllStudentByActiPage = () => {
 		const isExist = await findFile("pdfs", pdfFile.name);
 		if (isExist) { setOcrStage(1); return; }
 		setIsLoading(true);
+		setProgress({ current: 1, total: 2 });
 		setLoadingMsg("⏳ 파일 업로드중...");
-		uploadFile("pdfs", pdfFile)
-			.then(() => { setIsLoading(false); setLoadingMsg(''); setOcrStage(1); })
+		await uploadFile("pdfs", pdfFile);
+		setProgress({ current: 2, total: 2 });
+		setIsLoading(false);
+		setLoadingMsg('');
+		setOcrStage(1);
 	}
 	//추출
 	const handleExtractOnClick = async () => {
+		setIsLoading(true);
+		setProgress({ current: 0, total: 3 });
+		setLoadingMsg("📤 텍스트 추출중...이 작업은 오래 걸릴 수 있습니다.");
 		const fileName = pdfFile.name.split(".")[0];
 		const isExist = await findFile("ocr_results", fileName);
-		if (isExist) { setOcrStage(2); return; }
-		setIsLoading(true);
-		setLoadingMsg("📤 텍스트 추출중...이 작업은 오래 걸릴 수 있습니다.");
-		let response = null;
 		try {
-			response = await axios.post(process.env.REACT_APP_OCR_API_PDF_URL, { fileName: pdfFile.name }, { headers: { "Content-Type": "application/json" } })
-			if (response) { alert("추출 작업이 완료되었습니다."); setOcrStage(2); setLoadingMsg(''); setIsLoading(false); }
+			if (!isExist) {
+				setProgress({ current: 1, total: 3 });
+				const extractRes = await axios.post(process.env.REACT_APP_OCR_API_PDF_URL,
+					{ fileName: pdfFile.name },
+					{ headers: { "Content-Type": "application/json" } });
+				if (!extractRes) return;
+			}
+			// pdf 다운로드
+			setProgress({ current: 2, total: 3 });
+			setLoadingMsg("⏳ 다운로드중...");
+			const downRes = await axios.get(process.env.REACT_APP_OCR_RESULT_URL,
+				{ params: { fileName: pdfFile.name } })
+			if (!downRes) return;
+			setOcrList(downRes.data.pages);
+			setOcrStage(2);
 		} catch (error) {
-			console.error("추출 실패: ", error); alert("추출 실패: ", error); setLoadingMsg(''); setIsLoading(false);
-		}
-	};
-	//다운로드
-	const handleOcrDownOnClick = async () => {
-		let response = null;
-		try {
-			setIsLoading(true);
-			setLoadingMsg("⏳ 다운로드중...")
-			response = await axios.get(process.env.REACT_APP_OCR_RESULT_URL, { params: { fileName: pdfFile.name } })
-			if (!response) return;
-			setOcrList(response.data.pages);
-			setOcrStage(3); setLoadingMsg(''); setIsLoading(false);
-		} catch (error) {
-			alert("OCR 결과 가져오기 실패:", error); console.error("OCR 결과 가져오기 실패:", error);
+			alert("OCR 결과 가져오기 실패:", error);
+			console.error("OCR 결과 가져오기 실패:", error);
 			setOcrList(["결과가 없습니다."]);
-			setOcrStage(3); setLoadingMsg(''); setIsLoading(false);
 		}
+		setLoadingMsg('');
+		setProgress(null);
+		setIsLoading(false);
 	};
 	//ocr 삽입
 	const handleOcrInsertOnClick = (idx) => {
@@ -360,7 +377,7 @@ const AllStudentByActiPage = () => {
 				placeholder="활동을 선택해주세요."
 				isDisabled={isMulti}
 			/>
-			{(ocrList?.length > 0 && ocrStage === 3) && <Select
+			{(ocrList?.length > 0 && ocrStage === 2) && <Select
 				onChange={(event) => setSelectedOcr(event)}
 				options={renderOcrOptions()}
 				placeholder="ocr 결과를 선택해주세요."
@@ -373,11 +390,11 @@ const AllStudentByActiPage = () => {
 							<OcrWrapper>
 								{ocrStage === 0 && <span style={{ cursor: "pointer" }} onClick={handleUploadOnClick}>파일 업로드</span>}
 								{ocrStage === 1 && <span style={{ cursor: "pointer" }} onClick={handleExtractOnClick}>텍스트 추출</span>}
-								{ocrStage === 2 && <span style={{ cursor: "pointer" }} onClick={handleOcrDownOnClick}>다운로드</span>}
-								{ocrStage === 3 && <span style={{ cursor: "pointer" }} onClick={() => setIsOcrMenu(false)}>다운로드 완료</span>}
+								{ocrStage === 2 && <span style={{ cursor: "pointer" }} onClick={() => setIsOcrMenu(false)}>작업 완료</span>}
 							</OcrWrapper>
 						</AnimMaxHightOpacity>
-						<span style={{ textDecoration: "underline", cursor: "pointer", display: 'block', width: "100%" }} onClick={() => setIsOcrMenu(!isOcrMenu)}>{String(pdfFile.name).slice(0, 10)}...</span>
+						<ClickableText
+							onClick={() => setIsOcrMenu(!isOcrMenu)}>{String(pdfFile.name).slice(0, 10)}...</ClickableText>
 					</div>}
 					<ClickableIcon className='fa-solid fa-file-pdf' onClick={handlePdfOnClick} />
 					<input type='file' ref={inputFileRef} onChange={(event) => setPdfFile(event.target.files[0])} accept="application/pdf" style={{ display: "none" }} />
@@ -508,14 +525,14 @@ const AllStudentByActiPage = () => {
 		<ChargeRiraModal
 			show={isRiraModal}
 			onHide={() => setIsRiraModal(false)}
-			onApprove={getHandleOnApprove}
+			onApprove={gptOnApprove}
 			isMulti={isMulti}
 			multiList={selectedList}
 		/>
 		<GptIngModal
 			show={isLoading}
 			status={loadingMsg}
-			progress={gptProgress}
+			progress={progress}
 		/>
 	</>
 }
@@ -525,9 +542,17 @@ const Row = styled.div`
 const Column = styled(Row)`
 	flex-direction: column;
 `
+const ClickableText = styled.span`
+	text-decoration: underline;
+	cursor: pointer;
+	display: block;
+	width: 100%;
+	font-weight: 500;
+	color: #3454d1;
+`
 const OcrWrapper = styled(Column)`
 	position: absolute;
-	width: 100%;
+	width: 150px;
 	top: 40px;
 	left: 0;
 	background-color: white;
@@ -541,6 +566,7 @@ const GridContainer = styled.div`
   margin: 10px auto;
 	justify-content: center;
   grid-template-columns: 50px 80px 80px 160px 1fr 1fr 70px 70px;
+	border-left: 1px solid #787878;
 `
 // lastChild의 범위를 명확하게 하기 위함.
 const GridRowWrapper = styled.div`
@@ -553,17 +579,15 @@ const Header = styled.div`
   padding: 10px;
   font-weight: bold;
   justify-content: center;
-  &: first-child { border-top-left-radius: 5px;  }
-  &: last-child { border-top-right-radius: 5px;  }
 `
 const GridItem = styled(Column)`
 	min-height: 10dvh;
   padding: 10px;
   color: black;
 	background-color: #dddddd90;
-  border: 1px solid #78787880;
-  border-radius: 5px;
-  text-align: center;
+  border-right: 1px solid #787878;
+	border-bottom: 1px solid #787878;
+	text-align: center;
   &.left-align { text-align: left; }
 `
 const Textarea = styled.textarea`

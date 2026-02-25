@@ -5,13 +5,20 @@ import styled from 'styled-components'
 import AnimatedProgressBar from '../../ProgressBar'
 //생성(260115)
 const GptIngModal = ({ show, onHide, status, progress }) => {
-  useEffect(() => setIsMulti(checkIsMulti()), [progress])
-  const [isMulti, setIsMulti] = useState(false);
-  const checkIsMulti = () => {
-    if (!progress) return false;
-    if (progress.total === 0) return false;
-    return true;
-  };
+  //요청 1개
+  const [_count, setCount] = useState(1);
+  useEffect(() => {
+    if (!show) return;
+    const interval = setInterval(() => {                //초마다 countdown 내리기
+      setCount((prev) => {
+        if (prev < 10) return prev + 1;
+      });
+    }, 1000);
+    return () => {
+      setCount(1);
+      clearInterval(interval);
+    }               // 컴포넌트 언마운트 시 정리
+  }, [show]);
   return (
     <Modal
       show={show}
@@ -24,7 +31,8 @@ const GptIngModal = ({ show, onHide, status, progress }) => {
           <Spinner />
           {status}
           <Row style={{ width: "100%" }}>
-            {isMulti && <AnimatedProgressBar gptProgress={progress} />}
+            {progress && <AnimatedProgressBar gptProgress={progress} />}
+            {!progress && <AnimatedProgressBar count={_count} />}
           </Row>
         </Column>
       </Modal.Body>

@@ -141,8 +141,6 @@ const ClassroomDetailsPage = () => {
     if (!confirm) return;
     updateKlassroom({ semester: next }, thisKlassId);
   };
-  //몬스터 클릭
-  const handleMonsterOnClick = (item) => { navigate("/game_setting", { state: { ...item, klassId: thisKlassId } }) };
   //학생: 클래스 목록에서 삭제
   const handleDeleteFromListOnClick = () => {
     const newList = user.myClassList.filter((klassInfo) => klassInfo.id !== thisKlassId);
@@ -162,7 +160,7 @@ const ClassroomDetailsPage = () => {
     </Column>}
     {klassRtData && <AnimWrapper $isVisible={isVisible}>
       {/* 반 기본 정보(공용) */}
-      <KlassBoardSection userStatus={userStatus} klassInfo={klassRtData} studentList={petListRtData} />
+      <KlassBoardSection userStatus={userStatus} id={thisKlassId} klassInfo={klassRtData} studentList={petListRtData} />
       {/* 쫑알이(교사)*/}
       {user.isTeacher && <SubWrapper>
         <MainWrapper styles={{ position: "relative" }}>

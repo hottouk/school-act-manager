@@ -18,12 +18,12 @@ import DamageText from '../../components/Game/Skills/DamageText';
 import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg';
 import useFireGameData from '../../hooks/Firebase/useFireGameData';
 import useFireQuizData from '../../hooks/Firebase/useFireQuizData';
-import useQuizLogic from '../../hooks/Game/useQuizLogic';
+import useQuizLogic from './hooks/useQuizLogic';
 //이미지
 import qustion_icon from '../../image/icon/question.png';
 import MessageUI from '../../components/Game/MessageUI';
 import ActionBallUI from '../../components/Game/ActionBallUI';
-import useBattleLogic from '../../hooks/Game/useBattleLogic';
+import useBattleLogic from './hooks/useBattleLogic';
 import HPBarUI from '../../components/Game/HPBarUI';
 import BasicAttack from '../../components/Game/Skills/BasicAttack';
 import BasicDefense from '../../components/Game/Skills/BasicDefense';

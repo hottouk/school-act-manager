@@ -47,14 +47,14 @@ const CardList = ({ dataList, type, onClick, selected }) => {
     const { classTitle, intro, subject, subjDetail, grade, classNumber } = item || {};
     return <Card onClick={() => onClick(item)}>
       <Title style={{ color: "#3454d1" }}>{classTitle}</Title>
-      <Row style={{ marginBottom: "25px" }}>
+      <Column>
         {type === "subjKlass" && <BasicText>{subject}{subjDetail ? '-' + subjDetail : ''} / </BasicText>}
         <Row>
           <Highlight>{grade}</Highlight><BasicText>학년</BasicText>
           <Highlight>{classNumber}</Highlight><BasicText>반</BasicText>
         </Row>
-      </Row>
-      {!isMobile && <BasicText>{intro}</BasicText>}
+        {!isMobile && <BasicText>{intro}</BasicText>}
+      </Column>
     </Card>
   }
   //단어 카드

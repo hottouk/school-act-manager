@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 //Section
-import PixiResponsiveStage from './PixiResponsiveStage';
+import PixiStage from './PixiStage';
 import ReviewSection from './ReviewSection';
 //컴포넌트
 import TransparentBtn from '../../components/Btn/TransparentBtn';
@@ -14,10 +14,10 @@ import StatusUI from '../../components/Game/StatusUI';
 import useFetchStorageImg from '../../hooks/Game/useFetchStorageImg';
 import useFireBasic from '../../hooks/Firebase/useFireBasic';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
-import useBattleLogic from '../../hooks/Game/useBattleLogic';
+import useBattleLogic from './hooks/useBattleLogic';
 import useLevel from '../../hooks/useLevel';
 import useMediaQuery from '../../hooks/useMediaQuery';
-import useQuizLogic from '../../hooks/Game/useQuizLogic';
+import useQuizLogic from './hooks/useQuizLogic';
 //img
 import useFireActiData from '../../hooks/Firebase/useFireActiData';
 //Data
@@ -453,7 +453,7 @@ const QuizBattleSingleSection = ({ quizSetId, selectedPet, monsterDetails, gameD
     {/* 메인 화면 */}
     {!background && <Spinner variant="primary" />}
     {(background && phase !== "review") &&
-      <PixiResponsiveStage isMobile={isMobile} phase={phase} background={background} messageList={messageList} quizListRef={quizListRef} curQuiz={curQuiz} marking={marking} score={correctNumber * 100} actionBall={actionBall}
+      <PixiStage isMobile={isMobile} phase={phase} background={background} messageList={messageList} quizListRef={quizListRef} curQuiz={curQuiz} marking={marking} score={correctNumber * 100} actionBall={actionBall}
         mySpec={mySpec} myCurHP={myCurHP} enmSpec={enmSpec} enemyCurHP={enemyCurHP} myActionEff={myActionEff} enmActionEff={enmActionEff} myPetBackImg={myPetBackImg} enmSkillEff={enmSkillEff} enmImg={enmImg} enemyHP={enmSpec.hp}
         countdown={countdown} skillEffMap={skillEffMap} endCountdown={endCountdown} result={result} correctNumber={correctNumber} rewardPoint={rewardPoint} countWinRecord={countWinRecord} exp={enmExp} myDmg={myDmg} enmDmg={enmDmg}
       />

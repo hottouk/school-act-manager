@@ -13,7 +13,7 @@ import useFireClassData from '../../hooks/Firebase/useFireClassData';
 import useDeleteFireData from '../../hooks/Firebase/useDeleteFireData';
 import useFireUserData from '../../hooks/Firebase/useFireUserData';
 //분리 생성(250211) => 기능 분산(250909)
-const KlassBoardSection = ({ userStatus, klassInfo, studentList }) => {
+const KlassBoardSection = ({ userStatus, klassInfo, studentList, id }) => {
   useEffect(() => { bindData(); }, [klassInfo]);
   const user = useSelector(({ user }) => user);
   const navigate = useNavigate();
@@ -55,7 +55,7 @@ const KlassBoardSection = ({ userStatus, klassInfo, studentList }) => {
     const confirm = window.confirm("이대로 클래스 정보를 변경하시겠습니까?");
     if (confirm) {
       const classInfo = { classTitle: _title, intro: _intro, notice: _notice, isPublic: _isPublic };
-      updateKlassroom(classInfo, klassInfo.id);
+      updateKlassroom(classInfo, id);
       setIsModifying(false);
     }
   }
@@ -68,7 +68,7 @@ const KlassBoardSection = ({ userStatus, klassInfo, studentList }) => {
   const handleSemesterOnClick = () => {
     const confirm = window.confirm("학기를 분리하시겠습니까?");
     if (!confirm) return;
-    updateKlassroom({ semester: 1 }, klassInfo.id);
+    updateKlassroom({ semester: 1 }, id);
   }
   //클래스 복제
   const handleCopyOnClick = async () => {
@@ -86,24 +86,21 @@ const KlassBoardSection = ({ userStatus, klassInfo, studentList }) => {
     } else alert("클래스 제목을 입력해주세요.");
   }
   //클래스 삭제
-  const handleDeleteOnClick = () => {
+  const handleDeleteOnClick = async () => {
     const deleteConfirm = window.prompt("클래스를 삭제하시겠습니까? 반 학생정보도 함께 삭제됩니다. 삭제하시려면 '삭제합니다'를 입력하세요.");
-    if (deleteConfirm === "삭제합니다") {
-      deleteClassWithStudents(klassInfo.id).then(() => {
-        alert("클래스와 모든 학생 정보가 삭제 되었습니다.")
-        navigate("/classRooms");
-      })
-    } else alert("문구가 제대로 입력되지 않았습니다.");
+    if (deleteConfirm !== "삭제합니다") { alert("문구가 제대로 입력되지 않았습니다."); return; }
+    await deleteClassWithStudents(id);
+    alert("클래스와 모든 학생 정보가 삭제 되었습니다.");
+    navigate("/classRooms");
   }
   //코티칭 탈퇴
   const handleDropOutOnClick = () => {
     const confirm = window.confirm("코티칭 클래스를 탈퇴하시겠습니까?");
-    if (confirm) {
-      const deletedList = user.coTeachingList.filter((item) => item.id !== klassInfo?.id);
-      updateUserInfo("coTeachingList", deletedList);                                     //유저 코티칭 list에서 삭제
-      deleteKlassroomArrayInfo(klassInfo.id, "coTeacher", user.uid);                     //클래스 코티쳐 list에서 삭제
-      navigate("/classRooms");
-    }
+    if (!confirm) return;
+    const deletedList = user.coTeachingList.filter((item) => item.id !== klassInfo?.id);
+    updateUserInfo("coTeachingList", deletedList);                                     //유저 코티칭 list에서 삭제
+    deleteKlassroomArrayInfo(klassInfo.id, "coTeacher", user.uid);                     //클래스 코티쳐 list에서 삭제
+    navigate("/classRooms");
   }
   return (
     <Container>

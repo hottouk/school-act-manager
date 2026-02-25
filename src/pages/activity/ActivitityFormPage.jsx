@@ -86,15 +86,15 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const { addActi, updateActi, deleteActi } = useFireActiData();
   const { copyActiTransaction, delCopiedActiTransaction } = useFireTransaction()
   //gpt
-  const { gptAnswer, askExtraRecord, askPerfRecord, askSubjRecord, askHomeroomRecord, splitGptAnswers, gptRes, gptStatus, gptProgress } = useChatGpt();
+  const { gptAnswer, askExtraRecord, askPerfRecord, askSubjRecord, askHomeroomRecord, splitGptAnswers, gptRes, gptStatus } = useChatGpt();
   const [gptType, setGptType] = useState('');
   useEffect(() => { setGptType(sort); }, [sort]);
   const gptPromptMap = {
-    subject: (model, rira) => askSubjRecord(_subjDetail, _content, model, rira),
-    perf: (model, rira) => askPerfRecord(_subjDetail, _content, _record, model, rira),
-    extra: (model, rira) => askExtraRecord(_subjDetail, _content, _record, model, rira),
-    repeat: (model, rira) => askPerfRecord(_subjDetail, _content, _record, model, rira),
-    homeroom: (model, rira) => askHomeroomRecord(_subjDetail, _title, _content, _timeFormat, model, rira),
+    subject: ({ model, thinkEffort, verbosity, leftRira, }) => askSubjRecord({ subject: _subjDetail, content: _content, model, thinkEffort, verbosity, leftRira }),
+    perf: ({ model, thinkEffort, verbosity, leftRira, }) => askPerfRecord({ subject: _subjDetail, content: _content, _record, model, thinkEffort, verbosity, leftRira }),
+    extra: ({ model, thinkEffort, verbosity, leftRira, }) => askExtraRecord({ subject: _subjDetail, content: _content, _record, model, thinkEffort, verbosity, leftRira }),
+    repeat: ({ model, thinkEffort, verbosity, leftRira, }) => askPerfRecord({ subject: _subjDetail, content: _content, _record, model, thinkEffort, verbosity, leftRira }),
+    homeroom: ({ model, thinkEffort, verbosity, leftRira, }) => askHomeroomRecord({ title: _title, subject: _subjDetail, content: _content, time: _timeFormat, model, thinkEffort, verbosity, leftRira }),
   };
   const gptSetterMap = {
     subject: () => setRecord(gptAnswer),
@@ -182,13 +182,16 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     if (!_title) { alert('제목을 입력하세요'); return false; }
     return true;
   };
-  //GPT 대화창 열기
-  const handleGptOnClick = () => { if (!check()) return; setIsRiraModal(true); };
+  //GPT 대화창 열기as
+  const handleGptOnClick = () => {
+    if (!check()) return;
+    setIsRiraModal(true);
+  };
   //GPT 승인 시
-  const askGptOnApprove = ({ model, leftRira }) => {
+  const askGptOnApprove = ({ model, leftRira, thinkEffort, verbosity }) => {
     const fn = gptPromptMap[gptType];
     if (typeof (fn) !== "function") { alert("지원하지 않는 GPT 타입입니다."); return; }
-    fn(model, leftRira);
+    fn({ model, leftRira, thinkEffort, verbosity });
   }
   //저장
   const handleSaveOnClick = (event) => {
@@ -247,7 +250,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
         <ActiSection>
           <FormHeader>{state ? <legend>{_subjDetail} 활동 수정</legend> : <legend>활동 생성</legend>}</FormHeader>
           <Row style={{ margin: "13px 0" }}>
-            <DotTitle title={"활동 제목"} styles={{ dotColor: "#3454d1" }} />
+            <DotTitle title={"활동 제목"} />
             <TextInput className="act_title" id="act_title" type="text"
               onChange={handleOnChange}
               value={_title} placeholder="ex)포도당 산화 환원 실험"
@@ -256,7 +259,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
           </Row>
           <Column style={{ marginBottom: "13px", gap: "10px" }}>
             <Row>
-              <DotTitle title={"교과/과목"} styles={{ dotColor: "#3454d1" }} />
+              <DotTitle title={"교과/과목"} />
               {(!isEdit && _subjGroup) && <BasicText>{_subjGroup}과 {_subjDetail}</BasicText>}
             </Row>
             {isEdit && <SubjectSelects sort={sort}
@@ -293,7 +296,10 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
             <ByteCalculator handleOnConhange={handleOnChange} str={_record} styles={{ isTotalByteHide: true }} />
           </Row>
           {/* 날짜_담임반 전용 */}
-          <Row style={{ marginBottom: "13px" }}>{sort === "homeroom" && <DotTitle title={"날짜 정보 ▼"} onClick={() => { setIsDateShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}</Row>
+          <Row style={{ marginBottom: "13px" }}>{sort === "homeroom" &&
+            <DotTitle title={"날짜 정보 ▼"}
+              onClick={() => setIsDateShown((prev) => !prev)} pointer="pointer" />}
+          </Row>
           <AnimMaxHightOpacity isVisible={isDateShown}>
             <HiddenWrapper>
               <Row style={{ margin: "0" }}><TextInput type="text" value={_timeFormat} disabled style={{ flexGrow: 1, width: "55px" }} /></Row>
@@ -307,7 +313,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
           </AnimMaxHightOpacity>
           {/* 공개/비공개 */}
           <Row style={{ justifyContent: "space-between", marginBottom: "10px" }}>
-            <DotTitle title={"공개 여부"} styles={{ dotColor: "#3454d1;" }} />
+            <DotTitle title={"공개 여부"} />
             <TwoRadios name="isPrivate_radio"
               id={["private_radio", "public_radio"]}
               value={_isPrivate} label={["비공개 활동", "공개 활동"]}
@@ -317,8 +323,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
           </Row>
           <Row style={{ marginBottom: "10px" }}>
             {(sort === "subject") &&
-              <DotTitle title={"성취도별 문구 ▼"} pointer="pointer" styles={{ dotColor: "#3454d1;" }}
-                onClick={() => { setIsPerfRecShown((prev) => !prev) }} />}
+              <DotTitle title={"성취도별 문구 ▼"} pointer="pointer" onClick={() => { setIsPerfRecShown((prev) => !prev) }} />}
           </Row>
           <AnimMaxHightOpacity isVisible={isPerfRecShown}>
             <HiddenWrapper style={{ flexDirection: "row", padding: "0 15px 10px 5px" }}>
@@ -333,7 +338,8 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
             </HiddenWrapper>
           </AnimMaxHightOpacity>
           <Row style={{ marginBottom: "10px" }}>
-            {(sort === "subject") && <DotTitle title={"돌려쓰기 문구 ▼"} onClick={() => { setIsExtraRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+            {(sort === "subject") &&
+              <DotTitle title={"돌려쓰기 문구 ▼"} onClick={() => { setIsExtraRecShown((prev) => !prev) }} pointer="pointer" />}
           </Row>
           <AnimMaxHightOpacity isVisible={isExtraRecShown}>
             <HiddenWrapper style={{ padding: "0 15px 10px 5px" }}>
@@ -345,11 +351,11 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
             </HiddenWrapper>
           </AnimMaxHightOpacity>
           <Row style={{ marginBottom: "10px" }}>
-            {(sort === "subject") && <DotTitle title={"반복 문구 ▼"} onClick={() => { setIsRepeatRecShown((prev) => !prev) }} pointer="pointer" styles={{ dotColor: "#3454d1;" }} />}
+            {(sort === "subject") && <DotTitle title={"반복 문구 ▼"} onClick={() => { setIsRepeatRecShown((prev) => !prev) }} pointer="pointer" />}
           </Row>
           <AnimMaxHightOpacity isVisible={isRepeatRecShown}>
             <HiddenWrapper style={{ flexDirection: "row", padding: "0 15px 10px 5px" }}>
-              {_repeatInfoList && <LevelWrapper>{_repeatInfoList.map((item, i) => <p key={i}>{item.times}회</p>)}</LevelWrapper>}
+              {_repeatInfoList?.length > 0 && <LevelWrapper>{_repeatInfoList.map((item, i) => <p key={i}>{item.times}회</p>)}</LevelWrapper>}
               <MoreRecordListForm
                 moreRecList={_repeatInfoList?.map((item) => item.record)}
                 noListText="반복 수행 횟수에 따라 각기 다른 문구를 설정합니다."
@@ -402,7 +408,6 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     <GptIngModal
       show={isGptLoading}
       status={gptStatus}
-      progress={gptProgress}
     />
   </>
   )

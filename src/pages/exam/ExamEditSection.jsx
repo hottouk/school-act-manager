@@ -17,6 +17,7 @@ import useDocxFile from '../../hooks/useDocxFile'
 import edit_icon from '../../image/icon/edit_icon.png'
 //생성(251219)
 const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, type, level, examItem, sentenceList, circleAnswer }) => {
+	console.log(1)
 	const { addTestArrItem, updateTestQuestion } = useFireTestData();
 	const { downloadQuestionDocx } = useDocxFile();
 	const questionList = useSelector(({ exam }) => exam["questions"]); //전체 문제
@@ -24,7 +25,6 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 	useEffect(() => {
 		const bindExamItem = () => {
 			if (!examItem) return;
-			console.log(examItem)
 			const { title, question, passage, optionList, explanation, type, } = examItem;
 			setTitle(title);
 			setItemType(type);
@@ -35,7 +35,40 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 		}
 		bindExamItem();
 	}, [examItem]);
-	useEffect(() => { gptParser(gptAnswer) }, [gptAnswer]);
+	useEffect(() => {
+		const gptParser = (gptAnswer) => {
+			if (!gptAnswer) return '';
+			const options = gptAnswer.split("<br>")[0];
+			const explanations = gptAnswer.split("<br>")[1];
+			const alteredPassage = gptAnswer.split("<br>")[2];
+			const list = options.split("</li>").slice(0, 5);
+			setQuestion(question);
+			if (alteredPassage) { setPassage(alteredPassage.replace(/(\r\n|\n|\r)/g, " ")); } else { setPassage(passage); }
+			setOptionList(list);
+			if (type === "무관한 문장") {
+				const delIdx = sentenceList.length - (4 - circleAnswer);
+				const fabricated = [...sentenceList.slice(0, delIdx), options, ...sentenceList.slice(delIdx),]
+					.map((item, index, arr) => {
+						const circledNums = ["①", "②", "③", "④", "⑤"].reverse();
+						const idx = arr.length - 1 - index;
+						return `${circledNums[idx] || ''} ${item}. `
+					})
+					.join(' ');
+				setPassage(fabricated);
+			}
+			if (["어법 밑줄", "어휘 밑줄"].includes(type)) { setPassage(options); setOptionList([]); };
+			setExplanation(explanations);
+			setItemType(type);
+		}
+		gptParser(gptAnswer);
+		return () => {
+			setQuestion('');
+			setPassage('');
+			setOptionList([]);
+			setExplanation('');
+			if (setGptAnswer) setGptAnswer('');
+		}
+	}, [gptAnswer, type, passage]);
 	//편집 항목
 	const [_title, setTitle] = useState('');
 	const [_question, setQuestion] = useState('');
@@ -56,30 +89,6 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 	const [isRetouchModal, setIsRetouchModal] = useState(false);
 	//------함수부------------------------------------------------
 	//gpt 분석
-	const gptParser = (gptAnswer) => {
-		if (!gptAnswer) return '';
-		const options = gptAnswer.split("<br>")[0];
-		const explanations = gptAnswer.split("<br>")[1];
-		const alteredPassage = gptAnswer.split("<br>")[2];
-		const list = options.split("</li>").slice(0, 5);
-		setQuestion(question);
-		if (alteredPassage) { setPassage(alteredPassage.replace(/(\r\n|\n|\r)/g, " ")); } else { setPassage(passage); }
-		setOptionList(list);
-		if (type === "무관한 문장") {
-			const delIdx = sentenceList.length - (4 - circleAnswer);
-			const fabricated = [...sentenceList.slice(0, delIdx), options, ...sentenceList.slice(delIdx),]
-				.map((item, index, arr) => {
-					const circledNums = ["①", "②", "③", "④", "⑤"].reverse();
-					const idx = arr.length - 1 - index;
-					return `${circledNums[idx] || ''} ${item}. `
-				})
-				.join(' ');
-			setPassage(fabricated);
-		}
-		if (["어법 밑줄", "어휘 밑줄"].includes(type)) { setPassage(options); setOptionList([]); };
-		setExplanation(explanations);
-		setItemType(type);
-	}
 	//문제 편집 토글
 	const handleEditOnClick = (type, confirm) => {
 		setIsEditing(!isEditing);

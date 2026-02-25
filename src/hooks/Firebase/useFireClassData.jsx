@@ -54,11 +54,7 @@ const useFireClassData = () => {
   //3. 클래스 업데이트(260120)
   const updateKlassroom = async (klassInfo, id) => {
     const klassDocRef = doc(colRef, id);
-    updateDoc(klassDocRef, klassInfo)
-      .catch((err) => {
-        console.log("업데이트 에러", err);
-        alert("업데이트 에러: 관리자에게 문의하세요(useFireClassData_03)", err)
-      })
+    updateDoc(klassDocRef, klassInfo);
   };
   //4. 클래스 배열형 정보 수정(250220)
   const updateKlassroomArrayInfo = async (klassId, field, info) => {
@@ -118,27 +114,6 @@ const useFireClassData = () => {
       window.alert(error);
     }
   }
-
-  //좌석배치도 저장(241210)
-  const addSeatMap = async (id, info) => {
-    let { seatMapsList, positionList, objPositionList, studentList, objInfoList } = info
-    let docRef = doc(colRef, id)
-    let createdTime = timeStamp.fromDate(new Date());
-    try {
-      await updateDoc(docRef, {
-        seatInfo: [...seatMapsList, { studentList, positionList, objPositionList, objInfoList, createdTime }]
-      })
-    } catch (error) {
-      window.alert("정보 업데이트 에러: ", error);
-    }
-  }
-  //좌석배치도 삭제(241210)
-  const deleteSeatMap = async (id, list, index) => {
-    let deleted = list.filter((_, i) => i !== index)
-    let docRef = doc(colRef, id)
-    try { await updateDoc(docRef, { seatInfo: [...deleted] }) }
-    catch (error) { window.alert("정보 업데이트 에러: ", error); }
-  }
   //반 분류하기(250122)
   const sortClassrooms = useCallback((list = []) => {
     const subjClassList = [];
@@ -152,7 +127,7 @@ const useFireClassData = () => {
 
   return ({
     addClassroom, fetchClassrooms, klassListDataListener, klassDataListener, updateKlassroom, addStudent, copyKlassroom,
-    updateKlassroomInfo, updateKlassroomArrayInfo, deleteKlassroomArrayInfo, addSeatMap, deleteSeatMap, sortClassrooms, klassRtData, klassListRtData
+    updateKlassroomInfo, updateKlassroomArrayInfo, deleteKlassroomArrayInfo, sortClassrooms, klassRtData, klassListRtData
   })
 }
 

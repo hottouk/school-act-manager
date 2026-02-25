@@ -34,7 +34,7 @@ const BehaviorOpinionSection = ({ behaviorRec, setBehaviorRec, isModifying, setI
   //실시간 학생
   useEffect(() => { petDataListener(klassId, studentId); }, [studentId, klassId])
   //gpt
-  const { askBehavioralOp, gptAnswer, gptStatus, gptRes, gptProgress } = useChatGpt();
+  const { askBehavioralOp, gptAnswer, gptStatus, gptRes, } = useChatGpt();
   useEffect(() => { setGptTempAnswer(gptAnswer); setLoadingMsg(gptStatus); }, [gptAnswer, gptStatus]);
   useEffect(() => setIsLoading(gptRes === "loading"), [gptRes]);
   const [gptTempAnswer, setGptTempAnswer] = useState('');
@@ -237,13 +237,13 @@ const BehaviorOpinionSection = ({ behaviorRec, setBehaviorRec, isModifying, setI
       <ChargeRiraModal
         show={isRiraModal}
         onHide={() => setIsRiraModal(false)}
-        onApprove={({ model, leftRira }) => askBehavioralOp(_selectedSpec, model, leftRira)}
+        onApprove={({ model, thinkEffort, verbosity, leftRira }) => askBehavioralOp({ specList: _selectedSpec, model, thinkEffort, verbosity, leftRira })}
       />
       <GptIngModal
         show={isLoading}
         onHide={() => setIsLoading(false)}
         status={loadingMsg}
-        progress={gptProgress} />
+      />
     </>
   )
 }

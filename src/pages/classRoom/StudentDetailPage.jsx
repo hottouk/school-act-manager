@@ -26,7 +26,6 @@ import AnimRotation from '../../anim/AnimRotation';
 import { ERROR_MSG } from '../../constants/errMsg';
 //코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223) -> 수정 요청 기능(251104) -> 담임반 통합(260120)
 const StudentDetailPage = () => {
-  console.log(1)
   //즌비
   const { id: klassId } = useParams();
   const navigate = useNavigate();

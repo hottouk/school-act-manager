@@ -5,6 +5,7 @@ import Select from 'react-select';
 //컴포넌트
 import ExamEditSection from './ExamEditSection.jsx'
 import MainContainer from '../../components/Styled/MainContainer.jsx'
+import MockExamSelect from '../../components/Select/MockExamSelect.jsx';
 import SubNav from '../../components/Bar/SubNav.jsx';
 import MainWrapper from '../../components/Styled/MainWrapper'
 import FormHeader from '../../components/Form/FormHeader.jsx'
@@ -19,7 +20,6 @@ import useFireBasic from '../../hooks/Firebase/useFireBasic.jsx'
 //data
 import { typeData } from '../../data/examData.jsx'
 import { GPT_RESPONSE } from '../../constants/gpt.jsx'
-import MockExamSelect from '../../components/Select/MockExamSelect.jsx';
 //생성(251222)
 const ExamFormPage = () => {
 	const user = useSelector(({ user }) => user);
@@ -59,6 +59,10 @@ const ExamFormPage = () => {
 		if (!number || !exam) {
 			initData();
 		} else {
+			if (gptAnswer) {
+				const confirm = window.confirm("저장하지 않은 AI 생성 문항이 사라집니다. 계속하시겠습니까?");
+				if (!confirm) return;
+			}
 			setMockPassage(exam[number]?.passage ?? '');
 			setPassage(exam[number]?.original?.replace(/(\r\n|\n|\r)/g, " ") ?? exam[number]?.passage.replace(/(\r\n|\n|\r)/g, " ") ?? '');
 			setMockQuestion(exam[number]?.question ?? '');
@@ -79,7 +83,7 @@ const ExamFormPage = () => {
 	const typeOptList = Object.entries(typeData).map((item) => ({ label: item[0], value: item[1] }));
 	const [question, setQuestion] = useState('');
 	const [passage, setPassage] = useState('');
-	const { makeExamQuestion, gptAnswer, setGptAnswer, gptRes, gptStatus, gptProgress } = useChatGpt();
+	const { makeExamQuestion, gptAnswer, setGptAnswer, gptRes, gptStatus, } = useChatGpt();
 	//특수 문형
 	const [target, setTarget] = useState(''); //감정, 함축의미
 	const circleNumber = ["①", "②", "③", "④", "⑤"];
@@ -112,7 +116,7 @@ const ExamFormPage = () => {
 		return err;
 	}
 	//문제 생성
-	const handleMakeOnClick = () => {
+	const handleCreateOnClick = () => {
 		const err = check();
 		if (err) {
 			alert(err);
@@ -213,7 +217,7 @@ const ExamFormPage = () => {
 							onChange={(event) => setPassage(event.target.value.replace(/(\r\n|\n|\r)/g, " "))}
 						/>
 						{gptRes !== "loading" && <Column>
-							<MainBtn onClick={handleMakeOnClick}>AI 문제 생성</MainBtn>
+							<MainBtn onClick={handleCreateOnClick}>AI 문제 생성</MainBtn>
 						</Column>}
 					</MainWrapper>
 				</AnimMaxHightOpacity>
@@ -223,6 +227,7 @@ const ExamFormPage = () => {
 						question={question} passage={passage} subject={subject} type={type} level={level}
 						sentenceList={sentenceList} circleAnswer={circleAnswer} />}
 			</Column>
+
 			{/* 관리자 */}
 			{user.isMaster && <MainWrapper styles={{ width: "60%", margin: "20px 0 0 0", gap: "5px", position: "relative" }}>
 				<FormHeader>관리자</FormHeader>
@@ -251,12 +256,12 @@ const ExamFormPage = () => {
 		<ChargeRiraModal
 			show={isChargeModal}
 			onHide={() => setIsChargeModal(false)}
-			onApprove={({ model, leftRira }) => makeExamQuestion(type, question, passage, level, target, model, leftRira)}
+			onApprove={(payload) =>
+				makeExamQuestion({ type, question, passage, level, target, ...payload })}
 		/>
 		<GptIngModal
 			show={gptRes === GPT_RESPONSE.LOADING}
 			status={gptStatus}
-			progress={gptProgress}
 		/>
 	</>
 	)

@@ -27,7 +27,13 @@ import { GPT_RESPONSE } from '../../../constants/gpt';
 //수정(240904) => 보고서탭(241203) => OCR(250327) -> 과금(260112)
 const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const { uploadFile, findFile } = useFireStorage();
-  const { askGptOnTrait, askGptOnReport, gptAnswer, gptRes, gptStatus, gptProgress } = useChatGpt();
+  const { askGptOnTrait, askGptOnReport, askTranslate, gptAnswer, gptRes, gptStatus, } = useChatGpt();
+  const [whichBtn, setWhichBtn] = useState("gpt")
+  useEffect(() => {
+    if (whichBtn === "translate") setExtracted(gptAnswer);
+    else setFinalProduct(gptAnswer);
+  }, [gptAnswer, whichBtn]);
+  const [finalProduct, setFinalProduct] = useState(null);
   //역량
   const [acadList, setAcadList] = useState([])      //학업
   const [careerList, setCareerList] = useState([])  //진로
@@ -41,12 +47,15 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   //탭 
   const [tab, setTab] = useState(1);
   const gptPromptByTap = {
-    1: (model, rira) => {
+    1: ({ model, thinkEffort, verbosity, leftRira }) => {
       const resultArray = convertObjectToArray(inputValues);
-      askGptOnTrait(acti?.subject, acti?.record, resultArray, model, rira);
+      askGptOnTrait({ subject: acti?.subject, record: acti?.record, personalPropList: resultArray, model, thinkEffort, verbosity, leftRira });
     },
-    2: (model, rira) => askGptOnReport(acti?.record, report, model, rira),
-    3: (model, rira) => askGptOnReport(acti?.record, extracted, model, rira),
+    2: ({ model, thinkEffort, verbosity, leftRira }) => askGptOnReport({ record: acti?.record, report, model, thinkEffort, verbosity, leftRira }),
+    3: ({ model, thinkEffort, verbosity, leftRira }) => {
+      if (whichBtn === "gpt") askGptOnReport({ record: acti?.record, report, model, thinkEffort, verbosity, leftRira })
+      else askTranslate({ text: extracted, model, thinkEffort, verbosity, leftRira });
+    },
   }
   //숨기기 토글
   const [isAcadShown, setIsAcadShown] = useState(false)
@@ -58,18 +67,17 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   const [file, setFile] = useState(null);
   useEffect(() => {
     if (!file) return;
-    if (file.name.endsWith(".jpg")) { setIsPdf(false) } else if (file.name.endsWith(".pdf")) { setIsPdf(true) };
+    if (file.name.endsWith(".jpg")) { setIsPdf(false) }
+    else if (file.name.endsWith(".pdf")) { setIsPdf(true) };
   }, [file])
   const [filePath, setFilePath] = useState(null);
   const [extracted, setExtracted] = useState(null);
   const [isPdf, setIsPdf] = useState(false);
   const [ocrStage, setOcrStage] = useState(0);
-  const [loadingStage, setLoadingStage] = useState(null);
+  const [loadingMsg, setLoadingMsg] = useState(null);
   const inputFileRef = useRef(null);
   //추가 모달
   const [isRiraModal, setIsRiraModal] = useState(false);
-  //------useMemo------------------------------------------------ 
-  const isGptLoading = useMemo(() => gptRes === GPT_RESPONSE.LOADING, [gptRes]);
   //------함수부------------------------------------------------  
   //능력 분류
   const sortAbilityList = (list, type) => {
@@ -119,23 +127,23 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   //유효성 검사
   const check = () => {
     let result = true;
-    if (tab === 1) {
-      if (!inputValues || Object.keys(inputValues).length === 0) { alert("특성을 선택하거나 작성하세요."); result = false; }
-    }
+    if (tab === 1) { if (!inputValues || Object.keys(inputValues).length === 0) { alert("특성을 선택하거나 작성하세요."); result = false; } }
     else if (tab === 2) if (report === '') { alert("학생 활동 보고서를 입력해주세요."); result = false; }
     else if (tab === 3) if (extracted === '') { alert("추출된 text가 없습니다."); result = false; }
     return result;
   };
   //gpt
-  const handleGptOnClick = () => {
+  const handleGptOnClick = (whichBtn) => {
     if (!check()) return;
+    if (whichBtn) setWhichBtn(whichBtn);
     setIsRiraModal(true);
   };
   //GPT 승인 시
-  const askGptOnApprove = ({ model, leftRira }) => {
+  const askGptOnApprove = ({ model, thinkEffort, verbosity, leftRira }) => {
     const fn = gptPromptByTap[tab];
+    console.log(fn);
     if (typeof (fn) !== "function") { alert("지원하지 않는 GPT 타입입니다."); return; }
-    fn(model, leftRira);
+    fn({ model, thinkEffort, verbosity, leftRira });
   }
   //inputValues중 값이 있는 항목만 배열로 변경
   const convertObjectToArray = (obj) => {
@@ -150,111 +158,70 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
     setOcrStage(0);
   }
   //파일 선택
-  const handleFileOnChange = (event) => {
-    setFile(event.target.files[0]);
-  }
+  const handleFileOnChange = (event) => setFile(event.target.files[0]);
   //업로드 버튼
-  const handleUploadOnClick = async (event) => {
-    event.preventDefault();
+  const handleUploadOnClick = async () => {
     if (!file) {
-      alert("파일이 없습니다.")
+      alert("파일이 없습니다.");
       return;
     }
-    const fileName = file.name
-    if (fileName.endsWith(".pdf")) {
-      const filePath = `pdfs/${file.name}`;
-      const isExist = await findFile("pdfs", fileName);
-      if (isExist) {
-        setFilePath(filePath);
-        setOcrStage(1);
-      } else {
-        uploadFile("pdfs", file).then(() => {
-          setLoadingStage("⏳ 파일 업로드중...");
-          setFilePath(filePath);
-          setLoadingStage(null);
-          setOcrStage(1);
-        })
-      };
-    } else if (fileName.endsWith(".jpg")) {
-      const filePath = `jpgs/${file.name}`;
-      const isExist = await findFile("jpgs", fileName);
-      if (isExist) {
-        setFilePath(filePath);
-        setOcrStage(1);
-      } else {
-        uploadFile("jpgs", file).then(() => {
-          setFilePath(filePath);
-          setLoadingStage(null);
-          setOcrStage(1);
-        })
-      }
+    const fileName = file.name;
+    let fileType = null;
+    if (isPdf) fileType = "pdfs";
+    else if (!isPdf) fileType = "jpgs";
+    else { alert("jpg 또는 pdf 파일이 아닙니다."); return; }
+    const filePath = `${fileType}/${fileName}`;
+    const isExist = await findFile(fileType, fileName);
+    if (isExist) {
+      setFilePath(filePath);
+      setOcrStage(1);
     } else {
-      alert("jpg 또는 pdf 파일이 아닙니다.");
-      setLoadingStage(null);
-      return;
+      setLoadingMsg("⏳ 파일 업로드중...");
+      await uploadFile(fileType, file);
+      setFilePath(filePath);
+      setLoadingMsg(null);
+      setOcrStage(1);
     }
-  }
+  };
   //추출 버튼
-  const postExtractText = async (event) => {
-    event.preventDefault();
-    const fileName = file.name.split(".")[0];
-    const isExist = await findFile("ocr_results", fileName);
-    let response = null;
-    if (!isPdf) { //jpg
-      setLoadingStage("📤 텍스트 추출중...이 작업은 오래 걸릴 수 있습니다.");
-      try {
-        response = await axios.post(process.env.REACT_APP_OCR_API_URL, { filePath: filePath }, { headers: { "Content-Type": "application/json" } });
-        setOcrStage(3);
-        setExtracted(response.data.text);
-        setLoadingStage(null);
-      } catch (error) {
-        console.error("추출 실패: ", error);
-        alert("추출 실패: ", error);
-      }
-    } else if (isPdf) { //pdf
-      if (isExist) { setOcrStage(2); }
-      else {
-        setLoadingStage("📤 텍스트 추출중...이 작업은 오래 걸릴 수 있습니다.");
-        try {
-          response = await axios.post(process.env.REACT_APP_OCR_API_PDF_URL, { fileName: file.name }, { headers: { "Content-Type": "application/json" } })
-          if (response) {
-            alert("추출 작업이 완료되었습니다.");
-            setOcrStage(2);
-            setLoadingStage(null);
-          }
-        } catch (error) {
-          console.error("추출 실패: ", error);
-          alert("추출 실패: ", error);
-        }
-      }
-    }
-  }
-  //다운로드 버튼
-  const handleGetOcrResults = async (event) => {
-    event.preventDefault();
-    let response = null;
-    setLoadingStage("⏳ 다운로드중...")
+  const postExtractText = async () => {
+    setLoadingMsg("📤 텍스트 추출중...이 작업은 오래 걸릴 수 있습니다.");
+    //jpg는 1장만 가능, pdf와 방식 다름.
     try {
-      response = await axios.get(process.env.REACT_APP_OCR_RESULT_URL, {
-        params: { fileName: file.name }
-      })
-      setExtracted(response.data.pages.join(","));
-      setOcrStage(3);
-      setLoadingStage(null);
+      if (!isPdf) {
+        const res = await axios.post(process.env.REACT_APP_OCR_API_URL,
+          { filePath: filePath },
+          { headers: { "Content-Type": "application/json" } });
+        setExtracted(res?.data?.text || '');
+      } else if (isPdf) {
+        const fileName = file.name.split(".")[0];
+        const isExist = await findFile("ocr_results", fileName);
+        if (!isExist) {
+          //추출
+          const extractRes = await axios.post(process.env.REACT_APP_OCR_API_PDF_URL,
+            { fileName: file.name },
+            { headers: { "Content-Type": "application/json" } })
+          if (!extractRes) return;
+        }
+        // pdf 다운로드
+        setLoadingMsg("⏳ 다운로드중...")
+        const downRes = await axios.get(process.env.REACT_APP_OCR_RESULT_URL,
+          { params: { fileName: file.name } })
+        if (!downRes) return;
+        setExtracted(downRes.data.pages.join(","));
+      }
+      setOcrStage(2);
+      setLoadingMsg(null);
     } catch (error) {
-      console.error("OCR 결과 가져오기 실패:", error);
-      alert("OCR 결과 가져오기 실패:", error);
-      setLoadingStage(null);
-      setOcrStage(3);
+      console.error("추출 실패: ", error);
+      alert("추출 실패: ", error);
     }
   };
   //확인 버튼
-  const handleConfirmOnClick = (event) => {
-    event.preventDefault();
-    setPersonalRecord(gptAnswer);
+  const handleConfirmOnClick = () => {
+    setPersonalRecord(finalProduct);
     onHide();
-  }
-
+  };
   return <Modal size="lg"
     show={show}
     onHide={onHide}
@@ -271,22 +238,19 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
           <UpperTab className="tab2" $tab={tab} onClick={() => { setTab(2) }}>보고서</UpperTab>
           <UpperTab className="tab3" $tab={tab} onClick={() => { setTab(3) }}>OCR</UpperTab>
           {tab === 1 && <Column style={{ gap: "5px" }}>
-            <DotTitle title={"학업 역량 ▼"} onClick={() => { setIsAcadShown((prev) => !prev) }} pointer="pointer"
-              styles={{ dotColor: "#3454d1", width: "50%", marginBot: "0" }} />
+            <DotTitle title={"학업 역량 ▼"} onClick={() => { setIsAcadShown((prev) => !prev) }} pointer="pointer" />
             <AnimMaxHightOpacity isVisible={isAcadShown}
               content={<RowWrapper>
                 {acadList?.map((obj) => { return <GptPersonalRow key={obj.prop} itemObj={obj} onInputChange={handleInputChange} /> })}
               </RowWrapper>
               } />
-            <DotTitle title={"진로 역량 ▼"} onClick={() => { setIsCareerShown((prev) => !prev) }} pointer="pointer"
-              styles={{ dotColor: "#3454d1", width: "50%", marginBot: "0" }} />
+            <DotTitle title={"진로 역량 ▼"} onClick={() => { setIsCareerShown((prev) => !prev) }} pointer="pointer" />
             <AnimMaxHightOpacity isVisible={isCareerShown}
               content={<RowWrapper>
                 {careerList?.map((obj) => { return <GptPersonalRow key={obj.prop} itemObj={obj} onInputChange={handleInputChange} /> })}
               </RowWrapper>
               } />
-            <DotTitle title={"공동체 역량 ▼"} onClick={() => { setIsCoopShown((prev) => !prev) }} pointer="pointer"
-              styles={{ dotColor: "#3454d1", width: "50%", marginBot: "0" }} />
+            <DotTitle title={"공동체 역량 ▼"} onClick={() => { setIsCoopShown((prev) => !prev) }} pointer="pointer" />
             <AnimMaxHightOpacity isVisible={isCoopShown}
               content={<RowWrapper>
                 {coopList?.map((obj) => { return <GptPersonalRow key={obj.prop} itemObj={obj} onInputChange={handleInputChange} /> })}
@@ -309,9 +273,9 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
           </>}
           {tab === 3 && <>
             <TextSpan>pdf 또는 jpg 파일만 text 추출 가능합니다.</TextSpan>
-            {loadingStage && <Row style={{ justifyContent: "center" }}><Spinner />{loadingStage}</Row>}
-            {loadingStage === "downloading" && <Row style={{ justifyContent: "center" }}><p>⏳ 다운로드중...</p></Row>}
-            {!loadingStage && <Column>
+            {loadingMsg && <Row style={{ justifyContent: "center" }}><Spinner />{loadingMsg}</Row>}
+            {loadingMsg === "downloading" && <Row style={{ justifyContent: "center" }}><p>⏳ 다운로드중...</p></Row>}
+            {!loadingMsg && <Column>
               {(file && !filePath) && <BasicText style={{ borderColor: "rgba(120,120,120,0.5)" }}>파일명: {file.name}</BasicText>}
               {(file && filePath) && <BasicText style={{ borderColor: "rgba(120,120,120,0.5)" }}>파일 경로: {filePath}</BasicText>}
               <input type="file" ref={inputFileRef} onChange={handleFileOnChange} accept="application/pdf,image/jpeg" style={{ display: 'none' }} />
@@ -319,25 +283,28 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
                 <MidBtn type="button" onClick={handleFileOnClick}>📁 파일 선택</MidBtn>
                 {(file && ocrStage === 0) && <MidBtn type="button" onClick={handleUploadOnClick}>업로드</MidBtn>}
                 {ocrStage === 1 && <Row><MidBtn type="button" onClick={postExtractText}>추출</MidBtn></Row>}
-                {ocrStage === 2 && <Row style={{ gap: "5px" }}><MidBtn type="button" onClick={handleGetOcrResults}>다운로드</MidBtn></Row>}
               </Row>
-              <Column style={{ gap: "10px" }}>
-                {(ocrStage === 3 && extracted) && <Textarea value={extracted} onChange={(e) => { setExtracted(e.target.value) }} style={{ marginTop: "10px" }} />}
-                {extracted && <Row style={{ alignSelf: "center" }}><MidBtn onClick={handleGptOnClick}>Chat GPT</MidBtn></Row>}
-              </Column>
+              {ocrStage === 2 && <Column style={{ gap: "10px" }}>
+                <Textarea value={extracted} onChange={(e) => { setExtracted(e.target.value) }} style={{ marginTop: "10px" }} />
+                <Row style={{ alignSelf: "center", gap: "10px" }}>
+                  <MidBtn onClick={() => { handleGptOnClick("translate"); }}>한국말로 번역</MidBtn>
+                  <MidBtn onClick={() => { handleGptOnClick("gpt"); }}>Chat GPT</MidBtn>
+                </Row>
+              </Column>}
             </Column>}
           </>}
         </TabWrapper>
         <StyledImg src={arrowsIcon} alt="arrows_icon" />
         <Textarea
-          defaultValue={gptAnswer || ''}
+          value={finalProduct || ''}
           placeholder={getPlaceholderText()}
-          disabled />
-        <Row style={{ margin: "10px 0", justifyContent: "flex-end" }}><ByteCalculator str={gptAnswer} styles={{ isTotalByteHide: true }} /></Row>
+          onChange={(event) => { setFinalProduct(event.target.value) }}
+        />
+        <Row style={{ margin: "10px 0", justifyContent: "flex-end" }}><ByteCalculator str={finalProduct} styles={{ isTotalByteHide: true }} /></Row>
       </Column>
       }
       {/* 추가 모달 */}
-      {(isRiraModal || isGptLoading) && <InnerLayer>
+      {(isRiraModal || gptRes === GPT_RESPONSE.LOADING) && <InnerLayer>
         <InnerOverlay />
         <ChargeRiraModal
           show={isRiraModal}
@@ -345,9 +312,8 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
           onApprove={askGptOnApprove}
         />
         <GptIngModal
-          show={isGptLoading}
+          show={gptRes === GPT_RESPONSE.LOADING}
           status={gptStatus}
-          progress={gptProgress}
         />
       </InnerLayer>}
     </Modal.Body >

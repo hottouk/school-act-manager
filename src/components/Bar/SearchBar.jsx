@@ -21,7 +21,7 @@ const SearchBar = ({ title, type, list, setList, isMobile }) => {
     // keyword가 없으면 원래 리스트로 복구
     if (!originalListRef.current || originalListRef.current.length === 0 || keyword.trim() === '') {
       setList([...originalListRef.current]);
-      return
+      return;
     }
     // 키워드 검색
     let results = [...list].filter(item => item[criterion] && item[criterion].toLowerCase().includes(keyword.toLowerCase()));
@@ -30,12 +30,15 @@ const SearchBar = ({ title, type, list, setList, isMobile }) => {
   return (
     <Container>
       <p>{title}</p>
-      {(type === "acti" && !isMobile) &&
-        <SearchSection keyword={keyword} placeholder="제목 검색" onChange={(e) => { setKeyword(e.target.value) }} onClick={() => searchData("title", keyword)} />}
-      {(type === "classroom" && !isMobile) &&
-        <SearchSection keyword={keyword} placeholder="반 이름 검색" onChange={(e) => { setKeyword(e.target.value) }} onClick={() => searchData("classTitle", keyword)} />}
       {type === "school" &&
         <SearchSection keyword={keyword} placeholder="학교명 검색" onChange={(e) => { setKeyword(e.target.value) }} onClick={() => searchData("classTitle", keyword)} />}
+      {type && <SearchSection
+        keyword={keyword}
+        placeholder={`${type}명 검색`}
+        onChange={(e) => { setKeyword(e.target.value) }}
+        onClick={() => searchData(type, keyword)}
+        initOnClick={() => setList([...originalListRef.current])}
+      />}
       <BtnWrapper>
         {type === "allActi" && <>
           <SmallBtn btnColor="#3454d1" btnName="제목" btnOnClick={() => { sortDataList("title") }} />

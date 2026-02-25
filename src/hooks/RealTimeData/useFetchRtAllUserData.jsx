@@ -1,10 +1,9 @@
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { useEffect, useState } from 'react'
 import { appFireStore } from '../../firebase/config';
-
 //24.01.23
 const useFetchRtAllUserData = () => {
-  const db = appFireStore
+  const db = appFireStore;
   let q = query(collection(db, "user"));
   const [teacherList, setTUserList] = useState([]);
   const [studentList, setSUserList] = useState([]);

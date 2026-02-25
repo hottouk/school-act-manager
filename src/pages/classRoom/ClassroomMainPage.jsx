@@ -31,8 +31,9 @@ const ClassRoomMainPage = () => {
   const { isTeacher = false, coTeachingList = [] } = userRtData || {};
   const isMobile = useMediaQuery("(max-width: 767px)");
   //교사용 교실
-  const { subjKlassList, homeroomKlassList, legacySubjList, legacyHomeList } = useMemo(() => {
-    if (!klassListRtData) return { subjKlassList: [], homeroomKlassList: [], legacySubjList: [], legacyHomeList: [] };
+  const [subjKlassList, setSubjKlassList] = useState([]);
+  const { homeroomKlassList, legacySubjList, legacyHomeList } = useMemo(() => {
+    if (!klassListRtData) return { homeroomKlassList: [], legacySubjList: [], legacyHomeList: [] };
     const subj = [];
     const homeroom = [];
     const legacySubj = [];
@@ -45,7 +46,8 @@ const ClassRoomMainPage = () => {
       else if (item.type === "subject" && !isthisYear) legacySubj.push(item);
       else if (item.type === "homeroom" && !isthisYear) legacyHome.push(item);
     })
-    return { subjKlassList: subj, homeroomKlassList: homeroom, legacySubjList: legacySubj, legacyHomeList: legacyHome };
+    setSubjKlassList(subj);
+    return { homeroomKlassList: homeroom, legacySubjList: legacySubj, legacyHomeList: legacyHome };
   }, [klassListRtData]);
   useEffect(() => { dispatcher(setAllSubjClasses(subjKlassList)); }, [subjKlassList, dispatcher]);
   const [isOpen, setIsOpen] = useState(false);
@@ -63,7 +65,7 @@ const ClassRoomMainPage = () => {
   return (<MainContainer styles={{ gap: "10px" }}>
     {/* 교사 */}
     {isTeacher && <><MainWrapper >
-      <SearchBar title="교과 클래스" type="classroom" list={subjKlassList} setList={() => { }} isMobile={isMobile} />
+      <SearchBar title="교과 클래스" type="classTitle" list={subjKlassList} setList={setSubjKlassList} isMobile={isMobile} />
       <CardList dataList={subjKlassList} type="subjKlass" onClick={handleSubjClassOnClick} />
       <SearchBar title="코티칭 클래스" />
       <CardList dataList={coTeachingList} type="subjKlass" onClick={handleCoTeachingOnClick} />
@@ -86,31 +88,8 @@ const ClassRoomMainPage = () => {
       </MainWrapper>
     </>
     }
-    {/* 학생 */}
-    {!isTeacher && <MainWrapper>
-      {/* <SearchBar title="가입 신청 중인 클래스" />
-      <CardList dataList={appplyKlass} type="classroom" onClick={() => alert("교사 승인 대기중입니다.")} />
-      <SearchBar title="나의 클래스" />
-      <CardList dataList={myKlass} type="classroom" onClick={handleSubjClassOnClick} /> */}
-    </MainWrapper>}
   </MainContainer>)
 }
-//학생용 교실
-// const { myKlass, appplyKlass } = useMemo(() => {
-//   if (!userRtData || !isTeacher) return { myKlass: [], appplyKlass: [] };
-//   const approved = [];
-//   const applied = [];
-//   const sortStudentKlass = (list) => {
-//     const approved = [];
-//     const applied = [];
-//     list?.forEach((item) => {
-//       if (item.isApproved) approved.push(item)
-//       else applied.push(item)
-//     })
-//   }
-//   return { myKlass: [], appplyKlass: [] };
-//   // dispatcher(setAllSubjClasses(approved)) //전역 변수화
-// }, [userRtData]);
 const Row = styled.div`
   display: flex;
 `

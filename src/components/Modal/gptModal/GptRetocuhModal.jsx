@@ -14,7 +14,7 @@ import InnerOverlay from '../../Styled/InnerOverlay';
 import ChargeRiraModal from '../ChargeRiraModal';
 import GptIngModal from './GptIngModal';
 import { GPT_RESPONSE } from '../../../constants/gpt';
-//생성(250106)
+//생성(260106)
 const GptRetocuhModal = ({ show, onHide, size, type, passage, optionList, setPassage, setOptionList }) => {
   const { retouchPassage, retouchOptions, gptAnswer, setGptAnswer, gptRes, gptStatus, gptProgress } = useChatGpt();
   const [request, setRequest] = useState('');
@@ -28,11 +28,11 @@ const GptRetocuhModal = ({ show, onHide, size, type, passage, optionList, setPas
     return err;
   }
   //리터칭 요청
-  const handleRetouchOnClick = ({ model, leftRira }) => {
+  const handleRetouchOnClick = (payload) => {
     const err = check();
     if (err) { alert(err); return; } else {
-      if (type === "passage") { retouchPassage(passage, request, model, leftRira) }
-      else if (type === "options") { retouchOptions(optionList, request, model, leftRira) }
+      if (type === "passage") { retouchPassage({ passage, request, ...payload }) }
+      else if (type === "options") { retouchOptions({ optionList, request, ...payload }) }
     }
   }
   //확인 클릭

@@ -12,7 +12,7 @@ const IntroSection = ({ isMobile }) => {
   const { ref: ref2, isVisible: v2 } = useFloatOnScroll();
   const { ref: ref3, isVisible: v3 } = useFloatOnScroll();
   //스타일
-  const pcRowStyle = { width: "100%", textAlign: "right" };
+  const pcRowStyle = { width: "100%", textAlign: "right", marginTop: "20px", };
   const mobileRowStyle = { width: "100%", textAlign: "left", marginTop: "20px", };
   return (
     <Section style={{ gap: !isMobile ? "50px" : "0", }}>

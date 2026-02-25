@@ -52,7 +52,7 @@ const AskEditModal = ({ show, onHide, acti, petInfo, accRecord }) => {
 				<Column style={{ gap: "10px" }}>
 					<DotTitle styles={dotTitleStyle}>기록자: <Hilit>&nbsp;{madeBy}&nbsp;</Hilit>선생님</DotTitle>
 					<DotTitle styles={dotTitleStyle}>수정 전:<Hilit>&nbsp;{getByteLengthOfString(record)}&nbsp;</Hilit>바이트</DotTitle>
-					<DotTitle styles={dotTitleStyle}>전체 세특 바이트:<Hilit>&nbsp;{getByteLengthOfString(accRecord)-getByteLengthOfString(record)+getByteLengthOfString(_record)}&nbsp;</Hilit>/1500바이트</DotTitle>
+					<DotTitle styles={dotTitleStyle}>전체 세특 바이트:<Hilit>&nbsp;{getByteLengthOfString(accRecord) - getByteLengthOfString(record) + getByteLengthOfString(_record)}&nbsp;</Hilit>/1500바이트</DotTitle>
 					<div style={{ border: "1px solid gray", padding: "5px", borderRadius: "5px" }}>{record}</div>
 					<Column style={{ gap: "10px" }}>
 						<Row style={{ justifyContent: "center" }}>
@@ -62,7 +62,7 @@ const AskEditModal = ({ show, onHide, acti, petInfo, accRecord }) => {
 							value={_record}
 							onChange={(event) => { setRecord(event.target.value) }}
 						/>
-						<ByteCalculator str={_record}/>
+						<ByteCalculator str={_record} />
 					</Column>
 					<Column>
 						<MainBtn onClick={handleOnClick}>수정 요청</MainBtn>
