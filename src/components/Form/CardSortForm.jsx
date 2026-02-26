@@ -42,7 +42,7 @@ const CardSortForm = ({ itemList, handleCardBtnClick }) => {
       <Card $color={"#3454d1"} id={id} onClick={handleCardBtnClick} key={id}>
         <legend>{legend}</legend>
         <p>{subTitle}</p>
-        {ban && <p className='ban'>추후 서비스</p>}
+        {ban && <p className='ban'>점검중</p>}
         {ing && <p className='ban'>현재 제작중</p>}
         {!isMobile && <img src={getImgSrc(imgNumber)} alt="클래스5" id={id} onClick={handleCardBtnClick} />}
       </Card>

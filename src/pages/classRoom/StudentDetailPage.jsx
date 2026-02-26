@@ -31,7 +31,7 @@ const StudentDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useSelector(({ user }) => user);
-  const { petId, semester, klassType } = location.state ?? {};
+  const { petId, semester, klassType, subject } = location.state ?? {};
   //전체 학생
   const allStudentFrozenList = useSelector(({ allStudents }) => allStudents);
   //n번째 학생
@@ -41,7 +41,10 @@ const StudentDetailPage = () => {
   }, [allStudentFrozenList, petId])
   //실시간 펫
   const { petRtData, petDataListener, updatePetInfo, deletePet } = useFirePetData();
-  useEffect(() => { petDataListener(klassId, petId); setSemester(semester || null); }, [klassId, petId, semester, petDataListener]);
+  useEffect(() => {
+    petDataListener(klassId, petId);
+    setSemester(semester || null);
+  }, [klassId, petId, semester, petDataListener]);
   //펫 정보
   const bindInitData = useCallback(() => {
     if (!petRtData) return;
@@ -197,10 +200,16 @@ const StudentDetailPage = () => {
               <UpperTab className={"tab2"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(2)} disabled={isModifying}>{klassType === "subject" ? "2학기" : "진로"}</UpperTab>
               {klassType === "homeroom" && <UpperTab className={"tab3"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(3)} disabled={isModifying}>행발</UpperTab>}
             </Row>}
-            {recordType !== 3 && <><ActiTableSection actiList={actiList} setActiList={setActiList} type={klassType}
-              tabValue={recByType[klassType].value}
-              getAccRec={getAccRec} petRtData={petRtData}
-              isModifying={isModifying} isMobile={isMobile} />
+            {recordType !== 3 && <>
+              <ActiTableSection
+                type={klassType}
+                subject={subject}
+                tabValue={recByType[klassType].value}
+                actiList={actiList} setActiList={setActiList}
+                getAccRec={getAccRec}
+                petRtData={petRtData}
+                isModifying={isModifying}
+                isMobile={isMobile} />
               <Row style={{ justifyContent: "center" }}><img src={arrows_icon} alt="아래화살표" /></Row>
               <AccWrapper>{actiList?.length > 0 ? getAccRec(actiList) : "기록 없음"}</AccWrapper>
             </>}

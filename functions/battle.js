@@ -8,7 +8,6 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getDatabase } from "firebase-admin/database";
 import { onSchedule } from "firebase-functions/scheduler";
 if (!getApps().length) initializeApp();
-
 const REGION = "asia-northeast3";
 const db = getDatabase();
 const now = () => Date.now();

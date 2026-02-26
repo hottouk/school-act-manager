@@ -199,14 +199,10 @@ const ClassroomDetailsPage = () => {
         {(!petListRtData || petListRtData.length === 0) && <><EmptyResult comment="등록된 학생이 없습니다." /></>}
         {petListRtData && <StudentListSection
           petList={petListRtData}
-          klassType={klassType}
-          semester={klassRtData?.semester}
+          klassData={klassRtData}
           plusBtnOnClick={setIsAddStuModal}
-          setIsPetInfoModal={setIsPetInfoModal}
-          setPetInfo={setPetInfo} />}
+        />}
       </MainWrapper>
-      {/* 퀴즈 게임부 */}
-      {/* {klassType === "subject" && <KlassQuizSection isMobile={isMobile} quizList={addedQuizList} klassData={klassRtData} onClick={handleMonsterOnClick} setIsAddQuizModal={setIsAddQuizModal} />} */}
       {/* 퀘스트 목록(학생) */}
       {(!user.isTeacher && studentKlassData?.isApproved) && <MainPanel>
         <Title>퀘스트 목록</Title>

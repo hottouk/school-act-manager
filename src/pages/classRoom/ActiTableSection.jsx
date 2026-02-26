@@ -13,7 +13,7 @@ import useGetByte from '../../hooks/useGetByte';
 //이미지
 import x_btn from "../../image/icon/x_btn.png"
 //분리(260121)
-const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRec, petRtData, isModifying, isMobile, }) => {
+const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRec, petRtData, isModifying, isMobile, subject }) => {
   //유저
   const user = useSelector(({ user }) => user);
   //활동
@@ -90,6 +90,11 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
     setSelectedActi({ item, index });
     setIsEditModal(true);
   }
+  const renderRadioList = (selected) => {
+    if (!selected) return [];
+    const { record, perfRecordList, extraRecordList, repeatInfoList } = selected;
+  }
+
   //------랜더링------------------------------------------------  
   const ActiRow = ({ item, index }) => {
     const { title, record, madeBy, assignedDate, repeatTimes } = item;
@@ -126,7 +131,7 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
         {!isMobile && <Header>연번</Header>}
         <Header>활동</Header>
         <Header>생기부</Header>
-        {!isMobile && <Header>{!isModifying ? "날짜" : "성취도"}</Header>}
+        {!isMobile && <Header>{!isModifying ? "날짜" : "문구 종류"}</Header>}
         {!isMobile &&
           (user.isTeacher
             ? <Header> {!isModifying ? "기록자" : "변경"}</Header>
@@ -136,7 +141,12 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
       </GridRow>
       {actiList?.length === 0 && <GridItem style={{ gridColumn: "1/7" }}>활동이 없어요ㅠㅠ</GridItem>}
       {actiList?.length > 0 && actiList.map((acti, index) => {
-        const { record, perfRecordList, uid, id } = acti;
+        console.log(acti);
+        const { uid, id, record, perfRecordList, extraRecordList, repeatInfoList, } = acti;
+        const recordList = [{ label: "기본 문구", value: record, type: "basic" }];
+        if (perfRecordList?.length > 0) ["상", "중", "하", "최하"].forEach((item, index) => recordList.push({ label: item, value: perfRecordList[index], type: "perf" }));
+        extraRecordList?.forEach((item, index) => recordList.push({ label: `랜덤문구${index + 1}`, value: item }));
+        repeatInfoList?.forEach(({ times, record }) => recordList.push({ label: `${times}회 반복문구`, value: record, type: "repeat" }));
         return <React.Fragment key={id || index}>
           {/* 열람 */}
           {(!isModifying || (isModifying && user.uid !== uid && user.userStatus !== "master")) && <ActiRow item={acti} index={index} />}
@@ -164,10 +174,21 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
               </GridItem>
               {/* 4열 */}
               <GridItem>{perfRecordList && <SmallBtnWrapper>
-                <SmallBtn onClick={() => { changeAccRecord(index, perfRecordList[0]) }}>상</SmallBtn>
-                <SmallBtn onClick={() => { changeAccRecord(index, perfRecordList[1]) }}>중</SmallBtn>
-                <SmallBtn onClick={() => { changeAccRecord(index, perfRecordList[2]) }}>하</SmallBtn>
-                <SmallBtn onClick={() => { changeAccRecord(index, perfRecordList[3]) }}>최하</SmallBtn>
+                {recordList?.map((item, radioIdx) => {
+                  const { type, label, value } = item;
+                  const groupName = `record-${index}`;
+                  const inputId = `record-${index}-${label ?? 'basic'}`;
+                  return <Row key={`${index}${radioIdx}`} style={{ gap: "5px", justifyContent: "flex-start" }}>
+                    <input
+                      id={inputId}
+                      type='radio'
+                      name={groupName}
+                      value={value}
+                      onChange={(event) => changeAccRecord(index, value)}
+                    />
+                    {type === "basic" ? "기본 문구" : label}
+                  </Row>
+                })}
               </SmallBtnWrapper>}</GridItem>
               {/* 5열 */}
               <GridItem>
@@ -192,7 +213,9 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
     {isGptModal && <GptModal
       show={isGptModal}
       onHide={() => setIsGptModal(false)}
+      subject={subject}
       acti={selectedActi?.item}
+      accRecord={getAccRec(actiList)}
       setPersonalRecord={setGptRecord} />}
     {isEditModal && <AskEditModal
       show={isEditModal}

@@ -37,12 +37,10 @@ const ActivityMain = () => { //진입 경로 총 2곳: 교사/학생
   const { subjActiList, homeActiList, quizActiList } = useFetchRtActiData(user?.uid);
   const [mySubjActiList, setMySubjActiList] = useState([]);
   const [myHomeActiList, setMyHomeActiList] = useState([]);
-  const [myQuizActiList, setMyQuizActiList] = useState([]);
   const [copiedList, setCopiedList] = useState([]);
   useEffect(() => {
     setMySubjActiList(subjActiList);
     setMyHomeActiList(homeActiList);
-    setMyQuizActiList(quizActiList);
   }, [subjActiList, homeActiList, quizActiList]);
   //페이지네이션
   const itemsPerPage = 30;
@@ -72,8 +70,6 @@ const ActivityMain = () => { //진입 경로 총 2곳: 교사/학생
         <CardList dataList={myHomeActiList} type="activity" onClick={handleActiOnClick} />
         <SearchBar title="업어온 활동" />
         <CardList dataList={copiedList} type="copiedActi" onClick={(item) => { navigate(`/activities/${item.id}`, { state: { acti: item } }) }} />
-        <SearchBar title="퀴즈 활동" />
-        <CardList dataList={myQuizActiList} type="quizActi" onClick={handleActiOnClick} />
         {!isMobile ? <HorizontalBannerAd /> : <HorizontalMobileAd />}
       </MainWrapper>}
       {isMobile && <MainBtn styles={{ margin: "10px 0 0 0" }} onClick={() => navigate("/activities_setting")}>활동 생성</MainBtn>}

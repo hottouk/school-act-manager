@@ -1,7 +1,7 @@
 //라이브러리
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components';
-import { Spinner } from 'react-bootstrap';
+import { Accordion, Spinner } from 'react-bootstrap';
 import Modal from 'react-bootstrap/Modal';
 import axios from "axios";
 //컴포넌트
@@ -25,9 +25,9 @@ import arrowsIcon from '../../../image/icon/arrows_icon.png'
 import GptIngModal from './GptIngModal';
 import { GPT_RESPONSE } from '../../../constants/gpt';
 //수정(240904) => 보고서탭(241203) => OCR(250327) -> 과금(260112)
-const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
+const GptModal = ({ show, onHide, subject, acti, accRecord, setPersonalRecord }) => {
   const { uploadFile, findFile } = useFireStorage();
-  const { askGptOnTrait, askGptOnReport, askTranslate, gptAnswer, gptRes, gptStatus, } = useChatGpt();
+  const { askGptOnKeywords, askGptOnTrait, askGptOnReport, askTranslate, askGptOverall, gptAnswer, gptRes, gptStatus, } = useChatGpt();
   const [whichBtn, setWhichBtn] = useState("gpt")
   useEffect(() => {
     if (whichBtn === "translate") setExtracted(gptAnswer);
@@ -47,15 +47,17 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   //탭 
   const [tab, setTab] = useState(1);
   const gptPromptByTap = {
-    1: ({ model, thinkEffort, verbosity, leftRira }) => {
+    1: (payLoad) => askGptOnKeywords({ subject, keywords: acti?.record, ...payLoad }),
+    2: (payLoad) => {
       const resultArray = convertObjectToArray(inputValues);
-      askGptOnTrait({ subject: acti?.subject, record: acti?.record, personalPropList: resultArray, model, thinkEffort, verbosity, leftRira });
+      askGptOnTrait({ subject: acti?.subject, record: acti?.record, personalPropList: resultArray, ...payLoad });
     },
-    2: ({ model, thinkEffort, verbosity, leftRira }) => askGptOnReport({ record: acti?.record, report, model, thinkEffort, verbosity, leftRira }),
-    3: ({ model, thinkEffort, verbosity, leftRira }) => {
-      if (whichBtn === "gpt") askGptOnReport({ record: acti?.record, report, model, thinkEffort, verbosity, leftRira })
-      else askTranslate({ text: extracted, model, thinkEffort, verbosity, leftRira });
+    3: (payLoad) => askGptOnReport({ record: acti?.record, report, ...payLoad }),
+    4: (payLoad) => {
+      if (whichBtn === "gpt") askGptOnReport({ record: acti?.record, report, ...payLoad })
+      else askTranslate({ text: extracted, ...payLoad });
     },
+    5: (payLoad) => askGptOverall({ subject, records: accRecord, text: extracted, ...payLoad }),
   }
   //숨기기 토글
   const [isAcadShown, setIsAcadShown] = useState(false)
@@ -102,9 +104,11 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   }
   //placeholder text
   const getPlaceholderText = () => {
-    if (tab === 1) { return "2~3개만 채우시는게 바람직합니다" }
-    else if (tab === 2) { return "학생 보고서를 복사, 붙여넣기 하세요." }
-    else { return "pdf 또는 jpg 파일만 가능합니다." }
+    if (tab === 1) { return "예시: 매사에 긍정적, 성실함, etc." }
+    else if (tab === 2) { return "2~3개만 채우시는게 바람직합니다" }
+    else if (tab === 3) { return "학생 보고서를 복사, 붙여넣기 하세요." }
+    else if (tab === 4) { return "pdf 또는 jpg 파일만 가능합니다." }
+    else { return "" }
   }
   //input 변경
   const handleInputChange = (event, type) => {
@@ -127,9 +131,10 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   //유효성 검사
   const check = () => {
     let result = true;
-    if (tab === 1) { if (!inputValues || Object.keys(inputValues).length === 0) { alert("특성을 선택하거나 작성하세요."); result = false; } }
-    else if (tab === 2) if (report === '') { alert("학생 활동 보고서를 입력해주세요."); result = false; }
-    else if (tab === 3) if (extracted === '') { alert("추출된 text가 없습니다."); result = false; }
+    if (tab === 1)
+      if (tab === 2) { if (!inputValues || Object.keys(inputValues).length === 0) { alert("특성을 선택하거나 작성하세요."); result = false; } }
+      else if (tab === 2) if (report === '') { alert("학생 활동 보고서를 입력해주세요."); result = false; }
+      else if (tab === 3) if (extracted === '') { alert("추출된 text가 없습니다."); result = false; }
     return result;
   };
   //gpt
@@ -141,7 +146,6 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
   //GPT 승인 시
   const askGptOnApprove = ({ model, thinkEffort, verbosity, leftRira }) => {
     const fn = gptPromptByTap[tab];
-    console.log(fn);
     if (typeof (fn) !== "function") { alert("지원하지 않는 GPT 타입입니다."); return; }
     fn({ model, thinkEffort, verbosity, leftRira });
   }
@@ -230,14 +234,22 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
     <Modal.Header style={{ backgroundColor: "#3454d1", height: "40px", color: "white" }} closeButton>GPT 개별화</Modal.Header>
     <Modal.Body style={{ backgroundColor: "#efefef" }}>
       {<Column style={{ gap: "10px" }}>
-        <DotTitle>현재 문구</DotTitle>
-        <WhiteWrapper>{acti?.record}</WhiteWrapper>
+        <DotTitle>{tab === 5 ? "전체 문구" : "현재 문구"}</DotTitle>
+        {tab !== 5 && <WhiteWrapper>{acti?.record}</WhiteWrapper>}
+        {tab === 5 && <WhiteWrapper>{accRecord}</WhiteWrapper>}
         <StyledImg src={plusIcon} alt="plus_icon" />
         <TabWrapper>
-          <UpperTab $tab={tab} onClick={() => { setTab(1) }}>특성</UpperTab>
-          <UpperTab className="tab2" $tab={tab} onClick={() => { setTab(2) }}>보고서</UpperTab>
-          <UpperTab className="tab3" $tab={tab} onClick={() => { setTab(3) }}>OCR</UpperTab>
-          {tab === 1 && <Column style={{ gap: "5px" }}>
+          <UpperTab className="tab1" $tab={tab} onClick={() => { setTab(1) }}>키워드</UpperTab>
+          <UpperTab className="tab2" $tab={tab} onClick={() => { setTab(2) }}>특성</UpperTab>
+          <UpperTab className="tab3" $tab={tab} onClick={() => { setTab(3) }}>보고서</UpperTab>
+          <UpperTab className="tab4" $tab={tab} onClick={() => { setTab(4) }}>OCR</UpperTab>
+          <UpperTab className="tab5" $tab={tab} onClick={() => { setTab(5) }}>총평</UpperTab>
+          {(tab === 1 || tab === 5) && <Column style={{ alignItems: "center" }}>
+            {tab === 1 && <p>입력한 키워드만으로 활동 문구를 생성합니다.</p>}
+            {tab === 5 && <p>현재 입력된 활동들을 바탕으로 학생의 총평을 생성합니다.</p>}
+            <MidBtn onClick={handleGptOnClick}>생성</MidBtn>
+          </Column>}
+          {tab === 2 && <Column style={{ gap: "5px" }}>
             <DotTitle title={"학업 역량 ▼"} onClick={() => { setIsAcadShown((prev) => !prev) }} pointer="pointer" />
             <AnimMaxHightOpacity isVisible={isAcadShown}
               content={<RowWrapper>
@@ -257,21 +269,21 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
               </RowWrapper>
               } />
             <Row style={{ marginTop: "10px", justifyContent: "center" }}>
-              <MidBtn onClick={handleGptOnClick}>Chat GPT</MidBtn>
+              <MidBtn onClick={handleGptOnClick}>생성</MidBtn>
             </Row>
           </Column>}
-          {tab === 2 && <>
+          {tab === 3 && <>
             <Textarea
               value={report}
               placeholder="학생 보고서"
               onChange={(event) => setReport(event.target.value)}
             />
             <Row style={{ marginTop: "10px", justifyContent: "center" }}>
-              {gptRes !== "loading" && <MidBtn onClick={handleGptOnClick}>Chat GPT</MidBtn>}
+              {gptRes !== "loading" && <MidBtn onClick={handleGptOnClick}>생성</MidBtn>}
               {gptRes === "loading" && <Spinner />}
             </Row>
           </>}
-          {tab === 3 && <>
+          {tab === 4 && <>
             <TextSpan>pdf 또는 jpg 파일만 text 추출 가능합니다.</TextSpan>
             {loadingMsg && <Row style={{ justifyContent: "center" }}><Spinner />{loadingMsg}</Row>}
             {loadingMsg === "downloading" && <Row style={{ justifyContent: "center" }}><p>⏳ 다운로드중...</p></Row>}
@@ -288,7 +300,7 @@ const GptModal = ({ show, onHide, acti, setPersonalRecord }) => {
                 <Textarea value={extracted} onChange={(e) => { setExtracted(e.target.value) }} style={{ marginTop: "10px" }} />
                 <Row style={{ alignSelf: "center", gap: "10px" }}>
                   <MidBtn onClick={() => { handleGptOnClick("translate"); }}>한국말로 번역</MidBtn>
-                  <MidBtn onClick={() => { handleGptOnClick("gpt"); }}>Chat GPT</MidBtn>
+                  <MidBtn onClick={() => { handleGptOnClick("gpt"); }}>생성</MidBtn>
                 </Row>
               </Column>}
             </Column>}
@@ -371,12 +383,21 @@ const UpperTab = styled.p`
   cursor: pointer;
   &.tab2 {
     background-color: ${(props) => { return (props.$tab === 2 ? "#3454d1" : "#919294") }};
-    left: 72px;
+    left: 87px;
   }
   &.tab3 {
     background-color: ${(props) => { return (props.$tab === 3 ? "#3454d1" : "#919294") }};
     left: 146px;
   }
+  &.tab4 {
+    background-color: ${(props) => { return (props.$tab === 4 ? "#3454d1" : "#919294") }};
+    left: 218px;
+  }
+  &.tab5 {
+    background-color: ${(props) => { return (props.$tab === 5 ? "#3454d1" : "#919294") }};
+    left: 279px;
+  }
+
 `
 const RowWrapper = styled.ul`
   display: flex;

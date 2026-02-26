@@ -5,8 +5,8 @@ import { GPT_MODE, GPT_RESPONSE } from "../constants/gpt"
 import StringUtils from '../utils/StringUtils'
 //데이터
 import {
-  gptBehaviorMsg, gptSubjectMsg, gptOnTraitMsg, gptOnReportMsg, gptHomeroomMsg, gptExtraRecordMsg,
-  gptPerfRecordMsg, gptTranslateMsg, gptExtractVocabMsg, gptKeywordMsg, gptMakeExamMsg, gptRetouchPassageMsg,
+  gptBehaviorMsg, gptSubjectMsg, gptKeywordMsg, gptOnTraitMsg, gptOnReportMsg, gptOverallMsg, gptHomeroomMsg, gptExtraRecordMsg,
+  gptPerfRecordMsg, gptTranslateMsg, gptExtractVocabMsg, gptMakeExamMsg, gptRetouchPassageMsg,
   gptRetouchOptionsMsg
 } from '../data/gptMsgDataList'
 //프롬프트 수정(240808)-> 모델 변경 가능(250520) => gpt api 보안이슈(250916) => message 분리(260127)
@@ -49,9 +49,17 @@ const useChatGpt = () => {
     setGptStatus('');
   }, []);
   //------GptModal------------------------------------------------
-  //5. 특성 기반 개별화(todo, 임의기록에서 gpt 활용 시)
+  //4. 키워드 기반 개별화
+  const askGptOnKeywords = async ({ subject = "담임", keywords, model, thinkEffort, verbosity, leftRira }) => {
+    console.log(subject)
+    setGptStatus("키워드로 문구 생성 중..");
+    const messages = gptKeywordMsg(subject, keywords);
+    await playGpt({ messages, model, thinkEffort, verbosity, leftRira });
+    setGptStatus('');
+  };
+  //5. 특성 기반 개별화
   const askGptOnTrait = useCallback(
-    async ({ subject, record, personalPropList, model, thinkEffort, verbosity, leftRira }) => {
+    async ({ subject = "담임", record, personalPropList, model, thinkEffort, verbosity, leftRira }) => {
       const traits = personalPropList.map(prop => `${Object.keys(prop)[0]}: ${Object.values(prop)[0]}.`).join(", ");
       setGptStatus("특성과 문구를 열심히 섞는 중..");
       const messages = gptOnTraitMsg(subject, record, traits);
@@ -66,14 +74,15 @@ const useChatGpt = () => {
       await playGpt({ messages, model, thinkEffort, verbosity, leftRira });
       setGptStatus('');
     }, [])
+  //8. 총평 작성
+  const askGptOverall = useCallback(
+    async ({ subject = "담임", records, model, thinkEffort, verbosity, leftRira }) => {
+      setGptStatus("총평 작성중..");
+      const messages = gptOverallMsg(subject, records);
+      await playGpt({ messages, model, thinkEffort, verbosity, leftRira });
+      setGptStatus('');
+    }, []);
   //------AllStudentByActiPage------------------------------------------------
-  //7. 키워드 기반 개별화
-  const askGptOnKeywords = async ({ record, keywords, model, thinkEffort, verbosity, leftRira }) => {
-    setGptStatus("키워드와 문구를 열심히 섞는 중..");
-    const messages = gptKeywordMsg(record, keywords);
-    await playGpt({ messages, model, thinkEffort, verbosity, leftRira });
-    setGptStatus('');
-  };
   //8. 한국말 번역
   const askTranslate = useCallback(async ({ text, model, thinkEffort, verbosity, leftRira }) => {
     setGptStatus("번역 중..");
@@ -204,7 +213,7 @@ const useChatGpt = () => {
   return {
     gptAnswer, gptAnswerList, gptProgress, gptRes, gptStatus, setGptAnswer,
     askSubjRecord, askPerfRecord, askExtraRecord, askHomeroomRecord,
-    askGptOnTrait, askGptOnReport, askGptOnKeywords, askTranslate,
+    askGptOnKeywords, askGptOnTrait, askGptOnReport, askGptOverall, askTranslate,
     askBehavioralOp, extractVocab,
     makeExamQuestion, retouchPassage, retouchOptions,
     splitGptAnswers, playMultipleGpt,

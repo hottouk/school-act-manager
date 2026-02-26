@@ -429,6 +429,7 @@ const AllStudentByActiPage = () => {
 				const record = _recordMap[idx] ?? '';
 				const isChecked = selectedList.some(item => item.idx === idx);
 				return <GridRowWrapper key={id}>
+					{/* 연번 */}
 					<GridItem>
 						{!isMulti && (idx + 1)}
 						{isMulti && <input
@@ -437,8 +438,11 @@ const AllStudentByActiPage = () => {
 							onChange={() => handleCheckToggle({ idx, id, record, mode, report, blankList, fillerMap, keywordList, name, studentNumber }, isChecked)}
 						/>}
 					</GridItem>
+					{/* 학번 */}
 					<GridItem>{studentNumber}</GridItem>
+					{/* 이름 */}
 					<GridItem>{name}</GridItem>
+					{/* 종류 */}
 					<GridItem style={{ gap: "5px" }}>{radioList?.map((item, radioIdx) => {
 						const { type, label, value } = item;
 						const groupName = `record-${idx}`;
