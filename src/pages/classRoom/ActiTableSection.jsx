@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux';
 import Select from 'react-select';
 //컴포넌트
 import ClickableIcon from '../../components/Styled/ClickableIcon';
-import SmallBtn from '../../components/Btn/SmallBtn';
 import AskEditModal from '../../components/Modal/AskEditModal';
 import GptModal from '../../components/Modal/gptModal/GptModal';
 //hooks
@@ -13,7 +12,7 @@ import useGetByte from '../../hooks/useGetByte';
 //이미지
 import x_btn from "../../image/icon/x_btn.png"
 //분리(260121)
-const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRec, petRtData, isModifying, isMobile, subject }) => {
+const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRec, petRtData, isEdit, isMobile, subject }) => {
   //유저
   const user = useSelector(({ user }) => user);
   //활동
@@ -86,15 +85,9 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
   }
   //학생 수정 요청
   const handleEditRecordOnClick = (item, index) => {
-    if (user.isTeacher) return;
     setSelectedActi({ item, index });
-    setIsEditModal(true);
+    setIsGptModal(true);
   }
-  const renderRadioList = (selected) => {
-    if (!selected) return [];
-    const { record, perfRecordList, extraRecordList, repeatInfoList } = selected;
-  }
-
   //------랜더링------------------------------------------------  
   const ActiRow = ({ item, index }) => {
     const { title, record, madeBy, assignedDate, repeatTimes } = item;
@@ -110,18 +103,14 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
           ? <GridItem className="left-align"><span>{record}</span></GridItem>
           : <GridItem className="left-align">
             <span
-              onClick={() => handleEditRecordOnClick(item, index)}
+              onClick={() => { }}
               style={{ textDecoration: "underline", color: "#3454d1" }}>{record}
             </span>
           </GridItem>
         }
         {!isMobile && <GridItem>{assignedDate || '없음'}</GridItem>}
-        {!isMobile &&
-          (user.isTeacher
-            ? <GridItem>{madeBy || '익명'}</GridItem>
-            : <GridItem>
-              <SmallBtn onClick={() => handleEditRecordOnClick(item, index)}>수정</SmallBtn>
-            </GridItem>)}
+        {!isMobile && <GridItem>{madeBy || '익명'}</GridItem>
+        }
         {!isMobile && <GridItem>{getByteLengthOfString(record)} Byte</GridItem>}
       </GridRow>)
   }
@@ -131,10 +120,10 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
         {!isMobile && <Header>연번</Header>}
         <Header>활동</Header>
         <Header>생기부</Header>
-        {!isMobile && <Header>{!isModifying ? "날짜" : "문구 종류"}</Header>}
+        {!isMobile && <Header>{!isEdit ? "날짜" : "문구 종류"}</Header>}
         {!isMobile &&
           (user.isTeacher
-            ? <Header> {!isModifying ? "기록자" : "변경"}</Header>
+            ? <Header> {!isEdit ? "기록자" : "변경"}</Header>
             : <Header>수정</Header>)
         }
         {!isMobile && <Header>바이트</Header>}
@@ -149,9 +138,10 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
         repeatInfoList?.forEach(({ times, record }) => recordList.push({ label: `${times}회 반복문구`, value: record, type: "repeat" }));
         return <React.Fragment key={id || index}>
           {/* 열람 */}
-          {(!isModifying || (isModifying && user.uid !== uid && user.userStatus !== "master")) && <ActiRow item={acti} index={index} />}
+          {(!isEdit
+            || (isEdit && user.uid !== uid && user.userStatus !== "master")) && <ActiRow item={acti} index={index} />}
           {/* 수정 */}
-          {(isModifying && (user.userStatus === "master" || (user.userStatus === "coTeacher" && user.uid === uid))) &&
+          {((isEdit && !isMobile) && (user.userStatus === "master" || (user.userStatus === "coTeacher" && user.uid === uid))) &&
             <GridRow>
               {/* 1열 */}
               <GridItem>
@@ -194,7 +184,10 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
               <GridItem>
                 <SmallBtnWrapper className="gpt">
                   <i className="fa-solid fa-brain" style={{ cursor: "pointer", color: "#3454d1" }}
-                    onClick={() => { setSelectedActi({ item: acti, index }); setIsGptModal(true); }} />
+                    onClick={() => {
+                      setSelectedActi({ item: acti, index });
+                      setIsGptModal(true);
+                    }} />
                   <img src={x_btn} style={{ width: "25px", height: "25px" }} alt="삭제x" onClick={(event) => handleDeleteActiOnClick(index)} />
                 </SmallBtnWrapper>
               </GridItem>
@@ -203,7 +196,7 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
             </GridRow>}
         </React.Fragment>
       })}
-      {isModifying && <GridRow>
+      {isEdit && <GridRow>
         <GridItem style={{ gridColumn: "1/7", gap: "20px" }} >
           <ClickableIcon className='fa-solid fa-plus' onClick={handleAddActiOnClick} />
         </GridItem>
@@ -239,7 +232,7 @@ const GridTableSection = styled.div`
   border-radius: 10px;
   display: grid;
   grid-template-columns: 52px 100px 1fr 130px 80px 80px;
-  @media screen and (max-width: 767px){
+  @media (max-width: 767px){
     grid-template-columns: 1fr 5fr;
   }
 `

@@ -74,16 +74,15 @@ const KlassBoardSection = ({ userStatus, klassInfo, studentList, id }) => {
   const handleCopyOnClick = async () => {
     const { classTitle } = klassInfo;
     const copyConfrim = window.prompt("클래스를 복제하시겠습니까? 클래스 이름을 입력하세요.", `2학기 ${classTitle} 사본`);
-    if (copyConfrim === null) return;
-    if (copyConfrim !== '') {
-      try {
-        await copyKlassroom(klassInfo, studentList, copyConfrim);
-        alert("복제 되었습니다");
-        navigate("/classRooms");
-      } catch (err) { console.log("클래스 복제에 실패", err); alert(err, "클래스 복제에 실패했습니다. 오류 장소(useFireClassData_06"); }
-      copyKlassroom(klassInfo, studentList, copyConfrim).then(() => {
-      })
-    } else alert("클래스 제목을 입력해주세요.");
+    if (!copyConfrim) { alert("클래스 제목을 입력해주세요."); return; }
+    try {
+      await copyKlassroom(klassInfo, studentList, copyConfrim);
+      alert("복제 되었습니다");
+      navigate("/classRooms");
+    } catch (err) {
+      console.log("클래스 복제에 실패", err);
+      alert(err, "클래스 복제에 실패했습니다. 오류 장소(useFireClassData_06");
+    };
   }
   //클래스 삭제
   const handleDeleteOnClick = async () => {

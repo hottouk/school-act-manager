@@ -52,7 +52,7 @@ const AmountSelectPage = () => {
 
   return (
     <MainContainer styles={{ gap: "10px", paddingTop: "20px" }}>
-      <MainWrapper styles={{ width: "65%", gap: "15px", position: "relative", margin: "35px 0 0" }}>
+      <MainWrapper styles={{ width: "65%", gap: "15px", position: "relative", margin: "45px 0 0" }}>
         <Row style={{ position: "absolute", top: "-35px", left: "15px", }}>
           <UpperTab className={"tab1"} value={tab} onClick={() => setTab(1)}>충전</UpperTab>
           <UpperTab className={"tab2"} value={tab} onClick={() => setTab(2)}>충전 내역</UpperTab>

@@ -15,7 +15,7 @@ import x_btn from "../../image/icon/x_btn.png"
 import HexagonRadarChart from '../../components/Chart/HexagonRadarChart'
 import DotTitle from '../../components/Title/DotTitle'
 //생성(250223) -> 수정(250820) -> 삭제버튼 이동 및 디자인(260129)
-const PetInfoSection = ({ pet, isModifiying: isEdit, setWrittenName, handlePetDeleteOnClick }) => {
+const PetInfoSection = ({ pet, isEdit, setWrittenName, handlePetDeleteOnClick }) => {
   const user = useSelector(({ user }) => user);
   const { subject, studentNumber, name, level, master, desc, path, id, classId, writtenName, actList } = pet || {};
   //육각형 능력치
@@ -122,9 +122,10 @@ const InfoGridSection = styled(Row)`
   padding: 15px;
   background-color: #efefef;
   border-radius: 15px;
-  @media screen and (max-width: 768px){
+  @media (max-width: 768px){
     display: flex;
     flex-direction: column;
+    gap: 15px;
   }
 `
 const TextInput = styled.input`

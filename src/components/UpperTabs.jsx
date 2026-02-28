@@ -2,9 +2,9 @@ import styled from "styled-components"
 //생성(260228)
 const UpperTabs = ({ top, left, tabList = ["샘플1", "샘플2"], selectedIdx, onClick, disabled }) => {
 
-	const handleOnClick = () => {
+	const handleOnClick = (tab) => {
 		if (disabled) return;
-		onClick();
+		onClick(tab);
 	}
 	return (
 		<Container $top={top || 0} $left={left || 0}>
@@ -13,7 +13,7 @@ const UpperTabs = ({ top, left, tabList = ["샘플1", "샘플2"], selectedIdx, o
 				return <Tab key={idx}
 					$selected={selected}
 					$disabled={disabled}
-					onClick={() => onClick(idx)}
+					onClick={() => handleOnClick(idx)}
 				>{name}
 				</Tab >
 			})}

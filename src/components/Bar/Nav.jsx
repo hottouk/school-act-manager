@@ -187,7 +187,7 @@ const Container = styled(Row)`
     top: 0;
     flex-direction: column;
     width: 100%;
-    height: 50px;
+    height: 60px;
     padding: 0;
     z-index: 998;
     a { font-size: 12px; }

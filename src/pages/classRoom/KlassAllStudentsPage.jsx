@@ -17,6 +17,7 @@ import GptModal from "../../components/Modal/gptModal/GptModal"
 import useGetByte from "../../hooks/useGetByte"
 import useFetchRtMyStudentData from "../../hooks/RealTimeData/useFetchRtMyStudentListData"
 import useFirePetData from "../../hooks/Firebase/useFirePetData"
+import useMediaQuery from "../../hooks/useMediaQuery"
 //최근 업데이트(241027) -> actList 직접 읽기(250718) -> 1/2학기, 담임반 통합(260121)
 const ClassAllStudents = () => {
   //시작
@@ -50,6 +51,8 @@ const ClassAllStudents = () => {
   //인쇄
   const printRef = useRef({});
   const handlePrint = useReactToPrint({ contentRef: printRef });
+  //모바일
+  const isMobile = useMediaQuery("(max-width: 768px)");
   //css
   const nameFontStyle = { cursor: "pointer", fontWeight: "bold", textDecoration: "underline" };
   //------함수부------------------------------------------------
@@ -188,7 +191,6 @@ const ClassAllStudents = () => {
     if (!window.confirm("이대로 저장하시겠습니까?")) return;
     const studentInfoList = _studentActiInfoList.map((info) => {
       const { id, firstList, secondList, thirdList } = info;
-      console.log(thirdList);
       const student = _studentList.find((item) => item.id === id);
       return {
         ...student, actList: [...firstList, ...secondList],
@@ -211,14 +213,14 @@ const ClassAllStudents = () => {
   });
   return (<>
     <MainContainer>
-      <SubNav>
-        <p>※수정은 PC에서 가능함</p>
+      {!!isMobile && <span style={{ margin: "5px auto", fontWeight: "500" }}>※모바일은 열람만 가능합니다.</span>}
+      {!isMobile && <SubNav>
         <BackBtn />
         {user.userStatus === "master" && <ClickableIcon className={"fa-solid fa-recycle"} onClick={handleShuffleAllOnClick} title={"전체 섞기"} />}
         <ClickableIcon className={"fa-solid fa-floppy-disk"} onClick={() => handleSaveOnClick()} styles={{ fontSize: "36px", border: "1px dotted black" }} title={"저장"} />
         <ExportAsExcel allStudentList={_studentList} />
         <ClickableIcon className={"fa-solid fa-print"} onClick={() => handlePrint()} title={"인쇄"} />
-      </SubNav>
+      </SubNav>}
       <AnimWrapper $isVisible={isVisible}>
         <GridContainer style={{ position: "relative" }} ref={printRef}>
           {thisKlass.type === "subject" && <Row className="no-print" style={{ position: "absolute", top: "-34px", left: "28px" }}>
@@ -231,12 +233,12 @@ const ClassAllStudents = () => {
             <UpperTab className={"tab3"} top={"-33px"} left={"133px"} value={_tabType} onClick={() => setTabType(3)}>행발</UpperTab>
           </Row>}
           <GridRowWrapper>
-            <Header>연번</Header>
+            <Header className="no-mobile">연번</Header>
             <Header>학번</Header>
             <Header>이름</Header>
             <Header>생기부</Header>
             <Header>Byte</Header>
-            <Header className="no-print">수정</Header>
+            <Header className="no-media">수정</Header>
           </GridRowWrapper>
           {_studentActiInfoList?.length === 0 && <Row style={{ gridColumn: "1/9", backgroundColor: "#78787890", borderRadius: "0 0 5px 5px" }}>
             <EmptyResult comment={"등록된 학생이 없습니다."} color={"#black"} />
@@ -252,7 +254,7 @@ const ClassAllStudents = () => {
             const thisModifying = (isModifying === key);
             return <GridRowWrapper key={index + id}>
               {/* 연번 */}
-              <GridItem>{index + 1}</GridItem>
+              <GridItem className="no-mobile">{index + 1}</GridItem>
               {/* 학번 */}
               <GridItem>{studentNumber}</GridItem>
               {/* 이름 */}
@@ -298,7 +300,7 @@ const ClassAllStudents = () => {
               {/* 바이트 */}
               <GridItem>{bytes}</GridItem>
               {/* 수정 도구 */}
-              <GridItem className="no-print">
+              <GridItem className="no-media">
                 {(!isModifying && ["master", "coTeacher"].includes(user.userStatus)) && <Column>
                   <ClickableIcon className={"fa-solid fa-edit"} onClick={() => handleEditOnClick(key)} title={"편집"} />
                   <ClickableIcon className={"fa-solid fa-recycle"} onClick={() => handleShuffleOnClick(key)} title={"개별 섞기"} />
@@ -341,16 +343,21 @@ const AnimWrapper = styled(Column)`
 const GridContainer = styled.div`
   display: grid;
 	width: 85%;
-  margin: 30px auto;
+  margin: 40px auto;
   justify-content: center;
   grid-template-columns: 70px 100px 100px 1fr 60px 100px; 
   grid-template-rows: 40px;
+  @media (max-width: 768px) {
+    width: 100%;
+    grid-template-columns: 50px 70px 1fr 50px;
+    .no-media {display: none !important; }
+    .no-mobile {display: none !important; }
+  }
   @media print {
     grid-template-columns: 70px 100px 100px 1fr 60px; 
-    .no-print {display: none !important; }
-    @page { 
-      margin: 5mm;
-    }
+    .no-print {display: none !important; };
+    .no-media {display: none !important; };
+    @page { margin: 5mm; }
   };
 `
 // lastChild의 범위를 명확하게 하기 위함.

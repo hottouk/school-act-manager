@@ -32,7 +32,6 @@ const MyInfoPage = () => {
     fetchSchoolData();
   }, [userRtData]);
   const [schoolInfo, setSchoolInfo] = useState(null);
-  //**함수부**
   return (
     <MainContainer styles={{ gap: "10px", paddingTop: "20px" }}>
       <MainWrapper>

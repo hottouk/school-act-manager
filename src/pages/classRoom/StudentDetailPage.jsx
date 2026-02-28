@@ -168,6 +168,7 @@ const StudentDetailPage = () => {
   };
   return (<>
     <MainContainer>
+      {/* 도구 */}
       <SubNav styles={{ padding: "10px" }}>
         {user.isTeacher && <Select
           placeholder="학생 바로 이동"
@@ -177,7 +178,7 @@ const StudentDetailPage = () => {
         {!user.isTeacher && <BackBtn />}
         <Row style={{ position: "absolute", right: "15px" }}>
           {(!isModifying && !isBehavioring) && <Row style={{ gap: "10px" }}>
-            <ClickableIcon className='fa-solid fa-edit' onClick={() => setIsModifying(!isModifying)} title={"편집"} />
+            {!isMobile && <ClickableIcon className='fa-solid fa-edit' onClick={() => setIsModifying(!isModifying)} title={"편집"} />}
             <ClickableIcon className='fa-solid fa-trash' onClick={handlePetDeleteOnClick} title={"삭제"} />
           </Row>}
           {(isModifying && !isBehavioring) && <Row style={{ gap: "10px" }}>
@@ -194,11 +195,11 @@ const StudentDetailPage = () => {
             <ArrowWrapper style={{ top: "50%", left: "-5%" }}><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>
             <ArrowWrapper style={{ top: "50%", right: "-5%" }}><ArrowBtn id="right_arw_btn" onClick={handleArrowBtnOnClick} /></ArrowWrapper>
           </>}
-          {/* 펫 데이터 */}
+          {/* 펫 정보 */}
           {petRtData && <PetInfoSection
             pet={petRtData}
             writtenName={writtenName}
-            isModifiying={isModifying}
+            isEdit={isModifying}
             setWrittenName={setWrittenName}
             handlePetDeleteOnClick={handlePetDeleteOnClick}
           />}
@@ -217,7 +218,7 @@ const StudentDetailPage = () => {
                 actiList={actiList} setActiList={setActiList}
                 getAccRec={getAccRec}
                 petRtData={petRtData}
-                isModifying={isModifying}
+                isEdit={isModifying}
                 isMobile={isMobile} />
               <Row style={{ justifyContent: "center" }}><img src={arrows_icon} alt="아래화살표" /></Row>
               <AccWrapper>{actiList?.length > 0 ? getAccRec(actiList) : "기록 없음"}</AccWrapper>

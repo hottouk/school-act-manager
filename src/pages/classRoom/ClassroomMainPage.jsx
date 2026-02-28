@@ -29,7 +29,7 @@ const ClassRoomMainPage = () => {
   //교실
   useEffect(() => { klassListDataListener(userRtData?.uid); }, [userRtData?.uid, klassListDataListener]);
   const { isTeacher = false, coTeachingList = [] } = userRtData || {};
-  const isMobile = useMediaQuery("(max-width: 767px)");
+  const isMobile = useMediaQuery("(max-width: 768px)");
   //교사용 교실
   const [subjKlassList, setSubjKlassList] = useState([]);
   const { homeroomKlassList, legacySubjList, legacyHomeList } = useMemo(() => {

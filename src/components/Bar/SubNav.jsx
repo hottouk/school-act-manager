@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-
+//수정(260228)
 const SubNav = ({ children, styles }) => {
   let gap = styles?.gap || "20px";
   let padding = styles?.padding || "0";
@@ -12,7 +12,7 @@ const SubNav = ({ children, styles }) => {
 const Container = styled.div`
   position: relative;
   width: 100%;
-  height: 4dvh;
+  height: 60px;
   display: flex;
   justify-content: center;
   align-items: center;
