@@ -77,7 +77,7 @@ const Column = styled(Row)`
 `
 const CardWrapper = styled(Row)`
   height: 40dvh;
-  margin: 0 auto;
+  margin: 80px auto;
   align-items: center;
   justify-content: center;
   @media(max-width: 768px){

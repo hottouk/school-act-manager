@@ -48,6 +48,18 @@ const MySchoolPage = () => {
   const nextModes = { general: "roleChange", roleChange: "masterChange", masterChange: "general" };
   //선택 멤버
   const [selectedMember, setSelectedMember] = useState(null);
+  //선택 멤버 변경
+  useEffect(() => {
+    if (!selectedMember || mode !== "general") return;
+    if (selectedMember.isTeacher) {
+      const fetchKlassrooms = async () => {
+        const list = await fetchClassrooms("uid", selectedMember.uid);
+        const { subjClassList } = sortClassrooms(list);
+        setKlassList(subjClassList);
+      };
+      fetchKlassrooms();
+    }
+  }, [mode, selectedMember, fetchClassrooms, sortClassrooms]);
   const [klassList, setKlassList] = useState([]);
   const [selectedKlass, setSelectedKlass] = useState(null);
   //페이지네이션
@@ -75,18 +87,7 @@ const MySchoolPage = () => {
     setKlassList([]);
     setSelectedKlass(null);
   }, [mode]);
-  //선택 멤버 변경
-  useEffect(() => {
-    if (!selectedMember || mode !== "general") return;
-    if (selectedMember.isTeacher) {
-      const fetchKlassrooms = async () => {
-        const list = await fetchClassrooms("uid", selectedMember.uid);
-        const sorted = sortClassrooms(list);
-        setKlassList(sorted.subjClassList);
-      };
-      fetchKlassrooms();
-    }
-  }, [mode, selectedMember, fetchClassrooms, sortClassrooms]);
+
   //페이지네이션 데이터 나누기
   useEffect(() => {
     const devideDataToPage = () => {
@@ -178,7 +179,11 @@ const MySchoolPage = () => {
         </MainWrapper>}
         {(!isMobile && schoolRtData) && <MainWrapper>
           <Title>{schoolRtData?.schoolName} 등록 교사 명단</Title>
-          <CardList dataList={teacherList} type="member" onClick={handleByMode} selected={selectedMember?.uid} />
+          <CardList
+            dataList={teacherList}
+            type="member"
+            onClick={handleByMode}
+            selected={selectedMember?.uid} />
           <ClikableTitle onClick={() => { setIsShowStudent(!isShowStudent) }}>{schoolRtData?.schoolName} 등록 학생 명단 ▼ </ClikableTitle>
           <AnimMaxHightOpacity isVisible={isShowStudent}>
             <CardList dataList={studentPageData} type="member" onClick={handleByMode} selected={selectedMember?.uid} />
@@ -188,7 +193,7 @@ const MySchoolPage = () => {
         {/* 교과반*/}
         {selectedMember?.isTeacher && <MainWrapper>
           {!isMobile && <SearchBar title="교과반 목록" type="classroom" list={klassList} setList={setKlassList} />}
-          <CardList dataList={klassList} type="classroom" onClick={handleKlassOnClick} />
+          <CardList dataList={klassList} type="subjKlass" onClick={handleKlassOnClick} />
         </MainWrapper>}
       </MainContainer >
       {isKlassMemberModal && <ClassMemberModal show={isKlassMemberModal} onHide={() => { setIsKlassMemberModal(false) }} klass={selectedKlass} myUserData={userRtData} />}

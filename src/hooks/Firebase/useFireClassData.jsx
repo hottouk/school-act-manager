@@ -119,8 +119,8 @@ const useFireClassData = () => {
     const subjClassList = [];
     const homeroomClassList = [];
     list.forEach(classroom => {
-      if (!classroom.type || classroom.type === "subject") subjClassList.push(classroom)
-      else homeroomClassList.push(classroom)
+      if (!classroom.type || classroom.type === "subject") subjClassList.push(classroom);
+      else homeroomClassList.push(classroom);
     })
     return { subjClassList, homeroomClassList }
   }, []);

@@ -59,7 +59,7 @@ const ClassAllStudents = () => {
   const bindStudentInfo = () => {
     if (!studentDataList) return;
     const infoList = studentDataList.map(student => {
-      const { studentNumber, writtenName, behaviorOpinion } = student;
+      const { studentNumber, writtenName, behaviorOpinion = '' } = student;
       const actiList = student.actList ?? [];
       const result = sortByKlassType(actiList, behaviorOpinion);
       return { id: student.id, studentNumber, writtenName, ...result };
@@ -85,7 +85,7 @@ const ClassAllStudents = () => {
     }
     return { firstList, secondList, thirdList, };
   }
-  //실시간 acc
+  //합산 문구
   const getAccRec = (list) => list?.reduce((acc, cur) => acc + " " + cur.record, '');
   //이름 클릭
   const handleNameOnClick = (info) => {
@@ -218,7 +218,15 @@ const ClassAllStudents = () => {
         <BackBtn />
         {user.userStatus === "master" && <ClickableIcon className={"fa-solid fa-recycle"} onClick={handleShuffleAllOnClick} title={"전체 섞기"} />}
         <ClickableIcon className={"fa-solid fa-floppy-disk"} onClick={() => handleSaveOnClick()} styles={{ fontSize: "36px", border: "1px dotted black" }} title={"저장"} />
-        <ExportAsExcel allStudentList={_studentList} />
+        {/* 엑셀 */}
+        <ExportAsExcel
+          title={thisKlass?.classTitle}
+          allStudentList={_studentActiInfoList}
+          type={thisKlass?.type}
+          semester={_semester}
+          tab={_tabType}
+          getAccRec={getAccRec}
+        />
         <ClickableIcon className={"fa-solid fa-print"} onClick={() => handlePrint()} title={"인쇄"} />
       </SubNav>}
       <AnimWrapper $isVisible={isVisible}>
@@ -249,7 +257,7 @@ const ClassAllStudents = () => {
             let actiList;
             if (thisKlass.type === "subject") { actiList = _semester === 2 ? secondList : firstList; }
             else { actiList = _tabType === 1 ? firstList : _tabType === 2 ? secondList : thirdList; }
-            const accRecord = getAccRec(actiList);
+            const accRecord = getAccRec(actiList) || '';
             const bytes = (accRecord ? getByteLengthOfString(accRecord) : 0);
             const thisModifying = (isModifying === key);
             return <GridRowWrapper key={index + id}>

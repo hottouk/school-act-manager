@@ -194,14 +194,6 @@ const AllStudentByActiPage = () => {
 			return { ...prev, [idx]: { ...target, fillerMap } };
 		})
 	};
-	//빈칸 채우기
-	const handleFillOnClick = (idx) => {
-		setPersonalInfoMap((prev) => {
-			const { record, fillerMap, blankList, ...rest } = prev[idx];
-			const replaced = fillBalnks(record, fillerMap);
-			return { ...prev, [idx]: { ...rest, record: replaced, fillerMap: {}, blankList: [] } };
-		})
-	};
 	//키워드 변경
 	const handleSelectKeyword = (rec, idx, typing) => {
 		setPersonalInfoMap((prev) => {
@@ -490,7 +482,6 @@ const AllStudentByActiPage = () => {
 									/>
 								</Column>
 							)}
-							{fillerMap && <SmallBtn onClick={() => handleFillOnClick(idx)} disabled={isMulti} >변경</SmallBtn>}
 						</Column>}
 						{mode === "keyword" && <Column style={{ gap: "20px", alignItems: "center" }}>
 							<Select
