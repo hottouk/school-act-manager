@@ -31,9 +31,9 @@ const storage = getStorage(app, "gs://school-act-manager.appspot.com");
 const timeStamp = Timestamp;
 export const functions = getFunctions(app, "asia-northeast3");
 // 에뮬레이터 연결 (개발에서만)
-if (window.location.hostname === "localhost") {
-  connectFunctionsEmulator(functions, "localhost", 5001);
-}
+// if (window.location.hostname === "localhost") {
+//   connectFunctionsEmulator(functions, "localhost", 5001);
+// }
 export const callAskGPT = httpsCallable(functions, "askGPT");
 export const callAskGptOnly = httpsCallable(functions, "askGptOnly");
 export const callCalculateRira = httpsCallable(functions, "calculateRira");
@@ -48,5 +48,8 @@ export const callSubmitMyStance = httpsCallable(functions, "submitMyStance");
 export const callCloseStanceCollection = httpsCallable(functions, "closeStanceCollection");
 export const callResolveBattleTurn = httpsCallable(functions, "resolveBattleTurn");
 export const callFinalizeGame = httpsCallable(functions, "finalizeGame");
+//회원 
+export const callSignInWithKakaoCustomToken = httpsCallable(functions, "signInWithKakaoCustomToken");
+export const callDeleteMyAccount = httpsCallable(functions, "deleteMyAccount");
 
 export { app, appDatabase, appFireStore, appAuth, storage, timeStamp }

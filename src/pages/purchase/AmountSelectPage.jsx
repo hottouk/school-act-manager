@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 //컴포넌트
 import MyinfoSection from '../../components/section/MyinfoSection';
@@ -18,12 +18,17 @@ import riraImg from '../../image/money.png';
 //생성(251019)
 const AmountSelectPage = () => {
   const { userRtData, userDataListener, } = useFireUserData();
+  console.log(userRtData);
   useEffect(() => { userDataListener(); }, []);
   useEffect(() => { if (userRtData) { setRira(userRtData.rira || 0); } }, [userRtData]);
   const [rira, setRira] = useState(0);
   const [tab, setTab] = useState(1); //1:충전, 2:충전내역
   const [chargeList, setChargeList] = useState([]);
   const [couponCode, setCouponCode] = useState("");
+  const isCouponeUsed = useMemo(() => {
+    if (!userRtData) return false;
+    return userRtData.usedCouponList?.includes("26신학기준비맞이연수쿠폰");
+  }, [userRtData]);
   const { fetchData } = useFireBasic("purchases");
   useEffect(() => { bindChargeData(); }, []);
   //**함수부
@@ -44,6 +49,7 @@ const AmountSelectPage = () => {
       alert("쿠폰 등록에 실패했습니다.", err);
     }
   };
+
   return (
     <MainContainer styles={{ gap: "10px", paddingTop: "20px" }}>
       <MainWrapper styles={{ width: "65%", gap: "15px", position: "relative", margin: "35px 0 0" }}>
@@ -86,7 +92,11 @@ const AmountSelectPage = () => {
       <MainWrapper styles={{ width: "65%" }}>
         <Row style={{ gap: "10px" }}>
           <DotTitle>쿠폰</DotTitle>
-          <TextInput type="text" placeholder="쿠폰 코드를 입력하세요" onChange={(e) => setCouponCode(e.target.value)} />
+          <TextInput
+            type="text"
+            placeholder={!isCouponeUsed ? "쿠폰 코드를 입력하세요" : "이미 쿠폰을 사용하셨습니다."}
+            disabled={isCouponeUsed}
+            onChange={(e) => setCouponCode(e.target.value)} />
           <SmallBtn onClick={handleCouponOnClick}>등록</SmallBtn>
         </Row>
       </MainWrapper>
@@ -116,7 +126,7 @@ const TextInput = styled.input`
   height: 30px;
   border-radius: 5px;     
   border: 1px solid #ccc;
-  padding: 0 10px;       
+  padding: 0 10px;
 `
 const BasicText = styled.p`
   margin: 0;

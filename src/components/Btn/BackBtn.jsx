@@ -5,7 +5,12 @@ import styled from 'styled-components';
 //생성(241206)
 const BackBtn = () => {
   const navigate = useNavigate();
-  return <BackIcon className="fa-solid fa-circle-arrow-left" src={back_icon} onClick={() => navigate(-1)} />
+  return <BackIcon
+    className="fa-solid fa-circle-arrow-left"
+    src={back_icon}
+    onClick={() => navigate(-1)}
+    title={"뒤로"}
+  />
 
 }
 const BackIcon = styled.i`

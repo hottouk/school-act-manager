@@ -137,7 +137,7 @@ const Nav = () => {
           <MoebileLi><Link to="/activities" onClick={() => setIsMenuOpen(false)}>활동 관리</Link></MoebileLi>
           <MoebileLi><Link to="/activities_all" onClick={() => setIsMenuOpen(false)}>전체 활동</Link></MoebileLi>
           <MoebileLi><Link to="/classrooms" onClick={() => setIsMenuOpen(false)}>클래스 관리</Link></MoebileLi>
-          <MoebileLi><Link to="/quiz" onClick={() => setIsMenuOpen(false)}>단어장 관리</Link></MoebileLi>
+          {/* <MoebileLi><Link to="/quiz" onClick={() => setIsMenuOpen(false)}>단어장 관리</Link></MoebileLi> */}
           <MoebileLi><Link to="/exam" onClick={() => setIsMenuOpen(false)}>문제 관리</Link></MoebileLi>
           <MoebileLi><Link to="/myinfo" onClick={() => setIsMenuOpen(false)}>내 정보</Link></MoebileLi>
           <MoebileLi><Link to="/purchase" onClick={() => setIsMenuOpen(false)}>충전</Link></MoebileLi>

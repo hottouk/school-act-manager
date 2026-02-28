@@ -26,7 +26,7 @@ import AnimRotation from '../../anim/AnimRotation';
 import { ERROR_MSG } from '../../constants/errMsg';
 //코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223) -> 수정 요청 기능(251104) -> 담임반 통합(260120)
 const StudentDetailPage = () => {
-  //즌비
+  //준비
   const { id: klassId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -175,6 +175,16 @@ const StudentDetailPage = () => {
           onChange={(event) => { moveStudent(allStudentFrozenList.find((student) => student.id === event.value)) }}
           isDisabled={isModifying} />}
         {!user.isTeacher && <BackBtn />}
+        <Row style={{ position: "absolute", right: "15px" }}>
+          {(!isModifying && !isBehavioring) && <Row style={{ gap: "10px" }}>
+            <ClickableIcon className='fa-solid fa-edit' onClick={() => setIsModifying(!isModifying)} title={"편집"} />
+            <ClickableIcon className='fa-solid fa-trash' onClick={handlePetDeleteOnClick} title={"삭제"} />
+          </Row>}
+          {(isModifying && !isBehavioring) && <Row style={{ gap: "10px" }}>
+            <ClickableIcon className='fa-solid fa-check' onClick={handleSaveOnClick} title={"확인"} />
+            <ClickableIcon className='fa-solid fa-x' onClick={handleCancelOnClick} title={"취소"} />
+          </Row>}
+        </Row>
       </SubNav>
       <Row style={{ justifyContent: "center" }}><ArrowBtn id="up_arw_btn" deg={225} onClick={handleArrowBtnOnClick} /></Row>
       <AnimRotation isAnimating={isAnimating}>
@@ -185,17 +195,16 @@ const StudentDetailPage = () => {
             <ArrowWrapper style={{ top: "50%", right: "-5%" }}><ArrowBtn id="right_arw_btn" onClick={handleArrowBtnOnClick} /></ArrowWrapper>
           </>}
           {/* 펫 데이터 */}
-          {petRtData && <PetInfoSection pet={petRtData} writtenName={writtenName} isModifiying={isModifying} setWrittenName={setWrittenName} handlePetDeleteOnClick={handlePetDeleteOnClick} />}
+          {petRtData && <PetInfoSection
+            pet={petRtData}
+            writtenName={writtenName}
+            isModifiying={isModifying}
+            setWrittenName={setWrittenName}
+            handlePetDeleteOnClick={handlePetDeleteOnClick}
+          />}
           {(user.isTeacher || isMaster) && <GrayBotPannel>
-            {(!isModifying && !isBehavioring) && <Row style={{ justifyContent: "flex-end" }}>
-              <ClickableIcon className='fa-solid fa-edit' onClick={() => setIsModifying(!isModifying)}></ClickableIcon>
-            </Row>}
-            {(isModifying && !isBehavioring) && <Row style={{ justifyContent: "flex-end" }}>
-              <ClickableIcon className='fa-solid fa-check' onClick={handleSaveOnClick}></ClickableIcon>
-              <ClickableIcon className='fa-solid fa-x' onClick={handleCancelOnClick} ></ClickableIcon>
-            </Row>}
             {/* 탭 */}
-            {!isBehavioring && <Row style={{ position: "absolute", top: "27px", left: "28px" }}>
+            {!isBehavioring && <Row style={{ marginBottom: "-26px", marginLeft: "15px" }}>
               <UpperTab className={"tab1"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(1)} disabled={isModifying}>{klassType === "subject" ? "1학기" : "자율"}</UpperTab>
               <UpperTab className={"tab2"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(2)} disabled={isModifying}>{klassType === "subject" ? "2학기" : "진로"}</UpperTab>
               {klassType === "homeroom" && <UpperTab className={"tab3"} value={recByType[klassType].value} onClick={() => recByType[klassType].setter(3)} disabled={isModifying}>행발</UpperTab>}
@@ -272,7 +281,7 @@ const GrayBotPannel = styled.div`
 const AccWrapper = styled.div`
   width: 100%;
   margin: 10px auto;
-  border: 1px solid #78787890;
+  border: 1px solid #78787880;
   border-radius: 10px;
   padding: 5px;
 `

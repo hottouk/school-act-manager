@@ -13,8 +13,7 @@ let tempUser = createSlice({
         name: action.payload.name,
         email: action.payload.email,
         profileImg: action.payload.profileImg,
-        phoneNumber: action.payload.phoneNumber,
-        isTeacher: undefined,
+        customToken: action.payload.customToken,
       };
     }
   }

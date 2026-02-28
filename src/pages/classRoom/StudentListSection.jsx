@@ -11,30 +11,13 @@ const StudentListSection = ({ petList, plusBtnOnClick, klassData, }) => {
   //반 id
   const classId = useParams();
   const navigate = useNavigate();
-
   //**함수**
   const handleOnClick = (pet) => {
     const petId = pet.id;
-    if (user.isTeacher) { // 교사
-      if (klassData?.type === "subject") {
-        navigate(`/classrooms/${classId.id}/student`, {
-          state: {
-            petId,
-            semester: klassData?.semester,
-            klassType: klassData?.type,
-            subject: klassData?.subject
-          }
-        })
-      }
-      else {
-        navigate(`/homeroom/${classId.id}/student`, {
-          state: {
-            petId,
-            klassType: klassData?.type
-          }
-        })
-      }
-    }
+    const payload = klassData?.type === "subject"
+      ? { petId, klassType: klassData?.type, semester: klassData?.semester, subject: klassData?.subject, }
+      : { petId, klassType: klassData?.type };
+    navigate(`/classrooms/${classId.id}/student`, { state: payload });
   }
   return (
     <Section>

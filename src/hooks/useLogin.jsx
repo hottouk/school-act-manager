@@ -1,8 +1,8 @@
 //라이브러리
-import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth'
+import { GoogleAuthProvider, signInWithCustomToken, signInWithPopup } from 'firebase/auth'
 import { useDispatch } from 'react-redux';
-import { useState } from 'react'
-import { appAuth, appFireStore, timeStamp } from '../firebase/config'
+import { useCallback, useState } from 'react'
+import { appAuth, appFireStore, timeStamp, callSignInWithKakaoCustomToken } from '../firebase/config'
 //redux
 import { setUser } from '../store/userSlice'
 import { setTempUser } from '../store/tempUserSlice';
@@ -20,17 +20,16 @@ const useLogin = () => {
   const [err, setErr] = useState(null);
   //기존 유저 검사(240221)
   const findUser = async (userInfo, sns) => {
+    console.log("findUser:", userInfo)
     let isUserExist;
     let userInfofromServer = null;
     let uid
     switch (sns) {
       case "google": //동일 로직 처리
-      case "email":
         uid = userInfo.uid
         break;
       case "kakao":
-        let id = userInfo.id
-        uid = String(id)
+        uid = String(userInfo.id)
         break;
       default: return
     }
@@ -48,7 +47,6 @@ const useLogin = () => {
       console.error(error)
     }
   }
-
   //신규 유저 추가(240222)
   const addUser = async (userInfo) => {
     let uid = String(userInfo.uid) //카카오 id가 숫자 -> 문자열
@@ -70,7 +68,6 @@ const useLogin = () => {
     dispatcher(setUser(userInfo[0]));
     alert("로그인 성공");
   }
-
   //구글 팝업 로그인(240221)
   const googleLogin = (openSnsModal) => {
     setErr(null)
@@ -82,9 +79,9 @@ const useLogin = () => {
         let tempUser = { name: userInfo.displayName, profileImg: userInfo.photoURL, phoneNumber: userInfo.phoneNumber, ...userInfo }
         dispatcher(setTempUser(tempUser))
         findUser(tempUser, "google").then(({ isUserExist, userInfofromServer }) => { //기존 유저 체크
-          if (isUserExist !== true) { openSnsModal(true) }                           //신규           
+          if (!isUserExist) { openSnsModal(true); return; }                           //신규           
           else {                                                                     //기존 유저
-            dispatcher(setUser(userInfofromServer))
+            dispatcher(setUser(userInfofromServer));
             window.alert(`${userInfofromServer.name}으로 로그인 되었습니다.`)
           }
           setErr(null)
@@ -96,45 +93,44 @@ const useLogin = () => {
         setIsPending(false)
       })
   }
-
-  //카카오 로그인(240724)
-  const kakaoLogin = (userInfo, openModal) => {
+  //카카오 로그인(240724) -> auth(260228)
+  const kakaoLogin = useCallback(async ({ access_token, setIsSnsModal }) => {
     setErr(null)
     setIsPending(true)
-    let user
-    if (userInfo) {
+    const res = await callSignInWithKakaoCustomToken({ accessToken: access_token })
+    const { kakaoUserData, customToken, } = res.data;
+    console.log("5단계 커스텀 토큰:", customToken, kakaoUserData);
+    let user;
+    if (kakaoUserData) {
       user = {
-        uid: String(userInfo.id),
-        name: userInfo.kakao_account.profile.nickname,
-        email: userInfo.kakao_account.email || "no-email",
-        profileImg: userInfo.kakao_account.profile.profile_image_url || "no-image",
-        phoneNumber: null
+        uid: String(kakaoUserData.id),
+        name: kakaoUserData.kakao_account.profile.nickname,
+        email: kakaoUserData.kakao_account.email || "no-email",
+        profileImg: kakaoUserData.kakao_account.profile.profile_image_url || "no-image",
+        customToken: customToken,
+        ...kakaoUserData
       }
     }
-    dispatcher(setTempUser(user))
-    findUser(userInfo, "kakao").then(({ isUserExist, userInfofromServer }) => { //기존 유저 체크
-      if (isUserExist !== true) { openModal(true) }                             //신규
-      else {                                                                    //기존
-        dispatcher(setUser(userInfofromServer))
-        alert(`${userInfofromServer.name}으로 로그인 되었습니다.`)
-      }
-      setErr(null)
-      setIsPending(false)
-    }).catch((err) => {
-      window.alert(err.code, err.message)
-      setErr(err.message)
-      setIsPending(false)
-    })
-  }
+    dispatcher(setTempUser(user));
+    const { isUserExist, userInfofromServer } = await findUser(kakaoUserData, "kakao");
+    if (!isUserExist) { setIsSnsModal(true) }                                     //신규
+    else {                                                                        //기존
+      dispatcher(setUser(userInfofromServer));
+      await signInWithCustomToken(auth, customToken);
+      alert(`${userInfofromServer.name}으로 로그인 되었습니다.`);
+    }
+    setErr(null);
+    setIsPending(false);
+  }, [])
   //생성(240730) -> 이메일 가입 삭제(260106) -> 학교 정보 제거(260209)
-  const classifyUserInfo = ({ uid, isTeacher, name, email, phoneNumber, profileImg, classNumber, grade, number, isMyTermAgree }) => {
+  const classifyUserInfo = ({ uid, isTeacher, name, email, profileImg, classNumber, grade, number, isMyTermAgree }) => {
     if (isTeacher) { //교사
-      const teacherUserInfo = { uid, isTeacher, name, email, phoneNumber, profileImg, isMyTermAgree }
+      const teacherUserInfo = { uid, isTeacher, name, email, profileImg, isMyTermAgree }
       if (window.confirm(`교사회원으로 가입 하시겠습니까?`)) { return teacherUserInfo }
       else { return null; }
     } else { //학생
       const studentNumber = createStudentNumber(number - 1, grade, classNumber);
-      const studentUserInfo = { uid, isTeacher, name, email, phoneNumber, profileImg, studentNumber, isMyTermAgree };
+      const studentUserInfo = { uid, isTeacher, name, email, profileImg, studentNumber, isMyTermAgree };
       if (window.confirm(`학번 ${studentNumber}로 회원가입 하시겠습니까?`)) { return studentUserInfo; }
       else { return null; }
     }

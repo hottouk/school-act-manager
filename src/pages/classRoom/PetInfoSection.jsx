@@ -19,20 +19,18 @@ const PetInfoSection = ({ pet, isModifiying: isEdit, setWrittenName, handlePetDe
   const user = useSelector(({ user }) => user);
   const { subject, studentNumber, name, level, master, desc, path, id, classId, writtenName, actList } = pet || {};
   //육각형 능력치
-  const { leadership, coopScore, academicScore, sincerityScore, attitudeScore, careerScore } = useMemo(() => {
-    const initialScores = { leadership: 30, coopScore: 30, academicScore: 30, sincerityScore: 30, attitudeScore: 30, careerScore: 30 };
-    if (!actList || actList.length === 0) {
-      return initialScores;
-    }
+  const { leadership, coop, study, research, attitude, career } = useMemo(() => {
+    const initialScores = { leadership: 30, coop: 30, study: 30, research: 30, attitude: 30, career: 30 };
+    if (!actList || actList.length === 0) return initialScores;
     return actList.reduce((acc, acti) => {
-      const scores = acti.scores || {};
+      const s = acti.scores || {};
       return {
-        leadership: acc.leadership + (scores.leadership || 0),
-        coopScore: acc.coopScore + (scores.coopScore || 0),
-        academicScore: acc.academicScore + (scores.academicScore || 0),
-        sincerityScore: acc.sincerityScore + (scores.sincerityScore || 0),
-        attitudeScore: acc.attitudeScore + (scores.attitudeScore || 0),
-        careerScore: acc.careerScore + (scores.careerScore || 0)
+        leadership: acc.leadership + (s.leadership || 0),
+        coop: acc.coop + (s.coop || 0),
+        study: acc.study + (s.study || 0),
+        research: acc.research + (s.research || 0),
+        attitude: acc.attitude + (s.attitude || 0),
+        career: acc.career + (s.career || 0)
       };
     }, initialScores);
   }, [actList]);
@@ -84,18 +82,31 @@ const PetInfoSection = ({ pet, isModifiying: isEdit, setWrittenName, handlePetDe
             {!desc && <p>주인의 행동에 밀접하게 반응한다. 어떤 아이가 깨어날지는 알 수 없다.</p>}
           </Column>
         </Row>
+        <GridTable>
+          <HeaderWrapper>
+            <TbHeader>리더십</TbHeader>
+            <TbHeader>협동</TbHeader>
+            <TbHeader>학업</TbHeader>
+            <TbHeader>탐구</TbHeader>
+            <TbHeader>태도</TbHeader>
+            <TbHeader>진로</TbHeader>
+          </HeaderWrapper>
+          <GridItem>{leadership}</GridItem>
+          <GridItem>{coop}</GridItem>
+          <GridItem>{study}</GridItem>
+          <GridItem>{research}</GridItem>
+          <GridItem>{attitude}</GridItem>
+          <GridItem>{career}</GridItem>
+        </GridTable>
       </Column>
       <Column style={{ alignItems: "center" }}>
         <HexagonRadarChart
           labels={['리더십', '협동', '학업', '탐구', '태도', '진로']}
-          values={[leadership, coopScore, academicScore, sincerityScore, careerScore, attitudeScore]}
+          values={[leadership, coop, study, research, attitude, career]}
           size={225}
           gridColor={"rgb(200, 200, 200)"}
         />
       </Column>
-      <Row style={{ justifyContent: "flex-end", alignItems: "flex-start" }}>
-        <ClickableIcon className='fa-solid fa-trash' onClick={handlePetDeleteOnClick} />
-      </Row>
     </InfoGridSection>
   )
 }
@@ -107,7 +118,7 @@ const Column = styled(Row)`
 `
 const InfoGridSection = styled(Row)`
   display: grid;
-  grid-template-columns: 260px 1fr 250px 30px;
+  grid-template-columns: 260px 1fr 250px;
   padding: 15px;
   background-color: #efefef;
   border-radius: 15px;
@@ -131,6 +142,25 @@ const PetImgWrapper = styled(Row)`
     border-radius: 70px;
     background-color: white;
   }
+`
+const GridTable = styled.div`
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(6, 50px);
+  justify-content: center;
+`
+const HeaderWrapper = styled.div`
+  display: contents;
+`
+const TbHeader = styled(Row)`
+  background-color: #3454d1b1;
+  color: white;
+  justify-content: center;
+`
+const GridItem = styled(Row)`
+  background-color: white;
+  color: black;
+  justify-content: center;
 `
 const PetInfoWrapper = styled(Column)`
   grid-column: 1/2;

@@ -1,5 +1,7 @@
 //라이브러리
 import { useEffect, useState } from 'react'
+import { signInWithCustomToken } from 'firebase/auth';
+import { appAuth, } from '../../firebase/config'
 import Modal from 'react-bootstrap/Modal';
 import { useDispatch, useSelector } from 'react-redux'
 import { setUser } from '../../store/userSlice';
@@ -43,8 +45,14 @@ const SignUpWithSnsModal = ({ show, onHide, backdrop }) => {
     event.preventDefault(); //새로고침 방지
     const isValid = check();
     if (isValid.valid) {
-      let userInfo = { ...tempUser, isTeacher: _isTeacher, grade: _grade, classNumber: _classNumber, number: _number, isMyTermAgree: _isFirstAgree }; //유저 정보
+      const { customToken, phoneNumber, ...rest } = tempUser;
+      if (customToken) {
+        const res = await signInWithCustomToken(appAuth, customToken);
+        console.log(res);
+      }
+      let userInfo = { ...rest, isTeacher: _isTeacher, grade: _grade, classNumber: _classNumber, number: _number, isMyTermAgree: _isFirstAgree, }; //유저 정보
       userInfo = classifyUserInfo(userInfo);
+      console.log(userInfo)
       if (!userInfo) return;
       addUser(userInfo);
       dispatcher(setUser(userInfo));

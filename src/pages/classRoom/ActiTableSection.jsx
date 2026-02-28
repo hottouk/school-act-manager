@@ -236,7 +236,6 @@ const Column = styled(Row)`
 const GridTableSection = styled.div`
   width: 100%;
   margin: 10px auto;
-  border: 1px solid #ddd;
   border-radius: 10px;
   display: grid;
   grid-template-columns: 52px 100px 1fr 130px 80px 80px;

@@ -48,7 +48,7 @@ const CardList = ({ dataList, type, onClick, selected }) => {
     return <Card onClick={() => onClick(item)}>
       <Title style={{ color: "#3454d1" }}>{classTitle}</Title>
       <Column>
-        {type === "subjKlass" && <BasicText>{subject}{subjDetail ? '-' + subjDetail : ''} / </BasicText>}
+        {(!isMobile && type === "subjKlass") && <BasicText>{subject}{subjDetail ? '-' + subjDetail : ''} / </BasicText>}
         <Row>
           <Highlight>{grade}</Highlight><BasicText>학년</BasicText>
           <Highlight>{classNumber}</Highlight><BasicText>반</BasicText>

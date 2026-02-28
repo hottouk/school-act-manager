@@ -4,7 +4,7 @@ import { Modal } from 'react-bootstrap'
 import styled from 'styled-components'
 //컴포넌트
 import PetImg from '../PetImg'
-import ScoreWrapper from '../ScoreWrapper'
+import ScoresSection from '../../pages/activity/ScoresSection'
 
 //250208 생성
 const ActiInfoModal = ({ show, onHide, acti }) => {
@@ -29,7 +29,7 @@ const ActiInfoModal = ({ show, onHide, acti }) => {
 				</Row>
 				<TextWrapper>{record}</TextWrapper>
 				<Row style={{ margin: "10px" }}>
-					<ScoreWrapper attitudeScore={attitudeScore} careerScore={careerScore} coopScore={coopScore} sincerityScore={sincerityScore} leadershipScore={leadership} money={money} disabled={true} />
+					<ScoresSection attitudeScore={attitudeScore} careerScore={careerScore} coopScore={coopScore} sincerityScore={sincerityScore} leadershipScore={leadership} money={money} disabled={true} />
 				</Row>
 			</Modal.Body>
 			<Modal.Footer style={{ backgroundColor: "#efefef" }}></Modal.Footer>

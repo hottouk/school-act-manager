@@ -396,15 +396,15 @@ const AllStudentByActiPage = () => {
 						<ClickableText
 							onClick={() => setIsOcrMenu(!isOcrMenu)}>{String(pdfFile.name).slice(0, 10)}...</ClickableText>
 					</div>}
-					<ClickableIcon className='fa-solid fa-file-pdf' onClick={handlePdfOnClick} />
+					<ClickableIcon className='fa-solid fa-file-upload' onClick={handlePdfOnClick} title="pdf업로드" />
 					<input type='file' ref={inputFileRef} onChange={(event) => setPdfFile(event.target.files[0])} accept="application/pdf" style={{ display: "none" }} />
-					<ClickableIcon className='fa-solid fa-floppy-disk' onClick={handleSaveOnClick} />
-					<ClickableIcon className='fa-solid fa-rotate' onClick={handleAllModeOnClick} />
-					<ClickableIcon className='fa-solid fa-user-group' onClick={() => setIsMulti(true)} />
+					<ClickableIcon className='fa-solid fa-floppy-disk' onClick={handleSaveOnClick} title="저장" />
+					<ClickableIcon className='fa-solid fa-rotate' onClick={handleAllModeOnClick} title="전체 모드 전환" />
+					<ClickableIcon className='fa-solid fa-user-group' onClick={() => setIsMulti(true)} title="다중 선택 모드" />
 				</> : <>
-					<ClickableIcon className='fa-solid fa-brain' onClick={() => hadnleMultiGptOnClick(GPT_MODE.MULTI_GENERAL)} />
-					<ClickableIcon className='fa-solid fa-language' onClick={() => hadnleMultiGptOnClick(GPT_MODE.MULTI_TRANS)} />
-					<ClickableIcon className='fa-solid fa-user' onClick={() => { setIsMulti(false); setSelectedList([]); }} />
+					<ClickableIcon className='fa-solid fa-brain' onClick={() => hadnleMultiGptOnClick(GPT_MODE.MULTI_GENERAL)} title="gpt 기능" />
+					<ClickableIcon className='fa-solid fa-language' onClick={() => hadnleMultiGptOnClick(GPT_MODE.MULTI_TRANS)} title="번역" />
+					<ClickableIcon className='fa-solid fa-user' onClick={() => { setIsMulti(false); setSelectedList([]); }} title="단일 모드" />
 				</>}
 			</Row>
 		</SubNav>
@@ -514,11 +514,11 @@ const AllStudentByActiPage = () => {
 							<KeywordHolder type='text' value={keywordList} onChange={(event) => handleSelectKeyword(event.target.value, idx, true)} disabled={isMulti} />
 						</Column>}
 					</GridItem>
-					<GridItem style={{ gap: "15px", alignItems: "center", justifyContent: "center" }}>
+					<GridItem style={{ gap: "5px", alignItems: "center", justifyContent: "center" }}>
 						{!isMulti && <>
-							<i className='fa-solid fa-rotate' style={{ cursor: "pointer", color: "#3454d1", fontSize: "18px" }} onClick={() => handleModeOnClick(idx)} />
-							<i className='fa-solid fa-brain' style={{ cursor: "pointer", color: "#3454d1", fontSize: "18px" }} onClick={() => handleGptOnClick(mode, idx)} />
-							<i className='fa-solid fa-language' style={{ cursor: "pointer", color: "#3454d1", fontSize: "18px" }} onClick={() => handleGptOnClick(GPT_MODE.TRANS, idx)} />
+							<ClickableIcon className='fa-solid fa-rotate' styles={{ fontSize: "18px" }} onClick={() => handleModeOnClick(idx)} title={"모드 전환"} />
+							<ClickableIcon className='fa-solid fa-brain' styles={{ fontSize: "18px" }} onClick={() => handleGptOnClick(mode, idx)} title={"gpt 기능"} />
+							<ClickableIcon className='fa-solid fa-language' styles={{ fontSize: "18px" }} onClick={() => handleGptOnClick(GPT_MODE.TRANS, idx)} title={"번역"} />
 						</>}
 					</GridItem>
 					<GridItem>{getByteLengthOfString(record)} byte</GridItem>
@@ -570,7 +570,6 @@ const GridContainer = styled.div`
   margin: 10px auto;
 	justify-content: center;
   grid-template-columns: 50px 80px 80px 160px 1fr 1fr 70px 70px;
-	border-left: 1px solid #787878;
 `
 // lastChild의 범위를 명확하게 하기 위함.
 const GridRowWrapper = styled.div`
@@ -583,16 +582,19 @@ const Header = styled.div`
   padding: 10px;
   font-weight: bold;
   justify-content: center;
+	&: first-child { border-top-left-radius: 5px; }
+	&: last-child { border-top-right-radius: 5px; }
 `
 const GridItem = styled(Column)`
 	min-height: 10dvh;
   padding: 10px;
   color: black;
 	background-color: #dddddd90;
-  border-right: 1px solid #787878;
-	border-bottom: 1px solid #787878;
+  border-right: 1px solid #78787890;
+	border-bottom: 1px solid #78787890;
 	text-align: center;
   &.left-align { text-align: left; }
+	&: first-child { border-left: 1px solid #78787890; }
 `
 const Textarea = styled.textarea`
 	width: 100%;

@@ -77,7 +77,9 @@ const AllActivityPage = () => {
 					<SearchBar
 						title={`서버에 총 ${allActiList ? allActiList.length : 0}개의 활동이 등록되어 있습니다.`}
 						type="allActi" list={allActiList}
-						setList={setAllActiList} />
+						setList={setAllActiList}
+						isMobile={isMobile}
+					/>
 					<CardList
 						dataList={pageData}
 						type="activity"

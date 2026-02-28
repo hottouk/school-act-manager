@@ -87,10 +87,8 @@ function App() {
                 <Route path="/activities_setting_details" element={uid ? <ActivityFormPage /> : <Navigate replace={true} to='/login' />} />
                 {/* 담임반 관리 */}
                 <Route path="/homeroom/:id" element={uid ? <ClassroomDetailsPage /> : <Navigate replace={true} to='/login' />} />
-                <Route path="/homeroom/:id/student" element={uid ? <StudentDetailPage /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/homeroom/:id/allStudents" element={uid ? <KlassAllStudentsPage /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/homeroom/:id/allstudents/acti" element={uid ? <AllStudentByActiPage /> : <Navigate replace={true} to='/login' />} />
-                {/* <Route path="/homeroom/:id/seat" element={uid ? <HomeSeatChange /> : <Navigate replace={true} to='/login' />} /> */}
                 {/* 클래스 관리 */}
                 <Route path="/classrooms" element={uid ? <ClassroomMainPage /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/classrooms/:id" element={uid ? <ClassroomDetailsPage /> : <Navigate replace={true} to='/login' />} />

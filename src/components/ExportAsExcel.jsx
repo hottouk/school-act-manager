@@ -37,6 +37,6 @@ const ExportAsExcel = ({ allStudentList, type, tab }) => {
   }
   //버튼 클릭
   const handleBtnClick = () => { xlsx.writeFile(wb, "생기부데이터.xlsx"); };
-  return <ClickableIcon onClick={handleBtnClick} />
+  return <ClickableIcon onClick={handleBtnClick} title={"엑셀 다운로드"} />
 }
 export default ExportAsExcel

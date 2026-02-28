@@ -12,8 +12,8 @@ import AddMoreRecordModal from "../../components/Modal/AddMoreRecordModal";
 import ChargeRiraModal from "../../components/Modal/ChargeRiraModal";
 //컴포넌트
 import FormHeader from "../../components/Form/FormHeader";
-import ScoreWrapper from "../../components/ScoreWrapper"
 import SubjectSelects from "../../components/Select/SubjectSelects";
+import ScoresSection from "./ScoresSection"
 import DotTitle from "../../components/Title/DotTitle";
 import TwoRadios from "../../components/Radio/TwoRadios";
 import MoreRecordListForm from "../../components/Form/MoreRecordListForm";
@@ -57,6 +57,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const [_extraRecList, setExtraRecList] = useState([]);
   const [_perfRecList, setPerfRecList] = useState([]);
   const [_repeatInfoList, setRepeatInfoList] = useState([]);
+  const [_scores, setScores] = useState({});
   const recordListMap = { extra: _extraRecList, perf: _perfRecList, repeat: _repeatInfoList };
   const recordSetterMap = { extra: setExtraRecList, perf: setPerfRecList, repeat: setRepeatInfoList }
   //담임반 활동
@@ -67,13 +68,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const [_timeFormat, setTimeFormat] = useState('')
   //공개/비공개
   const [_isPrivate, setIsPrivate] = useState(true)
-  //경험치 점수 변수
-  const [leadershipScore, setLeadershipScore] = useState(0);
-  const [careerScore, setCareerScore] = useState(0);
-  const [sincerityScore, setSincerityScore] = useState(1);
-  const [coopScore, setCoopScore] = useState(0);
-  const [attitudeScore, setAttitudeScore] = useState(0);
-  const [coin, setCoin] = useState(0);
+
   //모달
   const [isAddMoreRecModal, setIsAddMoreRecModal] = useState(false);
   const [isRiraModal, setIsRiraModal] = useState(false);
@@ -122,7 +117,6 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const bindData = () => {
     const acti = state.acti;
     if (!acti) return;
-    const scoresObj = acti.scores;
     setTitle(acti.title || '');
     setContent(acti.content || '');
     setRecord(acti.record || '');
@@ -132,10 +126,7 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     setSubjGroup(acti.subject || null);
     setSubjDetail(acti.subjDetail || null);
     setIsPrivate(acti.isPrivate || false);
-    setLeadershipScore(scoresObj?.leadership ?? 0);
-    setCareerScore(scoresObj?.careerScore ?? 0);
-    setSincerityScore(scoresObj?.sincerityScore ?? 0);
-    setAttitudeScore(scoresObj?.attitudeScore ?? 0);
+    setScores(acti.scores || {});
   }
   //변경 시
   const handleOnChange = (event) => {
@@ -199,10 +190,9 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
     if (!_subjDetail) { window.alert('과목을 입력해주세요'); return; }
     const confirm = window.confirm(`활동을 ${state ? "수정" : "생성"}하시겠습니까?`);
     if (!confirm) return;
-    const scores = { leadership: leadershipScore, careerScore, sincerityScore, coopScore, attitudeScore };
     const acti = {
       uid: String(user.uid), title: _title, subject: _subjGroup, subjDetail: _subjDetail,
-      content: _content, record: _record, isPrivate: _isPrivate, scores, money: coin, madeBy: user.name,
+      content: _content, record: _record, isPrivate: _isPrivate, scores: _scores, madeBy: user.name,
       perfRecordList: _perfRecList, extraRecordList: _extraRecList, repeatInfoList: _repeatInfoList,
     };
     if (state) { updateActi(acti, state.acti.id); } else { addActi(acti); };    //서버 저장
@@ -221,6 +211,14 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
       alert(ERROR_MSG.deleteActi);
       errorHandler(error, "ActivityFormPage:219");
     }
+  };
+  // 점수 공통 핸들러
+  const handleScoreOnChange = (e) => {
+    const { id, value } = e.target;
+    setScores((prev) => ({
+      ...prev,
+      [id]: Number(value) || 0,
+    }));
   };
   //활동 업어가기
   const handleCopyOnClick = () => {
@@ -363,7 +361,9 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
                 onClick={() => { if (!check()) return; setIsAddMoreRecModal(true); setGptType("repeat"); }} />
             </HiddenWrapper>
           </AnimMaxHightOpacity>
-          {/* 교사 버튼 영역 */}
+          {/* 점수 */}
+          <ScoresSection scores={_scores} handleOnChange={handleScoreOnChange} disabled={!isEdit} />
+          {/* 버튼 영역 */}
           <BtnWrapper>
             {/* 활동 생성 */}
             {!state && <MainBtn onClick={handleSaveOnClick}>생성</MainBtn>}

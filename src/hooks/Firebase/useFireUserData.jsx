@@ -1,11 +1,10 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { collection, doc, getDoc, runTransaction, updateDoc, arrayUnion, arrayRemove, getDocFromCache, getDocFromServer, setDoc, onSnapshot, query, getDocs, where, } from 'firebase/firestore'
-import { appAuth, appFireStore } from '../../firebase/config'
+import { appFireStore, callDeleteMyAccount } from '../../firebase/config'
 import { setUser } from '../../store/userSlice';
 //hooks
 import useFireBasic from './useFireBasic';
 import { useCallback, useState } from 'react';
-import { deleteUser } from 'firebase/auth';
 import useLogout from '../useLogout';
 //user collection 함수 모음
 const useFireUserData = () => {
@@ -256,35 +255,25 @@ const useFireUserData = () => {
       }
     }
   }, [db])
+
   //11. 회원 탈퇴(활동, 유저 삭제)
   const deleteUserTransaction = async () => {
-    const auth = appAuth;
     const actiColRef = collection(db, "activities");
-    const firebaseUser = auth.currentUser;
     const userDoc = doc(col, user.uid);
-    if (firebaseUser) {
-      try {
-        await deleteUser(firebaseUser);
-        console.log("파이어베이스 계정이 삭제되었습니다.");
-      } catch (error) {
-        console.error("회원 탈퇴 중 오류 발생:", error);
-        return;
-      }
-    } else { console.error("로그인된 사용자가 없습니다."); }
-    //파이어베이스 인증된 계정이 아닌 경우
-    const q = query(actiColRef, where("uid", "==", user.uid));
-    const actiSnapshots = await getDocs(q);
-    if (actiSnapshots.empty) { console.log("삭제할 문서가 없습니다."); }
-    await runTransaction(db, async (tx) => {
-      actiSnapshots.forEach((acti) => { tx.delete(doc(actiColRef, acti.id)); });
-      tx.delete(userDoc);
-    }).catch((error) => {
-      alert(`관리자에게 문의하세요(useFireTransaction_11),${error}`);
-      console.log(error);
-    }).then(() => {
-      console.log("쫑알이 계정이 삭제되었습니다.");
+    try {
+      const res = await callDeleteMyAccount();
+      console.log("파이어베이스 auth 탈퇴", res);
+      const q = query(actiColRef, where("uid", "==", user.uid));
+      const actiSnapshots = await getDocs(q);
+      await runTransaction(db, async (tx) => {
+        if (!actiSnapshots.empty) actiSnapshots.forEach((acti) => { tx.delete(doc(actiColRef, acti.id)); });
+        tx.delete(userDoc);
+      })
       logout();
-    })
+    } catch (error) {
+      console.error("회원 탈퇴 중 오류 발생:", error);
+      return;
+    }
   }
 
   return ({

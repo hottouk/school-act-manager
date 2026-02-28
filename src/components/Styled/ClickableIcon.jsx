@@ -1,13 +1,20 @@
 import React from 'react'
 import styled from 'styled-components'
 //생성(2060119)
-const ClickableIcon = ({ className = "fa-solid fa-file-excel", onClick = () => alert("클릭"), styles }) => {
+const ClickableIcon = (
+  {
+    className = "fa-solid fa-file-excel",
+    onClick = () => alert("클릭"),
+    title,
+    styles }
+) => {
   const fontSize = styles?.fontSize || "23px";
   const border = styles?.border || "none";
   return (
     <Icon $fontSize={fontSize} $border={border}
       className={className}
       onClick={onClick}
+      title={title}
     />
   )
 }

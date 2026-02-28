@@ -1,0 +1,107 @@
+[debug] [2026-02-27T04:45:27.836Z] ----------------------------------------------------------------------
+[debug] [2026-02-27T04:45:27.838Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\강건\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js functions:shell
+[debug] [2026-02-27T04:45:27.839Z] CLI Version:   15.8.0
+[debug] [2026-02-27T04:45:27.839Z] Platform:      win32
+[debug] [2026-02-27T04:45:27.839Z] Node Version:  v22.12.0
+[debug] [2026-02-27T04:45:27.839Z] Time:          Fri Feb 27 2026 13:45:27 GMT+0900 (대한민국 표준시)
+[debug] [2026-02-27T04:45:27.839Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-27T04:45:28.881Z] Field "/functions" in "firebase.json" is possibly invalid: must be object
+[debug] [2026-02-27T04:45:28.881Z] Field "/functions" in "firebase.json" is possibly invalid: must be object
+[debug] [2026-02-27T04:45:28.881Z] Object "/functions/0" in "firebase.json" has unknown property: {"additionalProperty":"v2"}
+[debug] [2026-02-27T04:45:28.881Z] Object "/functions/0" in "firebase.json" is missing required property: {"missingProperty":"remoteSource"}
+[debug] [2026-02-27T04:45:28.881Z] Field "/functions/0" in "firebase.json" is possibly invalid: must match a schema in anyOf
+[debug] [2026-02-27T04:45:28.881Z] Field "/functions" in "firebase.json" is possibly invalid: must match a schema in anyOf
+[debug] [2026-02-27T04:45:28.884Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-27T04:45:28.884Z] > authorizing via signed-in user (ttokke@gmail.com)
+[debug] [2026-02-27T04:45:28.884Z] [iam] checking project school-act-manager for permissions ["firebase.projects.get"]
+[debug] [2026-02-27T04:45:28.885Z] Checked if tokens are valid: false, expires at: 1772166269681
+[debug] [2026-02-27T04:45:28.885Z] Checked if tokens are valid: false, expires at: 1772166269681
+[debug] [2026-02-27T04:45:28.885Z] > refreshing access token with scopes: []
+[debug] [2026-02-27T04:45:28.886Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-02-27T04:45:28.886Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-27T04:45:29.092Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-02-27T04:45:29.093Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-02-27T04:45:29.097Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/school-act-manager:testIamPermissions [none]
+[debug] [2026-02-27T04:45:29.097Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/school-act-manager:testIamPermissions  x-goog-user-project=school-act-manager
+[debug] [2026-02-27T04:45:29.097Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/school-act-manager:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-02-27T04:45:29.311Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/school-act-manager:testIamPermissions 200
+[debug] [2026-02-27T04:45:29.312Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/school-act-manager:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-02-27T04:45:29.315Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-02-27T04:45:29.325Z] defaultcredentials: writing to file C:\Users\강건\AppData\Roaming\firebase\ttokke_gmail_com_application_default_credentials.json
+[debug] [2026-02-27T04:45:29.326Z] DEBUG: Setting GAC to C:\Users\강건\AppData\Roaming\firebase\ttokke_gmail_com_application_default_credentials.json
+[debug] [2026-02-27T04:45:29.326Z] Checked if tokens are valid: true, expires at: 1772171128093
+[debug] [2026-02-27T04:45:29.326Z] Checked if tokens are valid: true, expires at: 1772171128093
+[debug] [2026-02-27T04:45:29.326Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/school-act-manager/adminSdkConfig [none]
+[debug] [2026-02-27T04:45:30.320Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/school-act-manager/adminSdkConfig 200
+[debug] [2026-02-27T04:45:30.320Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/school-act-manager/adminSdkConfig {"projectId":"school-act-manager","databaseURL":"https://school-act-manager-default-rtdb.asia-southeast1.firebasedatabase.app","storageBucket":"school-act-manager.appspot.com","locationId":"asia-northeast3"}
+[debug] [2026-02-27T04:45:30.325Z] [functions] Watching "C:\Vscode Project\school-act-manager\functions" for Cloud Functions...
+[debug] [2026-02-27T04:45:30.328Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-02-27T04:45:30.947Z] > [functions] package.json contents: {
+  "name": "functions",
+  "type": "module",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "@google-cloud/storage": "^7.14.0",
+    "@google-cloud/vision": "^4.3.3",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.5.0",
+    "firebase-functions": "^6.4.0",
+    "openai": "^5.20.3",
+    "cors": "^2.8.5",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-google": "^0.14.0",
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2026-02-27T04:45:30.947Z] Building nodejs source
+[debug] [2026-02-27T04:45:30.947Z] Failed to find version of module node: reached end of search path C:\Vscode Project\school-act-manager\functions\node_modules
+[info] +  functions: Using node@22 from host. 
+[debug] [2026-02-27T04:45:30.948Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-27T04:45:30.951Z] Found firebase-functions binary at 'C:\Vscode Project\school-act-manager\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8857
+
+[error] (node:12708) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[debug] [2026-02-27T04:45:31.902Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"secretEnvironmentVariables":[{"key":"TOSS_WIDGET_SECRET_KEY"}],"labels":{},"httpsTrigger":{},"entryPoint":"api"},"askGPT":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"secretEnvironmentVariables":[{"key":"OPENAI_API_KEY"}],"labels":{},"callableTrigger":{},"entryPoint":"askGPT"},"askGptOnly":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"secretEnvironmentVariables":[{"key":"OPENAI_API_KEY"}],"labels":{},"callableTrigger":{},"entryPoint":"askGptOnly"},"calculateRira":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"calculateRira"},"cleanupExpiredRooms":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"scheduleTrigger":{"schedule":"every 30 minutes","retryConfig":{}},"entryPoint":"cleanupExpiredRooms"},"closeStanceCollection":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"closeStanceCollection"},"createBattleRoom":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"createBattleRoom"},"enrollCoupon":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"enrollCoupon"},"extractText":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"httpsTrigger":{},"entryPoint":"extractText"},"finalizeGame":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"finalizeGame"},"getPdfOcrResults":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"httpsTrigger":{},"entryPoint":"getPdfOcrResults"},"joinByBattleCode":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"joinByBattleCode"},"phaseManager":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"phaseManager"},"resolveBattleTurn":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"resolveBattleTurn"},"resolveGameTurn":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"eventTrigger":{"eventType":"google.cloud.firestore.document.v1.updated","eventFilters":{"database":"(default)","namespace":"(default)"},"eventFilterPathPatterns":{"document":"game/{gameId}"},"retry":false},"entryPoint":"resolveGameTurn"},"setBossStance":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"setBossStance"},"startGame":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"startGame"},"startOcrOnPdf":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"httpsTrigger":{},"entryPoint":"startOcrOnPdf"},"submitMyStance":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"callableTrigger":{},"entryPoint":"submitMyStance"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{},"params":[{"type":"secret","name":"TOSS_WIDGET_SECRET_KEY"},{"type":"secret","name":"OPENAI_API_KEY"}]}
+[debug] [2026-02-27T04:45:35.951Z] [functions] Loaded functions definitions from source: api, askGPT, askGptOnly, calculateRira, cleanupExpiredRooms, closeStanceCollection, createBattleRoom, enrollCoupon, extractText, finalizeGame, getPdfOcrResults, joinByBattleCode, phaseManager, resolveBattleTurn, resolveGameTurn, setBossStance, startGame, startOcrOnPdf, submitMyStance.
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-api]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/api).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-askGPT]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/askGPT).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-askGptOnly]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/askGptOnly).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-calculateRira]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/calculateRira).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-cleanupExpiredRooms]] function ignored because the pubsub emulator does not exist or is not running.
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-closeStanceCollection]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/closeStanceCollection).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-createBattleRoom]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/createBattleRoom).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-enrollCoupon]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/enrollCoupon).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-extractText]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/extractText).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-finalizeGame]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/finalizeGame).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-getPdfOcrResults]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/getPdfOcrResults).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-joinByBattleCode]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/joinByBattleCode).
+[debug] [2026-02-27T04:45:35.952Z] [functions[asia-northeast3-phaseManager]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/phaseManager).
+[debug] [2026-02-27T04:45:35.953Z] [functions[asia-northeast3-resolveBattleTurn]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/resolveBattleTurn).
+[debug] [2026-02-27T04:45:35.953Z] [functions[asia-northeast3-resolveGameTurn]] function ignored because the firestore emulator does not exist or is not running.
+[debug] [2026-02-27T04:45:35.953Z] [functions[asia-northeast3-setBossStance]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/setBossStance).
+[debug] [2026-02-27T04:45:35.953Z] [functions[asia-northeast3-startGame]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/startGame).
+[debug] [2026-02-27T04:45:35.953Z] [functions[asia-northeast3-startOcrOnPdf]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/startOcrOnPdf).
+[debug] [2026-02-27T04:45:35.953Z] [functions[asia-northeast3-submitMyStance]] http function initialized (http://127.0.0.1:5000/school-act-manager/asia-northeast3/submitMyStance).
+[info] i  functions: Loaded functions: api, askGPT, askGptOnly, calculateRira, cleanupExpiredRooms, closeStanceCollection, createBattleRoom, enrollCoupon, extractText, finalizeGame, getPdfOcrResults, joinByBattleCode, phaseManager, resolveBattleTurn, resolveGameTurn, setBossStance, startGame, startOcrOnPdf, submitMyStance 
+[warn] !  functions: The following emulators are not running, calls to these services will affect production: firestore, database, pubsub, storage, eventarc, tasks 

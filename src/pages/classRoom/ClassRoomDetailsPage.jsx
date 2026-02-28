@@ -187,7 +187,7 @@ const ClassroomDetailsPage = () => {
             활동별 보기
           </LongW100Btn>}
           {!isMobile && <LongW100Btn
-            onClick={() => navigate('allStudents', { state: { semester: klassRtData?.semester } })}>
+            onClick={() => navigate('allStudents', { state: { semester: klassRtData?.semester, allActiList: getActiByType() } })}>
             전체 세특 보기
           </LongW100Btn>}
           {klassType === "subject" && <LongW100Btn onClick={handleSemesterOnClick}>학기 전환</LongW100Btn>}

@@ -12,6 +12,7 @@ import BackBtn from "../../components/Btn/BackBtn"
 import ClickableIcon from "../../components/Styled/ClickableIcon"
 import UpperTab from "../../components/UpperTab"
 import EmptyResult from "../../components/EmptyResult"
+import GptModal from "../../components/Modal/gptModal/GptModal"
 //hooks
 import useGetByte from "../../hooks/useGetByte"
 import useFetchRtMyStudentData from "../../hooks/RealTimeData/useFetchRtMyStudentListData"
@@ -27,13 +28,11 @@ const ClassAllStudents = () => {
   //학급
   const classId = params.id
   const { state } = useLocation();
-  const { semester } = state || {};
+  const { semester, allActiList } = state || {};
   const thisKlass = useSelector(({ classSelected }) => classSelected);
   //탭
   const [_semester, setSemester] = useState(semester || 1);
   const [_tabType, setTabType] = useState(1);
-  //활동
-  const allActivityList = useSelector((state) => state.allActivities);
   //★학생
   const { studentDataList } = useFetchRtMyStudentData("classRooms", classId, "students", "studentNumber");
   useEffect(() => bindStudentInfo(), [studentDataList]);
@@ -44,6 +43,7 @@ const ClassAllStudents = () => {
   const [_studentActiInfoList, setStudentActiInfoList] = useState([]);
   //행 수정
   const [isModifying, setIsModifying] = useState('');
+  const [gptTarget, setGptTarget] = useState(null);
   const [_origin, setOrigin] = useState(null);
   //에니메이션
   const [isVisible, setIsVisible] = useState(false);
@@ -84,6 +84,13 @@ const ClassAllStudents = () => {
   }
   //실시간 acc
   const getAccRec = (list) => list?.reduce((acc, cur) => acc + " " + cur.record, '');
+  //이름 클릭
+  const handleNameOnClick = (info) => {
+    const payload = thisKlass?.type === "subject"
+      ? { petId: info.id, klassType: thisKlass?.type, semester, subject: thisKlass?.subject, }
+      : { petId: info.id, klassType: thisKlass?.type }
+    navigate(`/classrooms/${thisKlass.id}/student`, { state: payload })
+  }
   //수정 버튼
   const handleEditOnClick = (key) => {
     setOrigin(JSON.parse(JSON.stringify(_studentActiInfoList))); //깊은 복사(배열, obj는 메모리 참조)
@@ -115,6 +122,10 @@ const ClassAllStudents = () => {
     })
     )
   }
+  //활동 gpt
+  const handleGptOnClick = ({ studentId, acti, actiIndex, accRecord }) => {
+    setGptTarget({ studentId, acti, actiIndex, accRecord });
+  }
   //활동 삭제
   const handleDeleteOnClick = (id, actiIdx) => {
     setStudentActiInfoList(prev => prev.map((student) => {
@@ -127,9 +138,9 @@ const ClassAllStudents = () => {
   }
   //활동 셀렉터 옵션
   const renderOptions = () => {
-    if (thisKlass.type === "subject") return allActivityList.map((item) => ({ label: item.title, value: item }));
+    if (thisKlass.type === "subject") return allActiList?.map((item) => ({ label: item.title, value: item }));
     else {
-      return allActivityList
+      return allActiList
         .filter(acti => acti.subjDetail === (_tabType === 1 ? "자율" : "진로"))
         .map((item) => ({ label: item.title, value: item }));
     }
@@ -198,23 +209,23 @@ const ClassAllStudents = () => {
       width,
     }),
   });
-  return (
+  return (<>
     <MainContainer>
       <SubNav>
         <p>※수정은 PC에서 가능함</p>
         <BackBtn />
-        {user.userStatus === "master" && <ClickableIcon className={"fa-solid fa-recycle"} onClick={handleShuffleAllOnClick} />}
-        <ClickableIcon className={"fa-solid fa-floppy-disk"} onClick={() => handleSaveOnClick()} styles={{ fontSize: "36px", border: "1px dotted black" }} />
+        {user.userStatus === "master" && <ClickableIcon className={"fa-solid fa-recycle"} onClick={handleShuffleAllOnClick} title={"전체 섞기"} />}
+        <ClickableIcon className={"fa-solid fa-floppy-disk"} onClick={() => handleSaveOnClick()} styles={{ fontSize: "36px", border: "1px dotted black" }} title={"저장"} />
         <ExportAsExcel allStudentList={_studentList} />
-        <ClickableIcon className={"fa-solid fa-print"} onClick={() => handlePrint()} />
+        <ClickableIcon className={"fa-solid fa-print"} onClick={() => handlePrint()} title={"인쇄"} />
       </SubNav>
       <AnimWrapper $isVisible={isVisible}>
         <GridContainer style={{ position: "relative" }} ref={printRef}>
-          {thisKlass.type === "subject" && <Row style={{ position: "absolute", top: "-34px", left: "28px" }}>
+          {thisKlass.type === "subject" && <Row className="no-print" style={{ position: "absolute", top: "-34px", left: "28px" }}>
             <UpperTab className={"tab1"} top={"-33px"} left={"15px"} value={_semester} onClick={() => setSemester(1)}>1학기</UpperTab>
             <UpperTab className={"tab2"} top={"-33px"} left={"83px"} value={_semester} onClick={() => setSemester(2)}>2학기</UpperTab>
           </Row>}
-          {thisKlass.type === "homeroom" && <Row style={{ position: "absolute", top: "-34px", left: "28px" }}>
+          {thisKlass.type === "homeroom" && <Row className="no-print" style={{ position: "absolute", top: "-34px", left: "28px" }}>
             <UpperTab className={"tab1"} top={"-33px"} left={"15px"} value={_tabType} onClick={() => setTabType(1)}>자율</UpperTab>
             <UpperTab className={"tab2"} top={"-33px"} left={"74px"} value={_tabType} onClick={() => setTabType(2)}>진로</UpperTab>
             <UpperTab className={"tab3"} top={"-33px"} left={"133px"} value={_tabType} onClick={() => setTabType(3)}>행발</UpperTab>
@@ -225,7 +236,7 @@ const ClassAllStudents = () => {
             <Header>이름</Header>
             <Header>생기부</Header>
             <Header>Byte</Header>
-            <Header>수정</Header>
+            <Header className="no-print">수정</Header>
           </GridRowWrapper>
           {_studentActiInfoList?.length === 0 && <Row style={{ gridColumn: "1/9", backgroundColor: "#78787890", borderRadius: "0 0 5px 5px" }}>
             <EmptyResult comment={"등록된 학생이 없습니다."} color={"#black"} />
@@ -244,9 +255,15 @@ const ClassAllStudents = () => {
               <GridItem>{index + 1}</GridItem>
               {/* 학번 */}
               <GridItem>{studentNumber}</GridItem>
-              <GridItem><p onClick={() => { navigate(`/classrooms/${classId}/${key}`) }} style={nameFontStyle}>{writtenName || "미등록"}</p></GridItem>   {/* 이름 */}
+              {/* 이름 */}
+              <GridItem><p
+                onClick={() => { handleNameOnClick(info); }} style={nameFontStyle}>
+                {writtenName || "미등록"}</p>
+              </GridItem>
+              {/* 활동 내역 */}
               <GridItem style={{ justifyContent: "flex-start" }}>
                 {!thisModifying && accRecord}
+                {/* 활동 수정 */}
                 {thisModifying && <Column style={{ width: "100%", gap: "5px" }}>
                   {actiList?.map((acti, actiIndex) => {
                     const { record, id, uid } = acti;
@@ -267,24 +284,28 @@ const ClassAllStudents = () => {
                         onChange={(event) => handleActiRecordOnChage({ record: event.target.value, studentId: key, actiIndex })}
                         disabled={user.uid !== uid}
                       />
-                      {user.uid === uid && <XBtn onClick={() => { handleDeleteOnClick(key, actiIndex) }}>X</XBtn>}
+                      {user.uid === uid && <Column>
+                        <ClickableIcon className="fa-solid fa-brain" onClick={() => handleGptOnClick({ studentId: key, acti, actiIndex, accRecord })} styles={{ fontSize: "20px" }} title={"gpt 기능"} />
+                        <ClickableIcon className="fa-solid fa-trash" onClick={() => handleDeleteOnClick(key, actiIndex)} styles={{ fontSize: "20px" }} title={"삭제"} />
+                      </Column>
+                      }
                     </Row>
                   })}
                   {(_tabType !== 3 || thisKlass.type === "subject") && <Row style={{ justifyContent: "center" }}>
-                    <ClickableIcon className="fa-solid fa-plus" onClick={() => handleAddActiOnClick(key)} /></Row>}
+                    <ClickableIcon className="fa-solid fa-plus" onClick={() => handleAddActiOnClick(key)} title={"문구 추가"} /></Row>}
                 </Column>}
               </GridItem>
               {/* 바이트 */}
               <GridItem>{bytes}</GridItem>
-              {/* 수정 */}
-              <GridItem>
+              {/* 수정 도구 */}
+              <GridItem className="no-print">
                 {(!isModifying && ["master", "coTeacher"].includes(user.userStatus)) && <Column>
-                  <ClickableIcon className={"fa-solid fa-edit"} onClick={() => handleEditOnClick(key)} />
-                  <ClickableIcon className={"fa-solid fa-recycle"} onClick={() => handleShuffleOnClick(key)} />
+                  <ClickableIcon className={"fa-solid fa-edit"} onClick={() => handleEditOnClick(key)} title={"편집"} />
+                  <ClickableIcon className={"fa-solid fa-recycle"} onClick={() => handleShuffleOnClick(key)} title={"개별 섞기"} />
                 </Column>}
                 {thisModifying && <Column>
-                  <ClickableIcon className={"fa-solid fa-check"} onClick={() => setIsModifying('')} />
-                  <ClickableIcon className={"fa-solid fa-x"} onClick={() => handleCacncelOnClick()} />
+                  <ClickableIcon className={"fa-solid fa-check"} onClick={() => setIsModifying('')} title={"확인"} />
+                  <ClickableIcon className={"fa-solid fa-x"} onClick={() => handleCacncelOnClick()} title={"취소"} />
                 </Column>
                 }
               </GridItem>
@@ -293,6 +314,17 @@ const ClassAllStudents = () => {
         </GridContainer >
       </AnimWrapper>
     </MainContainer>
+    <GptModal
+      show={gptTarget}
+      onHide={() => setGptTarget(null)}
+      subject={thisKlass.subject}
+      acti={gptTarget?.acti}
+      accRecord={gptTarget?.accRecord}
+      setPersonalRecord={(record) => {
+        handleActiRecordOnChage({ record, studentId: gptTarget?.studentId, actiIndex: gptTarget?.actiIndex });
+      }}
+    />
+  </>
   )
 }
 const Row = styled.div`
@@ -314,7 +346,11 @@ const GridContainer = styled.div`
   grid-template-columns: 70px 100px 100px 1fr 60px 100px; 
   grid-template-rows: 40px;
   @media print {
-    @page { margin: 5mm; }
+    grid-template-columns: 70px 100px 100px 1fr 60px; 
+    .no-print {display: none !important; }
+    @page { 
+      margin: 5mm;
+    }
   };
 `
 // lastChild의 범위를 명확하게 하기 위함.
@@ -336,26 +372,15 @@ const GridItem = styled(Row)`
   color: black;
   padding: 10px;
   background-color: #dddddd90;
-  border: 1px solid #78787880;
-  border-radius: 5px;
+  border-right: 1px solid #78787890;
+  border-bottom: 1px solid #78787890;
   &.left-align { text-align: left; }
+  &: first-child { border-left: 1px solid #78787890; }
 `
 const Textarea = styled.textarea`
   width: 100%;
   min-height: 5rem;
   border-radius: 10px;
   white-space: pre-wrap;
-`
-const XBtn = styled.p`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 30px;
-  text-align: center;
-  font-size: 20px;
-  font-weight: bold;
-  background-color: rgba(120,120,120,0.5);
-  border-radius: 3px;
-  cursor: pointer;
 `
 export default ClassAllStudents

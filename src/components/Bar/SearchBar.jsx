@@ -30,21 +30,23 @@ const SearchBar = ({ title, type, list, setList, isMobile }) => {
   return (
     <Container>
       <p>{title}</p>
-      {type === "school" &&
-        <SearchSection keyword={keyword} placeholder="학교명 검색" onChange={(e) => { setKeyword(e.target.value) }} onClick={() => searchData("classTitle", keyword)} />}
-      {type && <SearchSection
-        keyword={keyword}
-        placeholder={`${type}명 검색`}
-        onChange={(e) => { setKeyword(e.target.value) }}
-        onClick={() => searchData(type, keyword)}
-        initOnClick={() => setList([...originalListRef.current])}
-      />}
-      <BtnWrapper>
-        {type === "allActi" && <>
-          <SmallBtn btnColor="#3454d1" btnName="제목" btnOnClick={() => { sortDataList("title") }} />
-          <SmallBtn btnColor="#3454d1" btnName="교사" btnOnClick={() => { sortDataList("madeBy") }} />
-        </>}
-      </BtnWrapper>
+      {!isMobile && <>
+        {type === "school" &&
+          <SearchSection keyword={keyword} placeholder="학교명 검색" onChange={(e) => { setKeyword(e.target.value) }} onClick={() => searchData("classTitle", keyword)} />}
+        {type && <SearchSection
+          keyword={keyword}
+          placeholder={`${type}명 검색`}
+          onChange={(e) => { setKeyword(e.target.value) }}
+          onClick={() => searchData(type, keyword)}
+          initOnClick={() => setList([...originalListRef.current])}
+        />}
+        <BtnWrapper>
+          {type === "allActi" && <>
+            <SmallBtn btnColor="#3454d1" btnName="제목" btnOnClick={() => { sortDataList("title") }} />
+            <SmallBtn btnColor="#3454d1" btnName="교사" btnOnClick={() => { sortDataList("madeBy") }} />
+          </>}
+        </BtnWrapper>
+      </>}
     </Container>)
 }
 const Container = styled.div`

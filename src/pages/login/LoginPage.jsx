@@ -29,7 +29,7 @@ const LoginPage = () => {
             <img src={googleIcon} alt="구글 로고" />구글 로그인
           </GoogleLoginBtn>
           {/* 카카오 */}
-          <KakaoSocialLogin openModal={setIsSnsModal} />
+          <KakaoSocialLogin setIsSnsModal={setIsSnsModal} />
         </Column>
         {isPending && <strong style={{ color: "white" }}>로그인 중 입니다.</strong>}
         {err && <strong>{err}</strong>}

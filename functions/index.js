@@ -312,6 +312,7 @@ export const resolveGameTurn = onDocumentUpdated({
     await processEffect({ effect: effects[1], petCurStat: firsResult, docRef, battleTurn, players });
   });
 
+// 게임
 export {
   createBattleRoom,
   joinByBattleCode,
@@ -325,4 +326,8 @@ export {
   cleanupExpiredRooms,
 } from "./battle.js";
 
+// pdf Ocr
 export { extractText, startOcrOnPdf, getPdfOcrResults } from "./pdfOcr.js";
+
+// 로그인
+export { signInWithKakaoCustomToken, deleteMyAccount } from "./login.js";
