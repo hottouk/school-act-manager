@@ -8,11 +8,10 @@ const useFireActiData = () => {
   //1. 모든 활동(260211)
   const fetchAllActis = useCallback(async (field, value, field2 = null, value2 = null) => {
     const constraints = [where(field, "==", value)];
-    if (field2 !== null && value2 !== null) {
-      constraints.push(where(field2, "==", value2));
-    }
+    if (field2 !== null && value2 !== null) { constraints.push(where(field2, "==", value2)); }
     const q = query(colRef, ...constraints);
     const querySnapshot = await getDocs(q);
+    console.log(querySnapshot)
     return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   }, []);
   //활동 생성(250419_이동)

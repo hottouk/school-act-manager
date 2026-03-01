@@ -89,22 +89,23 @@ const ClassroomDetailsPage = () => {
       try {
         const list = await fetchAllActis("uid", user.uid);
         const data = await fetchUserData(user.uid);
-        const { copiedActiList } = data || {};
+        const { copiedActiList = [] } = data || {};
         const totalList = [...list, ...copiedActiList];
+        console.log(totalList);
         setActiList(totalList || []);
       } catch (error) {
-        alert(ERROR_MSG.fetchAllActis);
-        errorHandler(error, "fetchAllActis");
+        console.log(ERROR_MSG.fetchAllActis, error);
       }
     }
     bindActiData();
-  }, [klassRtData, dispatcher, errorHandler, fetchAllActis, fetchUserData,]);
+  }, [klassRtData, dispatcher, errorHandler, fetchAllActis, fetchUserData, user]);
+  console.log(actiList)
   //활동 분류
   const { homeActiList, subjActiList, quizActiList } = useMemo(() => {
-    if (actiList?.length === 0 || !actiList) return { homeActiList: [], subjActiList: [], quizActiList: [] };
+    if (actiList?.length === 0) return { homeActiList: [], subjActiList: [], quizActiList: [] };
+    console.log(actiList);
     return sortActiType(actiList);
   }, [actiList, sortActiType]);
-
   useEffect(() => {
     // 퀴즈
     if (quizActiList.length === 0 || !klassRtData?.addedQuizIdList) return;
@@ -113,6 +114,8 @@ const ClassroomDetailsPage = () => {
   }, [quizActiList, klassRtData?.addedQuizIdList]);
   const [quizList, setQuizList] = useState([]);
   const [addedQuizList, setAddedQuizList] = useState([]);
+  console.log(subjActiList);
+
   //탭
   const [tab, setTab] = useState(1);
   //모달

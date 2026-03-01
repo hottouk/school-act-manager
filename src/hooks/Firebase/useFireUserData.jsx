@@ -18,6 +18,7 @@ const useFireUserData = () => {
   //1. 유저 정보 하나 가져오기
   const fetchUserData = useCallback(async (id) => {
     const userDocRef = doc(col, id);
+    console.log(id)
     const userDoc = await getDoc(userDocRef).catch((error) => {
       alert(`관리자에게 문의하세요(useFireUserData_01), ${error}`);
       console.log(error);
