@@ -16,14 +16,14 @@ const useFireUserData = () => {
   const { logout } = useLogout();
   const { addData } = useFireBasic("error");
   //1. 유저 정보 하나 가져오기
-  const fetchUserData = async (id) => {
+  const fetchUserData = useCallback(async (id) => {
     const userDocRef = doc(col, id);
     const userDoc = await getDoc(userDocRef).catch((error) => {
       alert(`관리자에게 문의하세요(useFireUserData_01), ${error}`);
       console.log(error);
     })
     return userDoc.data();
-  }
+  }, []);
   //1-1. 유저 정보 실시간 구독
   const userDataListener = useCallback((id = user.uid, callback = setUserRtData) => {
     if (!id) return

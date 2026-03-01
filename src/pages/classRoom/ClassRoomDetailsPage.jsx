@@ -53,6 +53,8 @@ const ClassroomDetailsPage = () => {
   const { errorHandler } = useFireErrData();
   //교실
   const { klassRtData, updateKlassroom, klassDataListener } = useFireClassData();
+  //유저
+  const { fetchUserData } = useFireUserData();
   //학생
   const { petListRtData, petListDataListener } = useFirePetData();
   useEffect(() => { dispatcher(setAllStudents(petListRtData)); }, [petListRtData, dispatcher]);
@@ -72,7 +74,7 @@ const ClassroomDetailsPage = () => {
   //회원 검증
   const userStatus = useMemo(() => {
     if (!klassRtData) return "student";
-    const isCoteacher = klassRtData.coTeacher?.find((item) => { return item === user.uid });
+    const isCoteacher = klassRtData.coTeacher?.find((item) => item === user.uid);
     if (user.uid === klassRtData.uid) return "master"
     else if (isCoteacher) return "coTeacher"
     else return "student"
@@ -85,20 +87,24 @@ const ClassroomDetailsPage = () => {
     dispatcher(setSelectClass(klassRtData));
     const bindActiData = async () => {
       try {
-        const list = await fetchAllActis("uid", klassRtData.uid);
-        setActiList(list || []);
+        const list = await fetchAllActis("uid", user.uid);
+        const data = await fetchUserData(user.uid);
+        const { copiedActiList } = data || {};
+        const totalList = [...list, ...copiedActiList];
+        setActiList(totalList || []);
       } catch (error) {
         alert(ERROR_MSG.fetchAllActis);
         errorHandler(error, "fetchAllActis");
       }
     }
     bindActiData();
-  }, [klassRtData, dispatcher, errorHandler, fetchAllActis]);
-  //세분화 
+  }, [klassRtData, dispatcher, errorHandler, fetchAllActis, fetchUserData,]);
+  //활동 분류
   const { homeActiList, subjActiList, quizActiList } = useMemo(() => {
-    if (actiList.length === 0) return { homeActiList: [], subjActiList: [], quizActiList: [] };
+    if (actiList?.length === 0 || !actiList) return { homeActiList: [], subjActiList: [], quizActiList: [] };
     return sortActiType(actiList);
   }, [actiList, sortActiType]);
+
   useEffect(() => {
     // 퀴즈
     if (quizActiList.length === 0 || !klassRtData?.addedQuizIdList) return;
@@ -161,7 +167,7 @@ const ClassroomDetailsPage = () => {
     {klassRtData && <AnimWrapper $isVisible={isVisible}>
       {/* 반 기본 정보(공용) */}
       <KlassBoardSection userStatus={userStatus} id={thisKlassId} klassInfo={klassRtData} studentList={petListRtData} />
-      {/* 쫑알이(교사)*/}
+      {/* 쫑알이*/}
       {user.isTeacher && <SubWrapper>
         <MainWrapper styles={{ position: "relative" }}>
           {klassType === "subject" && <IconWrapper><Badge bg='secondary'>{klassRtData?.semester}학기</Badge></IconWrapper>}

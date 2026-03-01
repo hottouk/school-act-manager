@@ -41,7 +41,7 @@ const useFireActiData = () => {
       if (item.subject === "담임") { homeActiList.push(item) }
       else if (item.monster) { quizActiList.push(item) }
       else { subjActiList.push(item) }
-    })
+    });
     return { homeActiList, subjActiList, quizActiList }
   }, []);
 
