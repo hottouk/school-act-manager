@@ -6,7 +6,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/esm/Button';
 import ModalBtn from '../Btn/ModalBtn';
 //hooks
-import useFetchFireData from '../../hooks/Firebase/useFetchFireData';
+import useFireBasic from '../../hooks/Firebase/useFireBasic';
 
 //디자인 수정(250213)
 const NoticeModal = ({ show, onHide, onDismissed }) => {
@@ -17,9 +17,16 @@ const NoticeModal = ({ show, onHide, onDismissed }) => {
   const [notice, setNotice] = useState('')
   //데이터 통신
   // const { addNotice } = useAddUpdFireData("notice") //서버 기록 todo
-  const { fetchDoc } = useFetchFireData()        //기록 불러오기
+  const { fetchDoc } = useFireBasic("admin");
   const [noticeList, setNoticeList] = useState(null)  //불러온 기록 배열
-  useEffect(() => { fetchDoc("notice", "notice").then((data) => { setNoticeList(data.noticeList) }) }, [])
+  useEffect(() => {
+    const fetchNotice = async () => {
+      const data = await fetchDoc("notice", "admin");
+      console.log(data)
+      setNoticeList(data.noticeList);
+    }
+    fetchNotice();
+  }, [])
 
   //------함수부------------------------------------------------  
   const splitTxtToArr = (txt) => { //"/"구분자로 txt to 배열

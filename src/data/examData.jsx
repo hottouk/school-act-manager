@@ -1,5 +1,6 @@
 const numbers = [18, 19, 20, 21, 22, 23, 24, 26, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45];
 const monthList = [{ label: "3월", value: "3월" }, { label: "6월", value: "6월" }, { label: "9월", value: "9월" }, { label: "10월", value: "10월" },];
+const thirdGradeMonthList = [{ label: "3월", value: "3월" }, { label: "5월", value: "5월" }, { label: "6월", value: "6월" }, { label: "7월", value: "7월" }, { label: "9월", value: "9월" }, { label: "10월", value: "10월" }, { label: "수능", value: "수능" },];
 const generalPrincipal = { //1. 대전제
   role: "system", content: `당신의 역할은 주어진 지문으로 수능 유형의 문제를 출제하는 교사임.
     [유형],[발문],[지문],[학년],[추가 규칙]의 단서를 제공하겠습니다. 고등학교 수능 모의고사 [유형]의 객관식 오지선다형 선지를 영문으로 작성바람.
@@ -472,6 +473,6 @@ const typeData = {
 };
 
 export {
-  typeData, monthList, numbers,
+  typeData, monthList, thirdGradeMonthList, numbers,
   purposeExData, feelingChangeExData, authorMainPointExData, meaningExData, mainIdeaExData, thesisExData, titleExData, trueFalseExData, grammarExData, lexisExData, blankExData, nonRelatedExData, sequenceExData, insertExData, summaryExData
 }

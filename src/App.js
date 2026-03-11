@@ -28,9 +28,6 @@ import ClassSortSelection from './pages/classSetting/ClassSortSelection';
 import ClassroomFormPage from './pages/classSetting/ClassroomFormPage';
 import WhatsNewPage from './pages/main/WhatsNewPage';
 import MySchoolPage from './pages/school/MySchoolPage';
-//관리자
-import MasterPage from './pages/main/MasterPage';
-import Lab from './pages/lab/Lab';
 // import HomeSeatChange from './pages/homeroom/HomeSeatChangePage';
 //시험
 import ExamMainPage from './pages/exam/ExamMainPage';
@@ -40,11 +37,13 @@ import ExamItemPage from './pages/exam/ExamItemPage';
 import WidgetCheckoutPage from './pages/purchase/WidgetCheckoutPage';
 import WidgetSuccessPage from './pages/purchase/WidgetSuccessPage';
 import PurchaseFailPage from './pages/purchase/PurchaseFailPage';
-import AmountSelectPage from './pages/purchase/AmountSelectPage';
-//내정보
-import MyInfoPage from './pages/myInfo/MyInfoPage';
-import SchoolSignUpPage from './pages/myInfo/SchoolSignUpPage';
-import EnterroomPage from './pages/quizBattle/EnterroomPage';
+//관리자
+const Lab = lazy(() => import('./pages/lab/Lab'));
+const MasterPage = lazy(() => import('./pages/main/master/MasterPage'));
+//결제
+const AmountSelectPage = lazy(() => import('./pages/purchase/AmountSelectPage'));
+const SchoolSignUpPage = lazy(() => import('./pages/myInfo/SchoolSignUpPage'));
+const MyInfoPage = lazy(() => import('./pages/myInfo/MyInfoPage'));
 //단어 배틀
 const QuizActiFormPage = lazy(() => import('./pages/quizBattle/QuizActiFormPage'));
 const GameSettingPage = lazy(() => import('./pages/quizBattle/GameSettingPage'));
@@ -53,6 +52,7 @@ const QuizFormPage = lazy(() => import('./pages/quizBattle/QuizFormPage'));
 const QuizMainPage = lazy(() => import('./pages/quizBattle/QuizMainPage'));
 const BattleroomThrPage = lazy(() => import('./pages/quizBattle/BattleroomThrPage'));
 const BattleroomStuPage = lazy(() => import('./pages/quizBattle/BattleroomStuPage'));
+const EnterroomPage = lazy(() => import('./pages/quizBattle/EnterroomPage'));
 //상점
 const ShopMainPage = lazy(() => import('./pages/shop/ShopMainPage'));
 //전체 활동
@@ -63,7 +63,13 @@ function App() {
   return (
     <>
       <Helmet>
-        <title>생기부 입력 도우미</title>
+        <title>생기부쫑알이 | 교사를 위한 종합 에듀 테크</title>
+        <meta name="description" content="교사를 위한 생기부 작성 AI 도우미. 시험 문제 출제, 생기부 작성도 게임처럼 지원합니다." />
+        <meta name="keywords" content="생기부 작성, 생활기록부 작성, 시험 문제 출제, 수행평가 문항, 교사용 AI, 교사 업무 자동화, 교육 AI" />
+        <meta property="og:title" content="쫑알이에듀 | 생기부 입력 도우미" />
+        <meta property="og:description" content="교사의 즐거움, 쫑알이에서 시작됩니다. 생기부 작성, 문제 출제를 쉽게 만들어주는 교사가 직접 코딩하는 AI 도구, 교사 업무 시간이 획기적으로 줄어드는 마법." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://school-act-manager.firebaseapp.com" />
         {/* loDash 라이브러리 */}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
           integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="

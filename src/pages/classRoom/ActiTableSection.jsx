@@ -84,10 +84,10 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
     changeAccRecord(index, event.target.value);
   }
   //학생 수정 요청
-  const handleEditRecordOnClick = (item, index) => {
-    setSelectedActi({ item, index });
-    setIsGptModal(true);
-  }
+  // const handleEditRecordOnClick = (item, index) => {
+  //   setSelectedActi({ item, index });
+  //   setIsGptModal(true);
+  // }
   //------랜더링------------------------------------------------  
   const ActiRow = ({ item, index }) => {
     const { title, record, madeBy, assignedDate, repeatTimes } = item;

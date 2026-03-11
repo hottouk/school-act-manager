@@ -13,15 +13,14 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistStore } from 'redux-persist';
 //전역변수(안씀)
 // import { AuthContextProvider } from './context/AuthContext';
-
-export let persistor = persistStore(store)
+export const persistor = persistStore(store);
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
       <GoogleOAuthProvider clientId={process.env.GOOGLE_ID}>
         {/* <AuthContextProvider> */}
-          <App />
+        <App />
         {/* </AuthContextProvider> */}
       </GoogleOAuthProvider>
     </PersistGate>

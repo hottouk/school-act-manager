@@ -38,8 +38,7 @@ const ExamFormPage = () => {
 	//월
 	const [month, setMonth] = useState(null);
 	useEffect(() => {
-		//모고 불러오기
-		const fetchExamData = async () => {
+		const fetchExamData = async () => { //모고 불러오기
 			setNumber(null);
 			const docId = `${year}${grade}${month}${subject}`;
 			const examInfo = await fetchDoc(docId);
@@ -67,6 +66,31 @@ const ExamFormPage = () => {
 			setPassage(exam[number]?.original?.replace(/(\r\n|\n|\r)/g, " ") ?? exam[number]?.passage.replace(/(\r\n|\n|\r)/g, " ") ?? '');
 			setMockQuestion(exam[number]?.question ?? '');
 			setMockOptionList(exam[number]?.optionList ?? []);
+			setMasterQuestion(() => {
+				if (number === 18) { return typeData["글의 목적"]; }
+				else if (number === 20) { return typeData["필자의 주장"]; }
+				else if (number === 22) { return typeData["글의 요지"]; }
+				else if (number === 23) { return typeData["글의 주제"]; }
+				else if (number === 24) { return typeData["글의 제목"]; }
+				else if (number === 29) { return "다음 글의 밑줄 친 부분 중, 어법상 틀린 것은?"; }
+				else if (number === 30) { return typeData["어휘 밑줄"]; }
+				else if (number === 31 || number === 32 || number === 33 || number === 34) { return typeData["빈칸 추론"]; }
+				else if (number === 35) { return typeData["무관한 문장"]; }
+				else if (number === 36 || number === 37) { return typeData["글의 순서"] }
+				else if (number === 38 || number === 39) { return "글의 흐름으로 보아, 주어진 문장이 들어가기에 가장 적절한 곳은?" }
+				else if (number === 40) { return typeData["요약"] }
+				else if (number === 41) { return "윗 글의 제목으로 가장 적절한 것은?" }
+				else if (number === 42) { return "밑줄 친 (a)~(e) 중에서 문맥상 낱말의 쓰임이 적절하지 않은것은?" }
+				else if (number === 43) { return "주어진 글 (A)에 이어질 내용을 순서에 맞게 배열한 것으로 가장 적절한 것은?" }
+				else if (number === 44) { return "밑줄 친 (a)~(e) 중에서 가리키는 대상이 나머지 넷과 다른것은?" }
+				else if (number === 45) { return "윗글에 관한 내용으로 적절하지 않은 것은?" }
+				else return "";
+			})
+			setOptions(() => {
+				if (number === 36 || number === 37) { return "① (A) - (C) - (B)/② (B) - (A) - (C)/③ (B) - (C) - (A)/④ (C) - (A) - (B)/⑤ (C) - (B) - (A)" }
+				if (number === 42 || number === 44) { return "① (a)/② (b)/③ (c)/④ (d)/⑤ (e)" }
+				if (number === 43) { return "① (B) - (D) - (C)/② (C) - (B) - (D)/③ (C) - (D) - (B)/④ (D) - (B) - (C)/⑤ (D) - (C) - (B)" }
+			})
 		}
 	}, [number]);
 	//기출
@@ -130,7 +154,7 @@ const ExamFormPage = () => {
 	const handleMasterOnClick = () => {
 		const confirm = window.confirm(`${subject}${number}: ${m_question}${m_options}${m_passage},`);
 		if (!confirm || !number) return;
-		const optionList = m_options.split("/", 5);
+		const optionList = m_options?.split("/", 5) || [''];
 		const question = isOriginal
 			? { original: m_passage }
 			: { question: m_question, optionList, passage: m_passage };

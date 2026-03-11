@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import Select from 'react-select';
-import { monthList, numbers, } from '../../data/examData.jsx'
+import { monthList, thirdGradeMonthList, numbers, } from '../../data/examData.jsx'
 //생성(260217)
 const MockExamSelect = ({ year, setYear, grade, setGrade, month, setMonth, setNumber }) => {
 	const yearList = [{ label: 2025, value: 2025 }];
@@ -21,7 +21,7 @@ const MockExamSelect = ({ year, setYear, grade, setGrade, month, setMonth, setNu
 			/>}
 			{grade && <Select
 				onChange={(event) => setMonth(event.value)}
-				options={monthList}
+				options={grade === "고3" ? thirdGradeMonthList : monthList}
 				placeholder={"월"}
 			/>}
 			{month && <Select

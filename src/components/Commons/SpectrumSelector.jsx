@@ -16,12 +16,12 @@ const SpectrumSelector = ({ options = [], value, setValue }) => {
       onValueChange={(next) => next && setValue(next)}
       aria-label="스펙트럼 선택"
     >
-      {!options && sampleOptions.map((opt) => (
+      {options.length === 0 && sampleOptions.map((opt) => (
         <GroupItem key={opt.value} value={opt.value} aria-label={opt.label}>
           {opt.label}
         </GroupItem>
       ))}
-      {options && options.map((opt) => (
+      {options.length > 0 && options.map((opt) => (
         <GroupItem key={opt.value} value={opt.value} aria-label={opt.label}>
           {opt.label}
         </GroupItem>
