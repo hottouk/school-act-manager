@@ -70,7 +70,6 @@ function App() {
         <meta property="og:description" content="교사의 즐거움, 쫑알이에서 시작됩니다. 생기부 작성, 문제 출제를 쉽게 만들어주는 교사가 직접 코딩하는 AI 도구, 교사 업무 시간이 획기적으로 줄어드는 마법." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://school-act-manager.firebaseapp.com" />
-        <meta name="naver-site-verification" content="b7ae21a27f6d2a98eaac39cb6afe654254a223a1" />
         {/* loDash 라이브러리 */}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
           integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
