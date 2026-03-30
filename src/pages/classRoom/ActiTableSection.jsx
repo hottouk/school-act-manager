@@ -16,7 +16,7 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
   //유저
   const user = useSelector(({ user }) => user);
   //활동
-  const allActivityList = useSelector((state) => state.allActivities);
+  const allActiList = useSelector((state) => state.allActivities);
   //바이트
   const { getByteLengthOfString } = useGetByte();
   const [gptRecord, setGptRecord] = useState('');
@@ -83,11 +83,6 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
   const handleTextareaOnChange = (event, index) => {
     changeAccRecord(index, event.target.value);
   }
-  //학생 수정 요청
-  // const handleEditRecordOnClick = (item, index) => {
-  //   setSelectedActi({ item, index });
-  //   setIsGptModal(true);
-  // }
   //------랜더링------------------------------------------------  
   const ActiRow = ({ item, index }) => {
     const { title, record, madeBy, assignedDate, repeatTimes } = item;
@@ -153,7 +148,7 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
               {/* 2열 */}
               <GridItem>
                 <Select
-                  options={allActivityList.map((item) => ({ label: item.title, value: item }))}
+                  options={allActiList.map((item) => ({ label: item.title, value: item }))}
                   onChange={(event) => { handleSelectOnchange(event, index) }} />
               </GridItem>
               {/* 3열 */}

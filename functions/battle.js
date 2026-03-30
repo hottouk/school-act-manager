@@ -100,7 +100,7 @@ export const joinByBattleCode = onCall({ region: REGION }, async (req) => {
     joinedAt: now(),
     lastSeenAt: now(),
   });
-  return { roomId };
+  return { roomId, pet };
 });
 
 // 3) 게임 시작
@@ -211,7 +211,7 @@ export const closeStanceCollection = onCall({ region: REGION }, async (req) => {
 export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
   console.log("배틀 턴 결과 함수 호출");
   const { roomId, room } = await hostCheck(req); // host 검증 재사용
-  // 턴
+  // turn
   const turn = Number(room.turn || 1);
   const maxTurn = Number(room.maxTurn || room.maxRounds || 5);
   const summaryRef = db.ref(`roomStanceSummary/${roomId}/${turn}`);
@@ -223,19 +223,19 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
   if (!summary.closed) {
     throw new HttpsError("failed-precondition", "stance collection not closed");
   }
-  // idempotent 처리
+  // idempotent
   const resultRef = db.ref(`roomBattleResults/${roomId}/${turn}`);
   const resultSnap = await resultRef.get();
   if (resultSnap.exists()) return { ok: true, alreadyResolved: true, turn, result: resultSnap.val() };
-  // 스탯
+  // stat
   const boss = room.boss || { atk: 0, def: 0, curHp: 0, hp: 0 };
   const pet = room.pet || { curHp: 0, hp: 0 }; // 팀 단일 객체
   const bossStance = String(room.bossStance || "atk");
-  // 취합
+  // collect
   const atkPoint = Number(summary.atk || 0);
   const defPoint = Number(summary.def || 0);
   const healToTeam = Number(summary.rest || 0);
-  // 결과
+  // result
   const nextTurn = turn + 1;
   let damageToBoss = 0;
   let damageToTeam = 0;
@@ -253,7 +253,7 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
   }
   const nextBossHp = Math.max(0, Math.min(boss.hp, boss.curHp - damageToBoss + healToBoss));
   const nextPetHp = Math.max(0, Math.min(pet.hp, pet.curHp - damageToTeam + healToTeam));
-  // 종료 여부
+  // endGame?
   const isBossDead = nextBossHp <= 0;
   const isTeamDead = nextPetHp <= 0;
   const isTurnOver = nextTurn > maxTurn; // 현재 턴 처리 후 다음 턴이 max 초과면 종료
@@ -289,11 +289,11 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
   await db.ref().update({
     [`roomBattleResults/${roomId}/${turn}`]: {
       turn,
-      bossStance,
       summary,
       ...result,
     },
     [`rooms/${roomId}/turn`]: nextTurn,
+    [`rooms/${roomId}/bossStance`]: null,
     [`rooms/${roomId}/boss/curHp`]: nextBossHp,
     [`rooms/${roomId}/pet/curHp`]: nextPetHp,
   });

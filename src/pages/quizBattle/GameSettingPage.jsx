@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { useLocation, useNavigate } from 'react-router-dom'
 //컴포넌트
 import QuizBattleSingleSection from './QuizBattleSingleSection'
@@ -203,7 +203,7 @@ const GameSettingPage = () => {
           </Column>}
         {!isMobile && <Column>
           <VsWrapper>
-            <HalfWrapper><BigPetImg src={petImgList[selectedPet?.index] || question_icon} alt="내 펫" /></HalfWrapper>
+            <HalfWrapper><BigPetImg key={petImgList[selectedPet?.index] || question_icon} src={petImgList[selectedPet?.index] || question_icon} alt="내 펫" /></HalfWrapper>
             <p style={{ fontSize: "120px", fontWeight: "bold" }}>VS</p>
             <HalfWrapper><BigPetImg src={monImg || question_icon} alt='몬스터' /></HalfWrapper>
           </VsWrapper>
@@ -277,6 +277,8 @@ const VsWrapper = styled(Row)`
   background: linear-gradient(to right, #3454d1, #efefef, #9b0c24);
   overflow: hidden;
 `
+;
+
 const HalfWrapper = styled(Row)`
   width: 50%;
   justify-content: center;
@@ -298,6 +300,7 @@ const BigPetImg = styled.img`
   width: 60%;
   overflow: hidden;
 `
+
 const BasicText = styled.p`
   margin: 0;
   text-align: center;

@@ -22,7 +22,8 @@ const ActivitySortPage = () => {
         navigate("/activities_setting_details?sort=homeroom");
         break;
       case "quizGameActi":
-        alert("교육청 정책 변경으로 서비스 중단");
+        // alert("교육청 정책 변경으로 서비스 중단");
+        navigate("/activities_setting_quiz");
         break;
       default:
         return;

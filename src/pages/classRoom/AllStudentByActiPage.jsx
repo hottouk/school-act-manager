@@ -25,13 +25,32 @@ import { academicAbility, subjectCareerAbility, subjectCoopAbility } from '../..
 import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity';
 //리뉴얼(260121)
 const AllStudentByActiPage = () => {
-	useEffect(() => initData(), [])
+	useEffect(() => {
+		const initData = () => {
+			if (!petListRtData) return;
+			setRecordMap(createMatrix(petListRtData, ''));
+			setPersonalInfoMap(createMatrix(petListRtData, { mode: GPT_MODE.REPORT, fillerMap: {}, blankList: [], keywordList: [], }));
+		};
+		initData();
+	}, [])
 	//학생
 	const { state } = useLocation();
 	const { petListRtData, klassId, actiList } = state;
 	//활동
 	const [selectedActi, setSelectedActi] = useState(null);
-	useEffect(() => bindRecByActi(), [selectedActi]);
+	useEffect(() => {
+		const bindRecByActi = () => {
+			if (!selectedActi) return;
+			const actiId = selectedActi.id;
+			const nextMap = {};
+			petListRtData.forEach((student, idx) => {
+				nextMap[idx] =
+					student.actList?.find((acti) => acti.id === actiId)?.record ?? '';
+			})
+			setRecordMap(nextMap);
+		};
+		bindRecByActi();
+	}, [selectedActi]);
 	//개별 문구
 	const [_recordMap, setRecordMap] = useState({});
 	const [_personalInfoMap, setPersonalInfoMap] = useState({});
@@ -114,27 +133,11 @@ const AllStudentByActiPage = () => {
 	const careerOptList = useMemo(() => abilityToOptions(subjectCareerAbility), []);
 	const coopOptList = useMemo(() => abilityToOptions(subjectCoopAbility), []);
 	//------함수부--------------------------------------------------
-	const initData = () => {
-		if (!petListRtData) return;
-		setRecordMap(createMatrix(petListRtData, ''));
-		setPersonalInfoMap(createMatrix(petListRtData, { mode: GPT_MODE.REPORT, fillerMap: {}, blankList: [], keywordList: [], }));
-	};
 	//Map 생성
 	const createMatrix = (list, initVal) => {
 		const matrix = {};
 		list?.forEach((_, index) => matrix[index] = initVal);
 		return matrix;
-	};
-	//활동 선택 종속
-	const bindRecByActi = () => {
-		if (!selectedActi) return;
-		const actiId = selectedActi.id;
-		const nextMap = {};
-		petListRtData.forEach((student, idx) => {
-			nextMap[idx] =
-				student.actList?.find((acti) => acti.id === actiId)?.record ?? '';
-		})
-		setRecordMap(nextMap);
 	};
 	//문구 종속
 	const bindBlankByRec = (record, idx,) => {

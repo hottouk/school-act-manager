@@ -27,7 +27,7 @@ const ExamFormPage = () => {
 	//과목
 	const subjectList = [{ label: "과목", value: '' }, { label: "영어", value: "eng" },];
 	const [subject, setSubject] = useState(null);
-	useEffect(() => { setYear(null); }, [subject]);
+	useEffect(() => setYear(null), [subject]);
 	//연도
 	const [year, setYear] = useState(null);
 	useEffect(() => { setGrade(null); }, [year]);
@@ -117,6 +117,7 @@ const ExamFormPage = () => {
 	const [m_options, setOptions] = useState('');
 	const [m_question, setMasterQuestion] = useState('');
 	const [m_passage, setMasterPassage] = useState('');
+	const [m_explanation, setMasterExplanation] = useState('');
 	const [isOriginal, setIsOriginal] = useState(false);
 	//과금 모달
 	const [isChargeModal, setIsChargeModal] = useState(false);
@@ -273,6 +274,11 @@ const ExamFormPage = () => {
 					value={m_options}
 					onChange={(event) => setOptions(event.target.value)}
 					placeholder={"선택지 구분자'/'"}
+				/>
+				<Textarea
+					value={m_explanation}
+					onChange={(event) => setMasterExplanation(event.target.value)}
+					placeholder={"정답 해설"}
 				/>
 				<MainBtn styles={{ margin: "15px 0 0 0" }} onClick={handleMasterOnClick}>서버 업로드</MainBtn>
 			</MainWrapper>}

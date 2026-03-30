@@ -4,7 +4,7 @@ import Select from 'react-select';
 import { monthList, thirdGradeMonthList, numbers, } from '../../data/examData.jsx'
 //생성(260217)
 const MockExamSelect = ({ year, setYear, grade, setGrade, month, setMonth, setNumber }) => {
-	const yearList = [{ label: 2025, value: 2025 }];
+	const yearList = [{ label: 2025, value: 2025 }, { label: 2026, value: 2026 }];
 	const gradeList = [{ label: "고1", value: "고1" }, { label: "고2", value: "고2" }, { label: "고3", value: "고3" }];
 	const numberList = numbers.map((item) => ({ label: item, value: item })) || [];
 	return (

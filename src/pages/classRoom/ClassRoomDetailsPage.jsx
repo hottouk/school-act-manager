@@ -35,7 +35,6 @@ import useFireClassData from '../../hooks/Firebase/useFireClassData.jsx';
 import useFireUserData from '../../hooks/Firebase/useFireUserData.jsx';
 import useFireActiData from '../../hooks/Firebase/useFireActiData.jsx';
 import useMediaQuery from '../../hooks/useMediaQuery.jsx';
-import useFireErrData from '../../hooks/Firebase/useFireErrData.jsx';
 import useFirePetData from '../../hooks/Firebase/useFirePetData.jsx';
 //data
 import { ERROR_MSG } from '../../constants/errMsg.jsx';
@@ -50,7 +49,6 @@ const ClassroomDetailsPage = () => {
   const { state: studentKlassData } = useLocation();
   const { fetchAllActis, sortActiType } = useFireActiData();
   const { updateUserInfo } = useFireUserData();
-  const { errorHandler } = useFireErrData();
   //교실
   const { klassRtData, updateKlassroom, klassDataListener } = useFireClassData();
   //유저
@@ -91,19 +89,16 @@ const ClassroomDetailsPage = () => {
         const data = await fetchUserData(user.uid);
         const { copiedActiList = [] } = data || {};
         const totalList = [...list, ...copiedActiList];
-        console.log(totalList);
         setActiList(totalList || []);
       } catch (error) {
         console.log(ERROR_MSG.fetchAllActis, error);
       }
     }
     bindActiData();
-  }, [klassRtData, dispatcher, errorHandler, fetchAllActis, fetchUserData, user]);
-  console.log(actiList)
+  }, [klassRtData, dispatcher, fetchAllActis, fetchUserData, user]);
   //활동 분류
   const { homeActiList, subjActiList, quizActiList } = useMemo(() => {
     if (actiList?.length === 0) return { homeActiList: [], subjActiList: [], quizActiList: [] };
-    console.log(actiList);
     return sortActiType(actiList);
   }, [actiList, sortActiType]);
   useEffect(() => {
@@ -114,8 +109,6 @@ const ClassroomDetailsPage = () => {
   }, [quizActiList, klassRtData?.addedQuizIdList]);
   const [quizList, setQuizList] = useState([]);
   const [addedQuizList, setAddedQuizList] = useState([]);
-  console.log(subjActiList);
-
   //탭
   const [tab, setTab] = useState(1);
   //모달
@@ -136,11 +129,23 @@ const ClassroomDetailsPage = () => {
   const getActiByType = useCallback(() => {
     if (!klassRtData) return [];
     if (klassRtData.type === "homeroom") {
-      if (tab === 1) return homeActiList.filter((acti) => acti.subjDetail === "자율");
-      else return homeActiList.filter((acti) => acti.subjDetail === "진로");
+      if (tab === 1) {
+        const filtered = homeActiList.filter(item => item.subject === "자율");
+        dispatcher(setAllActivities(filtered));
+        return filtered;
+      }
+      else {
+        const filtered = homeActiList.filter(item => item.subjDetail === "진로");
+        dispatcher(setAllActivities(filtered));
+        return filtered;
+      }
     }
-    else return subjActiList.filter(item => item.subject === klassRtData.subject);
-  }, [klassRtData, homeActiList, subjActiList, tab]);
+    else {
+      const filtered = subjActiList.filter(item => item.subject === klassRtData.subject);
+      dispatcher(setAllActivities(filtered));
+      return filtered;
+    }
+  }, [klassRtData, homeActiList, subjActiList, tab, dispatcher]);
   //학기 전환
   const handleSemesterOnClick = () => {
     if (!klassRtData.semester) { alert("학기가 분리되지 않았습니다. 먼저 학기를 분리해주세요."); return; }
@@ -183,9 +188,9 @@ const ClassroomDetailsPage = () => {
           </>}
           <Center><Title>세특 쫑알이</Title></Center>
           <MainSelectorSection
+            allActiList={getActiByType()}
             isMobile={isMobile}
             studentList={petListRtData}
-            actiList={getActiByType()}
             classId={thisKlassId}
             semester={klassRtData?.semester}
           />

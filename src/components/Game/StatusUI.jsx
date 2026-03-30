@@ -10,18 +10,17 @@ import qustion_icon from '../../image/icon/question.png'
 import SmallBtn from '../Btn/SmallBtn';
 import { Badge } from 'react-bootstrap';
 //생성(250804)
-const StatusUI = ({ isMaster, myUserData, myPet, mySpec, enmUserData, enmPet, enmSpec, levelInfo, imReady, enmReady, isMobile }) => {
+const StatusUI = ({ isMaster, myPet, mySpec, enmUserData, enmPet, enmSpec, levelInfo, imReady, enmReady, isMobile }) => {
   return (
     <Container $isMobile={isMobile}>
       <Column>
         <Row>
           <Row style={{ flexGrow: "1", gap: "15px" }}>
             <Row style={{ position: "relative", flexDirection: "column" }}>
-              <ProfileImg src={myUserData?.profileImg || qustion_icon} alt="내 프로필" />
+              <ProfileImg src={myPet?.petImg || qustion_icon} alt="내 프로필" />
               {isMaster && <Icon className="fa-solid fa-crown"></Icon>}
               {(imReady && isMobile) && <SmallBtn styles={{ width: "75px" }}>준비완료</SmallBtn>}
             </Row>
-            {!isMobile && <PlayerInfoUI user={myUserData} pet={myPet} />}
             {!isMobile && <PetSpecUI spec={mySpec} />}
           </Row>
           <h1>VS</h1>
@@ -31,7 +30,7 @@ const StatusUI = ({ isMaster, myUserData, myPet, mySpec, enmUserData, enmPet, en
               {!isMaster && <Icon className="fa-solid fa-crown"></Icon>}
               {(enmReady) && <SmallBtn styles={{ width: "75px" }} btnColor={"#9b0c24"}>준비완료</SmallBtn>}
             </Row>
-            {!isMobile && < PlayerInfoUI user={enmUserData} pet={enmPet} />}
+            {!isMobile && <PlayerInfoUI user={enmUserData} pet={enmPet} />}
             {!isMobile && <PetSpecUI spec={enmSpec} />}
           </Row>
         </Row>

@@ -27,10 +27,11 @@ const BattleroomThrPage = () => {
     }
     fetchImgUrl('images/battle_background.png', setBackground);
   }, []);
-  //기본 정보
+  // 기본 정보
   const { room, players, pets, boss, phase, quizList, quizListRef } = useGameroom(roomId);
   const isHost = !!user?.uid && !!room?.hostUid && user.uid === room.hostUid;
   const [msg, setMsg] = useState('');
+  // students
   const studentList = useMemo(() =>
     Object.entries(players || {}).map(([uid, p], idx) => ({
       uid,
@@ -209,7 +210,10 @@ const BattleroomThrPage = () => {
         <OptionWrapper>
           {phase === "stance" && stanceList?.map((stance, idx) => {
             const kor = { atk: "공격", def: "방어", rest: "치료" };
-            return <TransparentBtn key={idx} onClick={() => handleStanceOnClick(idx)} disabled={done}>{kor[stance]}</TransparentBtn>
+            return <TransparentBtn key={idx}
+              disabled={done}
+              onClick={() =>
+                handleStanceOnClick(idx)} >{kor[stance]}</TransparentBtn>
           })}
         </OptionWrapper>
         {phase !== "quiz" && <TransparentBtn onClick={() => {

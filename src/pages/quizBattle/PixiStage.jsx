@@ -73,18 +73,28 @@ const PixiStage = ({
 			<ActionBallUI x={775} y={820} width={400} height={60} correctAnswer={actionBall} />
 			{/* 펫 */}
 			{visibleStudents?.map((s, idx) => {
+				console.log(s);
 				const { x, y } = getStudentPos(idx, studentList.length);
 				return (
-					<PetSprite
-						key={idx}
-						src={s.petImg || waterPet}
-						x={x}
-						y={y}
-						width={100}
-						height={100}
-						trigger={false}
-						movingPoint={0}
-					/>
+					<>
+						<PetSprite
+							key={idx}
+							src={s.petInfo?.backImg || waterPet}
+							x={x}
+							y={y}
+							width={100}
+							height={100}
+							trigger={false}
+							movingPoint
+							={0}
+						/>
+						<Text
+							text={`<${s.nickname}>`}
+							style={{ fontSize: 15, fill: "black" }}
+							x={x - 20}
+							y={y + 50}
+						/>
+					</>
 				);
 			})}
 			{overflowCount > 0 && (

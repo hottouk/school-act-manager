@@ -4,7 +4,7 @@ import styled from 'styled-components'
 //컴포넌트
 import AnimatedProgressBar from '../../ProgressBar'
 //생성(260115)
-const GptIngModal = ({ show, onHide, status, progress }) => {
+const GptIngModal = ({ show, onHide, status, progress, }) => {
   //요청 1개
   const [_count, setCount] = useState(1);
   useEffect(() => {
@@ -25,6 +25,7 @@ const GptIngModal = ({ show, onHide, status, progress }) => {
       onHide={onHide}
       centered
       backdrop={"static"}
+      size='sm'
     >
       <Modal.Body>
         <Column style={{ justifyContent: "center", alignItems: "center", gap: "10px" }}>

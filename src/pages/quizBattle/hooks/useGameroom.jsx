@@ -27,6 +27,7 @@ const useGameroom = (roomId) => {
 	const [quizList, setQuizList] = useState([]);
 	const [pets, setPets] = useState(null);
 	const [boss, setBoss] = useState(null);
+	const [bossStance, setBossStance] = useState(null);
 	useEffect(() => {
 		if (!room) return;
 		const bindQuizList = async () => {
@@ -41,10 +42,11 @@ const useGameroom = (roomId) => {
 		setPets(room.pet);
 		setBoss(room.boss);
 		setPhase(room.status);
+		setBossStance(room.bossStance || null);
 	}, [room, fetchDoc, boss])
 	const [phase, setPhase] = useState("waiting");
 	const quizListRef = useRef({});
-	return ({ players, room, phase, pets, boss, quizList, quizListRef })
+	return ({ players, room, phase, pets, boss, bossStance, quizList, quizListRef })
 }
 
 export default useGameroom

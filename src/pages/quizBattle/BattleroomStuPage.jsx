@@ -13,8 +13,9 @@ import StatusUI from '../../components/Game/StatusUI';
 import useGameroom from './hooks/useGameroom';
 
 const BattleroomStuPage = () => {
+	const user = useSelector(({ user }) => user);
 	const { state: battleInfo } = useLocation();
-	const { roomId } = battleInfo || {}
+	const { roomId, pet: myPet } = battleInfo || {}
 	const navigate = useNavigate();
 	//배경
 	const { fetchImgUrl, fetchPathUrlMap } = useFetchStorageImg();
@@ -25,8 +26,8 @@ const BattleroomStuPage = () => {
 	const studentList = useMemo(() =>
 		Object.entries(players || {}).map(([uid, p], idx) => ({
 			uid,
-			nickname: p?.nickname || `player-${idx + 1}`,
-			petImg: p?.petImg || null,
+			nickname: p?.nickname,
+			petInfo: p?.pet,
 			index: idx,
 		})),
 		[players]);
@@ -40,7 +41,7 @@ const BattleroomStuPage = () => {
 	//전투 관련
 	const round = useRef(1);
 	const [msg, setMsg] = useState('');
-	const { stanceList, battleActionList, getRandomStance } = useBattleLogic(setMsg);
+	const { stanceList, animEvent, battleActionList, getRandomStance } = useBattleLogic(setMsg);
 	const [myStance, setMyStance] = useState(null);
 	//실시간 체력 1턴 이후부터 값 설정
 	const [displayBossHp, setDisplayBossHp] = useState(null);
@@ -49,7 +50,7 @@ const BattleroomStuPage = () => {
 		if (!bossStance) return;
 		setMsg("보스가 행동을 결정했습니다. 5초 안에 행동을 결정하세요.");
 		setCountdown(5);
-	}, [bossStance])
+	}, [bossStance]);
 	// 카운트 다운
 	const [countdown, setCountdown] = useState(0);
 	useEffect(() => {
@@ -72,12 +73,14 @@ const BattleroomStuPage = () => {
 					break;
 				case "quiz":
 					const processQuizPhase = () => {
+						setMsg('');
+						setDone(false);
 						setNumber(prev => prev + 1);
 						const idx = generateQuestion(quizListRef);
 						quizListRef.current.splice(idx, 1);
 						const quizInterval = setInterval(() => { //3초씩 5번
-							setDone(false);
 							setMarking(null);
+							setDone(false);
 							setNumber(prev => {
 								if (prev % 5 === 0) {
 									clearInterval(quizInterval);
@@ -96,9 +99,9 @@ const BattleroomStuPage = () => {
 					processQuizPhase();
 					break;
 				case "stance":
-					// ++battleTurnRef.current
 					setMarking(null);
 					setDone(false);
+					setMsg("당신의 행동을 선택하세요");
 					// setEnmActionEff(null);
 					// setMyDmg(null);
 					// setEnmDmg(null);
@@ -106,7 +109,6 @@ const BattleroomStuPage = () => {
 					break;
 				case "battle":
 					// clearInterval(intervalRef.current);
-					// setOptionList([`기본 ${myStance}`, "기술 ?�용", "취소"]);
 					break;
 				case "end":
 					// processEndPhase();
@@ -132,11 +134,13 @@ const BattleroomStuPage = () => {
 	//행동 결정
 	const handleStanceOnClick = async (idx) => {
 		setDone(true);
+		setMsg("을 선택했습니다. 보스의 턴을 기다리는 중...");
 		try {
 			const res = await callSubmitMyStance({ roomId, stance: stanceList[idx], actionBall });
 			const { summary, turn } = res.data || {};
 			const { submittedCount, atk, def, rest } = summary || {};
 			setMsg(`${turn}턴, ${submittedCount}명의 합산 공격력${atk}, 방어력${def}, 치유력${rest} `);
+			setActionBall(0);
 		}
 		catch (err) {
 			console.error(err);
@@ -145,48 +149,59 @@ const BattleroomStuPage = () => {
 
 	return (
 		<MainContainer>
-			<StatusUI />
-			<PixiStage
-				background={background}
-				studentList={studentList}
-				countdown={countdown}
-				onDoneCountdown={() => setCountdown(null)}
-				curQuiz={curQuiz}
-				marking={marking}
-				actionBall={actionBall}
-			/>
-			<InfoWrapper>
-				<MsgWrapper>
-					{phase === "quiz" && <p>{number}번 문제, {marking === true && "맞췄습니다"} {marking === false && "틀렸습니다"}</p>}
-					{<p>{msg}</p>}
-				</MsgWrapper>
-				<Column style={{ padding: "10px", gap: "5px" }}>
-					<Text>남은 문제: {quizListRef.current.length}개</Text>
-					<Text>맞춘 개수: {correctNumber}개</Text>
-					<Text>페이즈: {phase}</Text>
-				</Column>
-			</InfoWrapper>
-			<ControllerUI>
-				{/* 문항 선지 */}
-				<OptionWrapper>
-					{phase === "quiz" && optionList?.map((option, idx) =>
-						<TransparentBtn key={idx} onClick={() => handleOptionOnClick(idx)} disabled={done}>{option}</TransparentBtn>)}
-					{/* 학생용 */}
-					{phase === "stance" && stanceList?.map((stance, idx) => {
-						const kor = { atk: "공격", def: "방어", rest: "치료" };
-						return <TransparentBtn key={idx} onClick={() => handleStanceOnClick(idx)} disabled={done} >{kor[stance]}</TransparentBtn>
-					})}
-				</OptionWrapper>
-				{phase !== "quiz" && <TransparentBtn onClick={() => { navigate(-1); }}>종료하기</TransparentBtn>}
-			</ControllerUI >
-			<p>접속 친구</p>
-			{players && <ul>
-				{Object.entries(players).map(([uid, p]) => (
-					<li key={uid}>
-						{p.nickname}
-					</li>
-				))}
-			</ul>}
+			<div style={{ margin: "0 auto" }}>
+				<StatusUI
+					myPet={myPet}
+					mySpec={{ atk: myPet?.atk, def: myPet?.def, hp: myPet?.hp, mat: myPet?.rest }}
+				/>
+				<PixiStage
+					background={background}
+					studentList={studentList}
+					countdown={countdown}
+					onDoneCountdown={() => setCountdown(null)}
+					curQuiz={curQuiz}
+					phase={phase}
+					pets={pets}
+					boss={boss}
+					teamCurHp={displayTeamHp}
+					bossCurHp={displayBossHp}
+					animEvent={animEvent}
+					marking={marking}
+					actionBall={actionBall}
+				/>
+				<InfoWrapper>
+					<MsgWrapper>
+						{phase === "quiz" && <p>{number}번 문제, {marking === true && "맞췄습니다"} {marking === false && "틀렸습니다"}</p>}
+						{<p>{msg}</p>}
+					</MsgWrapper>
+					<Column style={{ padding: "10px", gap: "5px" }}>
+						<Text>남은 문제: {quizListRef.current.length}개</Text>
+						<Text>맞춘 개수: {correctNumber}개</Text>
+						<Text>페이즈: {phase}</Text>
+					</Column>
+				</InfoWrapper>
+				<ControllerUI>
+					{/* 문항 선지 */}
+					<OptionWrapper>
+						{phase === "quiz" && optionList?.map((option, idx) =>
+							<TransparentBtn key={idx} onClick={() => handleOptionOnClick(idx)} disabled={done}>{option}</TransparentBtn>)}
+						{/* 학생용 */}
+						{phase === "stance" && stanceList?.map((stance, idx) => {
+							const kor = { atk: "공격", def: "방어", rest: "치료" };
+							return <TransparentBtn key={idx} onClick={() => handleStanceOnClick(idx)} disabled={done} >{kor[stance]}</TransparentBtn>
+						})}
+					</OptionWrapper>
+					{phase !== "quiz" && <TransparentBtn onClick={() => { navigate(-1); }}>종료하기</TransparentBtn>}
+				</ControllerUI >
+				<p>접속 친구</p>
+				{players && <ul>
+					{Object.entries(players).map(([uid, p]) => (
+						<li key={uid}>
+							{p.nickname}
+						</li>
+					))}
+				</ul>}
+			</div>
 		</MainContainer>
 	)
 }

@@ -13,10 +13,24 @@ import Select from 'react-select';
 import { setSelectStudent } from '../../store/studentSelectedSlice.jsx';
 import { setSelectActivity } from '../../store/activitySelectedSlice.jsx';
 //수정(250903)
-const MainSelectorSection = ({ isMobile, studentList, actiList, classId, semester }) => {
+const MainSelectorSection = ({ allActiList, isMobile, studentList, classId, semester }) => {
   const dispatcher = useDispatch();
   const navigate = useNavigate();
-  useEffect(() => { bindOptions() }, [studentList, actiList]);
+  //활동
+  useEffect(() => {
+    const bindOptions = () => {
+      if (!studentList || !allActiList) return;
+      const students = studentList.map((student) => {
+        const name = student.writtenName || '미등록';
+        const number = student.studentNumber;
+        return ({ label: `${number} ${name}`, value: student.id })
+      });
+      const actis = allActiList.map((acti) => ({ value: acti.id, label: acti.title, uid: acti.uid, record: acti.record, content: acti.content }));
+      setStudentOptionList(students);
+      setActiOptionList(actis);
+    }
+    bindOptions()
+  }, [studentList, allActiList]);
   const activitySelected = useSelector(({ activitySelected }) => activitySelected);
   useEffect(() => { processSelectActi() }, [activitySelected]);
   //셀렉터 옵션
@@ -37,18 +51,6 @@ const MainSelectorSection = ({ isMobile, studentList, actiList, classId, semeste
   //모달창
   const [isCompleteModalShow, setIsCompleteModalShow] = useState(false);
   //------함수부------------------------------------------------
-  //학생 옵션
-  const bindOptions = () => {
-    if (!studentList || !actiList) return;
-    const students = studentList.map((student) => {
-      const name = student.writtenName || '미등록';
-      const number = student.studentNumber;
-      return ({ label: `${number} ${name}`, value: student.id })
-    });
-    const actis = actiList.map((acti) => ({ value: acti.id, label: acti.title, uid: acti.uid, record: acti.record, content: acti.content }));
-    setStudentOptionList(students);
-    setActiOptionList(actis);
-  }
   //활동 선택 처리 
   const processSelectActi = () => {
     if (activitySelected.length === 0) return;
@@ -112,7 +114,7 @@ const MainSelectorSection = ({ isMobile, studentList, actiList, classId, semeste
             <label htmlFor="all_student_check">모든 학생</label>
           </Row>
         </SelectWrapper>
-        {(actiList && actiList.length !== 0) && <SelectWrapper>
+        {(allActiList && allActiList.length !== 0) && <SelectWrapper>
           <Select isMulti ref={selectActRef}
             onChange={(event) => { handleActivitySelection(event) }}
             options={actiOptionList}
@@ -130,7 +132,7 @@ const MainSelectorSection = ({ isMobile, studentList, actiList, classId, semeste
             </Row>
           </Row>
         </SelectWrapper>}
-        {(!actiList || actiList.length === 0) &&
+        {(!allActiList || allActiList.length === 0) &&
           <SelectWrapper>활동이 없습니다. PC 버젼에서 활동을 추가해주세요.
             <Row style={{ justifyContent: "center", marginTop: "10px" }}>{!isMobile && <MidBtn onClick={() => { navigate("/activities_setting") }}>활동 추가</MidBtn>}</Row>
           </SelectWrapper>}

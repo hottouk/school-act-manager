@@ -22,7 +22,8 @@ const StudentListSection = ({ petList, plusBtnOnClick, klassData, }) => {
   return (
     <Section>
       {petList.map((pet, index) =>
-        <SquareListItem key={pet.id} item={pet} index={index} onClick={handleOnClick} type="student" />)}
+        <SquareListItem key={pet.id} item={pet} index={index} onClick={handleOnClick} type="student" />
+      )}
       {/* 학생 추가 */}
       {user.isTeacher && <PlusBtn onClick={() => { plusBtnOnClick(true) }} />}
     </Section>

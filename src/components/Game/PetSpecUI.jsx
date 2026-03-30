@@ -14,8 +14,8 @@ const PetSpecUI = ({ spec, styles }) => {
 				<Text>방어: {def || 0}</Text>
 			</Row>
 			<Row style={{ gap: "10px", justifyContent: "space-around" }}>
-				<Text>마력: {mat || 0}</Text>
-				<Text>지력: {mdf || 0}</Text>
+				<Text>치유력: {mat || 0}</Text>
+				<Text>마방: {mdf || 0}</Text>
 				<Text>민첩: {spd || 0}</Text>
 			</Row>
 		</Container>
@@ -28,6 +28,7 @@ const Column = styled(Row)`
 	flex-direction: column;
 `
 const Container = styled(Column)`
+	flex-grow: 1;
 	gap: 5px;
 	justify-content: center;
 	box-sizing: border-box;
@@ -36,6 +37,7 @@ const Container = styled(Column)`
 	padding: 2px;
 	border: 1px solid rgb(185,185,185);
   border-radius: 10px;
+	margin: 0 20px 0 0;
 `
 const Text = styled.p`
 	margin: 0;

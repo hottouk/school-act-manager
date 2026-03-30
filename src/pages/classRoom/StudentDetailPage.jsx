@@ -58,8 +58,7 @@ const StudentDetailPage = () => {
   }, [klassType, petRtData]);
   useEffect(() => {
     bindInitData();
-    //학생 본인 id가 아닐 경우 back
-    const checkMaster = () => {
+    const checkMaster = () => { //학생 본인 id가 아닐 경우 back
       if (user.isTeacher || !petRtData) return;
       const { master } = petRtData;
       if (master?.studentId === user.uid) { setIsMaster(true); }
@@ -215,7 +214,8 @@ const StudentDetailPage = () => {
                 type={klassType}
                 subject={subject}
                 tabValue={recByType[klassType].value}
-                actiList={actiList} setActiList={setActiList}
+                actiList={actiList}
+                setActiList={setActiList}
                 getAccRec={getAccRec}
                 petRtData={petRtData}
                 isEdit={isModifying}
