@@ -186,6 +186,7 @@ export const askGPT = onCall(
     const apiKey = OPENAI_API_KEY.value();
     const openai = new OpenAI({ apiKey: apiKey }); // 안전하게 사용
     const { type = "basic", uid, messages, model, verbosity, thinkEffort, leftRira: expected } = req.data || {};
+    console.log(`로그1: msg: ${messages}`);
     const requestId = uuidv4();
     //유효성 검사
     if (!uid) throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
@@ -195,7 +196,7 @@ export const askGPT = onCall(
     const ledgerRef = db.collection("rira_ledger").doc(requestId);
     //1. 비용 차감
     const charged = getGptPrice(model, type);
-    console.log(`Log1: User ${uid} - Model: ${model}, Type: ${type}, `);
+    console.log(`로그2: User ${uid} - Model: ${model}, Type: ${type}, `);
     await db.runTransaction(async (tx) => {
       const ledgerSnap = await tx.get(ledgerRef);
       const userSnap = await tx.get(userRef);
@@ -203,7 +204,7 @@ export const askGPT = onCall(
       if (!userSnap.exists) throw new HttpsError("not-found", "사용자 정보를 찾을 수 없습니다.");
       const userData = userSnap.data() || {};
       const userRira = Number(userData.rira || 0);
-      console.log(`Log2: UserRira_S:${userRira}, Charged_S: ${charged}, LeftRira_C: ${expected}`);
+      console.log(`로그3: UserRira_S:${userRira}, Charged_S: ${charged}, LeftRira_C: ${expected}`);
       //잔액 부족
       if (userRira - charged !== expected) throw new HttpsError("failed-precondition", "예상 차액과 서버 응답이 다릅니다. 재로그인해주세요.");
       if (charged > userRira) throw new HttpsError("failed-precondition", "리라 잔액이 부족합니다.");

@@ -86,9 +86,9 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   useEffect(() => { setGptType(sort); }, [sort]);
   const gptPromptMap = {
     subject: ({ model, thinkEffort, verbosity, leftRira, }) => askSubjRecord({ subject: _subjDetail, content: _content, model, thinkEffort, verbosity, leftRira }),
-    perf: ({ model, thinkEffort, verbosity, leftRira, }) => askPerfRecord({ subject: _subjDetail, content: _content, _record, model, thinkEffort, verbosity, leftRira }),
-    extra: ({ model, thinkEffort, verbosity, leftRira, }) => askExtraRecord({ subject: _subjDetail, content: _content, _record, model, thinkEffort, verbosity, leftRira }),
-    repeat: ({ model, thinkEffort, verbosity, leftRira, }) => askPerfRecord({ subject: _subjDetail, content: _content, _record, model, thinkEffort, verbosity, leftRira }),
+    perf: ({ model, thinkEffort, verbosity, leftRira, }) => askPerfRecord({ subject: _subjDetail, content: _content, record: _record, model, thinkEffort, verbosity, leftRira }),
+    extra: ({ model, thinkEffort, verbosity, leftRira, }) => askExtraRecord({ subject: _subjDetail, content: _content, record: _record, model, thinkEffort, verbosity, leftRira }),
+    repeat: ({ model, thinkEffort, verbosity, leftRira, }) => askPerfRecord({ subject: _subjDetail, content: _content, record: _record, model, thinkEffort, verbosity, leftRira }),
     homeroom: ({ model, thinkEffort, verbosity, leftRira, }) => askHomeroomRecord({ title: _title, subject: _subjDetail, content: _content, time: _timeFormat, model, thinkEffort, verbosity, leftRira }),
   };
   const gptSetterMap = {
@@ -112,7 +112,6 @@ const ActivityFormPage = () => { //진입 경로 총 4곳: 교사 3(활동관리
   const textareaRef = useRef({});
   //------useMemo------------------------------------------------  
   const isGptLoading = useMemo(() => gptRes === GPT_RESPONSE.LOADING, [gptRes]);
-  //------함수부-------------------------------------------------  
   //데이터 초기화
   const bindData = () => {
     const acti = state.acti;

@@ -164,7 +164,7 @@ const AddMoreRecordModal = ({ show, onHide, record, list, setList, isInnerModal,
                     onKeyDown={(event) => handleKeyDown(event, _extraRecList, index)}
                   /></GridItem>
                 <GridItem $columns={"3/4"}>{getByteLengthOfString(record)} byte</GridItem>
-                <GridItem $columns={"4/5"}><img src={xImage} alt="삭제 버튼" onClick={() => { handleDeleteOnClick(index, _extraRecList, setExtraRecList) }} /></GridItem>
+                <GridItem $columns={"4/5"}><img src={xImage} alt="삭제 버튼" onClick={() => handleDeleteOnClick(index, _extraRecList, setExtraRecList)} /></GridItem>
               </GridRowWrapper>
             })}</>}
           {/* 반복 */}

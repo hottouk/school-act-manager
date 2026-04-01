@@ -175,20 +175,21 @@ const StudentDetailPage = () => {
           onChange={(event) => { moveStudent(allStudentFrozenList.find((student) => student.id === event.value)) }}
           isDisabled={isModifying} />}
         {!user.isTeacher && <BackBtn />}
-        <Row style={{ position: "absolute", right: "15px" }}>
-          {(!isModifying && !isBehavioring) && <Row style={{ gap: "10px" }}>
-            {!isMobile && <ClickableIcon className='fa-solid fa-edit' onClick={() => setIsModifying(!isModifying)} title={"편집"} />}
-            <ClickableIcon className='fa-solid fa-trash' onClick={handlePetDeleteOnClick} title={"삭제"} />
-          </Row>}
-          {(isModifying && !isBehavioring) && <Row style={{ gap: "10px" }}>
-            <ClickableIcon className='fa-solid fa-check' onClick={handleSaveOnClick} title={"확인"} />
-            <ClickableIcon className='fa-solid fa-x' onClick={handleCancelOnClick} title={"취소"} />
-          </Row>}
-        </Row>
       </SubNav>
       <Row style={{ justifyContent: "center" }}><ArrowBtn id="up_arw_btn" deg={225} onClick={handleArrowBtnOnClick} /></Row>
       <AnimRotation isAnimating={isAnimating}>
         <PannelContainer>
+          {/* 편집 및 삭제 버튼 */}
+          <BtnPannel>
+            {(!isModifying && !isBehavioring) && <Row style={{ gap: "10px" }}>
+              {!isMobile && <ClickableIcon className='fa-solid fa-edit' styles={{ color: "white", hoverColor: "#ffffff50" }} onClick={() => setIsModifying(!isModifying)} title={"편집"} />}
+              <ClickableIcon className='fa-solid fa-trash' styles={{ color: "white", hoverColor: "#ffffff50" }} onClick={handlePetDeleteOnClick} title={"삭제"} />
+            </Row>}
+            {(isModifying && !isBehavioring) && <Row style={{ gap: "10px" }}>
+              <ClickableIcon className='fa-solid fa-check' styles={{ color: "white", hoverColor: "#ffffff50" }} onClick={handleSaveOnClick} title={"확인"} />
+              <ClickableIcon className='fa-solid fa-x' styles={{ color: "white", hoverColor: "#ffffff50" }} onClick={handleCancelOnClick} title={"취소"} />
+            </Row>}
+          </BtnPannel>
           {/* 화살표 */}
           {(user.isTeacher && !isModifying && !isBehavioring) && <>
             <ArrowWrapper style={{ top: "50%", left: "-5%" }}><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>
@@ -255,8 +256,7 @@ const PannelContainer = styled.div`
   margin: 15px auto 40px;
   margin-top: 35px;
   background-color: #3454d1b1;
-  border-radius: 10px;
-  border-bottom-right-radius: 0;
+  border-radius: 10px 0 10px 10px;
   perspective: 1000px; /* 3D 효과를 위한 원근법 */
   @media screen and (max-width: 768px){
     width: 100%;
@@ -264,6 +264,15 @@ const PannelContainer = styled.div`
     border: none;
     border-radius: 10px 10px 0 10px;
   }
+`
+const BtnPannel = styled(Row)`
+  position: absolute;
+  background-color: #3454d1b1;
+  padding: 5px 10px;
+  border-radius: 15px 15px 0px 0px;
+  top: -45px;
+  right: 0px;
+  gap: 10px;
 `
 const GrayBotPannel = styled.div`
   position: relative;

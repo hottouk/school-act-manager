@@ -31,6 +31,7 @@ const useChatGpt = () => {
   const askPerfRecord = useCallback(async ({ subject, content, record, model, thinkEffort, verbosity, leftRira }) => {
     setGptStatus("상, 중, 하 뚝딱뚝딱..");
     const messages = gptPerfRecordMsg(subject, content, record);
+    console.log(record, messages);
     await playGpt({ messages, model, thinkEffort, verbosity, leftRira });
     setGptStatus('');
   }, [])
@@ -38,6 +39,7 @@ const useChatGpt = () => {
   const askExtraRecord = useCallback(async ({ subject, content, record, model, thinkEffort, verbosity, leftRira }) => {
     setGptStatus("돌려쓰기 만드는 중..");
     const messages = gptExtraRecordMsg(subject, content, record)
+    console.log(record, messages);
     await playGpt({ messages, model, thinkEffort, verbosity, leftRira });
     setGptStatus('');
   }, []);

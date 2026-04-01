@@ -299,8 +299,8 @@ const GptModal = ({ show, onHide, subject, acti, accRecord, setPersonalRecord })
               {ocrStage === 2 && <Column style={{ gap: "10px" }}>
                 <Textarea value={extracted} onChange={(e) => { setExtracted(e.target.value) }} style={{ marginTop: "10px" }} />
                 <Row style={{ alignSelf: "center", gap: "10px" }}>
-                  <MidBtn onClick={() => { handleGptOnClick("translate"); }}>한국말로 번역</MidBtn>
-                  <MidBtn onClick={() => { handleGptOnClick("gpt"); }}>생성</MidBtn>
+                  <MidBtn onClick={() => handleGptOnClick("translate")}>한국말로 번역</MidBtn>
+                  <MidBtn onClick={() => handleGptOnClick("gpt")}>생성</MidBtn>
                 </Row>
               </Column>}
             </Column>}

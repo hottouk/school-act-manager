@@ -10,8 +10,10 @@ const ClickableIcon = (
 ) => {
   const fontSize = styles?.fontSize || "23px";
   const border = styles?.border || "none";
+  const color = styles?.color || "#212529";
+  const hoverColor = styles?.hoverColor || "#3454d130";
   return (
-    <Icon $fontSize={fontSize} $border={border}
+    <Icon $fontSize={fontSize} $border={border} $color={color} $hoverColor={hoverColor}
       className={className}
       onClick={onClick}
       title={title}
@@ -24,10 +26,11 @@ const Icon = styled.i`
 	padding: 6px;
   font-size: ${({ $fontSize }) => $fontSize};
   border: ${({ $border }) => $border};
+  color: ${({ $color }) => $color};
 	border-radius: 30px;
   cursor: pointer;
 	&:hover {
-  background-color: #3454d130;;
+  background-color: ${({ $hoverColor }) => $hoverColor};
 	transition-duration: .35s;
   }
 `

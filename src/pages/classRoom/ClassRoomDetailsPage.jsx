@@ -122,7 +122,6 @@ const ClassroomDetailsPage = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   //에니메이션
   const [isVisible, setIsVisible] = useState(false);
-  //**함수부**
   //클래스 이동
   const moveKlass = (event) => { navigate(`/classrooms/${event.value.id}`, { state: { ...event.value } }) };
   //쫑알이 활동 변경
@@ -130,7 +129,7 @@ const ClassroomDetailsPage = () => {
     if (!klassRtData) return [];
     if (klassRtData.type === "homeroom") {
       if (tab === 1) {
-        const filtered = homeActiList.filter(item => item.subject === "자율");
+        const filtered = homeActiList.filter(item => item.subjDetail === "자율");
         dispatcher(setAllActivities(filtered));
         return filtered;
       }
@@ -163,10 +162,12 @@ const ClassroomDetailsPage = () => {
   }
   return <MainContainer>
     {klassType === "subject" && <SubNav styles={{ padding: "10px" }}>
-      {(user.uid === klassRtData?.uid) && <Select options={allSubjClassList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
-        onChange={moveKlass} />}
-      {(user.uid === klassRtData?.coTeacher) && <Select options={user.coTeachingList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
-        onChange={moveKlass} />}
+      {(user.uid === klassRtData?.uid) &&
+        <Select options={allSubjClassList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
+          onChange={moveKlass} />}
+      {(user.uid === klassRtData?.coTeacher) &&
+        <Select options={user.coTeachingList.map((item) => { return { label: item.classTitle, value: item } })} placeholder="반 바로 이동"
+          onChange={moveKlass} />}
     </SubNav>}
     {!klassRtData && <Column style={{ alignItems: "center" }}>
       <EmptyResult comment={"Error: 반 정보를 불러올 수 없습니다."} />
@@ -197,11 +198,13 @@ const ClassroomDetailsPage = () => {
         </MainWrapper>
         <SubMenu>
           {!isMobile && <LongW100Btn
-            onClick={() => navigate('allStudents/acti', { state: { petListRtData, klassId: thisKlassId, actiList: getActiByType() } })}>
+            onClick={() =>
+              navigate('allStudents/acti', { state: { petListRtData, klassId: thisKlassId, actiList: getActiByType() } })}>
             활동별 보기
           </LongW100Btn>}
           {!isMobile && <LongW100Btn
-            onClick={() => navigate('allStudents', { state: { semester: klassRtData?.semester, allActiList: getActiByType() } })}>
+            onClick={() =>
+              navigate('allStudents', { state: { semester: klassRtData?.semester, allActiList: getActiByType() } })}>
             전체 세특 보기
           </LongW100Btn>}
           {klassType === "subject" && <LongW100Btn onClick={handleSemesterOnClick}>학기 전환</LongW100Btn>}
