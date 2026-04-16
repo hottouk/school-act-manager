@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { useSelector } from 'react-redux'
 import Select from 'react-select';
 //컴포넌트
-import ExamEditSection from './ExamEditSection.jsx'
 import MainContainer from '../../components/Styled/MainContainer.jsx'
 import MockExamSelect from '../../components/Select/MockExamSelect.jsx';
 import SubNav from '../../components/Bar/SubNav.jsx';
@@ -20,6 +19,8 @@ import useFireBasic from '../../hooks/Firebase/useFireBasic.jsx'
 //data
 import { typeData } from '../../data/examData.jsx'
 import { GPT_RESPONSE } from '../../constants/gpt.jsx'
+import useAiExamParser from './hooks/useAiExamParser.jsx';
+import useFireTestData from '../../hooks/Firebase/useFireTestData.jsx';
 //생성(251222)
 const ExamFormPage = () => {
 	const user = useSelector(({ user }) => user);
@@ -97,22 +98,38 @@ const ExamFormPage = () => {
 	const [mockQuestion, setMockQuestion] = useState('');
 	const [mockPassage, setMockPassage] = useState('');
 	const [mockOptionList, setMockOptionList] = useState([]);
-	//제작
+	//문항 제작
 	const [type, setType] = useState(null);
+	const circleNumber = ["①", "②", "③", "④", "⑤"];
 	useEffect(() => {
-		const list = passage.split(". ").filter((item) => item !== '');
-		setSentenceList(list);
+		setQuestion(typeData[type] ?? '');
 	}, [type]);
 	const [level, setLevel] = useState(null);
 	const typeOptList = Object.entries(typeData).map((item) => ({ label: item[0], value: item[1] }));
 	const [question, setQuestion] = useState('');
 	const [passage, setPassage] = useState('');
-	const { makeExamQuestion, gptAnswer, setGptAnswer, gptRes, gptStatus, } = useChatGpt();
+	const [optionList, setOptionList] = useState([]);
+	const [explanation, setExplanation] = useState('');
+	const handleOptionOnChange = (event, idx) => {
+		const newList = [...optionList];
+		newList[idx] = event.target.value;
+		setOptionList(newList);
+	}
 	//특수 문형
 	const [target, setTarget] = useState(''); //감정, 함축의미
-	const circleNumber = ["①", "②", "③", "④", "⑤"];
-	const [sentenceList, setSentenceList] = useState([]); //무관한 문장
-	const [circleAnswer, setCircleAnswer] = useState(null);
+	const [nonRelatedAnswer, setNonRelatedAnswer] = useState(null); //무관한 문장 정답
+	//AI 생성
+	const { makeExamQuestion, gptAnswer, gptRes, gptStatus, } = useChatGpt();
+	const { gptParser } = useAiExamParser({ setPassage, setOptionList, setExplanation });
+	useEffect(() => {
+		if (!gptAnswer) return;
+		gptParser(gptAnswer, type, passage, nonRelatedAnswer);
+		return () => {
+			setPassage('');
+			setOptionList([]);
+			setExplanation('');
+		}
+	}, [gptAnswer, gptParser]);
 	//관리자(Master)
 	const [m_options, setOptions] = useState('');
 	const [m_question, setMasterQuestion] = useState('');
@@ -134,9 +151,8 @@ const ExamFormPage = () => {
 		if (question === '') err = "문항 유형을 선택하세요.";
 		if (passage === '') err = "지문을 넣어 주세요."
 		if (!level) err = "수준을 선택하세요."
-		if (["심경, 분위기", "함축 의미"].includes(type)) {
-			console.log(type)
-			if (target === '') err = `${type}를 묻는 대상을 입력해주세요.`
+		if (["심경, 분위기", "함축 의미", "빈칸 추론"].includes(type)) {
+			if (target === '') err = `${type}(을)를 묻는 대상을 입력해주세요.`
 		}
 		return err;
 	}
@@ -150,6 +166,16 @@ const ExamFormPage = () => {
 		if (type === "심경, 분위기") setQuestion(`다음 글에 드러난 ${target}의 심경 변화로 가장 적절한 것은?`);
 		if (type === "함축 의미") setQuestion(`밑줄 친 ${target}이 다음 글에서 의미하는 바로 가장 적절한 것은?`);
 		setIsChargeModal(true);
+	};
+	//문제 저장
+	const { addTestArrItem } = useFireTestData();
+	const handleSaveOnClick = () => {
+		const title = prompt("문항 제목을 작성하세요");
+		if (title === "" || title === null) alert("빈칸입니다.");
+		else {
+			const examItem = { subject, title, type, level, question, passage, optionList, explanation, };
+			addTestArrItem("questions", examItem);
+		}
 	}
 	//지문 서버 업로드(마스터)
 	const handleMasterOnClick = () => {
@@ -161,7 +187,7 @@ const ExamFormPage = () => {
 			: { question: m_question, optionList, passage: m_passage };
 		const data = { [number]: question };
 		setData(data, `${year}${grade}${month}${subject}`);
-	}
+	};
 	return (<>
 		<MainContainer styles={{ gap: "50px" }}>
 			<SubNav />
@@ -202,55 +228,78 @@ const ExamFormPage = () => {
 			</MainWrapper>
 			{/* 제작대 */}
 			<Column>
-				<AnimMaxHightOpacity isVisible={subject && !gptAnswer} styles={{ width: "60%", alignSelf: "center" }}>
+				<AnimMaxHightOpacity isVisible={subject} styles={{ width: "60%", alignSelf: "center" }}>
 					<MainWrapper styles={{ width: "100%", gap: "10px", position: "relative" }}>
-						<FormHeader styles={{ top: "-30px" }}>지문 선택</FormHeader>
+						<FormHeader styles={{ top: "-30px" }}>문항 제작대</FormHeader>
 						{passage !== '' && <Row style={{ justifyContent: "space-between" }}>
-							<Row>
-								<DotTitle>제작 문항 유형</DotTitle>
-								<Select
-									onChange={(event) => {
-										setType(event.label)
-										setQuestion(typeData[event.label])
-									}}
-									options={typeOptList}
-									placeholder={"유형 선택"} />
-							</Row>
-							{type && <h5 style={{ margin: "10px 0" }}>[발문] {typeData[type]}</h5>}
+							<Column style={{ gap: "10px" }}>
+								<Row style={{ justifyContent: "space-between" }}>
+									<Row>
+										<DotTitle>제작 문항 유형</DotTitle>
+										<Select
+											onChange={(event) => setType(event.label)}
+											options={typeOptList}
+											placeholder={"유형 선택"} />
+									</Row>
+								</Row>
+								<Row>
+									<DotTitle>제작 문항 수준</DotTitle>
+									<Select
+										onChange={(event) => setLevel(event.value)}
+										options={gradeList}
+										placeholder={"수준 선택"} />
+								</Row>
+							</Column>
+							<AiBtn onClick={handleCreateOnClick} disabled={["글의 순서"].includes(type) || !level}>
+								<i className="fa-solid fa-brain" />
+							</AiBtn>
 						</Row>}
-						{passage !== '' && <Row>
-							<DotTitle>제작 문항 수준</DotTitle>
-							<Select
-								onChange={(event) => setLevel(event.value)}
-								options={gradeList}
-								placeholder={"수준 선택"} />
-						</Row>}
-						{["심경, 분위기", "함축 의미"].includes(type) && <Row>
+						{["심경, 분위기", "함축 의미", "빈칸 추론"].includes(type) && <Row>
 							<DotTitle>대상</DotTitle>
-							<TextInput style={{ width: "30%" }} value={target} onChange={(event) => setTarget(event.target.value)} />
+							<TextInput style={{ width: "30%" }}
+								value={target}
+								placeholder={type === "심경, 분위기" ? "심경이나 분위기의 변화를 일으키는 요소(ex. 상황, 사건, 대상 등)" : "빈칸 또는 밑줄 칠 부분"}
+								onChange={(event) => setTarget(event.target.value)} />
 						</Row>}
 						{["무관한 문장"].includes(type) && <Column>
 							<DotTitle>[선택] 정답을 몇번으로 지정할까요?</DotTitle>
 							<Row style={{ gap: "20px" }}>
 								{circleNumber.map((item, index) =>
-									<Row key={item} style={{ gap: "3px" }}><input type='radio' name='answer' value={index} onClick={() => setCircleAnswer(index)} />{item}</Row>)}
+									<Row key={item} style={{ gap: "3px" }}><input type='radio' name='answer' value={index}
+										onClick={() => setNonRelatedAnswer(index)} />{item}</Row>)}
 							</Row>
 						</Column>}
+						<DotTitle>문항</DotTitle>
+						<TextInput
+							value={question}
+							placeholder={"발문"}
+							onChange={(event) => setQuestion(event.target.value)} />
 						<Textarea
 							value={passage}
 							placeholder={"문항을 만들 지문을 선택 또는 작성하세요"}
 							onChange={(event) => setPassage(event.target.value.replace(/(\r\n|\n|\r)/g, " "))}
 						/>
-						{gptRes !== "loading" && <Column>
-							<MainBtn onClick={handleCreateOnClick}>AI 문제 생성</MainBtn>
+						{circleNumber.map((item, idx) =>
+							<Row key={item} style={{ gap: "5px", }}>
+								<TextInput key={item}
+									value={optionList[idx] ?? ''}
+									placeholder={`${item}번 선택지`}
+									onChange={(event) => handleOptionOnChange(event, idx)}
+									disabled={["무관한 문장", "글의 순서", "어휘 밑줄"].includes(type)}
+								/>
+							</Row>
+						)}
+						<DotTitle>해설</DotTitle>
+						<Textarea
+							value={explanation}
+							onChange={(event) => setExplanation(event.target.value)}
+							placeholder={"문제의 해설을 입력해주세요. (선택)"}
+						/>
+						{gptRes !== "loading" && <Column style={{ gap: "10px" }}>
+							<MainBtn onClick={handleSaveOnClick}>문항 저장</MainBtn>
 						</Column>}
 					</MainWrapper>
 				</AnimMaxHightOpacity>
-				{/* 결과물 */}
-				{gptAnswer &&
-					<ExamEditSection gptAnswer={gptAnswer} setGptAnswer={setGptAnswer}
-						question={question} passage={passage} subject={subject} type={type} level={level}
-						sentenceList={sentenceList} circleAnswer={circleAnswer} />}
 			</Column>
 
 			{/* 관리자 */}
@@ -302,14 +351,33 @@ const Row = styled.div`
 const Column = styled(Row)`
 	flex-direction: column;
 `
+const AiBtn = styled.button`
+  background-color: ${({ $disabled }) => !$disabled ? "#3454d1a1" : "#949192"};
+	width: 86px;
+	height: 86px;
+	color: white;
+	font-size: 30px;
+	border-radius: 10px;
+	border: none;
+	padding: 10px;
+	&:hover {
+  background-color: ${({ $disabled }) => !$disabled ? "#3454d1;" : "#949192"};
+  transform: translateY(2px);
+  transition-duration: .35s;
+  }
+	&:disabled {
+		cursor: not-allowed;
+		background-color: #949192;
+	}	
+`
 const QuestionText = styled.p`
 	font-size: 18px;
 	font-weight: 500;
 	margin: 0;
 `
 const Textarea = styled.textarea`
-	margin-top: 10px;
-	min-height: 20dvh;
+	margin-top: 5px;
+	height: 17dvh;
 	white-space: pre-wrap;
 	word-break: break-word;
 	border-radius: 5px;
@@ -327,6 +395,10 @@ const PassageWrapper = styled.div`
 const TextInput = styled.input`
 	width: 100%;
 	height: 3dvh;
-	margin-top: 10px;
+	border-radius: 3px;
+	padding: 5px;
+	&: disabled {
+		background-color: #e0e0e0;
+	}
 `
 export default ExamFormPage

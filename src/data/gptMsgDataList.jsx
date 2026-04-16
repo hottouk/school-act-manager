@@ -469,23 +469,23 @@ const gptExtractVocabMsg = (text) => [
   { role: "user", content: `[지문]: ${text}` }
 ]
 //시험 문제
-const gptMakeExamMsg = (type, question, text, level) => {
+const gptMakeExamMsg = ({ type, question, passage, level, target }) => {
   const exampleMap = {
-    "글의 목적": purposeExData(type, question, text, level),
-    "심경, 분위기": feelingChangeExData(type, question, text, level),
-    "필자의 주장": authorMainPointExData(type, question, text, level),
-    "함축 의미": meaningExData(type, question, text, level),
-    "글의 요지": mainIdeaExData(type, question, text, level),
-    "글의 주제": thesisExData(type, question, text, level),
-    "글의 제목": titleExData(type, question, text, level),
-    "일치/불일치": trueFalseExData(type, question, text, level),
+    "글의 목적": purposeExData(type, question, passage, level),
+    "심경, 분위기": feelingChangeExData(type, question, passage, level),
+    "필자의 주장": authorMainPointExData(type, question, passage, level),
+    "함축 의미": meaningExData(type, question, passage, level),
+    "글의 요지": mainIdeaExData(type, question, passage, level),
+    "글의 주제": thesisExData(type, question, passage, level),
+    "글의 제목": titleExData(type, question, passage, level),
+    "일치/불일치": trueFalseExData(type, question, passage, level),
     "어법 밑줄": grammarExData,
-    "어휘 밑줄": lexisExData(text),
-    "빈칸 추론": blankExData(type, question, text, level),
-    "무관한 문장": nonRelatedExData(text, level),
-    "글의 순서": sequenceExData,
+    "어휘 밑줄": lexisExData(passage),
+    "빈칸 추론": blankExData(type, question, passage, level, target),
+    "무관한 문장": nonRelatedExData(passage, level),
+    // "글의 순서": sequenceExData,
     "문장 삽입": insertExData,
-    "요약": summaryExData(type, question, text, level),
+    "요약": summaryExData(type, question, passage, level),
   };
   const messages = exampleMap[type] ?? "";
   return [...messages];

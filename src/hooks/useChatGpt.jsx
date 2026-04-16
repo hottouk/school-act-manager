@@ -31,7 +31,6 @@ const useChatGpt = () => {
   const askPerfRecord = useCallback(async ({ subject, content, record, model, thinkEffort, verbosity, leftRira }) => {
     setGptStatus("상, 중, 하 뚝딱뚝딱..");
     const messages = gptPerfRecordMsg(subject, content, record);
-    console.log(record, messages);
     await playGpt({ messages, model, thinkEffort, verbosity, leftRira });
     setGptStatus('');
   }, [])
@@ -39,7 +38,6 @@ const useChatGpt = () => {
   const askExtraRecord = useCallback(async ({ subject, content, record, model, thinkEffort, verbosity, leftRira }) => {
     setGptStatus("돌려쓰기 만드는 중..");
     const messages = gptExtraRecordMsg(subject, content, record)
-    console.log(record, messages);
     await playGpt({ messages, model, thinkEffort, verbosity, leftRira });
     setGptStatus('');
   }, []);
@@ -121,7 +119,7 @@ const useChatGpt = () => {
     setGptStatus("문제 출제 중..");
     if (type === "심경, 분위기") question = `다음 글에 드러난 ${target}의 심경 변화로 가장 적절한 것은?`;
     if (type === "함축 의미") question = `밑줄 친 ${target}이 다음 글에서 의미하는 바로 가장 적절한 것은?`;
-    const messages = [...gptMakeExamMsg(type, question, passage, level)];
+    const messages = [...gptMakeExamMsg({ type, question, passage, level, target })];
     await playGpt({ messages, model, thinkEffort, verbosity, leftRira });
     setGptStatus('');
   }

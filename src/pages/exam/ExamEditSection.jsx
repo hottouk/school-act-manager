@@ -17,7 +17,6 @@ import useDocxFile from '../../hooks/useDocxFile'
 import edit_icon from '../../image/icon/edit_icon.png'
 //생성(251219)
 const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, type, level, examItem, sentenceList, circleAnswer }) => {
-	console.log(1)
 	const { addTestArrItem, updateTestQuestion } = useFireTestData();
 	const { downloadQuestionDocx } = useDocxFile();
 	const questionList = useSelector(({ exam }) => exam["questions"]); //전체 문제
@@ -56,7 +55,10 @@ const ExamEditSection = ({ gptAnswer, setGptAnswer, question, passage, subject, 
 					.join(' ');
 				setPassage(fabricated);
 			}
-			if (["어법 밑줄", "어휘 밑줄"].includes(type)) { setPassage(options); setOptionList([]); };
+			if (["어법 밑줄", "어휘 밑줄"].includes(type)) {
+				setPassage(options);
+				setOptionList([]);
+			};
 			setExplanation(explanations);
 			setItemType(type);
 		}

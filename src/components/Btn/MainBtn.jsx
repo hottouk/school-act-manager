@@ -52,9 +52,7 @@ const StyledBtn = styled.button`
   z-index: ${({ $zIndex }) => $zIndex};
   &:hover {
   background-color: ${({ $disabled }) => !$disabled ? "#1366d6;" : "#949192"};
-  box-shadow: rgba(0, 0, 0, .05) 0 5px 30px, rgba(0, 0, 0, .05) 0 1px 4px;
-  opacity: 1;
-  transform: translateY(0);
+  transform: translateY(2px);
   transition-duration: .35s;
   }
   

@@ -276,22 +276,25 @@ available a wide variety of information to help individuals make better decision
 ⑤ disclose: ‘공개하다’로, 보험 계약에서 사실을 밝힐 의무를 설명하는 데 적절함`},
   { role: "user", content: `[지문]: ${text}` }];
 //빈칸 추론
-const blankExData = (type, question, text, level) => [
+const blankExData = (type, question, text, level, target) => [
   generalPrincipal,
   {
     role: "user", content: `[유형]: 빈칸 추론, [발문]: 다음 빈칸에 들어갈 말로 가장 적절한 것은?, [지문]: As a general rule, when the individuals of a population encounter a new environmental stress, some individuals in the population will die prematurely and some individuals will survive. If the reason for their survival (such as a slightly
 enhanced ability or trait) can be passed on to their offspring (that is, it’s genetically encoded), then the next generation should be better able to withstand the newly encountered environmental stress, and the population overall will be less susceptible to it. Therefore, the key to the ability of a population to survive by adaptation lies in the rapidity with which the next generation, the more resistant generation, is produced by the survivors of this generation. It follows that those species capable of producing
-a new generation very quickly should be better able to respond to a stress very quickly. Those species that require more time for reproduction will be slower to adapt to the stress because of the additional time needed for them to produce stress-tolerant offspring, [학년]: 고2, 
-[추가 규칙]: 1. 주어진 지문의 주제나 세부사항과 관련된 단어나 문장을 ___________ 로 치환하기.
-2. 치환된 기존의 단어나 문장을 정답으로 하는 4개의 distractors를 영작하여 오지선다형 선택지를 제공하기.
-3. ___________을 포함한 지문도 해설 이후에 <br> 태그로 구분해서 제공바람.`},
+a new generation very quickly should be better able to respond to a stress very quickly. Those species that require more time for reproduction will be slower to adapt to the stress because of the additional time needed for them to produce stress-tolerant offspring, 
+[빈칸]: rapidity, [학년]: 고2, 
+[추가 규칙]: 1. [지문]에서 [빈칸]과 동일한 부분을 ___________ 로 치환하기, 그 외의 다른 부분은 절대 변경하지 말 것.
+2. [빈칸]을 정답으로 하는 4개의 distractors를 영작하여 오지선다형 선택지를 제공하기.
+3. ___________을 포함한 지문도 해설 이후에 <br> 태그로 구분해서 제공하기.
+* 최종 출력 형식 예시: 선택지<br>해설<br>___________을 포함한 지문`
+  },
   {
     role: "assistant", content: `① rapidity</li>② precision</li>③ simplicity</li>④ consistency</li>⑤ randomness</li>
     <br>⭐ 해설
   글의 핵심 흐름은 다음과 같습니다.
   ● 환경적 스트레스 발생 → 일부 개체 사망, 일부는 생존
   ● 생존 이유가 유전되면 → 다음 세대는 더 강해짐
-  ● 따라서 “다음 세대가 얼마나 빨리 생성되는가”가 적응의 핵심
+  ● 따라서 “다음 세대가 얼마나 빠르게 생성되는가”가 적응의 핵심
   문제 문장:
   “the key … lies in the ( ) with which the next generation … is produced”
   즉, 의미는 “세대가 교체되는 속도가 적응의 핵심이다.”
@@ -300,17 +303,18 @@ a new generation very quickly should be better able to respond to a stress very 
 ❌ 오답 분석
 ② precision: 정확성과 적응 속도는 무관.
 ③ simplicity: 단순성은 세대교체 속도와 연결되지 않음.
-④ consistency: 일관성은 적응의 ‘속도’를 설명하지 못함.
-⑤ randomness: 무작위성은 돌연변이 개념과는 관련 있으나 세대 생산 속도와는 무관.
+④ consistency: 일관성은 적응의 '속도'를 설명하지 못함.
+⑤ randomness: 무작위성은 돌연변이 개념과는 관련 있으나 세대 생성 속도와는 무관.
 정답: ① rapidity
 <br>As a general rule, when the individuals of a population encounter a new environmental stress, some individuals in the population will die prematurely and some individuals will survive. If the reason for their survival (such as a slightly enhanced ability or trait) can be passed on to their offspring (that is, it’s genetically encoded), then the next generation should be better able to withstand the newly encountered environmental stress, and the population overall will be less susceptible to it. Therefore, the key to the ability of a population to survive by adaptation lies in the ___________ with which the next generation, the more resistant generation, is produced by the survivors of this generation. It follows that those species capable of producing a new generation very quickly should be better able to respond to a stress very quickly. Those species that require more time for reproduction will be slower to adapt to the stress because of the additional time needed for them to produce stress-tolerant offspring.
 `},
   {
     role: "user",
-    content: `[유형]: ${type}, [발문]: ${question}, [지문]: ${text}, [학년]: ${level},
-    [추가 규칙]: 1. 주어진 지문의 주제나 세부사항과 관련된 단어나 문장을 ___________ 로 치환하기.
-2. 치환된 기존의 단어나 문장을 정답으로 하는 4개의 distractors를 영작하여 오지선다형 선택지를 제공하기.
-3. ___________을 포함한 지문도 해설 이후에 <br> 태그로 구분해서 제공바람.`
+    content: `[유형]: ${type}, [발문]: ${question}, [지문]: ${text}, [빈칸]: ${target}, [학년]: ${level},
+[추가 규칙]: 1. [지문]에서 [빈칸]과 동일한 부분을 ___________ 로 치환하기, 그 외의 다른 부분은 절대 변경하지 말 것.
+2. [빈칸]을 정답으로 하는 4개의 distractors를 영작하여 오지선다형 선택지를 제공하기.
+3. ___________을 포함한 지문도 해설 이후에 <br> 태그로 구분해서 제공하기.
+* 최종 출력 형식 예시: 선택지<br>해설<br>___________을 포함한 지문`
   }];
 //무관한 문장
 const nonRelatedExData = (text, level) => [
