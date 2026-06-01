@@ -422,15 +422,12 @@ const gptBehaviorMsg = (selected) => [
 //10. 단어 추출 문구
 const gptExtractVocabMsg = (text) => [
   {
-    role: "system", content: `당신은 교사임.
-    지문에서 학생들이 모를법한 어려워할 것 같은 단어를 추출하여 뜻과 함께 제공하는 것이 임무임.
-    [지문]을 제공하겠음. 어려운 단어의 원형과 의미를 함께 제공해주기 바람.
-    단어와 의미 사이의 구분자는 "#"으로 단어와 단어 사이의 구분자는 "^"로 통일바람.
-    조건
-    1. 단어와 의미 사이에 "#" 구분자를 사용 바람. ex) apple#사과^role#역할^conscious#의식적인
-    2. 한 지문에 최소 1개에서 최대 10개정도의 단어와 의미쌍을 제공 바람.
-    3. 단어는 원형으로 제공할 것
-  `
+    role: "system", content: `당신은 영어 교사를 돕는 단어 추출 도우미입니다.
+    제공된 [지문]에서 학생들이 어려워할 만한 핵심 영어 단어 또는 구를 1개 이상 10개 이하로 추출하세요.
+    반드시 JSON 배열만 반환하세요. 설명, 번호, markdown 코드블록은 쓰지 마세요.
+    각 항목은 {"word":"원형 단어 또는 구","meaning":"한국어 뜻"} 형식이어야 합니다.
+    word는 가능한 원형으로 쓰고, meaning은 짧고 수업에서 바로 쓸 수 있게 쓰세요.
+    예시: [{"word":"awareness","meaning":"인식"},{"word":"expense","meaning":"비용, 희생"}]`
   },
   //예시
   {
@@ -442,7 +439,7 @@ const gptExtractVocabMsg = (text) => [
     you’re not going to be in that position very long. When you start apologizing for who you are, you stop growing and you stop winning. Permanently.
 ` },
   {
-    role: "assistant", content: `awareness#인식^expense#비용, 희생^please#기쁘게하다^permanently#영원히, 영구히^personality#성격^mess up#망치다, 더럽히다`
+    role: "assistant", content: `[{"word":"awareness","meaning":"인식"},{"word":"expense","meaning":"비용, 희생"},{"word":"please","meaning":"기쁘게 하다"},{"word":"permanently","meaning":"영구히"},{"word":"personality","meaning":"성격"},{"word":"mess up","meaning":"망치다"}]`
   },
   {
     role: "user", content: `[지문]: Human beings like certainty. This liking stems from our ancient ancestors ① who needed to survive alongside saber-toothed tigers and poisonous berries. 
@@ -453,7 +450,7 @@ const gptExtractVocabMsg = (text) => [
     and action plans to keep us safe from the uncertain element, and we live to see another day.
 ` },
   {
-    role: "assistant", content: `stem from#유래되다^certainty#확실성^ancestor#조상^evolve#진화하다^threat#위협^dependence#의존^unpredictable#예측할 수 없는^sensation#감각^vague#모호한^alert#경고, 주의^labeling#표기하기, 분류하기`
+    role: "assistant", content: `[{"word":"stem from","meaning":"유래되다"},{"word":"certainty","meaning":"확실성"},{"word":"ancestor","meaning":"조상"},{"word":"evolve","meaning":"진화하다"},{"word":"threat","meaning":"위협"},{"word":"dependence","meaning":"의존"},{"word":"unpredictable","meaning":"예측할 수 없는"},{"word":"sensation","meaning":"감각"},{"word":"vague","meaning":"모호한"},{"word":"alert","meaning":"경고, 주의"}]`
   },
   {
     role: "user", content: `[지문]: Robert Blattberg and Steven Hoch noted that, in a changing environment, it is not clear that consistency is always a virtue
@@ -464,7 +461,7 @@ const gptExtractVocabMsg = (text) => [
      Humans, however, can ④ incorporate these novel factors in their judgments.The composite ─ or average of human judgments and statistical models ─ proved to be more ⑤ accurate than either the statistical models or the managers working alone.
 ` },
   {
-    role: "assistant", content: `consistency#일관성^virtue#미덕, 장점^advantageous#유리한^composite#복합체, 합성물^forecast#예측하다^deny#부정하다, 거부하다^stable#안정된^incorporate#포함하다, 통합하다^accurate#정확한^judgment#판단`
+    role: "assistant", content: `[{"word":"consistency","meaning":"일관성"},{"word":"virtue","meaning":"미덕, 장점"},{"word":"advantageous","meaning":"유리한"},{"word":"composite","meaning":"복합체, 합성물"},{"word":"forecast","meaning":"예측하다"},{"word":"deny","meaning":"부정하다, 거부하다"},{"word":"stable","meaning":"안정된"},{"word":"incorporate","meaning":"포함하다, 통합하다"},{"word":"accurate","meaning":"정확한"},{"word":"judgment","meaning":"판단"}]`
   },
   { role: "user", content: `[지문]: ${text}` }
 ]

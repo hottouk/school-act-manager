@@ -23,8 +23,8 @@ const QuizMainPage = () => {
   const [quizSetList, setQuizSetList] = useState([]);
   useEffect(() => {
     const bindQuizData = async () => {
-      const qiozData = await fetchData("uid") || [];
-      setQuizSetList(qiozData);
+      const quizData = await fetchData("uid") || [];
+      setQuizSetList(quizData);
     }
     bindQuizData();
   }, [fetchData]);
@@ -42,10 +42,5 @@ const QuizMainPage = () => {
     </MainContainer>
   )
 }
-const Row = styled.div`
-  display: flex;
-`
-const Column = styled(Row)` 
-  flex-direction: column;
-`
+
 export default QuizMainPage

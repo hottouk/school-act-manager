@@ -2,21 +2,27 @@
 import React from 'react'
 import { useState } from 'react';
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 //컴포넌트
 import HeroSection from '../main/HeroSection';
 import IntroSection from '../main/IntroSection';
+import BibleSection from '../main/BibleSection';
 import SignUpWithSnsModal from '../../components/Modal/SignUpWithSnsModal'
 import KakaoSocialLogin from './KakaoLogin';
 import TestLoginSection from './TestLoginSection';
 //hooks
 import useLogin from '../../hooks/useLogin';
+import useMediaQuery from '../../hooks/useMediaQuery';
+import { useFloatOnScroll } from '../../hooks/useFloatOnScroll';
 //이미지
 import googleIcon from '../../image/icon/g-logo.png'
-import useMediaQuery from '../../hooks/useMediaQuery';
+import wordMonHeronImg from '../../image/landing/wordmonHero.png'
+import wordMonHeroMobileImg from '../../image/landing/wordMobile.png'
 //생성(240221) -> 리모델링(260203)
 const LoginPage = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { err, isPending, googleLogin, testLogin } = useLogin();
+  const { ref: ref1, isVisible: v1, } = useFloatOnScroll({ threshold: 0.75 });
   //모달
   const [isSnsModal, setIsSnsModal] = useState(false);
   return (
@@ -34,6 +40,15 @@ const LoginPage = () => {
         {isPending && <strong style={{ color: "white" }}>로그인 중 입니다.</strong>}
         {err && <strong>{err}</strong>}
       </HeroSection>
+      <BibleSection
+        text="주 예수를 믿으라 그리하면 너와 네 집이 구원을 얻으리라" from="사도행전 16:31"
+        backgroundColor="#efefef" />
+      <WordMonsterSection>
+        <WordmonLandingWrapper ref={ref1} $visible={v1}>
+          <WordmonLandingImg src={isMobile ? wordMonHeroMobileImg : wordMonHeronImg} alt="워드몬 히어로 이미지" />
+          <GameLink to="/quiz_public">카드 학습 하러가기</GameLink>
+        </WordmonLandingWrapper>
+      </WordMonsterSection>
       <IntroSection isMobile={isMobile} />
       {/* 모달 */}
       {isSnsModal && <SignUpWithSnsModal
@@ -56,6 +71,45 @@ const Row = styled.div`
 `
 const Column = styled(Row)` 
   flex-direction: column;
+`
+const WordMonsterSection = styled(Column)`
+  width: 100%;
+`
+const WordmonLandingWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transition: opacity 2000ms ease;
+  will-change: opacity;
+`
+const WordmonLandingImg = styled.img`
+  display: block;
+  width: 100%;
+  filter: brightness(0.75) saturate(0.85);
+  opacity: 0.85;
+`
+const GameLink = styled(Link)`
+  position: absolute;
+  top: 85%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: #3454d1;
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
+  transition: transform 180ms ease, background 180ms ease;
+  &:hover {
+    background: #243ca3;
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+  @media(max-width: 768px) {
+    padding: 10px 18px;
+    font-size: 15px;
+  }
 `
 const GoogleLoginBtn = styled.button`
   background: white;

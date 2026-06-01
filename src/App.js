@@ -37,6 +37,7 @@ import ExamItemPage from './pages/exam/ExamItemPage';
 import WidgetCheckoutPage from './pages/purchase/WidgetCheckoutPage';
 import WidgetSuccessPage from './pages/purchase/WidgetSuccessPage';
 import PurchaseFailPage from './pages/purchase/PurchaseFailPage';
+import VocabFlashCard from './components/VocabFlashCard';
 //관리자
 const Lab = lazy(() => import('./pages/lab/Lab'));
 const MasterPage = lazy(() => import('./pages/main/master/MasterPage'));
@@ -50,6 +51,8 @@ const GameSettingPage = lazy(() => import('./pages/quizBattle/GameSettingPage'))
 const QuizBattleMultiPage = lazy(() => import('./pages/quizBattle/QuizBattleMultiPage'));
 const QuizFormPage = lazy(() => import('./pages/quizBattle/QuizFormPage'));
 const QuizMainPage = lazy(() => import('./pages/quizBattle/QuizMainPage'));
+const QuizPublicPage = lazy(() => import('./pages/quizBattle/QuizPublicPage'));
+const QuizStudyPage = lazy(() => import('./pages/quizBattle/QuizStudyPage'));
 const BattleroomThrPage = lazy(() => import('./pages/quizBattle/BattleroomThrPage'));
 const BattleroomStuPage = lazy(() => import('./pages/quizBattle/BattleroomStuPage'));
 const EnterroomPage = lazy(() => import('./pages/quizBattle/EnterroomPage'));
@@ -102,6 +105,8 @@ function App() {
                 <Route path="/lab" element={uid ? <Lab /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/quiz" element={uid ? <QuizMainPage /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/quiz_setting" element={uid ? <QuizFormPage /> : <Navigate replace={true} to='/login' />} />
+                <Route path="/quiz_study" element={<QuizStudyPage />} />
+                <Route path="/quiz_public" element={<QuizPublicPage />} />
                 <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
                 {/* 시험 관리 */}
                 <Route path="/exam_setting" element={uid ? <ExamFormPage /> : <Navigate replace={true} to='/login' />} />
@@ -109,7 +114,6 @@ function App() {
                 <Route path="/exam_item" element={uid ? <ExamItemPage /> : <Navigate replace={true} to='/login' />} />
                 {/* 학교 */}
                 <Route path="/myschool" element={uid ? <MySchoolPage /> : <Navigate replace={true} to='/login' />} />
-                {/* <Route path="/school" element={uid ? <SchoolMainPage /> : <Navigate replace={true} to='/login' />} /> */}
                 <Route path="/store" element={uid ? <ShopMainPage /> : <Navigate replace={true} to='/login' />} />
                 {/* 게임 */}
                 <Route path="/battleroom" element={uid ? <BattleroomThrPage /> : <BattleroomStuPage />} />

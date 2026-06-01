@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-//생성(2060119)
+//생성(260119)
 const MainContainer = ({ children, styles }) => {
   const paddingTop = styles?.paddingTop ?? "0";
   const gap = styles?.gap ?? 0;

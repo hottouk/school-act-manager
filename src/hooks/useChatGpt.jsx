@@ -105,12 +105,24 @@ const useChatGpt = () => {
   const extractVocab = async (text,) => {
     setGptProgress({ current: 1, total: 2 });
     setGptStatus("단어 추출 중..");
-    const messages = gptExtractVocabMsg(text);
-    const { data } = await callAskGptOnly({ messages, model: "gpt-5-nano" });
-    const content = data.content;
-    setGptAnswer(content);
-    setGptProgress({ current: 2, total: 2 });
-    setGptStatus('');
+    setGptRes(GPT_RESPONSE.LOADING);
+    try {
+      const messages = gptExtractVocabMsg(text);
+      const { data } = await callAskGptOnly({
+        messages,
+        model: "gpt-5-nano",
+        thinkEffort: "low",
+        verbosity: "low",
+      });
+      setGptAnswer((data?.content ?? '').trim());
+    } catch (err) {
+      console.log(err);
+      setGptAnswer(`[에러 발생] 단어 추출에 실패했습니다. 잠시 후 다시 시도해주세요. ${err?.message ?? err}`);
+    } finally {
+      setGptProgress({ current: 2, total: 2 });
+      setGptRes(GPT_RESPONSE.COMPLETE);
+      setGptStatus('');
+    }
   }
   //------ExamEditSection------------------------------------------------
   //11. 시험문제

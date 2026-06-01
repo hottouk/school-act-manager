@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { useSelector } from 'react-redux'
+import { useEffect, useRef, useState } from 'react'
 //컴포넌트
 import EmptyResult from '../EmptyResult'
 import PetImg from '../PetImg'
@@ -16,8 +17,18 @@ const CardList = ({ dataList, type, onClick, selected }) => {
   const user = useSelector(({ user }) => user)
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const [openQuizMenuId, setOpenQuizMenuId] = useState(null);
+  const quizMenuRef = useRef(null);
   const typeColor = { activity: "#3454d1", copiedActi: "#ff69b4", quizActi: "#098a0f" };
   const hoverColor = { activity: "#3453d120", copiedActi: "#ff69b420", quizActi: "#098a0f20" };
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!quizMenuRef.current?.contains(event.target)) setOpenQuizMenuId(null);
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
   //------랜더링----------------------------------------------- 
   //활동 카드(교과, 담임, 업어온, 퀴즈)
   const ActiCard = ({ item, onClick }) => {
@@ -59,13 +70,36 @@ const CardList = ({ dataList, type, onClick, selected }) => {
   }
   //단어 카드
   const QuizCard = ({ item, onClick }) => {
-    return <Card onClick={() => { onClick(item); }}>
+    const isMenuOpen = openQuizMenuId === item.id;
+
+    const handleEditOnClick = (event) => {
+      event.stopPropagation();
+      onClick(item);
+      setOpenQuizMenuId(null);
+    };
+
+    const handleStudyClick = (event) => {
+      event.stopPropagation();
+      navigate('/quiz_study', { state: item });
+      setOpenQuizMenuId(null);
+    };
+
+    return <QuizCardBox
+      ref={isMenuOpen ? quizMenuRef : null}
+      onClick={() => {
+        if (user.uid === item.uid) setOpenQuizMenuId((prev) => prev === item.id ? null : item.id);
+        else navigate('/quiz_study', { state: item });
+      }}>
       <Title style={{ color: "#3454d1" }} >{item.title}</Title>
       <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
       {!isMobile
         ? <QuizNumber style={{ margin: "-60px -15px" }}>{item.quizList.length}</QuizNumber>
         : <BasicText>{item.quizList?.length || 0} 문제</BasicText>}
-    </Card>
+      {isMenuOpen && <QuizMenu onClick={(event) => event.stopPropagation()}>
+        <QuizMenuButton type="button" onClick={handleEditOnClick}>수정</QuizMenuButton>
+        <QuizMenuButton type="button" onClick={handleStudyClick}>학습</QuizMenuButton>
+      </QuizMenu>}
+    </QuizCardBox>
   }
   //펫
   const PetCard = ({ item, onClick }) => {
@@ -239,6 +273,47 @@ const Card = styled.li`
     justify-content: space-between;
     gap: 10px;
     border-radius: 5px;
+  }
+`
+const QuizCardBox = styled(Card)`
+  position: relative;
+`
+const QuizMenu = styled.div`
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  min-width: 88px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 120, 120, 0.35);
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+
+  @media(max-width: 768px) {
+    top: 8px;
+    right: 8px;
+  }
+`
+const QuizMenuButton = styled.button`
+  width: 100%;
+  height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-bottom: 1px solid rgba(120, 120, 120, 0.18);
+  background-color: white;
+  color: #222;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  &:last-child {
+    border-bottom: 0;
+  }
+  &:hover {
+    background-color: rgb(52, 84, 209, 0.12);
   }
 `
 const Title = styled.h5`

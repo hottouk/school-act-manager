@@ -9,18 +9,19 @@ const useFireBasic = (col) => {
   const db = appFireStore;
   const colRef = collection(db, col);
   //새로 생성
-  const addData = useCallback(async (data, col) => {
+  const addData = useCallback(async (data, colName) => {
     const createdTime = timeStamp.fromDate(new Date());
-    if (!col) col = colRef;
+    let col = colRef;
+    if (colName) col = collection(db, colName);
     await addDoc(col, { ...data, createdTime, uid: String(user.uid) });
   }, []);
 
   //수정 or 경로지정 생성
-  const setData = useCallback(async (data, docId, col) => {
+  const setData = useCallback(async (data, docId, colName) => {
     const createdTime = timeStamp.fromDate(new Date());
-    const docRef = col
-      ? doc(db, col, docId)
-      : doc(colRef, docId)
+    let col = colRef;
+    if (colName) col = collection(db, colName);
+    const docRef = doc(col, docId);
     await setDoc(docRef, { ...data, createdTime, uid: String(user.uid) }, { merge: true });
     console.log("Saved");
   }, []);
@@ -35,9 +36,9 @@ const useFireBasic = (col) => {
 
   //문서 여러개
   const fetchData = useCallback(async (field, value = String(user.uid)) => {
-    let q = query(colRef, where(field, "==", value));
+    const q = query(colRef, where(field, "==", value));
     try {
-      let querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(q);
       return querySnapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
     } catch (err) {

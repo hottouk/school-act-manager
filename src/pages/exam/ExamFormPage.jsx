@@ -395,6 +395,7 @@ const PassageWrapper = styled.div`
 const TextInput = styled.input`
 	width: 100%;
 	height: 3dvh;
+	border: 1px solid black;
 	border-radius: 3px;
 	padding: 5px;
 	&: disabled {

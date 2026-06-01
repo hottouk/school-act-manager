@@ -13,6 +13,7 @@ import useMediaQuery from '../../hooks/useMediaQuery'
 import { useFloatOnScroll } from '../../hooks/useFloatOnScroll';
 import MainContainer from '../../components/Styled/MainContainer'
 import HorizontalBannerAd from '../../components/Ads/HorizontalBannerAd'
+import BibleSection from './BibleSection'
 //정비(240720) -> 모바일감지(250213) => 리모델링(260203)
 const LandingPage = () => {
   const user = useSelector(({ user }) => user);
@@ -57,9 +58,7 @@ const LandingPage = () => {
     <GraySection style={{ justifyContent: "center", height: "400px" }}>
       <SubHeader style={{ textAlign: "center" }}>{2682}명의 선생님, {287}명의 학생이 이용중!!<br />많은 교사의 선택에는 이유가 있습니다.<br /></SubHeader>
     </GraySection>
-    <BibleSection>
-      <BibleText ref={ref0} $visible={v0}>주 예수를 믿으라 그리하면 너와 네 집이 구원을 얻으리라 <br />사도행전 16:31</BibleText>
-    </BibleSection>
+    <BibleSection text="주 예수를 믿으라 그리하면 너와 네 집이 구원을 얻으리라" from="사도행전 16:31" />
     <IntroSection isMobile={isMobile} />
     {!isMobile ? <HorizontalBannerAd /> : <HorizontalMobileAd />}
   </MainContainer>
@@ -99,29 +98,6 @@ const SubHeader = styled.h3`
   @media (max-width: 767px) {
     font-size: 22px;
     text-align: center;
-  }
-`
-const BibleSection = styled(Column)`
-  width: 100%;
-  height: 200px;
-  background-color: white;
-  gap: 20px;
-  @media(max-width: 768px) {
-    min-height: 200px;
-  }
-`
-const BibleText = styled.p`
-  width: 400px;
-  color: #black;
-  margin: auto;
-  text-align: center;
-  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
-  transform: ${({ $visible }) => ($visible ? 'translateY(0)' : 'translateY(36px)')};
-  transition: opacity 1500ms ease, transform 1200ms ease;
-  will-change: opacity, transform;
-  @media (max-width: 768px) {
-    width: 100%;
-    font-size: 14px;
   }
 `
 export default LandingPage

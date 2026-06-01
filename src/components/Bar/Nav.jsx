@@ -79,13 +79,14 @@ const Nav = () => {
                 { href: "classrooms", label: "나의 클래스" },
               ]} />
           </li>
-          {/* <li><Icon className="fa-solid fa-database" />
+          <li><Icon className="fa-solid fa-database" />
             <DropDownBtn btnName={"단어 관리"}
               dropDownItems={[
                 { href: "quiz_setting", label: "새 단어장" },
                 { href: "quiz", label: "나의 단어장" },
+                { href: "quiz_public", label: "공개 단어장" },
               ]} />
-          </li> */}
+          </li>
           <li><Icon className="fa-solid fa-star" />
             <DropDownBtn btnName={"문제 관리"}
               dropDownItems={[

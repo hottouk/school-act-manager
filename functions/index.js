@@ -250,12 +250,17 @@ export const askGptOnly = onCall(
     const apiKey = OPENAI_API_KEY.value();
     const openai = new OpenAI({ apiKey: apiKey });
     const { messages, model, thinkEffort, verbosity } = req.data || {};
-    const completion = await openai.chat.completions.create(
-      { model, messages, reasoning_effort: thinkEffort, verbosity }
-    );
-    const content = completion.choices?.[0]?.message?.content ?? "";
-    const usage = completion.usage || { completion_tokens: 0, prompt_tokens: 0 };
-    return { content, usage };
+    try {
+      const completion = await openai.chat.completions.create(
+        { model, messages, reasoning_effort: thinkEffort, verbosity }
+      );
+      const content = completion.choices?.[0]?.message?.content ?? "";
+      const usage = completion.usage || { completion_tokens: 0, prompt_tokens: 0 };
+      return { content, usage };
+    } catch (err) {
+      console.error("OpenAI only error:", err?.response?.data || err?.message || err);
+      throw new HttpsError("internal", "GPT 호출 중 오류가 발생했습니다.");
+    }
   });
 //리라 증감
 export const calculateRira = onCall({ region: REGION }, async (req) => {

@@ -22,11 +22,11 @@ const Section = styled(Column)`
   align-items: center;
   gap: 20px;
   justify-content: space-between;
-  background-image: linear-gradient(to top, #499add, #3454d1);
+  background-image: linear-gradient(to top, #efefef , #3454d1);
 `
 const LandingImg = styled.img`
   width: 100%;
-  margin-top: ${({ $children }) => $children ? "60px" : "130px"};s
+  margin-top: ${({ $children }) => $children ? "60px" : "130px"};
   @media(max-width: 768px) {
     width: 140%;
     margin-left: -40%;

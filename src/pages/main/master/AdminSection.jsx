@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import useFireBasic from '../../../hooks/Firebase/useFireBasic'
-
 import styled from 'styled-components';
+import useFireBasic from '../../../hooks/Firebase/useFireBasic'
 import ClickableIcon from '../../../components/Styled/ClickableIcon';
 import DotTitle from '../../../components/Title/DotTitle';
 import MidBtn from '../../../components/Btn/MidBtn';

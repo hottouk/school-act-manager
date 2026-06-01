@@ -1,5 +1,5 @@
 //라이브러리
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Spinner } from 'react-bootstrap';
 import Modal from 'react-bootstrap/Modal';
 import Select from 'react-select';
@@ -55,18 +55,47 @@ const SmartAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabSh
   const [text, setText] = useState('');
   //gpt
   const { extractVocab, gptAnswer, gptRes, gptStatus, gptProgress } = useChatGpt();
+  const normalizeVocabItem = useCallback((item) => {
+    if (typeof item === 'string') {
+      const [word, meaning] = item.split("#").map((value) => value?.trim());
+      return word && meaning ? { word, meaning } : null;
+    }
+    const word = item?.word?.trim();
+    const meaning = item?.meaning?.trim();
+    return word && meaning ? { word, meaning } : null;
+  }, []);
+  const parseVocabAnswer = useCallback((answer) => {
+    const cleaned = answer
+      .trim()
+      .replace(/^```json/i, '')
+      .replace(/^```/i, '')
+      .replace(/```$/i, '')
+      .trim();
+    try {
+      const parsed = JSON.parse(cleaned);
+      const parsedList = Array.isArray(parsed) ? parsed : parsed?.vocabList;
+      return (parsedList ?? []).map(normalizeVocabItem).filter(Boolean);
+    } catch (err) {
+      return cleaned.split("^").map(normalizeVocabItem).filter(Boolean);
+    }
+  }, [normalizeVocabItem]);
   //gpt 응답 가공
   useEffect(() => {
     const renderGptAnswer = () => {
       if (gptAnswer === '') return
-      const list = gptAnswer.split("^").map((item) => {
-        const wordMeaning = item.split("#");
-        return { word: wordMeaning[0], meaning: wordMeaning[1] }
-      })
+      if (gptAnswer.startsWith("[에러 발생]")) {
+        alert(gptAnswer);
+        return;
+      }
+      const list = parseVocabAnswer(gptAnswer);
+      if (list.length === 0) {
+        alert("단어 추출 결과를 읽지 못했습니다. 다시 시도해주세요.");
+        return;
+      }
       setVocabList(list);
     }
     renderGptAnswer();
-  }, [gptAnswer]);
+  }, [gptAnswer, parseVocabAnswer]);
   //추가된 단어
   const [vocabList, setVocabList] = useState([]);
 
@@ -83,9 +112,10 @@ const SmartAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabSh
     return result
   }
   //추출 버튼 
-  const handleExtractOnClick = () => {
+  const handleExtractOnClick = async () => {
     if (text === '') { alert("단어를 추출할 지문이 없습니다."); return; }
-    extractVocab(text);
+    setVocabList([]);
+    await extractVocab(text);
   }
   //input 감지
   const handleInputOnChange = (event, index) => {

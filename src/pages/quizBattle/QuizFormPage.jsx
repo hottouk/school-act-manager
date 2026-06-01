@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-//라이브러리
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { useLocation, useNavigate } from 'react-router-dom'
-//컴포넌트
+//components
 import MainContainer from '../../components/Styled/MainContainer'
 import StyledForm from '../../components/Styled/StyledForm'
 import DotTitle from '../../components/Title/DotTitle'
@@ -17,15 +17,14 @@ import CircularBtn from '../../components/Btn/CircularBtn'
 import SmartAddVocabModal from '../../components/Modal/gptModal/SmartAddVocabModal'
 //hooks
 import useFireBasic from '../../hooks/Firebase/useFireBasic'
-import useFireErrData from '../../hooks/Firebase/useFireErrData'
 //anim
 import AnimMaxHightOpacity from '../../anim/AnimMaxHightOpacity'
-//데이터
+//data
 import { ERROR_MSG } from '../../constants/errMsg'
-//생성(250114)-> 디자인 통일(260217)
+//creation(250114)-> design modifed(260217)
 const QuizFormPage = () => {
+  const user = useSelector(({ user }) => { return user });
   const navigate = useNavigate();
-  const { errorHandler } = useFireErrData();
   const [quizList, setQuizList] = useState([{ word: '', meaning: '' }]);
   const [title, setTitle] = useState('');
   const [selectedSubjGroup, setSelectedSubjGroup] = useState('');
@@ -116,23 +115,25 @@ const QuizFormPage = () => {
     return true;
   }
   //저장 버튼 클릭
-  const handleSaveOnClick = async (event) => {
+  const handleSaveOnClick = async (event, userType) => {
     event.preventDefault();
     if (!check()) return;
     const result = checkVacant(quizList);
     if (!result) return;
-    const confirm = window.confirm("현제 세트를 저장하시겠습니까?");
+    const confirm = window.confirm("현재 세트를 저장하시겠습니까?");
     if (!confirm) return;
-    const info = dataToSave()
+    const info = dataToSave();
     try {
-      if (!quizSetInfo) await addData(info);
-      if (quizSetInfo) await setData(info, quizSetInfo.id);
+      if (!quizSetInfo && !userType) await addData(info);
+      if (quizSetInfo && !userType) await setData(info, quizSetInfo.id);
+      if (!quizSetInfo && userType === "master") await addData(info, "quiz_public");
+      if (quizSetInfo && userType === "master") await setData(info, quizSetInfo.id, "quiz_public");
       navigate(-1);
       alert("성공적으로 저장했습니다.");
     }
     catch (err) {
       alert(ERROR_MSG.addQuizSet);
-      errorHandler(err, "QuizFormPage");
+      console.log(err);
     }
   }
   //데이터 직렳화
@@ -222,14 +223,17 @@ const QuizFormPage = () => {
         </AnimMaxHightOpacity>
         {!quizSetInfo && <Column style={{ gap: "10px" }}>
           <MainBtn onClick={handleSaveOnClick}>세트 저장</MainBtn>
-          <MainBtn onClick={() => { setIsGptModal(true); }}>스마트 단어 추가</MainBtn>
+          <MainBtn onClick={() => setIsGptModal(true)}>스마트 단어 추가</MainBtn>
+          {user.isMaster && <LongW100Btn onClick={(event) => handleSaveOnClick(event, "master")}>관리자 단어장 저장</LongW100Btn>}
+
         </Column>}
         {quizSetInfo && <Column style={{ gap: "10px", }}>
           {!isEdit && <MainBtn onClick={() => { setisEdit(true) }}>세트 수정</MainBtn>}
           {!isEdit && <LongW100Btn onClick={handleDeleteOnClick}>세트 삭제</LongW100Btn>}
           {isEdit && <MainBtn onClick={handleSaveOnClick}>변경 저장</MainBtn>}
-          {isEdit && <MainBtn onClick={() => { setIsGptModal(true); }}>스마트 단어 추가</MainBtn>}
+          {isEdit && <MainBtn onClick={() => setIsGptModal(true)}>스마트 단어 추가</MainBtn>}
           {isEdit && <LongW100Btn onClick={handleCancelOnClick}>수정 취소</LongW100Btn>}
+          {user.isMaster && <LongW100Btn onClick={(event) => handleSaveOnClick(event, "master")}>관리자 단어장 저장</LongW100Btn>}
         </Column>}
       </StyledForm>
     </MainContainer >
