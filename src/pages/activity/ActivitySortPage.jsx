@@ -8,7 +8,6 @@ import BackBtn from '../../components/Btn/BackBtn'
 import { useNavigate } from 'react-router-dom'
 import MainContainer from '../../components/Styled/MainContainer'
 import useMediaQuery from '../../hooks/useMediaQuery'
-
 //생성(240808)
 const ActivitySortPage = () => {
   const navigate = useNavigate();
@@ -33,7 +32,6 @@ const ActivitySortPage = () => {
   const actiSortList = [
     { id: "subjectActi", legend: "교과용 활동", subTitle: "과세특 기록용", imgNumber: 1 },
     { id: "homeroomActi", legend: "담임반 활동", subTitle: "자율, 진로, 봉사활동", imgNumber: 2 },
-    { id: "quizGameActi", legend: "게임 활동", subTitle: "단어, 퀴즈, 교과 관련", imgNumber: 3, ban: true },
   ]
 
   return (

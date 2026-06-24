@@ -82,15 +82,15 @@ export const joinByBattleCode = onCall({ region: REGION }, async (req) => {
   const pet = req.data?.pet || {};
   console.log("req", battleCode, nickname, pet);
   if (!/^\d{6}$/.test(battleCode)) {
-    throw new HttpsError("invalid-argument", "코드 형식 오류");
+    throw new HttpsError("invalid-argument", "코드는 6자리 숫자여야 합니다.");
   }
-  if (!nickname) throw new HttpsError("invalid-argument", "닉네임 필요");
-  if (!pet) throw new HttpsError("invalid-argument", "펫 선택 필요");
+  if (!nickname) throw new HttpsError("invalid-argument", "닉네임을 입력해주세요");
+  if (!pet) throw new HttpsError("invalid-argument", "펫을 선택해야 합니다.");
   const codeSnap = await db.ref(`battleCodes/${battleCode}`).get();
-  if (!codeSnap.exists()) throw new HttpsError("not-found", "코드 없음");
+  if (!codeSnap.exists()) throw new HttpsError("not-found", "배틀 코드로 생성된 방이 없습니다.");
 
   const { roomId, expiresAt } = codeSnap.val();
-  if (expiresAt < now()) throw new HttpsError("failed-precondition", "만료 코드");
+  if (expiresAt < now()) throw new HttpsError("failed-precondition", "만료된 코드입니다.");
 
   await db.ref(`roomPlayers/${roomId}/${uid}`).update({
     nickname,
@@ -302,60 +302,28 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
 
 // 4) 게임 종료
 export const finalizeGame = onCall({ region: REGION }, async (req) => {
-  const { roomId, roomRef, room } = await hostCheck(req);
-  if (room.status === "ended") return { ok: true, alreadyEnded: true };
+  const { roomId } = await hostCheck(req);
 
-  // const playersSnap = await db.ref(`roomPlayers/${roomId}`).get();
-  // const players = playersSnap.val() || {};
-  const endedAt = now();
-
-  // 1) RTDB 방 종료
-  await roomRef.update({
-    status: "ended",
-    endedAt,
-  });
-
-  // 2) Firestore 결과 저장(요약 + 플레이어 점수)
-  // await fs.doc(`gameResults/${roomId}`).set({
-  //   roomId,
-  //   title: room.title || "",
-  //   hostUid: room.hostUid || "",
-  //   startedAt: room.startedAt || null,
-  //   endedAt,
-  //   maxRounds: room.maxRounds || 0,
-  //   playerCount: Object.keys(players).length,
-  // });
-
-  // const batch = fs.batch();
-  // Object.entries(players).forEach(([playerUid, p]) => {
-  //   const docRef = fs.doc(`gameResults/${roomId}/players/${playerUid}`);
-  //   batch.set(docRef, {
-  //     nickname: p.nickname || "",
-  //     finalScore: p.score || 0,
-  //     connected: !!p.connected,
-  //     lastSeenAt: p.lastSeenAt || null,
-  //   });
-  // });
-  // await batch.commit();
-
-  // 3) battleCode 역조회 후 제거 (재입장 차단)
+  // battleCode를 역조회해 현재 방을 가리키는 코드를 찾습니다.
   const codeSnap = await db.ref("battleCodes").get();
+  const updates = {
+    [`rooms/${roomId}`]: null,
+    [`roomPlayers/${roomId}`]: null,
+    [`roomStances/${roomId}`]: null,
+    [`roomStanceSummary/${roomId}`]: null,
+    [`roomSubmissions/${roomId}`]: null,
+    [`roomRuntime/${roomId}`]: null,
+  };
+
   if (codeSnap.exists()) {
     const allCodes = codeSnap.val();
-    const updates = {};
     Object.entries(allCodes).forEach(([code, v]) => {
       if (v?.roomId === roomId) updates[`battleCodes/${code}`] = null;
     });
-    if (Object.keys(updates).length > 0) {
-      await db.ref().update(updates);
-    }
   }
-  await db.ref().update({
-    [`roomStances/${roomId}`]: null,
-    [`roomStanceSummary/${roomId}`]: null,
-    [`roomBattleResults/${roomId}`]: null,
-    [`roomPlayers/${roomId}`]: null,
-  });
+
+  // roomBattleResults는 결과 확인을 위해 보존합니다.
+  await db.ref().update(updates);
   return { ok: true };
 });
 

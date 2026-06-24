@@ -24,6 +24,7 @@ import arrows_icon from "../../image/icon/arrows_icon.png"
 //효과
 import AnimRotation from '../../anim/AnimRotation';
 import { ERROR_MSG } from '../../constants/errMsg';
+import MainBtn from '../../components/Btn/MainBtn';
 //코드 간소화 및 기능추가(240720)-> 펫 동기화(250207)-> 코드 정리 및 버그 수정(250223) -> 수정 요청 기능(251104) -> 담임반 통합(260120)
 const StudentDetailPage = () => {
   //준비
@@ -180,16 +181,16 @@ const StudentDetailPage = () => {
       <AnimRotation isAnimating={isAnimating}>
         <PannelContainer>
           {/* 편집 및 삭제 버튼 */}
-          <BtnPannel>
+          {!isMobile && <BtnPannel>
             {(!isModifying && !isBehavioring) && <Row style={{ gap: "10px" }}>
-              {!isMobile && <ClickableIcon className='fa-solid fa-edit' styles={{ color: "white", hoverColor: "#ffffff50" }} onClick={() => setIsModifying(!isModifying)} title={"편집"} />}
+              <ClickableIcon className='fa-solid fa-edit' styles={{ color: "white", hoverColor: "#ffffff50" }} onClick={() => setIsModifying(!isModifying)} title={"편집"} />
               <ClickableIcon className='fa-solid fa-trash' styles={{ color: "white", hoverColor: "#ffffff50" }} onClick={handlePetDeleteOnClick} title={"삭제"} />
             </Row>}
             {(isModifying && !isBehavioring) && <Row style={{ gap: "10px" }}>
               <ClickableIcon className='fa-solid fa-check' styles={{ color: "white", hoverColor: "#ffffff50" }} onClick={handleSaveOnClick} title={"확인"} />
               <ClickableIcon className='fa-solid fa-x' styles={{ color: "white", hoverColor: "#ffffff50" }} onClick={handleCancelOnClick} title={"취소"} />
             </Row>}
-          </BtnPannel>
+          </BtnPannel>}
           {/* 화살표 */}
           {(user.isTeacher && !isModifying && !isBehavioring) && <>
             <ArrowWrapper style={{ top: "50%", left: "-5%" }}><ArrowBtn id="left_arw_btn" deg={135} onClick={handleArrowBtnOnClick} /></ArrowWrapper>
@@ -229,14 +230,15 @@ const StudentDetailPage = () => {
               setIsBehavioring={setIsBehavioring}
               behaviorRec={behaviorRecord}
               setBehaviorRec={setBehaviorRecord} />}
+            {actiList && <ByteCalculator str={getAccRec(actiList)}></ByteCalculator>}
           </GrayBotPannel>}
-          {actiList?.length > 0 && <ByteWrapper>
-            <ByteCalculator str={getAccRec(actiList)} styles={{ justifyContent: "center", fontSize: "22px", fontColor: "white", width: "81px" }}></ByteCalculator>
-          </ByteWrapper>}
         </PannelContainer>
       </AnimRotation>
-      {/* 교사전용 */}
-    </MainContainer>
+      {isMobile && <Column Column style={{ gap: "10px", marginBottom: "10px" }}>
+        <MainBtn styles={{ margin: "0 auto", width: "90%" }} onClick={() => navigate(-1)}>목록으로</MainBtn>
+        <MainBtn styles={{ margin: "0 auto", width: "90%" }} onClick={handlePetDeleteOnClick}>삭제</MainBtn>
+      </Column>}
+    </MainContainer >
   </>)
 }
 const Row = styled.div`
@@ -261,8 +263,9 @@ const PannelContainer = styled.div`
   @media screen and (max-width: 768px){
     width: 100%;
     margin-top: 0;
+    margin-bottom: 20px;
     border: none;
-    border-radius: 10px 10px 0 10px;
+    border-radius: 10px;
   }
 `
 const BtnPannel = styled(Row)`
@@ -294,17 +297,5 @@ const AccWrapper = styled.div`
   border: 1px solid #78787880;
   border-radius: 10px;
   padding: 5px;
-`
-const ByteWrapper = styled.div`
-  height: 50px;  
-  position: absolute;
-  right: 0;
-  bottom: -60px;
-  background-color: #3454d1b1;
-    border-top-right-radius: 0;
-  border-top-left-radius: 0;
-  border-bottom-right-radius: 30px;
-  border-bottom-left-radius: 30px;
-  padding: 10px 15px 50px 10px;
 `
 export default StudentDetailPage

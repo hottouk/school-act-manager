@@ -147,9 +147,10 @@ const SmartAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabSh
       return
     }
     const result = checkVacant(vocabList);
-    if (!result) return
+    if (!result) return;
     setQuizList((prev) => { return [...prev, ...vocabList] });
     setIsVocabShow(true);
+    setVocabList([]);
     onHide();
   }
   return (
@@ -183,7 +184,6 @@ const SmartAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabSh
           onChange={(event) => { setText(event.target.value); }}></Textarea>
         <Row style={{ justifyContent: "center", margin: "10px 0" }}>
           {(gptRes !== "loading") && <MidBtn onClick={handleExtractOnClick}>단어 추출</MidBtn>}
-          {(gptRes === "loading") && <Spinner />}
         </Row>
         {vocabList?.length > 0 && vocabList.map((item, idx) => <Row key={`${idx}`}>
           <NumberLabel>{padNumber(idx + 1, 3)}</NumberLabel>
@@ -203,10 +203,12 @@ const SmartAddVocabModal = ({ show, onHide, padNumber, setQuizList, setIsVocabSh
             placeholder='의미'
           />
           <Row style={{ gap: "5px", paddingTop: "3px" }}>
-            {vocabList.length - 1 === idx && <CircularBtn onClick={() => { addInputs(idx) }}>+</CircularBtn>}
-            {vocabList.length - 1 !== idx && <CircularBtn styles={{ color: "#9b0c24" }} onClick={() => { deleteInputs(idx) }}>-</CircularBtn>}
+            <CircularBtn styles={{ color: "#9b0c24" }} onClick={() => { deleteInputs(idx) }}>-</CircularBtn>
           </Row>
         </Row>)}
+        <Row style={{ gap: "5px", justifyContent: "center", marginTop: "10px" }}>
+          <CircularBtn onClick={() => addInputs(vocabList.length)}>+</CircularBtn>
+        </Row>
       </Modal.Body>
       <Modal.Footer style={{ backgroundColor: "#efefef", borderRadius: "5px" }}>
         <ModalBtn onClick={() => { onHide() }}>취소</ModalBtn>

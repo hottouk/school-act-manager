@@ -31,7 +31,7 @@ const persistConfig = {
   key: "root",
   storage: storageSession,  // 세션Storage에 저장합니다. 브라우져 종료하면 재로그인이 필요함.
   whiteList: ['allStudents', 'user', 'classSelected'], //계속 저장해둘 값
-  blacksList: ['studentSelected', 'activitySelected', "tempUser"], //휘발성 값
+  blackList: ['studentSelected', 'activitySelected', "tempUser"], //휘발성 값
 };
 
 const persistedReducer = persistReducer(persistConfig, reducers);

@@ -52,6 +52,18 @@ const VocabFlashCard = ({
     setIsCompleted(false);
   };
 
+  const handleSpeakClick = (event) => {
+    event.stopPropagation();
+    if (!totalCount || isCompleted) return;
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(currentWord.word);
+      utterance.lang = 'en-US';
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
   if (!totalCount) {
     return (
       <Wrapper>
@@ -93,6 +105,13 @@ const VocabFlashCard = ({
                   <SubText>{currentWord.pronunciation}</SubText>
                 )}
                 {currentWord.example && <ExampleText>{currentWord.example}</ExampleText>}
+                <SpeakerButton
+                  type="button"
+                  aria-label="단어 발음 듣기"
+                  onClick={handleSpeakClick}
+                >
+                  🔊
+                </SpeakerButton>
               </CardFace>
               <CardFaceBack>
                 <CardLabel>MEANING</CardLabel>
@@ -161,6 +180,29 @@ const CardButton = styled.button`
 
   @media screen and (max-width: 480px) {
     min-height: 260px;
+  }
+`;
+const SpeakerButton = styled.button`
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #d9e1f2;
+  border-radius: 50%;
+  background: #f6f8ff;
+  color: #3454d1;
+  font-size: 18px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #ebf1ff;
+  }
+
+  &:focus-visible {
+    outline: 3px solid #3454d1;
+    outline-offset: 3px;
   }
 `;
 

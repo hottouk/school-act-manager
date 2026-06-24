@@ -3,16 +3,18 @@ import styled from 'styled-components'
 import FormHeader from '../Form/FormHeader';
 //생성(260217)
 const StyledForm = ({ children, title, styles }) => {
-	return (
-		<Container>
-			<FormHeader>{title || "샘플"}</FormHeader>
-			{children}
-		</Container>
-	)
+  const width = styles?.width ?? "35%";
+
+  return (
+    <Container $width={width}>
+      <FormHeader>{title || "샘플"}</FormHeader>
+      {children}
+    </Container>
+  )
 }
 const Container = styled.div`
 	position: relative;
-	width: 35%;
+	width: ${props => props.$width};
   max-width: 600px;
 	display: flex;
 	flex-direction: column;

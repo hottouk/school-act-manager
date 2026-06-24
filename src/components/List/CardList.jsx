@@ -12,6 +12,7 @@ import useMediaQuery from '../../hooks/useMediaQuery'
 import iconImg from '../../image/icon/like_icon.png'
 import unknownIcon from '../../image/icon/unkown_icon.png'
 import recycleIcon from '../../image/icon/recycle_icon.png'
+import { callCreateRoom } from '../../firebase/config'
 //생성(240109) -> onClick 로직 분리(250122) -> 정리(251216)
 const CardList = ({ dataList, type, onClick, selected }) => {
   const user = useSelector(({ user }) => user)
@@ -69,12 +70,12 @@ const CardList = ({ dataList, type, onClick, selected }) => {
     </Card>
   }
   //단어 카드
-  const QuizCard = ({ item, onClick }) => {
+  const QuizCard = ({ item }) => {
     const isMenuOpen = openQuizMenuId === item.id;
 
     const handleEditOnClick = (event) => {
       event.stopPropagation();
-      onClick(item);
+      navigate('/quiz_setting', { state: item })
       setOpenQuizMenuId(null);
     };
 
@@ -84,20 +85,34 @@ const CardList = ({ dataList, type, onClick, selected }) => {
       setOpenQuizMenuId(null);
     };
 
+    const handleCreateGameClick = async (event) => {
+      event.stopPropagation();
+      const res = await callCreateRoom({ uid: user.uid, title: item.title, maxRounds: 5, quizId: item.id });
+      const { data } = res || {}
+      if (!data) return;
+      navigate("/quiz_game_thr", { state: { battleCode: data.battleCode, roomId: data.roomId } });
+      setOpenQuizMenuId(null);
+    };
+
+    const handleGameClick = (event) => {
+      event.stopPropagation();
+      navigate('/quiz_game', { state: item });
+      setOpenQuizMenuId(null);
+    };
+
     return <QuizCardBox
       ref={isMenuOpen ? quizMenuRef : null}
-      onClick={() => {
-        if (user.uid === item.uid) setOpenQuizMenuId((prev) => prev === item.id ? null : item.id);
-        else navigate('/quiz_study', { state: item });
-      }}>
+      onClick={() => setOpenQuizMenuId((prev) => prev === item.id ? null : item.id)}>
       <Title style={{ color: "#3454d1" }} >{item.title}</Title>
       <p style={{ margin: "5px 0" }}>{item.subject}{item.subjDetail ? '-' + item.subjDetail : ''}</p>
       {!isMobile
         ? <QuizNumber style={{ margin: "-60px -15px" }}>{item.quizList.length}</QuizNumber>
         : <BasicText>{item.quizList?.length || 0} 문제</BasicText>}
       {isMenuOpen && <QuizMenu onClick={(event) => event.stopPropagation()}>
-        <QuizMenuButton type="button" onClick={handleEditOnClick}>수정</QuizMenuButton>
+        {user.uid === item.uid && <QuizMenuButton type="button" onClick={handleEditOnClick}>수정</QuizMenuButton>}
         <QuizMenuButton type="button" onClick={handleStudyClick}>학습</QuizMenuButton>
+        {user.isTeacher && <QuizMenuButton type="button" onClick={handleCreateGameClick}>게임방 만들기</QuizMenuButton>}
+        <QuizMenuButton type="button" onClick={handleGameClick}>게임하기</QuizMenuButton>
       </QuizMenu>}
     </QuizCardBox>
   }
@@ -211,7 +226,7 @@ const CardList = ({ dataList, type, onClick, selected }) => {
           {/* 멤버 */}
           {(type === "member") && dataList?.map((item) => <MemberCard key={item.uid} item={item} onClick={onClick} />)}
           {/* 단어 세트 */}
-          {(type === "quiz") && dataList?.map((item) => (<QuizCard key={item.id} item={item} onClick={() => { navigate('/quiz_setting', { state: item }) }} />))}
+          {(type === "quiz") && dataList?.map((item) => (<QuizCard key={item.id} item={item} />))}
           {/*펫*/}
           {(type === "pet") && dataList?.map((item, index) => <PetCard key={item.petId} item={item} onClick={() => { onClick(item, index) }} />)}
           {/*몬스터*/}

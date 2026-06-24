@@ -123,7 +123,7 @@ const ActiTableSection = ({ actiList = [], setActiList, type, tabValue, getAccRe
         }
         {!isMobile && <Header>바이트</Header>}
       </GridRow>
-      {actiList?.length === 0 && <GridItem style={{ gridColumn: "1/7" }}>활동이 없어요ㅠㅠ</GridItem>}
+      {actiList?.length === 0 && <div style={{ gridColumn: "1/7", textAlign: "center", margin: "5px 0" }}>활동이 없어요ㅠㅠ</div>}
       {actiList?.length > 0 && actiList.map((acti, index) => {
         console.log(acti);
         const { uid, id, record, perfRecordList, extraRecordList, repeatInfoList, } = acti;
@@ -238,8 +238,8 @@ const GridItem = styled(Row)`
   background-color: #efefef;
   padding: 10px;
   color: black;
-  border: 1px solid #78787880;
-  border-radius: 5px;
+  border-right: 1px solid #78787880;
+  border-bottom: 1px solid #78787880;
   text-align: center;
   justify-content: center;
   align-items: center;
@@ -249,9 +249,36 @@ const GridItem = styled(Row)`
     cursor: pointer;
     margin: auto;
   }
+  /* 자식 요소 배경이 컨테이너의 테두리를 침범하지 않도록 함 */
+  background-clip: padding-box;
   &.left-align { 
     text-align: left;
     justify-content: flex-start;
+  }
+  /* 데스크탑(6열)에서 오른쪽 끝 컬럼은 우측 경계 제거 */
+  &:nth-child(6n) {
+    border-right: none;
+  }
+  /* 마지막 행의 항목들은 하단 경계 제거 (6열 기준) */
+  &:nth-last-child(-n+6) {
+    border-bottom: none;
+  }
+  @media (max-width: 767px){
+    /* 모바일(2열)에서 오른쪽 끝 컬럼은 우측 경계 제거 */
+    &:nth-child(2n) { border-right: none; }
+    /* 모바일 마지막 행 항목들은 하단 경계 제거 (2열 기준) */
+    &:nth-last-child(-n+2) { border-bottom: none; }
+  }
+  /* 모서리 보정: 컨테이너의 radius가 가려지지 않도록 시각 보정 적용 */
+  &:first-child { border-top-left-radius: 5px; }
+  &:nth-child(6) { border-top-right-radius: 5px; }
+  &:nth-last-child(1) { border-bottom-right-radius: 5px; }
+  &:nth-last-child(6) { border-bottom-left-radius: 5px; }
+  @media (max-width: 767px){
+    &:first-child { border-top-left-radius: 5px; }
+    &:nth-child(2) { border-top-right-radius: 5px; }
+    &:nth-last-child(1) { border-bottom-right-radius: 5px; }
+    &:nth-last-child(2) { border-bottom-left-radius: 5px; }
   }
 `
 const Header = styled(Row)`

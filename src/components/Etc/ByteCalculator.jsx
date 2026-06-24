@@ -31,7 +31,8 @@ const StyledInput = styled.input`
   margin: 5px 5px 0px 5px;
   height: 35px;
   border-radius: 5px;
-  padding-left: 13px;
+  border: 1px solid #ccc;
+  text-align: center;
   font-size: ${(props) => props.$fontSize};
   &:disabled {
    color: black;

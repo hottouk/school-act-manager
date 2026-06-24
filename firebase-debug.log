@@ -1,0 +1,42 @@
+[debug] [2026-06-24T20:37:08.464Z] ----------------------------------------------------------------------
+[debug] [2026-06-24T20:37:08.466Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\강건\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start --only functions
+[debug] [2026-06-24T20:37:08.466Z] CLI Version:   15.8.0
+[debug] [2026-06-24T20:37:08.466Z] Platform:      win32
+[debug] [2026-06-24T20:37:08.466Z] Node Version:  v22.12.0
+[debug] [2026-06-24T20:37:08.467Z] Time:          Thu Jun 25 2026 05:37:08 GMT+0900 (대한민국 표준시)
+[debug] [2026-06-24T20:37:08.467Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-06-24T20:37:08.468Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-06-24T20:37:11.259Z] Field "/functions" in "firebase.json" is possibly invalid: must be object
+[debug] [2026-06-24T20:37:11.259Z] Field "/functions" in "firebase.json" is possibly invalid: must be object
+[debug] [2026-06-24T20:37:11.259Z] Object "/functions/0" in "firebase.json" has unknown property: {"additionalProperty":"v2"}
+[debug] [2026-06-24T20:37:11.259Z] Object "/functions/0" in "firebase.json" is missing required property: {"missingProperty":"remoteSource"}
+[debug] [2026-06-24T20:37:11.259Z] Field "/functions/0" in "firebase.json" is possibly invalid: must match a schema in anyOf
+[debug] [2026-06-24T20:37:11.259Z] Field "/functions" in "firebase.json" is possibly invalid: must match a schema in anyOf
+[debug] [2026-06-24T20:37:11.264Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-06-24T20:37:11.264Z] > authorizing via signed-in user (ttokke@gmail.com)
+[info] i  emulators: Starting emulators: functions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions"}}
+[debug] [2026-06-24T20:37:11.268Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-06-24T20:37:11.269Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-06-24T20:37:11.271Z] Write emulator hub locator at C:\Users\강건\AppData\Local\Temp\hub-school-act-manager.json
+[debug] [2026-06-24T20:37:11.279Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-06-24T20:37:11.279Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-06-24T20:37:11.279Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-06-24T20:37:11.279Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] !  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, firestore, database, hosting, pubsub, storage, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, auth, firestore, database, hosting, pubsub, storage, dataconnect\u001b[22m"}}
+[debug] [2026-06-24T20:37:11.288Z] defaultcredentials: writing to file C:\Users\강건\AppData\Roaming\firebase\ttokke_gmail_com_application_default_credentials.json
+[debug] [2026-06-24T20:37:11.289Z] Setting GAC to C:\Users\강건\AppData\Roaming\firebase\ttokke_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\강건\\AppData\\Roaming\\firebase\\ttokke_gmail_com_application_default_credentials.json"}}
+[debug] [2026-06-24T20:37:11.290Z] Checked if tokens are valid: false, expires at: 1782249806958
+[debug] [2026-06-24T20:37:11.290Z] Checked if tokens are valid: false, expires at: 1782249806958
+[debug] [2026-06-24T20:37:11.290Z] > refreshing access token with scopes: []
+[debug] [2026-06-24T20:37:11.291Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-06-24T20:37:11.291Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-06-24T20:37:11.467Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-06-24T20:37:11.467Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-06-24T20:37:11.473Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/school-act-manager/adminSdkConfig [none]
+[debug] [2026-06-24T20:37:11.863Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-06-24T20:37:11.863Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-06-24T20:37:12.602Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/school-act-manager/adminSdkConfig 200
+[debug] [2026-06-24T20:37:12.603Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/school-act-manager/adminSdkConfig {"projectId":"school-act-manager","databaseURL":"https://school-act-manager-default-rtdb.asia-southeast1.firebasedatabase.app","storageBucket":"school-act-manager.appspot.com","locationId":"asia-northeast3"}
+[info] i  functions: Watching "C:\Vscode Project\school-act-manager\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"C:\\Vscode Project\\school-act-manager\\functions\" for Cloud Functions..."}}
+[debug] [2026-06-24T20:37:12.626Z] Validating nodejs source

@@ -93,7 +93,7 @@ const HexagonRadarChart = ({
   });
 
   return (
-    <SVGWrapper size={size}>
+    <SVGWrapper size={300}>
       <SVG size={size} viewBox={`0 0 ${size} ${size}`}>
         {/* 격자선 */}
         {gridPoints.map((points, index) => (

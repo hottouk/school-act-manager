@@ -4,19 +4,20 @@ import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 //컴포넌트
 import PetImg from '../../components/PetImg'
-import ClickableIcon from '../../components/Styled/ClickableIcon'
+import DotTitle from '../../components/Title/DotTitle'
+import HexagonRadarChart from '../../components/Chart/HexagonRadarChart'
 //hooks
 import useFirePetData from '../../hooks/Firebase/useFirePetData'
 import useFireUserData from '../../hooks/Firebase/useFireUserData'
+import useMediaQuery from '../../hooks/useMediaQuery'
 //상수
 import { ERROR_MSG } from '../../constants/errMsg'
 //이미지
 import x_btn from "../../image/icon/x_btn.png"
-import HexagonRadarChart from '../../components/Chart/HexagonRadarChart'
-import DotTitle from '../../components/Title/DotTitle'
 //생성(250223) -> 수정(250820) -> 삭제버튼 이동 및 디자인(260129)
 const PetInfoSection = ({ pet, isEdit, setWrittenName, handlePetDeleteOnClick }) => {
   const user = useSelector(({ user }) => user);
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const { subject, studentNumber, name, level, master, desc, path, id, classId, writtenName, actList } = pet || {};
   //육각형 능력치
   const { leadership, coop, study, research, attitude, career } = useMemo(() => {
@@ -55,7 +56,7 @@ const PetInfoSection = ({ pet, isEdit, setWrittenName, handlePetDeleteOnClick })
         <Row>
           <DotTitle>이름</DotTitle>
           {!isEdit && studentName}
-          {isEdit && <TextInput type="text" defaultValue={studentName} onChange={(event) => { setWrittenName(event.target.value) }} />}
+          {isEdit && <TextInput type="text" defaultValue={studentName} onChange={(event) => setWrittenName(event.target.value)} />}
         </Row>
         <Row>
           <DotTitle>학번</DotTitle>
@@ -69,19 +70,30 @@ const PetInfoSection = ({ pet, isEdit, setWrittenName, handlePetDeleteOnClick })
           </Row>}
           {!master && "미가입"}
         </Row>
+        {/* 모바일 UI */}
+        {isMobile && <>
+          <div style={{ position: "absolute", top: "2%", right: "2%" }}>
+            <PetImgWrapper>
+              <PetImg subject={subject} onClick={() => { }} path={path} styles={{ width: "100px", height: "100px" }} />
+            </PetImgWrapper>
+          </div>
+          <Row>
+            <DotTitle>펫 이름</DotTitle>
+            <BasicText>{name || "미정"}</BasicText>
+          </Row>
+          <Row>
+            <DotTitle>펫 레벨</DotTitle>
+            <BasicText>{level?.level || 1}</BasicText>
+          </Row>
+        </>}
       </PetInfoWrapper>
-      <Column style={{ gap: "10px", paddingLeft: "20px" }}>
-        <Row style={{ gap: "20px" }}>
-          <PetImgWrapper>
-            <PetImg subject={subject} onClick={() => { }} path={path} styles={{ width: "100px", height: "100px" }} />
-          </PetImgWrapper>
-          <Column style={{ gap: "10px" }}>
-            <BasicText>펫이름: {name || "미정"}</BasicText>
-            <BasicText>레벨: {level?.level || 1}</BasicText>
-            {desc && <BasicText>{desc}</BasicText>}
-            {!desc && <p>주인의 행동에 밀접하게 반응한다. 어떤 아이가 깨어날지는 알 수 없다.</p>}
-          </Column>
-        </Row>
+      <HexagonRadarChartWrapper>
+        <HexagonRadarChart
+          labels={['리더십', '협동', '학업', '탐구', '태도', '진로']}
+          values={[leadership, coop, study, research, attitude, career]}
+          size={225}
+          gridColor={"rgb(200, 200, 200)"}
+        />
         <GridTable>
           <HeaderWrapper>
             <TbHeader>리더십</TbHeader>
@@ -98,15 +110,28 @@ const PetInfoSection = ({ pet, isEdit, setWrittenName, handlePetDeleteOnClick })
           <GridItem>{attitude}</GridItem>
           <GridItem>{career}</GridItem>
         </GridTable>
-      </Column>
-      <Column style={{ alignItems: "center" }}>
-        <HexagonRadarChart
-          labels={['리더십', '협동', '학업', '탐구', '태도', '진로']}
-          values={[leadership, coop, study, research, attitude, career]}
-          size={225}
-          gridColor={"rgb(200, 200, 200)"}
-        />
-      </Column>
+      </HexagonRadarChartWrapper>
+      {!isMobile && <Column style={{ gap: "10px" }}>
+        <Row style={{ justifyContent: "space-between" }}>
+          <Column style={{ gap: "10px", marginLeft: "10px" }}>
+            <Row>
+              <DotTitle>펫 이름</DotTitle>
+              <BasicText>{name || "미정"}</BasicText>
+            </Row>
+            <Row>
+              <DotTitle>펫 레벨</DotTitle>
+              <BasicText>{level?.level || 1}</BasicText>
+            </Row>
+          </Column>
+          <PetImgWrapper>
+            <PetImg subject={subject} onClick={() => { }} path={path} styles={{ width: "100px", height: "100px" }} />
+          </PetImgWrapper>
+        </Row>
+        <Column style={{ gap: "10px", borderTop: "1px solid #78787890", paddingTop: "10px" }}>
+          {desc && <BasicText>{desc}</BasicText>}
+          {!desc && <p>주인의 행동에 밀접하게 반응한다. 어떤 아이가 깨어날지는 알 수 없다.</p>}
+        </Column>
+      </Column>}
     </InfoGridSection>
   )
 }
@@ -118,7 +143,7 @@ const Column = styled(Row)`
 `
 const InfoGridSection = styled(Row)`
   display: grid;
-  grid-template-columns: 260px 1fr 250px;
+  grid-template-columns: 250px 350px 1fr;
   padding: 15px;
   background-color: #efefef;
   border-radius: 15px;
@@ -149,6 +174,7 @@ const GridTable = styled.div`
   display: grid;
   grid-template-columns: repeat(6, 50px);
   justify-content: center;
+  border-bottom: 1px solid #78787890;
 `
 const HeaderWrapper = styled.div`
   display: contents;
@@ -166,17 +192,32 @@ const GridItem = styled(Row)`
 const PetInfoWrapper = styled(Column)`
   grid-column: 1/2;
   gap: 10px;
-  border-right: 1px solid #78787890;
    @media screen and (max-width: 767px){
+    position: relative;
     width: 100%;
     height: 64%;
-    top: 95px;
-    bottom: 0;
-    right: 0;
     border: none;
     border-radius: 0;
     p { margin-bottom: 8px; }
     p input { width: 25%; }
+  }
+`
+const HexagonRadarChartWrapper = styled(Column)`
+  grid-column: 2/3;
+  align-items: center; 
+  border-right: 1px solid #78787890;
+  border-left: 1px solid #78787890;
+  margin-right: 15px;
+  padding: 0 15px;
+  @media screen and (max-width: 767px){
+    width: 100%;  
+    height: 36%;
+    top: 159px;   
+    bottom: 0;
+    right: 0;
+    border: none;
+    border-radius: 0;
+    padding: 0;
   }
 `
 const BasicText = styled.p`

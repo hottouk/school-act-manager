@@ -12,6 +12,7 @@ const GptIngModal = ({ show, onHide, status, progress, }) => {
     const interval = setInterval(() => {                //초마다 countdown 내리기
       setCount((prev) => {
         if (prev < 10) return prev + 1;
+        return prev;
       });
     }, 1000);
     return () => {

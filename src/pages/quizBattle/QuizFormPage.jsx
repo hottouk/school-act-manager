@@ -160,7 +160,7 @@ const QuizFormPage = () => {
   return (<>
     <MainContainer>
       <SubNav><BackBtn /></SubNav>
-      <StyledForm title={"단어장 생성"}>
+      <StyledForm title={"단어장 생성"} styles={{ width: "53%" }}>
         <TextInput type="text" placeholder='단어 세트 명'
           value={title} onChange={(e) => setTitle(e.target.value)}
           disabled={!isEdit} />
@@ -186,9 +186,9 @@ const QuizFormPage = () => {
           <DotTitle title={"단어 목록 ▼"} pointer="pointer" onClick={() => { setIsVocabShow(!isVocabShow); }} />
         </Row>
         <AnimMaxHightOpacity isVisible={isVocabShow}>
-          {pageDataList?.map((item, index) => {
-            const quizIndex = itemsPerPage * (currentPage - 1) + index;
-            return <Row key={index} style={{ width: "100%" }}>
+          {pageDataList?.map((item, i) => {
+            const quizIndex = itemsPerPage * (currentPage - 1) + i;
+            return <Row key={i} style={{ width: "100%" }}>
               <NumberLabel>{padNumber(quizIndex + 1, 3)}</NumberLabel>
               <WordInput
                 ref={inputRefs[0]}
@@ -206,16 +206,15 @@ const QuizFormPage = () => {
                 type="text"
                 value={quizList[quizIndex]?.meaning ?? ''}
                 onChange={(event) => handleInputOnChange(event, quizIndex)}
-                onKeyDown={(e) => handleTabKeyDown(e, index)}
+                onKeyDown={(e) => handleTabKeyDown(e, i)}
                 placeholder='의미'
                 disabled={!isEdit}
                 required
               />
               {isEdit && <Row style={{ gap: "5px", alignSelf: "center" }}>
-                {quizList.length - 1 === index && <CircularBtn CircularBtn type="button" onClick={() => { addInputs(index); }}>+</CircularBtn>}
-                {quizList.length - 1 !== index && <CircularBtn styles={{ color: "#9b0c24" }} onClick={() => { deleteInputs(quizIndex) }}>-</CircularBtn>}
-              </Row>
-              }
+                <CircularBtn styles={{ color: "#9b0c24" }} onClick={() => { deleteInputs(quizIndex) }}>-</CircularBtn>
+                <CircularBtn onClick={() => addInputs(quizList.length)}>+</CircularBtn>
+              </Row>}
             </Row>
           }
           )}
@@ -225,7 +224,6 @@ const QuizFormPage = () => {
           <MainBtn onClick={handleSaveOnClick}>세트 저장</MainBtn>
           <MainBtn onClick={() => setIsGptModal(true)}>스마트 단어 추가</MainBtn>
           {user.isMaster && <LongW100Btn onClick={(event) => handleSaveOnClick(event, "master")}>관리자 단어장 저장</LongW100Btn>}
-
         </Column>}
         {quizSetInfo && <Column style={{ gap: "10px", }}>
           {!isEdit && <MainBtn onClick={() => { setisEdit(true) }}>세트 수정</MainBtn>}

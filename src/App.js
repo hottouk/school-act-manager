@@ -1,6 +1,6 @@
 //라이브러리
 import './App.css';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux';
 import { Helmet } from "react-helmet";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -46,16 +46,15 @@ const AmountSelectPage = lazy(() => import('./pages/purchase/AmountSelectPage'))
 const SchoolSignUpPage = lazy(() => import('./pages/myInfo/SchoolSignUpPage'));
 const MyInfoPage = lazy(() => import('./pages/myInfo/MyInfoPage'));
 //단어 배틀
-const QuizActiFormPage = lazy(() => import('./pages/quizBattle/QuizActiFormPage'));
 const GameSettingPage = lazy(() => import('./pages/quizBattle/GameSettingPage'));
 const QuizBattleMultiPage = lazy(() => import('./pages/quizBattle/QuizBattleMultiPage'));
 const QuizFormPage = lazy(() => import('./pages/quizBattle/QuizFormPage'));
 const QuizMainPage = lazy(() => import('./pages/quizBattle/QuizMainPage'));
 const QuizPublicPage = lazy(() => import('./pages/quizBattle/QuizPublicPage'));
 const QuizStudyPage = lazy(() => import('./pages/quizBattle/QuizStudyPage'));
-const BattleroomThrPage = lazy(() => import('./pages/quizBattle/BattleroomThrPage'));
-const BattleroomStuPage = lazy(() => import('./pages/quizBattle/BattleroomStuPage'));
-const EnterroomPage = lazy(() => import('./pages/quizBattle/EnterroomPage'));
+const BattleroomThrPage = lazy(() => import('./pages/quizBattle/pages/BattleroomThrPage'));
+const BattleroomStuPage = lazy(() => import('./pages/quizBattle/pages/BattleroomStuPage'));
+const EnterroomPage = lazy(() => import('./pages/quizBattle/pages/EnterroomPage'));
 //상점
 const ShopMainPage = lazy(() => import('./pages/shop/ShopMainPage'));
 //전체 활동
@@ -107,17 +106,17 @@ function App() {
                 <Route path="/quiz_setting" element={uid ? <QuizFormPage /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/quiz_study" element={<QuizStudyPage />} />
                 <Route path="/quiz_public" element={<QuizPublicPage />} />
-                <Route path="/activities_setting_quiz" element={uid ? <QuizActiFormPage /> : <Navigate replace={true} to='/login' />} />
+                <Route path="/quiz_game" element={<EnterroomPage />} />
+                <Route path="/quiz_game_thr" element={uid ? <BattleroomThrPage /> : <Navigate replace={true} to="/login" />} />
+                <Route path="/quiz_game_stu" element={<BattleroomStuPage />} />
                 {/* 시험 관리 */}
-                <Route path="/exam_setting" element={uid ? <ExamFormPage /> : <Navigate replace={true} to='/login' />} />
+                < Route path="/exam_setting" element={uid ? <ExamFormPage /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/exam" element={uid ? <ExamMainPage /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/exam_item" element={uid ? <ExamItemPage /> : <Navigate replace={true} to='/login' />} />
                 {/* 학교 */}
                 <Route path="/myschool" element={uid ? <MySchoolPage /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/store" element={uid ? <ShopMainPage /> : <Navigate replace={true} to='/login' />} />
                 {/* 게임 */}
-                <Route path="/battleroom" element={uid ? <BattleroomThrPage /> : <BattleroomStuPage />} />
-                <Route path="/enterroom" element={<EnterroomPage />} />
                 <Route path="/game_setting" element={uid ? <GameSettingPage /> : <Navigate replace={true} to='/login' />} />
                 <Route path="/multiplay" element={uid ? <QuizBattleMultiPage /> : <Navigate replace={true} to='/login' />} />
                 {/* 새소식 관리 */}
@@ -143,6 +142,7 @@ function App() {
     </>
   )
 }
+
 export const AppLayout = styled.div`
   display: flex;
   flex-direction: column;
