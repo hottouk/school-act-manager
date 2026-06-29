@@ -25,6 +25,7 @@ const useGameroom = (roomId) => {
 			offRoom();
 		}
 	}, [roomId]);
+
 	//room
 	const [players, setPlayers] = useState(null);
 	const [room, setRoom] = useState(null);
@@ -33,23 +34,23 @@ const useGameroom = (roomId) => {
 	const [pets, setPets] = useState(null);
 	const [boss, setBoss] = useState(null);
 	const [bossStance, setBossStance] = useState(null);
+	const [stanceSummary, setStanceSummary] = useState(null);
 	const [phase, setPhase] = useState("waiting");
 	const quizListRef = useRef([]);
-	const quizId = room?.quizId;
-	const isRoomLoaded = room !== null;
+	const [quizId, setQuizId] = useState(null);
+	console.log(quizList, "quizList");
 
 	useEffect(() => {
 		if (!room) return;
 		setPets(room.pet);
 		setBoss(room.boss);
 		setPhase(room.status);
+		setQuizId(room.quizId);
 		setBossStance(room.bossStance || null);
 	}, [room])
 
 	useEffect(() => {
-		if (!isRoomLoaded) return;
 		let isActive = true;
-
 		const bindQuizList = async () => {
 			if (!quizId) {
 				console.error("퀴즈 목록 로딩 실패: 게임방에 quizId가 없습니다.");
@@ -81,9 +82,24 @@ const useGameroom = (roomId) => {
 
 		bindQuizList();
 		return () => { isActive = false; };
-	}, [isRoomLoaded, quizId, fetchDoc])
+	}, [quizId, fetchDoc])
 
-	return ({ players, room, isRoomResolved, phase, pets, boss, bossStance, quizList, quizListRef })
+	useEffect(() => {
+		if (!roomId || !room?.turn) {
+			setStanceSummary(null);
+			return;
+		}
+
+		setStanceSummary(null);
+		const offSummary = onValue(ref(appDatabase, `roomStanceSummary/${roomId}/${room.turn}`),
+			(snap) => { setStanceSummary(snap.val() || null); },
+			(err) => { console.error("stance summary listener error:", err); }
+		);
+
+		return () => { offSummary(); };
+	}, [roomId, room?.turn]);
+
+	return ({ players, room, isRoomResolved, phase, pets, boss, bossStance, stanceSummary, quizList, quizListRef })
 }
 
 export default useGameroom

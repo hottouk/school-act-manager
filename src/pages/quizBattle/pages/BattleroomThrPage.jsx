@@ -22,6 +22,7 @@ const BattleroomThrPage = () => {
     pets,
     boss,
     phase,
+    quizList,
     background,
     msg,
     countdown,
@@ -46,16 +47,29 @@ const BattleroomThrPage = () => {
 
   const handleStartGame = async () => {
     try {
-      const studentList = Object.entries(players || {}).map(([uid, p], idx) => ({
+      const connectedPlayers = Object.entries(players || {}).filter(([, p]) => p?.connected)
+      const studentList = connectedPlayers.map(([uid, p], idx) => ({
         uid,
         nickname: p?.nickname || `player-${idx + 1}`,
         petImg: p?.petImg || null,
         index: idx,
         pet: p?.pet || {},
       }))
+
+      if (studentList.length === 0) {
+        setMsg('접속한 학생이 없습니다. 학생이 입장한 뒤 시작해주세요.')
+        return
+      }
+
+      if (quizList.length === 0) {
+        setMsg('단어 목록을 불러오지 못했습니다. 잠시 후 다시 시작해주세요.')
+        return
+      }
+
       await callStartGame({ uid: user.uid, roomId, studentList })
     } catch (error) {
       console.error(error)
+      setMsg(error?.message || '게임 시작에 실패했습니다. 다시 시도해주세요.')
     }
   }
 
@@ -154,7 +168,7 @@ const BattleroomThrPage = () => {
           msg,
           number,
           stats: [
-            { label: '남은 문제', value: Math.max((room?.quizList?.length ?? 0) - number, 0) },
+            { label: '남은 문제', value: Math.max((quizList.length ?? 0) - number, 0) },
             { label: '페이즈', value: phase },
             { label: '턴', value: `${room?.turn}/${room?.maxTurn}` },
           ],

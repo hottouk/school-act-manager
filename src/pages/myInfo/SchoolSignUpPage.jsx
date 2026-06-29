@@ -81,17 +81,17 @@ const SchoolSignUpPage = () => {
 				await joinSchool(code, userRtData);
 				alert("성공적으로 가입 되었습니다.");
 			} catch (error) {
-				alert("회원 가입 중 에러가 발생했습니다.", error);
+				alert(`회원 가입 중 에러가 발생했습니다. ${error.message}`);
 			}
 		} else {																  									//첫 가입자
-			const { naem, uid, isTeacher, phoneNumber } = userRtData;
-			const schoolInfo = { ...selectedSchool, memberList: [{ uid, isTeacher, naem, phoneNumber }], schoolMaster: uid };
+			const { name, uid, isTeacher, phoneNumber } = userRtData;
+			const schoolInfo = { ...selectedSchool, memberList: [{ uid, isTeacher, name, phoneNumber }], schoolMaster: uid };
 			try {
 				await setData(schoolInfo, selectedSchool.schoolCode);	//학교 신설
 				await updateUserInfo({ "school": selectedSchool });	  //내 정보 수정
 				alert("성공적으로 가입 되었습니다.");
 			} catch (error) {
-				alert("회원 가입 중 에러가 발생했습니다.", error);
+				alert(`회원 가입 중 에러가 발생했습니다. ${error.message}`);
 			}
 		}
 		navigate("/myinfo");

@@ -6,7 +6,7 @@ import useBattleLogic from './useBattleLogic'
 import useFetchStorageImg from '../../../hooks/Game/useFetchStorageImg'
 
 const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
-  const { room, isRoomResolved, players, pets, boss, phase, quizList, quizListRef, bossStance } = useGameroom(roomId)
+  const { room, isRoomResolved, players, pets, boss, phase, quizList, quizListRef, bossStance, stanceSummary } = useGameroom(roomId)
   const { fetchImgUrl } = useFetchStorageImg()
   const isHost = !!user?.uid && !!room?.hostUid && user.uid === room.hostUid
   const [background, setBackground] = useState(null)
@@ -18,6 +18,8 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
   const [done, setDone] = useState(false)
   const intervalRef = useRef(null)
   const timeoutRef = useRef(null)
+  const summaryKeyRef = useRef(null)
+  const summaryTransitionRef = useRef(null)
 
   const {
     curQuiz,
@@ -34,17 +36,30 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
     setCorrectNumber,
   } = useQuizLogic(quizList)
   const { stanceList, animEvent, playBattleSequence } = useBattleLogic({ setMsg })
+  const connectedPlayerCount = useMemo(
+    () => Object.values(players || {}).filter((player) => player?.connected).length,
+    [players]
+  )
+  const formatSummaryMessage = useCallback((turn, summary) => {
+    const { submittedCount = 0, atk = 0, def = 0, rest = 0 } = summary || {}
+    return `${turn}턴, ${submittedCount}명의 합산 공격력${atk}, 방어력${def}, 치유력${rest}`
+  }, [])
 
   useEffect(() => {
     fetchImgUrl('images/battle_background.png', setBackground)
   }, [fetchImgUrl])
 
   useEffect(() => {
+    if (phase === 'waiting' || phase === 'countdown') {
+      quizListRef.current = [...quizList]
+    }
+  }, [phase, quizList, quizListRef])
+
+  useEffect(() => {
     const phaseManager = async () => {
       switch (phase) {
         case 'countdown': {
           setNumber(0)
-          quizListRef.current = quizList
           setCurQuiz('')
           setCurAnswer('')
           setMsg('게임이 곧 시작되니 준비하세요.')
@@ -54,8 +69,8 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
         }
         case 'quiz': {
           setNumber(prev => prev + 1)
-          const idx = generateQuestion(quizListRef)
-          if (quizListRef.current && quizListRef.current.length > 0) quizListRef.current.splice(idx, 1)
+          const picked = generateQuestion(quizListRef)
+          if (quizListRef.current && picked?.idx >= 0) quizListRef.current.splice(picked.idx, 1)
           const quizInterval = setInterval(() => {
             setNumber(prev => {
               if (prev % 5 === 0) {
@@ -64,8 +79,8 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
                 setCurAnswer('')
                 return prev
               }
-              const idx2 = generateQuestion(quizListRef)
-              if (quizListRef.current && quizListRef.current.length > 0) quizListRef.current.splice(idx2, 1)
+              const nextPicked = generateQuestion(quizListRef)
+              if (quizListRef.current && nextPicked?.idx >= 0) quizListRef.current.splice(nextPicked.idx, 1)
               return prev + 1
             })
           }, 3000)
@@ -110,6 +125,41 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
   }, [bossStance])
 
   useEffect(() => {
+    if (phase !== 'stance' || !stanceSummary || connectedPlayerCount === 0) return
+
+    const turn = Number(room?.turn || 1)
+    const submittedCount = Number(stanceSummary?.submittedCount || 0)
+    const isAllSubmitted = submittedCount >= connectedPlayerCount
+    const isClosed = !!stanceSummary?.closed
+
+    if (!isAllSubmitted && !isClosed) return
+
+    const summaryKey = `${roomId}-${turn}`
+    if (summaryKeyRef.current === summaryKey) return
+    summaryKeyRef.current = summaryKey
+
+    setCountdown(null)
+    setMsg(formatSummaryMessage(turn, stanceSummary))
+
+    if (!isHost) return
+
+    const closeAndMoveToBattle = async () => {
+      try {
+        if (!isClosed) {
+          await callCloseStanceCollection({ uid: user.uid, roomId })
+        }
+        summaryTransitionRef.current = setTimeout(() => {
+          callPhaseManager({ roomId, status: 'battle' })
+        }, 3000)
+      } catch (error) {
+        console.error('스탠스 집계 후 전투 전환 실패:', error)
+      }
+    }
+
+    closeAndMoveToBattle()
+  }, [phase, stanceSummary, connectedPlayerCount, room?.turn, roomId, isHost, user.uid, formatSummaryMessage])
+
+  useEffect(() => {
     if (phase !== 'quiz' || number === 0) return
     setDone(false)
     setMarking(null)
@@ -124,15 +174,19 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
       try {
         const res = await callCloseStanceCollection({ uid: user.uid, roomId })
         const { summary, turn } = res?.data || {}
-        const { submittedCount, atk, def, rest } = summary || {}
-        setMsg(`${turn}턴, ${submittedCount}명의 합산 공격력${atk}, 방어력${def}, 치유력${rest}`)
-        if (res?.data?.ok) await callPhaseManager({ roomId, status: next[phase] })
+        setMsg(formatSummaryMessage(turn, summary))
       } catch (error) {
         console.error('클로징 스탠스 수집 실패:', error)
       }
     }
     setCountdown(null)
-  }, [phase, roomId, user.uid, isHost])
+  }, [phase, roomId, user.uid, isHost, formatSummaryMessage])
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(summaryTransitionRef.current)
+    }
+  }, [])
 
   const studentList = useMemo(
     () => Object.entries(players || {}).map(([uid, p], idx) => ({

@@ -46,7 +46,10 @@ const LoginPage = () => {
       <WordMonsterSection>
         <WordmonLandingWrapper ref={ref1} $visible={v1}>
           <WordmonLandingImg src={isMobile ? wordMonHeroMobileImg : wordMonHeronImg} alt="워드몬 히어로 이미지" />
-          <GameLink to="/quiz_public">카드 학습 하러가기</GameLink>
+          <GameBtnWrapper>
+            <GameBtn to="/quiz_public">학습 하러가기</GameBtn>
+            <GameBtn to="/quiz_game">게임 하러가기</GameBtn>
+          </GameBtnWrapper>
         </WordmonLandingWrapper>
       </WordMonsterSection>
       <IntroSection isMobile={isMobile} />
@@ -88,10 +91,20 @@ const WordmonLandingImg = styled.img`
   filter: brightness(0.75) saturate(0.85);
   opacity: 0.85;
 `
-const GameLink = styled(Link)`
+const GameBtnWrapper = styled(Column)`
   position: absolute;
-  top: 85%;
+  width: 15%;
+  top: 75%;
   left: 50%;
+  gap: 20px;
+  @media(max-width: 768px) {
+    top: 70%;
+    gap: 10px;
+    width: 30%;
+  }
+`
+const GameBtn = styled(Link)`
+  text-align: center;
   transform: translate(-50%, -50%);
   padding: 14px 28px;
   border-radius: 999px;

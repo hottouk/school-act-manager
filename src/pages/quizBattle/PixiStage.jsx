@@ -114,8 +114,8 @@ const PixiStage = ({
 			{(countdown > 0) && <Countdown isCountdown={countdown > 0} count={countdown} endCountCallback={onDoneCountdown} x={600} y={450} />}
 			{/* 퀴즈 phase*/}
 			{(curQuiz && phase !== "ended") && <QuizUI quiz={curQuiz} x={600} y={350} width={250} height={80} pivotX={125} pivotY={40} />}
-			{marking === true && <MarkingUI x={600} y={350} radius={75} correct={marking} />}
-			{marking === false && <MarkingUI x={600} y={350} crossSize={125} correct={marking} />}
+			{curQuiz && phase === "quiz" && marking === true && <MarkingUI x={600} y={350} radius={75} correct={marking} />}
+			{curQuiz && phase === "quiz" && marking === false && <MarkingUI x={600} y={350} crossSize={125} correct={marking} />}
 			{/* 내 펫 AddOn 이펙트 */}
 			{animEvent?.type === "damageToTeam" && <DamageText x={250} y={500} value={animEvent?.value} />}
 			{animEvent && <>

@@ -21,6 +21,7 @@ const BattleroomStuPage = () => {
     pets,
     boss,
     phase,
+    quizList,
     background,
     msg,
     countdown,
@@ -133,7 +134,7 @@ const BattleroomStuPage = () => {
         msg,
         number,
         stats: [
-          { label: '남은 문제', value: 0 },
+          { label: '남은 문제', value: Math.max((quizList.length ?? 0) - number, 0) },
           { label: '맞춘 개수', value: correctNumber },
           { label: '페이즈', value: phase },
         ],
