@@ -262,23 +262,24 @@ const AllStudentByActiPage = () => {
 	//gpt 승인 함수
 	const gptOnApprove = async ({ model, thinkEffort, verbosity, leftRira }) => {
 		const { idx, mode } = gptTarget;
+		const gptOptions = { model, thinkEffort, verbosity, leftRira };
 		if (isMulti) {
-			await playMultipleGpt({ infoList: selectedList, multiMode: mode, model, thinkEffort, verbosity, leftRira });
+			await playMultipleGpt({ infoList: selectedList, multiMode: mode, ...gptOptions });
 			setIsMulti(false);
 		}
 		if (idx === null) return; // 개별					
 		const record = _recordMap[idx] || '';
 		const target = _personalInfoMap[idx] || {};
 		if (mode === "report") {
-			askGptOnReport(record, target.report || '', model, leftRira);
+			askGptOnReport({ record, report: target.report || '', ...gptOptions });
 		} else if (mode === "filler") {
 			const fillers = Object.values(target.fillerMap).join(',');
-			askGptOnKeywords(record, fillers, model, leftRira);
+			askGptOnKeywords({ subject: record, keywords: fillers, ...gptOptions });
 		} else if (mode === "keyword") {
 			const keywords = (target.keywordList ?? []).join(',');
-			askGptOnKeywords(record, keywords, model, leftRira);
+			askGptOnKeywords({ subject: record, keywords, ...gptOptions });
 		} else if (mode === "translate") {
-			askTranslate(target.report || '', model, leftRira);
+			askTranslate({ text: target.report || '', ...gptOptions });
 		}
 	}
 	//gpt 다중 선택

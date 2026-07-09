@@ -1,11 +1,25 @@
+import { arrayUnion } from "firebase/firestore";
+import { useCallback, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import useFireGameData from "../../../hooks/Firebase/useFireGameData";
-import { arrayUnion, deleteField } from "firebase/firestore";
-import { useCallback, useRef, useState } from "react";
+
 //생성(250808)
-const useBattleLogic = ({ setMsg,
-	gameId = '', setMyCurHP = () => { }, setEnemyCurHP = () => { }, setActionBall = () => { }, setEnmSkillEff = () => { }, setStance = () => { },
-	setIsSkillMode = () => { }, setMyActionEff = () => { }, setEnmActionEff = () => { }, setMyDmg = () => { }, setEnmDmg = () => { } }) => {
+const EVENT_DURATION = 1800;
+
+const useBattleLogic = ({
+	setMsg = () => { },
+	gameId = '',
+	setMyCurHP = () => { },
+	setEnemyCurHP = () => { },
+	setActionBall = () => { },
+	setEnmSkillEff = () => { },
+	setStance = () => { },
+	setIsSkillMode = () => { },
+	setMyActionEff = () => { },
+	setEnmActionEff = () => { },
+	setMyDmg = () => { },
+	setEnmDmg = () => { },
+}) => {
 	const user = useSelector(({ user }) => user);
 	const stanceList = ['atk', 'def', 'rest'];
 	const battleActions = { "atk": ["기본 공격", "공격 스킬", "취소"], "def": ["기본 방어", "방어 스킬", "취소"], "rest": ["기본 휴식", "휴식 스킬", "취소"] };
@@ -15,6 +29,36 @@ const useBattleLogic = ({ setMsg,
 	const lastPlayedTurnRef = useRef(null);
 
 	const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+	const getBattleEvents = useCallback((result) => {
+		if (Array.isArray(result?.actionSequence)) {
+			return result.actionSequence.map((event, index) => ({
+				...event,
+				step: Number(event.step || index + 1),
+				dur: EVENT_DURATION,
+			}));
+		}
+		return [
+			{ step: 1, actor: "student", action: "def", effect: "defenseToTeam", value: 0, dur: EVENT_DURATION },
+			{ step: 3, actor: "student", action: "atk", effect: "damageToBoss", value: Number(result.damageToBoss || 0), dur: EVENT_DURATION },
+			{ step: 5, actor: "student", action: "rest", effect: "healToTeam", value: Number(result.healToTeam || 0), dur: EVENT_DURATION },
+		];
+	}, []);
+
+	const getBattleSteps = useCallback((result) => {
+		const stepMap = new Map();
+		getBattleEvents(result).forEach((event) => {
+			const step = Number(event.step || 1);
+			if (!stepMap.has(step)) stepMap.set(step, []);
+			stepMap.get(step).push(event);
+		});
+		return [...stepMap.entries()]
+			.sort(([a], [b]) => a - b)
+			.map(([step, events]) => {
+				const baseDur = Math.max(...events.map((event) => Number(event.dur || 900)));
+				return { step, events, dur: baseDur };
+			});
+	}, [getBattleEvents]);
+
 	const playBattleSequence = useCallback(async ({
 		turn,
 		result,
@@ -26,37 +70,44 @@ const useBattleLogic = ({ setMsg,
 	}) => {
 		if (!result) return;
 		if (isResolving) return;
-		// if (lastPlayedTurnRef.current === turn) return; // 중복 재생 방지
-
+		if (lastPlayedTurnRef.current === turn) return;
 		setIsResolving(true);
 		lastPlayedTurnRef.current = turn;
 		try {
-			const events = [
-				{ type: "damageToBoss", value: Number(result.damageToBoss || 0), dur: 900 },
-				{ type: "healToTeam", value: Number(result.healToTeam || 0), dur: 900 },
-				{ type: "damageToTeam", value: Number(result.damageToTeam || 0), dur: 900 },
-				{ type: "healToBoss", value: Number(result.healToBoss || 0), dur: 900 },
-			].filter((e) => e.value > 0);
+			const steps = getBattleSteps(result);
+			setDisplayBossHp(Number(result.beforeBossHp ?? result.nextBossHp ?? 0));
+			setDisplayTeamHp(Number(result.beforePetHp ?? result.nextPetHp ?? 0));
+			await sleep(100);
 			//순차 처리
-			for (const e of events) {
-				setAnimEvent(e);
-				if (e.type === "damageToBoss") {
-					setDisplayBossHp((prev) => Math.max(prev - e.value, 1));
-					setMsg(`보스에게 ${e.value}만큼 피해`);
+			for (const battleStep of steps) {
+				const messages = [];
+				setAnimEvent(battleStep);
+				for (const e of battleStep.events) {
+					if (e.effect === "damageToBoss") {
+						setDisplayBossHp(e.nextBossHp ?? ((prev) => Math.max(prev - e.value, 0)));
+						messages.push(`학생 공격으로 보스에게 ${e.value}의 피해`);
+					}
+					if (e.effect === "healToBoss") {
+						setDisplayBossHp(e.nextBossHp ?? ((prev) => Math.min(prev + e.value, bossMaxHp)));
+						messages.push(`보스 치료로 ${e.value} 회복`);
+					}
+					if (e.effect === "healToTeam") {
+						setDisplayTeamHp(e.nextPetHp ?? ((prev) => Math.min(prev + e.value, teamMaxHp)));
+						messages.push(`학생 치료로 ${e.value} 회복`);
+					}
+					if (e.effect === "damageToTeam") {
+						setDisplayTeamHp(e.nextPetHp ?? ((prev) => Math.max(prev - e.value, 0)));
+						messages.push(`보스 공격으로 학생 팀에게 ${e.value}의 피해`);
+					}
+					if (e.effect === "defenseToTeam") {
+						messages.push(`학생 팀이 방어 자세를 취합니다`);
+					}
+					if (e.effect === "defenseToBoss") {
+						messages.push(`보스가 방어 자세를 취합니다`);
+					}
 				}
-				if (e.type === "healToBoss") {
-					setDisplayBossHp((prev) => Math.min(prev + e.value, bossMaxHp));
-					setMsg(`보스가 ${e.value}만큼 회복했다`);
-				}
-				if (e.type === "healToTeam") {
-					setDisplayTeamHp((prev) => Math.min(prev + e.value, teamMaxHp));
-					setMsg(`학생 팀의 치료가 ${e.value}만큼 회복시켰다`);
-				}
-				if (e.type === "damageToTeam") {
-					setDisplayTeamHp((prev) => Math.max(prev - e.value, 1));
-					setMsg(`학생 팀에게 ${e.value}만큼 피해`);
-				}
-				await sleep(e.dur);
+				if (messages.length > 0) setMsg(messages.join(" / "));
+				await sleep(battleStep.dur);
 				setAnimEvent(null);
 				await sleep(200);
 			}
@@ -68,7 +119,7 @@ const useBattleLogic = ({ setMsg,
 		} finally {
 			setIsResolving(false);
 		}
-	}, [isResolving]);
+	}, [getBattleSteps, isResolving, setMsg]);
 	//------공용------------------------------------------------
 	const { updateGameroom } = useFireGameData();
 	const getSkillOptions = (skillList, stance) => {
@@ -79,20 +130,17 @@ const useBattleLogic = ({ setMsg,
 		return skillOptions;
 	}
 	//------싱글------------------------------------------------
-	//스킬 데미지 계산
 	const getSkillDamge = (skill, spec) => {
 		let damage = 0;
 		for (const effect of skill.effects) {
 			const { stat, multiplier } = effect;
-			const statValue = spec[stat] || 0;  // 해당 스탯 없으면 0
+			const statValue = spec[stat] || 0;
 			damage += statValue * multiplier;
 		}
 		return damage
 	}
-	//랜덤 태세
 	const getRandomStance = () => stanceList[Math.floor(Math.random() * stanceList.length)];
-	//공격 결과 계산
-	const attackSequence = async ({ enemyStance, mySpec, enmSpec, skill }) => {
+	const attackSequence = ({ enemyStance, mySpec, enmSpec, skill }) => {
 		let damge = 0;
 		if (skill) {
 			setEnmSkillEff(skill);
@@ -107,20 +155,17 @@ const useBattleLogic = ({ setMsg,
 				const myDamage = Math.max(Math.floor(enmSpec.atk - mySpec.def), 1);
 				setMyDmg(myDamage)
 				enmDamage = Math.max(Math.floor(damge - enmSpec.def), 1);
-				// setMessageList((prev) => [...prev, "서로 공격해 피해를 입혔다."]);
 				setEnemyCurHP((prev) => prev - enmDamage);
 				setMyCurHP((prev) => prev - myDamage);
 				setMyActionEff("atk");
 				break;
 			case "방어":
 				enmDamage = Math.max(Math.floor(damge * 0.9 - (enmSpec.def * 2)), 1)
-				// setMessageList((prev) => [...prev, "상대는 효과적으로 방어했다. 상대 다음턴 공격력 증가!!"]);
 				setEnemyCurHP((prev) => prev - enmDamage);
 				setEnmActionEff("def");
 				break;
 			case "휴식":
 				enmDamage = Math.floor(damge * 2)
-				// setMessageList((prev) => [...prev, "상대의 휴식 중에 공격하여 휴식을 방해했다"]);
 				setEnemyCurHP((prev) => prev - enmDamage);
 				break;
 			default:
@@ -128,25 +173,21 @@ const useBattleLogic = ({ setMsg,
 		}
 		setEnmDmg(enmDamage);
 	}
-	//방어 시퀀스
-	const defenseSequence = async ({ enemyStance, mySpec, enmSpec, skill }) => {
+	const defenseSequence = ({ enemyStance, mySpec, enmSpec }) => {
 		setMyActionEff("def");
 		switch (enemyStance) {
 			case "공격":
 				const myDamage = Math.max(Math.floor(enmSpec.atk * 0.9 - (mySpec.def * 2)), 1);
 				setMyDmg(myDamage);
-				// setMessageList(([prev]) => [...prev, "상대의 공격을 효과적으로 막아냈다. 전투 의욕이 상승한다"]);
 				setMyCurHP((prev) => prev - myDamage);
 				setActionBall(prev => Math.min(prev + 1, 5));
 				break;
 			case "방어":
-				// setMessageList((prev) => [...prev, "서로 방어했다. 아무일도 일어나지 않았다"]);
 				setEnmActionEff("def");
 				break;
 			case "휴식":
 				const enmDamage = -Math.floor(enmSpec.hp / 5);
 				setEnmDmg(enmDamage);
-				// setMessageList((prev) => [...prev, "상대는 방어하는 나를 비웃으며 휴식을 취했다"]);
 				setEnemyCurHP((prev) => Math.min(prev - enmDamage, enmSpec.hp));
 				setEnmActionEff("rest");
 				break;
@@ -154,20 +195,17 @@ const useBattleLogic = ({ setMsg,
 				break;
 		}
 	}
-	//휴식 시퀀스
-	const restSequence = async ({ enemyStance, mySpec, enmSpec, skill }) => {
+	const restSequence = ({ enemyStance, mySpec, enmSpec }) => {
 		setMyActionEff("rest");
 		let myDamage
 		switch (enemyStance) {
 			case "공격":
 				myDamage = Math.floor(enmSpec.atk * 2)
-				// setMessageList((prev) => [...prev, "휴식 중에 공격당해 제대로 방비하지 못했다"]);
 				setMyCurHP((prev) => prev - myDamage);
 				setMyActionEff("atk");
 				break;
 			case "방어":
 				myDamage = -Math.floor(mySpec.hp / 5);
-				// setMessageList((prev) => [...prev, "상대는 무의미한 방어를 했다."]);
 				setMyCurHP((prev) => prev - myDamage);
 				setActionBall(prev => Math.min(prev + 1, 5));
 				setEnmActionEff("def");
@@ -176,7 +214,6 @@ const useBattleLogic = ({ setMsg,
 				myDamage = -Math.floor(mySpec.hp / 5);
 				const enmDamage = -Math.floor(enmSpec.hp / 5);
 				setEnmDmg(enmDamage);
-				// setMessageList((prev) => [...prev, "서로 휴식을 취했다."]);
 				setEnemyCurHP((prev) => Math.min(prev - enmDamage, enmSpec.hp));
 				setMyCurHP((prev) => Math.min(prev - myDamage, mySpec.hp));
 				setActionBall(prev => Math.min(prev + 1, 5));
@@ -187,42 +224,33 @@ const useBattleLogic = ({ setMsg,
 		}
 		setMyDmg(myDamage);
 	}
-	//------멀티플------------------------------------------------
-	//태세 선택하기
 	const selectStance = (index, setStance) => {
 		if (index === 0) { setStance("atk"); }
 		else if (index === 1) { setStance("def"); }
 		else { setStance("rest"); }
 	}
-	//행동 선택하기
 	const selectAction = ({ spec, stance, playerList, skill = null }) => {
-		console.log("스킬", skill);
 		const action = { petId: user.uid, type: stance, spec, skill };
 		const newPlayers = playerList.map((player) => user.uid === player.uid ? ({ ...player, isReady: true }) : player);
 		updateGameroom({ gameId, info: { actions: arrayUnion(action), players: newPlayers } });
 	}
-	//액션 볼
 	const checkActionBall = ({ stance, actionBall, cost }) => {
 		if (stance === "atk") cost = 1;
 		if (stance === "rest") cost = -1;
 		if (actionBall - cost < 0) {
-			// setMessageList((prev) => [...prev, "기력이 부족합니다, 방어나 휴식을 선택하세요"]);
 			return false;
 		}
 		if (stance === "atk") setActionBall(prev => Math.max(prev - cost, 0));
 		if (stance === "rest") setActionBall(prev => Math.min(prev - cost, 5));
 		return true;
 	}
-	//기술 사용
 	const selectSkill = ({ index, selected, skillCooldownList, actionBall, spec, playerList }) => {
 		if (index !== 3) {
-			// if (!selected) { setMessageList((prev) => [...prev, "스킬이 없습니다."]); return; }
+			if (!selected) return false;
 			const stance = selected.type;
-			if (skillCooldownList[selected.name] > 0) { //쿨타임 
-				// setMessageList((prev => [...prev, `${selected.name}을(를) 사용하려면 아직 ${skillCooldownList[selected.name]}턴 남았습니다.`])); return;
+			if (skillCooldownList?.[selected.name] > 0) {
+				return false;
 			}
-			//시전
-			// setMessageList((prev) => [...prev, `${selected.name}을(를) 시전하였습니다.`]);
 			if (checkActionBall({ stance, actionBall, cost: selected.cost })) {
 				selectAction({ spec, stance, playerList, skill: selected });
 				return true;
@@ -234,9 +262,9 @@ const useBattleLogic = ({ setMsg,
 		}
 	}
 	return {
-		stanceList, battleActions, animEvent, isResolving,
+		stanceList, stances: stanceList, battleActions, animEvent, isResolving,
 		playBattleSequence, getRandomStance,
-		getSkillOptions, getSkillDamge, selectStance, selectAction, checkActionBall, attackSequence, defenseSequence, restSequence, selectSkill
+		getSkillOptions, selectStance, selectAction, checkActionBall, attackSequence, defenseSequence, restSequence, selectSkill
 	}
 }
 

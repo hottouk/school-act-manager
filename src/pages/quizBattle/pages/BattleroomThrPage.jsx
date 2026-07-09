@@ -3,11 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { callStartGame, callPhaseManager, callSetBossStance, callFinalizeGame, callResolveBattleTurn } from '../../../firebase/config'
+import { callStartGame, callPhaseManager, callSetBossStance, callFinalizeGame, callResolveBattleTurn, callKickBattlePlayer } from '../../../firebase/config'
 import BattleRoomFrame from '../components/BattleRoomFrame'
 import BattleActionPanel from '../components/BattleActionPanel'
 import useBattleRoomCommon from '../hooks/useBattleRoomCommon'
+import useBattleBgm from '../hooks/useBattleBgm'
 import GptIngModal from '../../../components/Modal/gptModal/GptIngModal'
+import bossImg from '../../../image/monsters/mon_evil_002_3_back.png'
 
 const BattleroomThrPage = () => {
   const user = useSelector(({ user }) => user)
@@ -15,6 +17,8 @@ const BattleroomThrPage = () => {
   const { roomId } = battleInfo || {}
   const navigate = useNavigate()
   const [isFinalizing, setIsFinalizing] = useState(false)
+  const [kickingUid, setKickingUid] = useState(null)
+  const { isMuted, isPlaying, start: startBgm, stop: stopBgm, toggleMute } = useBattleBgm()
 
   const {
     room,
@@ -22,6 +26,7 @@ const BattleroomThrPage = () => {
     pets,
     boss,
     phase,
+    bossStance,
     quizList,
     background,
     msg,
@@ -31,6 +36,9 @@ const BattleroomThrPage = () => {
     number,
     done,
     curQuiz,
+    correctNumber,
+    battleReport,
+    battleRankings,
     stanceList,
     animEvent,
     onDoneCountdown,
@@ -66,9 +74,11 @@ const BattleroomThrPage = () => {
         return
       }
 
+      await startBgm()
       await callStartGame({ uid: user.uid, roomId, studentList })
     } catch (error) {
       console.error(error)
+      stopBgm()
       setMsg(error?.message || '게임 시작에 실패했습니다. 다시 시도해주세요.')
     }
   }
@@ -96,40 +106,60 @@ const BattleroomThrPage = () => {
     }
   }
 
+  const handleKickPlayer = async (targetUid, nickname) => {
+    if (!targetUid || kickingUid) return;
+    if (!window.confirm(`${nickname || '학생'}을(를) 방에서 내보내시겠습니까?`)) return;
+    setKickingUid(targetUid);
+    try {
+      await callKickBattlePlayer({ uid: user.uid, roomId, targetUid })
+      setMsg(`${nickname || '학생'}을(를) 방에서 내보냈습니다.`);
+    } catch (error) {
+      console.error(error);
+      window.alert(error?.message || '학생 추방에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setKickingUid(null);
+    }
+  }
+
   const actionButtons = []
   if (phase === 'waiting') {
     actionButtons.push({ label: '시작하기', onClick: handleStartGame, disabled: false, variant: 'primary' })
   }
-  if (phase !== 'quiz') {
-    actionButtons.push({ label: '기다리기', onClick: () => callPhaseManager({ roomId, status: 'waiting' }), disabled: false, variant: 'secondary' })
+  if (phase === 'ended') {
+    actionButtons.push({ label: '재시작하기', onClick: () => callPhaseManager({ roomId, status: 'ended' }), disabled: false, variant: 'primary' })
   }
   if (phase === 'stance' && stanceList) {
     const kor = { atk: '공격', def: '방어', rest: '치료' }
     stanceList.forEach((stance, idx) => {
-      actionButtons.push({ label: kor[stance], onClick: () => handleStanceOnClick(idx), disabled: done, variant: 'primary' })
+      actionButtons.push({ label: kor[stance], onClick: () => handleStanceOnClick(idx), disabled: done || !!bossStance, variant: 'primary' })
     })
   }
   if (phase !== 'quiz') {
     actionButtons.push({ label: '종료하기', onClick: handleFinalizeGame, disabled: isFinalizing, variant: 'danger' })
   }
 
+  const bossSpec = boss ? {
+    hp: boss.hp,
+    atk: boss.atk,
+    def: boss.def,
+  } : null
+
   const footer = (
     <BattleFooter>
-      <BattleCodeBox>
-        <div>
-          <strong>배틀 코드</strong>
-          <Code>{battleInfo?.battleCode || '없음'}</Code>
-        </div>
-      </BattleCodeBox>
       <FriendSection>
         <h4>접속 친구</h4>
         <FriendsGrid>
           {players && Object.entries(players).map(([uid, p]) => (
-            <FriendCard key={uid} title={p.nickname}>
+            <FriendCard
+              key={uid}
+              title={`${p.nickname} 추방하기`}
+              onClick={() => handleKickPlayer(uid, p.nickname)}
+              $disabled={!!kickingUid}
+            >
               <Avatar src={p.petImg || '/image/icon/default_avatar.png'} alt={p.nickname} />
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                 <span>{p.nickname}</span>
-                <small>{p.score ? `점수 ${p.score}` : ''}</small>
+                <small>{kickingUid === uid ? '내보내는 중...' : p.score ? `점수 ${p.score}` : ''}</small>
               </div>
               <StatusDot $online={!!p.connected} />
             </FriendCard>
@@ -143,7 +173,11 @@ const BattleroomThrPage = () => {
   return (
     <>
       <BattleRoomFrame
-        statusProps={{}}
+        statusProps={{
+          isMaster: true,
+          myPet: { petImg: bossImg },
+          mySpec: bossSpec,
+        }}
         pixiProps={{
           background,
           studentList: Object.entries(players || {}).map(([uid, p], idx) => ({
@@ -162,6 +196,12 @@ const BattleroomThrPage = () => {
           teamCurHp: displayTeamHp,
           bossCurHp: displayBossHp,
           animEvent,
+          battleCode: battleInfo?.battleCode,
+          isTeacherView: true,
+          result: battleReport.result,
+          correctNumber,
+          battleStats: battleReport,
+          battleRankings,
         }}
         infoProps={{
           phase,
@@ -173,7 +213,16 @@ const BattleroomThrPage = () => {
             { label: '턴', value: `${room?.turn}/${room?.maxTurn}` },
           ],
         }}
-        controlPanel={<BattleActionPanel buttons={actionButtons} />}
+        controlPanel={
+          <BattleActionPanel
+            buttons={actionButtons}
+            extraButton={
+              <BgmButton type="button" onClick={toggleMute}>
+                {isMuted ? '브금 켜기' : '브금 음소거'}{isPlaying ? '' : ' - 시작 전'}
+              </BgmButton>
+            }
+          />
+        }
         footer={footer}
       />
       <GptIngModal
@@ -186,29 +235,11 @@ const BattleroomThrPage = () => {
 
 const BattleFooter = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: flex-start;
   width: 1200px;
   gap: 12px;
   margin-top: 12px;
-`
-const BattleCodeBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #f5f7ff;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #cdd7ff;
-  min-width: 260px;
-  strong { display:block; font-size:14px; color:#333 }
-`
-const Code = styled.span`
-  display: inline-block;
-  font-size: 20px;
-  letter-spacing: 4px;
-  margin-left: 8px;
-  color: #1a1a1a;
 `
 const FriendSection = styled.div`
   flex: 1;
@@ -228,6 +259,15 @@ const FriendCard = styled.div`
   background:#fff;
   border:1px solid #eee;
   min-width: 160px;
+  cursor: ${({ $disabled }) => ($disabled ? 'wait' : 'pointer')};
+  opacity: ${({ $disabled }) => ($disabled ? 0.72 : 1)};
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+
+  &:hover {
+    border-color: ${({ $disabled }) => ($disabled ? '#eee' : '#dc3545')};
+    box-shadow: ${({ $disabled }) => ($disabled ? 'none' : '0 4px 12px rgba(220, 53, 69, 0.16)')};
+    transform: ${({ $disabled }) => ($disabled ? 'none' : 'translateY(-1px)')};
+  }
 `
 const Avatar = styled.img`
   width:40px;
@@ -246,6 +286,22 @@ const StatusDot = styled.div`
 const EmptyNotice = styled.div`
   color:#666;
   font-size:14px;
+`
+const BgmButton = styled.button`
+  align-self: flex-end;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid #aebcf2;
+  border-radius: 8px;
+  color: #3454d1;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    background: #eef2ff;
+  }
 `
 
 export default BattleroomThrPage

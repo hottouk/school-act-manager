@@ -5,9 +5,9 @@ import useQuizLogic from './useQuizLogic'
 import useBattleLogic from './useBattleLogic'
 import useFetchStorageImg from '../../../hooks/Game/useFetchStorageImg'
 
-const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
-  const { room, isRoomResolved, players, pets, boss, phase, quizList, quizListRef, bossStance, stanceSummary } = useGameroom(roomId)
-  const { fetchImgUrl } = useFetchStorageImg()
+const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved }) => {
+  const { room, isRoomResolved, players, pets, boss, phase, quizList, quizListRef, bossStance, stanceSummary, allStances, battleResults } = useGameroom(roomId)
+  const { fetchImgUrl } = useFetchStorageImg();
   const isHost = !!user?.uid && !!room?.hostUid && user.uid === room.hostUid
   const [background, setBackground] = useState(null)
   const [msg, setMsg] = useState('')
@@ -20,6 +20,8 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
   const timeoutRef = useRef(null)
   const summaryKeyRef = useRef(null)
   const summaryTransitionRef = useRef(null)
+  const playedBattleResultRef = useRef(null)
+  const onBattleResolvedRef = useRef(onBattleResolved)
 
   const {
     curQuiz,
@@ -40,14 +42,112 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
     () => Object.values(players || {}).filter((player) => player?.connected).length,
     [players]
   )
+  const battleReport = useMemo(() => {
+    const report = { damage: 0, heal: 0, defense: 0, score: 0, result: 'Draw' }
+    const targetUid = participantUid || user?.uid
+    const roundStat = (value) => Math.round(value * 10) / 10
+
+    const orderedResults = Object.values(battleResults || {})
+      .filter((item) => item?.resolved)
+      .sort((a, b) => Number(a.turn || 0) - Number(b.turn || 0))
+
+    if (isHost) {
+      orderedResults.forEach((result) => {
+        report.damage += Number(result.damageToBoss || 0)
+        report.heal += Number(result.healToTeam || 0)
+        report.defense += Number(result.summary?.def || 0)
+      })
+    }
+
+    Object.entries(allStances || {}).forEach(([turnKey, turnStances]) => {
+      if (isHost) return
+      const entry = turnStances?.[targetUid]
+      const turn = Number(turnKey || 0)
+      const turnResult = orderedResults.find((result) => Number(result.turn || 0) === turn)
+
+      if (!entry?.stance) return
+      const point = Number(entry.point || 0)
+      if (entry.stance === 'atk') {
+        const totalAtk = Number(turnResult?.summary?.atk || 0)
+        const totalDamage = Number(turnResult?.damageToBoss || 0)
+        report.damage += totalAtk > 0 ? totalDamage * (point / totalAtk) : 0
+      }
+      if (entry.stance === 'rest') report.heal += point
+      if (entry.stance === 'def') report.defense += point
+    })
+
+    const lastResult = orderedResults[orderedResults.length - 1]
+    if (lastResult?.winner === 'team') report.result = 'Win'
+    else if (lastResult?.winner === 'boss') report.result = 'Lose'
+
+    report.damage = roundStat(report.damage)
+    report.heal = roundStat(report.heal)
+    report.defense = roundStat(report.defense)
+    report.score = roundStat(report.damage + report.heal + report.defense)
+    return report
+  }, [allStances, battleResults, isHost, participantUid, user?.uid])
+
+  const battleRankings = useMemo(() => {
+    const roundStat = (value) => Math.round(value * 10) / 10
+    const orderedResults = Object.values(battleResults || {})
+      .filter((item) => item?.resolved)
+      .sort((a, b) => Number(a.turn || 0) - Number(b.turn || 0))
+    const rankingMap = {}
+
+    Object.entries(players || {}).forEach(([uid, player]) => {
+      rankingMap[uid] = {
+        uid,
+        nickname: player?.nickname || '이름 없음',
+        score: 0,
+      }
+    })
+
+    Object.entries(allStances || {}).forEach(([turnKey, turnStances]) => {
+      const turn = Number(turnKey || 0)
+      const turnResult = orderedResults.find((result) => Number(result.turn || 0) === turn)
+      const totalAtk = Number(turnResult?.summary?.atk || 0)
+      const totalDamage = Number(turnResult?.damageToBoss || 0)
+
+      Object.entries(turnStances || {}).forEach(([uid, entry]) => {
+        if (!entry?.stance) return
+        const player = players?.[uid]
+        if (!rankingMap[uid]) {
+          rankingMap[uid] = {
+            uid,
+            nickname: player?.nickname || `player-${uid.slice(0, 4)}`,
+            score: 0,
+          }
+        }
+
+        const point = Number(entry.point || 0)
+        if (entry.stance === 'atk') {
+          rankingMap[uid].score += totalAtk > 0 ? totalDamage * (point / totalAtk) : 0
+        }
+        if (entry.stance === 'rest' || entry.stance === 'def') {
+          rankingMap[uid].score += point
+        }
+      })
+    })
+
+    return Object.values(rankingMap)
+      .map((student) => ({ ...student, score: roundStat(student.score) }))
+      .sort((a, b) => b.score - a.score)
+      .map((student, index) => ({ ...student, rank: index + 1 }))
+  }, [allStances, battleResults, players])
+
   const formatSummaryMessage = useCallback((turn, summary) => {
-    const { submittedCount = 0, atk = 0, def = 0, rest = 0 } = summary || {}
-    return `${turn}턴, ${submittedCount}명의 합산 공격력${atk}, 방어력${def}, 치유력${rest}`
+    const { submittedCount = 0, atk = 0, def = 0, rest = 0, autoDefenseCount = 0 } = summary || {}
+    const autoDefenseText = autoDefenseCount > 0 ? `, 자동 방어 ${autoDefenseCount}명` : ''
+    return `${turn}턴, ${submittedCount}명의 합산 공격력${atk}, 방어력${def}, 치유력${rest}${autoDefenseText}`
   }, [])
 
   useEffect(() => {
     fetchImgUrl('images/battle_background.png', setBackground)
   }, [fetchImgUrl])
+
+  useEffect(() => {
+    onBattleResolvedRef.current = onBattleResolved
+  }, [onBattleResolved])
 
   useEffect(() => {
     if (phase === 'waiting' || phase === 'countdown') {
@@ -59,6 +159,8 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
     const phaseManager = async () => {
       switch (phase) {
         case 'countdown': {
+          summaryKeyRef.current = null
+          clearTimeout(summaryTransitionRef.current)
           setNumber(0)
           setCurQuiz('')
           setCurAnswer('')
@@ -88,17 +190,15 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
           break
         }
         case 'stance': {
-          setMsg(isHost ? '보스의 행동 패턴을 선택하세요.' : '당신의 행동을 선택하세요')
+          setMsg(isHost ? '보스의 행동 패턴을 선택하세요.' : '행동을 선택하세요. 교사가 행동을 선택하면 5초 뒤 집계됩니다.')
           setDone(false)
           break
         }
         case 'battle': {
-          if (typeof onBattleResolved === 'function') {
+          const resolveBattle = onBattleResolvedRef.current
+          if (isHost && typeof resolveBattle === 'function') {
             try {
-              const res = await onBattleResolved({ roomId, user, boss, pets, playBattleSequence })
-              if (res?.nextStatus) {
-                await callPhaseManager({ roomId, status: res.nextStatus })
-              }
+              await resolveBattle({ roomId, user })
             } catch (error) {
               console.error('battle resolve 실패:', error)
             }
@@ -116,23 +216,49 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
       timeoutRef.current = null
       intervalRef.current = null
     }
-  }, [phase, roomId, isHost, boss?.hp, pets?.hp, user, generateQuestion, playBattleSequence, setCurAnswer])
+  }, [phase, roomId, isHost, user, generateQuestion, setCurAnswer, setCurQuiz, quizListRef])
+
+  useEffect(() => {
+    if (phase !== 'battle') return
+
+    const orderedResults = Object.values(battleResults || {})
+      .filter((item) => item?.resolved)
+      .sort((a, b) => Number(a.turn || 0) - Number(b.turn || 0))
+    const latestResult = orderedResults[orderedResults.length - 1]
+    const resultTurn = Number(latestResult?.turn || 0)
+
+    if (!latestResult || !resultTurn) return
+
+    const resultKey = `${roomId}-${resultTurn}`
+    if (playedBattleResultRef.current === resultKey) return
+    playedBattleResultRef.current = resultKey
+
+    playBattleSequence({
+      turn: resultTurn,
+      result: latestResult,
+      setDisplayBossHp,
+      setDisplayTeamHp,
+      bossMaxHp: Number(boss?.hp || latestResult.nextBossHp || 0),
+      teamMaxHp: Number(pets?.hp || latestResult.nextPetHp || 0),
+      onDone: () => {
+        if (isHost) callPhaseManager({ roomId, status: latestResult.nextStatus })
+      },
+    })
+  }, [phase, battleResults, roomId, boss?.hp, pets?.hp, isHost, playBattleSequence])
 
   useEffect(() => {
     if (!bossStance) return
-    setMsg('보스가 행동을 결정했습니다. 5초 안에 행동을 결정하세요.')
+    setMsg(isHost ? '학생들이 행동을 선택하는 중입니다.' : '보스가 행동을 결정했습니다. 5초 안에 행동을 선택하세요. 선택하지 않으면 자동으로 방어합니다.')
     setCountdown(5)
-  }, [bossStance])
+  }, [bossStance, isHost])
 
   useEffect(() => {
     if (phase !== 'stance' || !stanceSummary || connectedPlayerCount === 0) return
 
     const turn = Number(room?.turn || 1)
-    const submittedCount = Number(stanceSummary?.submittedCount || 0)
-    const isAllSubmitted = submittedCount >= connectedPlayerCount
     const isClosed = !!stanceSummary?.closed
 
-    if (!isAllSubmitted && !isClosed) return
+    if (!isClosed) return
 
     const summaryKey = `${roomId}-${turn}`
     if (summaryKeyRef.current === summaryKey) return
@@ -223,6 +349,8 @@ const useBattleRoomCommon = ({ roomId, user, onBattleResolved }) => {
     marking,
     correctNumber,
     wrongList,
+    battleReport,
+    battleRankings,
     setDone,
     setMsg,
     setCountdown,

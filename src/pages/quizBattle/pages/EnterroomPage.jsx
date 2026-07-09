@@ -27,8 +27,6 @@ const EnterroomPage = () => {
 		if (!selectedPet) { alert("펫을 선택해주세요"); return; }
 		if (!battleCode) { alert("배틀 코드를 입력해주세요"); return; }
 		if (!nickname) { alert("닉네임을 입력해주세요"); return; }
-		//todo 배틀 코드 틀렸을 때,
-		console.log(battleCode, nickname)
 		setIsLoading(true);
 		try {
 			if (!appAuth.currentUser) { // 익명 토큰 발급 확인

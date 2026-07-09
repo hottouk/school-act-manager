@@ -322,12 +322,15 @@ export const resolveGameTurn = onDocumentUpdated({
 export {
   createBattleRoom,
   joinByBattleCode,
+  leaveBattleRoom,
+  kickBattlePlayer,
   startGame,
   phaseManager,
   setBossStance,
   submitMyStance,
   closeStanceCollection,
   resolveBattleTurn,
+  restartBattleRoom,
   finalizeGame,
   cleanupExpiredRooms,
 } from "./battle.js";

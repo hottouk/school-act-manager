@@ -103,6 +103,31 @@ export const joinByBattleCode = onCall({ region: REGION }, async (req) => {
   return { roomId, pet };
 });
 
+// 2-1) 학생 방 퇴장
+export const leaveBattleRoom = onCall({ region: REGION }, async (req) => {
+  const uid = req.auth?.uid;
+  if (!uid) throw new HttpsError("unauthenticated", "로그인 필요");
+
+  const roomId = String(req.data?.roomId || "");
+  if (!roomId) throw new HttpsError("invalid-argument", "roomId 필요");
+
+  const roomSnap = await db.ref(`rooms/${roomId}`).get();
+  if (!roomSnap.exists()) throw new HttpsError("not-found", "방 없음");
+
+  await db.ref(`roomPlayers/${roomId}/${uid}`).remove();
+  return { ok: true };
+});
+
+// 2-2) 교사 학생 추방
+export const kickBattlePlayer = onCall({ region: REGION }, async (req) => {
+  const { roomId } = await hostCheck(req);
+  const targetUid = String(req.data?.targetUid || "");
+  if (!targetUid) throw new HttpsError("invalid-argument", "targetUid 필요");
+
+  await db.ref(`roomPlayers/${roomId}/${targetUid}`).remove();
+  return { ok: true };
+});
+
 // 3) 게임 시작
 export const startGame = onCall({ region: REGION }, async (req) => {
   const { roomRef, room } = await hostCheck(req);
@@ -197,14 +222,46 @@ export const submitMyStance = onCall({ region: REGION }, async (req) => {
 export const closeStanceCollection = onCall({ region: REGION }, async (req) => {
   console.log("closeStanceCollection 호출");
   const { roomId, room } = await hostCheck(req);
+  if (!room.bossStance) {
+    throw new HttpsError("failed-precondition", "교사가 먼저 행동을 선택해야 합니다.");
+  }
   const turn = Number(room.turn || 1);
 
-  const summaryRef = db.ref(`roomStanceSummary/${roomId}/${turn}`);
-  const snap = await summaryRef.get();
-  const summary = snap.val() || { atk: 0, def: 0, rest: 0, submittedCount: 0 };
+  const nowTime = now();
+  const stancesRef = db.ref(`roomStances/${roomId}/${turn}`);
+  const stancesSnap = await stancesRef.get();
+  const stances = stancesSnap.val() || {};
+  const playersSnap = await db.ref(`roomPlayers/${roomId}`).get();
+  const players = playersSnap.val() || {};
+  const autoDefenseUpdates = {};
 
-  await summaryRef.update({ ...summary, closed: true });
-  return { ok: true, turn, summary: { ...summary, closed: true } };
+  Object.entries(players).forEach(([uid, player]) => {
+    if (!player?.connected || stances[uid]) return;
+    autoDefenseUpdates[uid] = {
+      stance: "def",
+      point: 0,
+      auto: true,
+      submittedAt: nowTime,
+    };
+  });
+
+  if (Object.keys(autoDefenseUpdates).length > 0) {
+    await stancesRef.update(autoDefenseUpdates);
+  }
+
+  const finalStancesSnap = await stancesRef.get();
+  const finalStances = finalStancesSnap.val() || {};
+  const nextSummary = { atk: 0, def: 0, rest: 0, submittedCount: 0, autoDefenseCount: 0, closed: true };
+  Object.values(finalStances).forEach((v) => {
+    if (!v?.stance || typeof v?.point !== "number") return;
+    if (nextSummary[v.stance] !== undefined) nextSummary[v.stance] += v.point;
+    if (v.auto && v.stance === "def") nextSummary.autoDefenseCount += 1;
+    nextSummary.submittedCount += 1;
+  });
+
+  const summaryRef = db.ref(`roomStanceSummary/${roomId}/${turn}`);
+  await summaryRef.set(nextSummary);
+  return { ok: true, turn, summary: nextSummary };
 });
 
 // 8) 턴 취합 후 결과 확인
@@ -251,8 +308,69 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
     healToBoss = Math.floor(boss.hp * 0.1);
     damageToTeam = 0;
   }
-  const nextBossHp = Math.max(0, Math.min(boss.hp, boss.curHp - damageToBoss + healToBoss));
-  const nextPetHp = Math.max(0, Math.min(pet.hp, pet.curHp - damageToTeam + healToTeam));
+  const bossHpAfterStudent = Math.max(0, Math.min(boss.hp, boss.curHp - damageToBoss));
+  const canBossAct = bossHpAfterStudent > 0;
+  const nextBossHp = canBossAct ? Math.max(0, Math.min(boss.hp, bossHpAfterStudent + healToBoss)) : bossHpAfterStudent;
+  const petHpAfterBossAttack = canBossAct ? Math.max(0, Math.min(pet.hp, pet.curHp - damageToTeam)) : Number(pet.curHp || 0);
+  const nextPetHp = Math.max(0, Math.min(pet.hp, petHpAfterBossAttack + healToTeam));
+  const actionSequence = [
+    {
+      step: 1,
+      actor: "student",
+      action: "def",
+      effect: "defenseToTeam",
+      value: defPoint,
+      point: defPoint,
+    },
+    {
+      step: 2,
+      actor: "boss",
+      action: "def",
+      effect: "defenseToBoss",
+      value: Number(boss.def || 0),
+    },
+    {
+      step: 3,
+      actor: "student",
+      action: "atk",
+      effect: "damageToBoss",
+      value: damageToBoss,
+      point: atkPoint,
+      nextBossHp: bossHpAfterStudent,
+    },
+    {
+      step: 4,
+      actor: "boss",
+      action: "atk",
+      effect: "damageToTeam",
+      value: damageToTeam,
+      nextPetHp: petHpAfterBossAttack,
+    },
+    {
+      step: 5,
+      actor: "student",
+      action: "rest",
+      effect: "healToTeam",
+      value: healToTeam,
+      point: healToTeam,
+      nextPetHp,
+    },
+    {
+      step: 6,
+      actor: "boss",
+      action: "rest",
+      effect: "healToBoss",
+      value: healToBoss,
+      nextBossHp,
+    },
+  ].filter((event) => {
+    if (event.actor === "student") return true;
+    if (event.effect === "defenseToBoss") return bossStance === "def";
+    if (event.actor === "boss" && !canBossAct) return false;
+    if (event.effect === "damageToTeam") return bossStance === "atk";
+    if (event.effect === "healToBoss") return bossStance === "rest";
+    return Number(event.value || 0) > 0;
+  });
   // endGame?
   const isBossDead = nextBossHp <= 0;
   const isTeamDead = nextPetHp <= 0;
@@ -275,6 +393,9 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
   const nextStatus = endReason ? "ended" : "quiz";
   const result = {
     bossStance,
+    beforeBossHp: Number(boss.curHp || 0),
+    beforePetHp: Number(pet.curHp || 0),
+    actionSequence,
     damageToBoss,
     damageToTeam,
     healToBoss,
@@ -298,6 +419,52 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
     [`rooms/${roomId}/pet/curHp`]: nextPetHp,
   });
   return { ok: true, turn, result, };
+});
+
+// 9) 게임 재시작
+export const restartBattleRoom = onCall({ region: REGION }, async (req) => {
+  const { roomId, room } = await hostCheck(req);
+  if (room?.status !== "ended") {
+    throw new HttpsError("failed-precondition", "종료된 게임만 재시작할 수 있습니다.");
+  }
+
+  const playersSnap = await db.ref(`roomPlayers/${roomId}`).get();
+  const players = playersSnap.val() || {};
+  const studentList = Object.values(players).filter((player) => player?.connected);
+  if (studentList.length === 0) {
+    throw new HttpsError("failed-precondition", "접속한 학생이 없습니다.");
+  }
+
+  const teamHp = studentList.reduce((sum, student) => {
+    return sum + Number(student?.pet?.hp || 0);
+  }, 0);
+  if (teamHp <= 0) {
+    throw new HttpsError("failed-precondition", "학생 펫 체력을 계산할 수 없습니다.");
+  }
+
+  const startedAt = now();
+  const updates = {
+    [`rooms/${roomId}/status`]: "countdown",
+    [`rooms/${roomId}/turn`]: 1,
+    [`rooms/${roomId}/startedAt`]: startedAt,
+    [`rooms/${roomId}/endedAt`]: null,
+    [`rooms/${roomId}/bossStance`]: null,
+    [`rooms/${roomId}/boss`]: {
+      atk: studentList.length * 30,
+      def: studentList.length * 5,
+      hp: studentList.length * 200,
+      curHp: studentList.length * 200,
+    },
+    [`rooms/${roomId}/pet`]: { hp: teamHp, curHp: teamHp },
+    [`roomStances/${roomId}`]: null,
+    [`roomStanceSummary/${roomId}`]: null,
+    [`roomBattleResults/${roomId}`]: null,
+    [`roomSubmissions/${roomId}`]: null,
+    [`roomRuntime/${roomId}`]: null,
+  };
+
+  await db.ref().update(updates);
+  return { ok: true };
 });
 
 // 4) 게임 종료

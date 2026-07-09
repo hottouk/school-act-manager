@@ -35,10 +35,11 @@ const useGameroom = (roomId) => {
 	const [boss, setBoss] = useState(null);
 	const [bossStance, setBossStance] = useState(null);
 	const [stanceSummary, setStanceSummary] = useState(null);
+	const [allStances, setAllStances] = useState({});
+	const [battleResults, setBattleResults] = useState({});
 	const [phase, setPhase] = useState("waiting");
 	const quizListRef = useRef([]);
 	const [quizId, setQuizId] = useState(null);
-	console.log(quizList, "quizList");
 
 	useEffect(() => {
 		if (!room) return;
@@ -99,7 +100,29 @@ const useGameroom = (roomId) => {
 		return () => { offSummary(); };
 	}, [roomId, room?.turn]);
 
-	return ({ players, room, isRoomResolved, phase, pets, boss, bossStance, stanceSummary, quizList, quizListRef })
+	useEffect(() => {
+		if (!roomId) {
+			setAllStances({});
+			setBattleResults({});
+			return;
+		}
+
+		const offStances = onValue(ref(appDatabase, `roomStances/${roomId}`),
+			(snap) => { setAllStances(snap.val() || {}); },
+			(err) => { console.error("all stances listener error:", err); }
+		);
+		const offBattleResults = onValue(ref(appDatabase, `roomBattleResults/${roomId}`),
+			(snap) => { setBattleResults(snap.val() || {}); },
+			(err) => { console.error("battle results listener error:", err); }
+		);
+
+		return () => {
+			offStances();
+			offBattleResults();
+		};
+	}, [roomId]);
+
+	return ({ players, room, isRoomResolved, phase, pets, boss, bossStance, stanceSummary, allStances, battleResults, quizList, quizListRef })
 }
 
 export default useGameroom

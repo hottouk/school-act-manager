@@ -12,20 +12,34 @@ const BattleRoomFrame = ({
   footer,
 }) => {
   const { phase = '', msg = '', number = 0, stats = [] } = infoProps;
+  const phaseLabels = {
+    waiting: '대기',
+    countdown: '준비',
+    quiz: '문제',
+    stance: '행동 선택',
+    battle: '전투',
+    end: '종료',
+    ended: '종료',
+  }
+  const messageText = phase === 'quiz' ? `${number}번 문제` : msg;
+
   return (
     <MainContainer>
       <StatusUI {...statusProps} />
       <PixiStage {...pixiProps} />
       <InfoWrapper>
         <MsgWrapper>
-          {phase === 'quiz' && <p>{number}번 문제</p>}
-          {phase !== 'quiz' && <p>{msg}</p>}
+          <PhaseBadge>{phaseLabels[phase] || phase || '상태'}</PhaseBadge>
+          <MessageText>{messageText || '잠시 기다려주세요.'}</MessageText>
         </MsgWrapper>
-        <Column style={{ padding: '10px', gap: '5px' }}>
+        <StatsWrapper>
           {stats.map((stat, index) => (
-            <Text key={index}>{stat.label}: {stat.value}</Text>
+            <StatItem key={index}>
+              <StatLabel>{stat.label}</StatLabel>
+              <StatValue>{stat.value}</StatValue>
+            </StatItem>
           ))}
-        </Column>
+        </StatsWrapper>
       </InfoWrapper>
       <ControllerUI>
         {controlPanel}
@@ -60,24 +74,101 @@ const ControllerUI = styled(Column)`
   }
 `
 const InfoWrapper = styled(Row)`
-  width: 1200px;
-  height: 150px;
-  border: 2px solid #3454d1;
-  border-radius: 5px;
-`
-const MsgWrapper = styled(Row)`
-  width: 70%;
-  padding: 10px;
-  border-right: 2px solid #3454d1;
-  p {
-    margin: 0;
-    font-size: 33px;
+  width: min(1200px, 100%);
+  min-height: 132px;
+  padding: 14px;
+  gap: 14px;
+  border: 1px solid #cfd9ff;
+  border-radius: 14px 14px 0 0;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(25, 35, 60, 0.08);
+  box-sizing: border-box;
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+    min-height: auto;
+    padding: 10px;
+    gap: 10px;
+    border-radius: 10px 10px 0 0;
   }
 `
-const Text = styled.p`
+const MsgWrapper = styled(Row)`
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid #d9e2ff;
+  border-radius: 10px;
+  background: #f7f9ff;
+  box-sizing: border-box;
+
+  @media screen and (max-width: 768px) {
+    padding: 12px;
+    gap: 8px;
+  }
+`
+const PhaseBadge = styled.span`
+  width: fit-content;
+  max-width: 100%;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: #3454d1;
+  background: #e9edff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+`
+const MessageText = styled.p`
   margin: 0;
-  font-size: 22px;
-  font-weight: 500;
+  color: #171b24;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+
+  @media screen and (max-width: 768px) {
+    font-size: 20px;
+  }
+`
+const StatsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  width: 260px;
+
+  @media screen and (max-width: 768px) {
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+`
+const StatItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid #e3e8f7;
+  border-radius: 8px;
+  background: #ffffff;
+  box-sizing: border-box;
+`
+const StatLabel = styled.span`
+  color: #677089;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+`
+const StatValue = styled.span`
+  min-width: 0;
+  color: #171b24;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: right;
+  overflow-wrap: anywhere;
 `
 
 export default BattleRoomFrame

@@ -1,48 +1,90 @@
-import { Graphics, Text } from '@pixi/react';
+import { Container, Graphics, Text } from '@pixi/react';
 import { gsap } from 'gsap';
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 //2025.01.06 
-const HPBarUI = ({ x, y, width, height, curHp, maxHp }) => {
+const HPBarUI = ({ x, y, width, height, curHp = 0, maxHp = 0 }) => {
   const hpBarRef = useRef();
-  const clampedHP = Math.min(Math.max(curHp, 0), maxHp)
+  const previousRatioRef = useRef(0);
+  const safeMaxHp = Math.max(Number(maxHp) || 0, 0);
+  const safeCurHp = Math.max(Number(curHp) || 0, 0);
+  const clampedHP = safeMaxHp > 0 ? Math.min(safeCurHp, safeMaxHp) : 0;
+  const hpRatio = safeMaxHp > 0 ? clampedHP / safeMaxHp : 0;
+  const radius = Math.min(height / 2, 10);
+  const isLowHp = hpRatio <= 0.3;
+  const fillColor = isLowHp ? 0xff4d4f : 0x34c759;
+  const fillDarkColor = isLowHp ? 0xb4232a : 0x148f45;
+  const textColor = isLowHp ? 0x7a1017 : 0x155f35;
+  const labelFontSize = Math.max(12, Math.min(15, height + 1));
 
-  useEffect(() => {
-    let animation
-    const hpRatio = clampedHP / maxHp
-    if (!hpBarRef.current) return
-    animation = gsap.to(hpBarRef.current.scale, {
-      x: hpRatio,
-      duration: 0.5,
-      ease: 'power2.out',
-    });
-    return () => { if (animation) { animation.kill(); } };// 애니메이션 종료
-  }, [curHp, maxHp]);
+  useLayoutEffect(() => {
+    if (!hpBarRef.current) return undefined;
 
-  let drawMaxHP = (g) => {
+    const animation = gsap.fromTo(
+      hpBarRef.current.scale,
+      { x: previousRatioRef.current },
+      { x: hpRatio, duration: 0.45, ease: 'power2.out' },
+    );
+    previousRatioRef.current = hpRatio;
+
+    return () => { animation.kill(); };
+  }, [hpRatio]);
+
+  const drawShell = (g) => {
     g.clear();
-    g.lineStyle(2, 0x000000, 1);  // 테두리 추가 (검정색)
-    g.beginFill(0xff0000); // 전체 HP 바 (빨간색)
-    g.drawRect(0, 0, width, height);
+
+    g.beginFill(0x07111f, 0.24);
+    g.drawRoundedRect(2, 3, width, height + 2, radius);
     g.endFill();
 
-  }
-  let drawCurHP = (g) => {
-    g.beginFill(0x00ff00); // 현재 HP 바 (초록색)
-    g.drawRect(0, 0, (clampedHP / maxHp) * width, height);
+    g.lineStyle(2, 0x26384f, 0.95);
+    g.beginFill(0xf6f9fd, 0.96);
+    g.drawRoundedRect(0, 0, width, height, radius);
     g.endFill();
-  }
 
-  return (<>
-    <Graphics draw={drawMaxHP} x={x} y={y} />
-    <Graphics draw={drawCurHP} x={x} y={y} ref={hpBarRef} />
+    g.beginFill(0xd9e4f2, 1);
+    g.drawRoundedRect(3, 3, width - 6, height - 6, Math.max(radius - 3, 2));
+    g.endFill();
+  };
+
+  const drawCurrentHP = (g) => {
+    g.clear();
+
+    const innerX = 3;
+    const innerY = 3;
+    const innerWidth = width - 6;
+    const innerHeight = height - 6;
+    const innerRadius = Math.max(radius - 3, 2);
+
+    g.beginFill(fillDarkColor, 1);
+    g.drawRoundedRect(innerX, innerY, innerWidth, innerHeight, innerRadius);
+    g.endFill();
+
+    g.beginFill(fillColor, 1);
+    g.drawRoundedRect(innerX, innerY, innerWidth, Math.max(innerHeight * 0.62, 2), innerRadius);
+    g.endFill();
+
+    g.beginFill(0xffffff, 0.32);
+    g.drawRoundedRect(innerX + 3, innerY + 2, Math.max(innerWidth - 6, 0), Math.max(innerHeight * 0.26, 1), innerRadius);
+    g.endFill();
+  };
+
+  return (<Container x={x} y={y}>
+    <Graphics draw={drawShell} />
+    <Graphics draw={drawCurrentHP} ref={hpBarRef} />
     <Text
-      text={`${clampedHP} / ${maxHp}`}
-      x={x + width / 2}
-      y={y - 15}
+      text={`HP ${clampedHP} / ${safeMaxHp}`}
+      x={width / 2}
+      y={-15}
       anchor={{ x: 0.5, y: 0.5 }}
-      style={{ fill: 'black', fontSize: 15, fontWeight: 'bold' }}
+      style={{
+        fill: textColor,
+        fontSize: labelFontSize,
+        fontWeight: 'bold',
+        stroke: 0xffffff,
+        strokeThickness: 3,
+      }}
     />
-  </>
+  </Container>
   )
 }
 

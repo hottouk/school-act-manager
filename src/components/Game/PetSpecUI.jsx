@@ -8,16 +8,14 @@ const PetSpecUI = ({ spec, styles }) => {
 	const { hp, atk, def, mat, mdf, spd } = spec;
 	return (
 		<Container $height={height} $width={width}>
-			<Row style={{ gap: "10px", justifyContent: "space-around" }}>
-				<Text>체력: {hp || 0}</Text>
-				<Text>공격: {atk || 0}</Text>
-				<Text>방어: {def || 0}</Text>
-			</Row>
-			<Row style={{ gap: "10px", justifyContent: "space-around" }}>
-				<Text>치유력: {mat || 0}</Text>
-				<Text>마방: {mdf || 0}</Text>
-				<Text>민첩: {spd || 0}</Text>
-			</Row>
+			<SpecGrid>
+				<Text>체력 <strong>{hp || 0}</strong></Text>
+				<Text>공격 <strong>{atk || 0}</strong></Text>
+				<Text>방어 <strong>{def || 0}</strong></Text>
+				<Text>치유 <strong>{mat || 0}</strong></Text>
+				<Text>마방 <strong>{mdf || 0}</strong></Text>
+				<Text>민첩 <strong>{spd || 0}</strong></Text>
+			</SpecGrid>
 		</Container>
 	)
 }
@@ -29,17 +27,33 @@ const Column = styled(Row)`
 `
 const Container = styled(Column)`
 	flex-grow: 1;
-	gap: 5px;
 	justify-content: center;
 	box-sizing: border-box;
 	width: ${({ $width }) => $width};
 	height: ${({ $height }) => $height};
-	padding: 2px;
-	border: 1px solid rgb(185,185,185);
-  border-radius: 10px;
-	margin: 0 20px 0 0;
+	padding: 8px;
+	border: 1px solid #d9e2ff;
+  border-radius: 8px;
+  background: #ffffff;
+`
+const SpecGrid = styled.div`
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 6px 8px;
+	width: 100%;
 `
 const Text = styled.p`
 	margin: 0;
+	color: #677089;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1.2;
+	white-space: nowrap;
+
+	strong {
+		color: #171b24;
+		font-size: 13px;
+		font-weight: 900;
+	}
 `
 export default PetSpecUI

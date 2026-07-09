@@ -2,17 +2,20 @@ import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { callSubmitMyStance } from '../../../firebase/config'
+import { appAuth, callLeaveBattleRoom, callSubmitMyStance } from '../../../firebase/config'
 import BattleRoomFrame from '../components/BattleRoomFrame'
 import BattleActionPanel from '../components/BattleActionPanel'
 import useBattleRoomCommon from '../hooks/useBattleRoomCommon'
+import bossImg from '../../../image/monsters/mon_evil_002_3.png'
 
 const BattleroomStuPage = () => {
   const user = useSelector(({ user }) => user);
   const { state: battleInfo } = useLocation();
   const { roomId, pet: myPet } = battleInfo || {};
   const navigate = useNavigate();
+  const participantUid = appAuth.currentUser?.uid || user?.uid;
   const [actionBall, setActionBall] = useState(0);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   const {
     room,
@@ -21,6 +24,7 @@ const BattleroomStuPage = () => {
     pets,
     boss,
     phase,
+    bossStance,
     quizList,
     background,
     msg,
@@ -33,6 +37,7 @@ const BattleroomStuPage = () => {
     optionList,
     marking,
     correctNumber,
+    battleReport,
     stanceList,
     animEvent,
     onDoneCountdown,
@@ -42,6 +47,7 @@ const BattleroomStuPage = () => {
   } = useBattleRoomCommon({
     roomId,
     user,
+    participantUid,
   })
 
   useEffect(() => {
@@ -49,6 +55,14 @@ const BattleroomStuPage = () => {
       navigate('/quiz_game', { replace: true })
     }
   }, [isRoomResolved, room, navigate])
+
+  useEffect(() => {
+    const currentUid = participantUid
+    if (!currentUid || !players) return
+    if (!players[currentUid]) {
+      navigate('/quiz_game', { replace: true })
+    }
+  }, [players, participantUid, navigate])
 
   const handleOptionOnClick = (idx) => {
     if (done) return
@@ -58,7 +72,7 @@ const BattleroomStuPage = () => {
 
   const handleStanceOnClick = async (idx) => {
     setDone(true)
-    setMsg('을 선택했습니다. 보스의 턴을 기다리는 중...')
+    setMsg(bossStance ? '행동을 선택했습니다. 보스의 턴을 기다리는 중...' : '행동을 선택했습니다. 교사의 행동 선택을 기다리는 중...')
     try {
       const res = await callSubmitMyStance({ roomId, stance: stanceList[idx], actionBall })
       const { summary, turn } = res?.data || {}
@@ -68,6 +82,24 @@ const BattleroomStuPage = () => {
     } catch (error) {
       console.error(error)
     }
+  }
+
+  const handleLeaveRoom = async () => {
+    if (isLeaving) return
+    setIsLeaving(true)
+
+    try {
+      if (roomId) {
+        await callLeaveBattleRoom({ roomId })
+      }
+    } catch (error) {
+      console.error('방 퇴장 실패:', error)
+      window.alert(error?.message || '방에서 퇴장하지 못했습니다.')
+      setIsLeaving(false)
+      return
+    }
+
+    navigate('/quiz_game', { replace: true })
   }
 
   const actionButtons = []
@@ -83,8 +115,14 @@ const BattleroomStuPage = () => {
     })
   }
   if (phase !== 'quiz') {
-    actionButtons.push({ label: '종료하기', onClick: () => navigate(-1), disabled: false, variant: 'danger' })
+    actionButtons.push({ label: isLeaving ? '퇴장 중...' : '종료하기', onClick: handleLeaveRoom, disabled: isLeaving, variant: 'danger' })
   }
+
+  const bossSpec = boss ? {
+    hp: boss.hp,
+    atk: boss.atk,
+    def: boss.def,
+  } : null
 
   const footer = (
     <FriendSection>
@@ -107,7 +145,12 @@ const BattleroomStuPage = () => {
 
   return (
     <BattleRoomFrame
-      statusProps={{ myPet, mySpec: { atk: myPet?.atk, def: myPet?.def, hp: myPet?.hp, mat: myPet?.rest } }}
+      statusProps={{
+        myPet,
+        mySpec: { atk: myPet?.atk, def: myPet?.def, hp: myPet?.hp, mat: myPet?.rest },
+        enmPet: { petImg: bossImg },
+        enmSpec: bossSpec,
+      }}
       pixiProps={{
         background,
         studentList: Object.entries(players || {}).map(([uid, p], idx) => ({
@@ -128,6 +171,9 @@ const BattleroomStuPage = () => {
         animEvent,
         marking,
         actionBall,
+        result: battleReport.result,
+        correctNumber,
+        battleStats: battleReport,
       }}
       infoProps={{
         phase,

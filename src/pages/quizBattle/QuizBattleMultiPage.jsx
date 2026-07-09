@@ -38,6 +38,7 @@ import useMediaQuery from '../../hooks/useMediaQuery';
 import PixiMobileStage from './PixiMobileStage';
 import ReviewSection from './ReviewSection';
 import { useBlockBackButton } from '../../hooks/Game/useBlockBack';
+import useBattleBgm from './hooks/useBattleBgm';
 //생성(250722)
 const QuizBattleMultiPage = () => {
   //준비
@@ -143,6 +144,7 @@ const QuizBattleMultiPage = () => {
   const { formQuizOptionList, generateQuestion, checkAnswer } = useQuizLogic({ gameId, setHasDone, setMarking, setCurQuiz, setCurAnswer, setCorrectNumber, setActionBall, setWrongList, setMessageList });
   useEffect(() => { exitInfoListener(exitList); }, [exitList]);
   useBlockBackButton();
+  const { isMuted, isPlaying, start: startBgm, toggleMute } = useBattleBgm();
   //모드
   const isMobile = useMediaQuery("(max-width: 767px)");
   //------함수부-------------------------------------------------------
@@ -301,8 +303,9 @@ const QuizBattleMultiPage = () => {
     }
   }
   //시작(방장)
-  const handleStartOnClick = () => {
+  const handleStartOnClick = async () => {
     const newPlayers = playerList.map((player) => ({ ...player, isReady: player.isReady = false }));
+    await startBgm();
     updateGameroom({ gameId, info: { phase: "startCounting", players: newPlayers, leftQuizNumber: quizList.length } })
   }
   //퀴즈 세션
@@ -419,6 +422,9 @@ const QuizBattleMultiPage = () => {
           <MainBtn onClick={handleReadyOnClick}>Ready</MainBtn>
           <MainBtn onClick={() => { handleExitOnClick(gameId) }}>방 나가기</MainBtn>
         </>}
+        <BgmButton type="button" onClick={toggleMute}>
+          {isMuted ? "브금 켜기" : "브금 음소거"}{isPlaying ? "" : " - 시작 전"}
+        </BgmButton>
         {optionList?.length !== 0 && optionList?.map((option, index) => <TransparentBtn key={index} onClick={() => { handleOptionOnClick(index) }} disabled={hasDone}>{option}</TransparentBtn>)}
         {phase === "end" && <MainBtn onClick={() => setPhase("review")}>틀린 문제</MainBtn>}
         {(phase === "end" || phase === "review") && <MainBtn onClick={() => { handleExitOnClick(gameId) }}>종료하기</MainBtn>}
@@ -454,5 +460,20 @@ const ControllerUI = styled(Row)`
 	gap: ${({ $isMobile }) => !$isMobile ? "100px" : "10px"};
 	flex-direction: ${({ $isMobile }) => !$isMobile ? "row" : "column"};
 	width: ${({ $isMobile }) => !$isMobile ? "1200px" : `${window.innerWidth}px;`};
+`
+const BgmButton = styled.button`
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid #aebcf2;
+  border-radius: 8px;
+  color: #3454d1;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    background: #eef2ff;
+  }
 `
 export default QuizBattleMultiPage

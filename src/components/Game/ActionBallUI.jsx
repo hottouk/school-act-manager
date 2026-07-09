@@ -1,44 +1,116 @@
-import { Graphics } from '@pixi/react';
+import { Container, Graphics, Text } from '@pixi/react';
 import React from 'react'
 
-const ActionBallUI = ({ x, y, width, height, correctAnswer }) => {
-  const circleRadius = 15;  // 동그라미 반지름
-  const circleSpacing = 40; // 동그라미 간격
-  const totalCircles = 5;   // 동그라미 개수
+const ActionBallUI = ({ x, y, width, height, correctAnswer = 0 }) => {
+  const totalCircles = 5;
+  const safeCorrectAnswer = Number.isFinite(Number(correctAnswer))
+    ? Math.min(Math.max(Number(correctAnswer), 0), totalCircles)
+    : 0;
+  const isCompact = width < 360;
+  const circleRadius = Math.min(15, height * 0.24);
+  const availableBallWidth = Math.max(width - (isCompact ? 92 : 160), circleRadius * totalCircles);
+  const circleSpacing = Math.min(42, availableBallWidth / (totalCircles - 1));
+  const ballsWidth = (totalCircles - 1) * circleSpacing;
+  const ballsCenterX = isCompact ? width / 2 - 18 : width / 2 + 22;
+  const startX = ballsCenterX - ballsWidth / 2;
+  const centerY = height / 2;
 
-  //직사각형 UI
-  const drawRect = (g) => {
+  const drawPanel = (g) => {
     g.clear();
-    g.lineStyle(4, 0x000000, 1);  // 검정 테두리
-    g.beginFill(0xffffff);        // 흰색 배경
-    g.drawRoundedRect(0, 0, width, height, 10);
+
+    g.beginFill(0x07111f, 0.28);
+    g.drawRoundedRect(4, 7, width - 8, height - 3, 16);
+    g.endFill();
+
+    g.lineStyle(2, 0x24405f, 0.95);
+    g.beginFill(0xf7fbff, 0.96);
+    g.drawRoundedRect(0, 0, width, height, 16);
+    g.endFill();
+
+    g.beginFill(0x2f80ed, 1);
+    g.drawRoundedRect(12, 13, 6, height - 26, 3);
     g.endFill();
   };
 
-  // 동그라미 그리기
-  const drawCircles = (g) => {
-    const startX = width / 2 - ((totalCircles - 1) * circleSpacing) / 2; // 동그라미 시작 위치 (중앙 정렬)
-    const startY = height / 2;  // 직사각형 중앙 높이에 동그라미 배치
+  const drawTrack = (g) => {
     g.clear();
-    // 동그라미 반복 그리기
+    const trackX = startX - circleRadius;
+    const trackWidth = ballsWidth + circleRadius * 2;
+
+    g.beginFill(0xdde7f4, 0.9);
+    g.drawRoundedRect(trackX, centerY - 5, trackWidth, 10, 5);
+    g.endFill();
+
+    if (safeCorrectAnswer > 0) {
+      const progressWidth = safeCorrectAnswer === totalCircles
+        ? trackWidth
+        : (safeCorrectAnswer - 1) * circleSpacing + circleRadius * 2;
+
+      g.beginFill(0xffc43d, 1);
+      g.drawRoundedRect(trackX, centerY - 5, progressWidth, 10, 5);
+      g.endFill();
+    }
+  };
+
+  const drawCircles = (g) => {
+    g.clear();
+
     for (let i = 0; i < totalCircles; i++) {
-      g.lineStyle(2, 0x000000, 1);  // 테두리
-      if (i < correctAnswer) {
-        g.beginFill(0xffcc00);  // 정답 개수만큼 노란색으로 채우기
+      const cx = startX + i * circleSpacing;
+      const isFilled = i < safeCorrectAnswer;
+
+      if (isFilled) {
+        g.beginFill(0xffb703, 0.22);
+        g.drawCircle(cx, centerY, circleRadius + 8);
+        g.endFill();
+
+        g.lineStyle(3, 0x9a5b00, 1);
+        g.beginFill(0xffc43d, 1);
       } else {
-        g.beginFill(0xffffff);  // 나머지는 흰색
+        g.lineStyle(2, 0x8ba1ba, 1);
+        g.beginFill(0xf2f6fb, 1);
       }
-      g.drawCircle(startX + i * circleSpacing, startY, circleRadius);
+
+      g.drawCircle(cx, centerY, circleRadius);
+      g.endFill();
+
+      g.lineStyle(0);
+      g.beginFill(0xffffff, isFilled ? 0.68 : 0.45);
+      g.drawCircle(cx - circleRadius * 0.35, centerY - circleRadius * 0.35, circleRadius * 0.32);
       g.endFill();
     }
   };
 
   return (
-    // 직사각형 그리기
-    <>
-      <Graphics draw={drawRect} x={x} y={y} />
-      <Graphics draw={drawCircles} x={x} y={y} />
-    </>
+    <Container x={x} y={y}>
+      <Graphics draw={drawPanel} />
+      {!isCompact && (
+        <Text
+          text="ACTION"
+          x={34}
+          y={height / 2}
+          anchor={{ x: 0, y: 0.5 }}
+          style={{
+            fontSize: 16,
+            fontWeight: 'bold',
+            fill: 0x1d3557,
+          }}
+        />
+      )}
+      <Graphics draw={drawTrack} />
+      <Graphics draw={drawCircles} />
+      <Text
+        text={`${safeCorrectAnswer}/${totalCircles}`}
+        x={width - 34}
+        y={height / 2}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontSize: 16,
+          fontWeight: 'bold',
+          fill: 0x1d3557,
+        }}
+      />
+    </Container>
   )
 }
 

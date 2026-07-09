@@ -44,16 +44,16 @@ const QuizBattleSingleSection = ({ quizSetId, selectedPet, monsterDetails, gameD
   const [frozenAnswerList, setFrozenAnswerList] = useState(quizList?.map((quizSet) => quizSet.split("#")[1]))
   const quizListRef = useRef([]);
   //그래픽 준비
-  const [enmImg, setEnmImg] = useState(null);
+  const [, setEnmImg] = useState(null);
   const [background, setBackground] = useState(null);
-  const [myPetImg, setMyPetImg] = useState(null);
-  const [myPetBackImg, setMyPetBackImg] = useState(null);
+  const [, setMyPetImg] = useState(null);
+  const [, setMyPetBackImg] = useState(null);
   //게임 페이즈
   const [phase, setPhase] = useState("ready");
   useEffect(() => { phaseManager(); return () => clearInterval(intervalRef.current) }, [phase]);
   const [countdown, setCountdown] = useState(0); // 카운트다운 활성 상태
   //상태메세지
-  const [messageList, setMessageList] = useState(['', '']);
+  const [, setMessageList] = useState(['', '']);
   //문제 관련
   const intervalRef = useRef();
   const quizNumberRef = useRef(1);                     //문항 번호, 인터벌 반복 횟수
@@ -81,17 +81,17 @@ const QuizBattleSingleSection = ({ quizSetId, selectedPet, monsterDetails, gameD
   //상대 몬스터 정보
   const [enmSpec, setEnmSpec] = useState(null);
   const [enmLevel, setEnmLevel] = useState(1);
-  const [enmExp, setEnmExp] = useState(3);
+  const [, setEnmExp] = useState(3);
   const [enemyCurHP, setEnemyCurHP] = useState(100);
   const [hasDone, setHasDone] = useState(false);
   //이펙트 
-  const [myActionEff, setMyActionEff] = useState(null);
-  const [enmActionEff, setEnmActionEff] = useState(null);
-  const [enmSkillEff, setEnmSkillEff] = useState(null);
-  const [myDmg, setMyDmg] = useState(null);
-  const [enmDmg, setEnmDmg] = useState(null);
+  const [, setMyActionEff] = useState(null);
+  const [, setEnmActionEff] = useState(null);
+  const [, setEnmSkillEff] = useState(null);
+  const [, setMyDmg] = useState(null);
+  const [, setEnmDmg] = useState(null);
   //스킬 이펙트 url 맵
-  const [skillEffMap, setSkillEffMap] = useState(null);
+  const [, setSkillEffMap] = useState(null);
   //승리
   const [myRecordList, setMyRecordList] = useState([]);   //퀴즈 참여 기록
   const [myWinCount, setMyWinCount] = useState(0);        //승리 횟수
@@ -453,9 +453,8 @@ const QuizBattleSingleSection = ({ quizSetId, selectedPet, monsterDetails, gameD
     {/* 메인 화면 */}
     {!background && <Spinner variant="primary" />}
     {(background && phase !== "review") &&
-      <PixiStage isMobile={isMobile} phase={phase} background={background} messageList={messageList} quizListRef={quizListRef} curQuiz={curQuiz} marking={marking} score={correctNumber * 100} actionBall={actionBall}
-        mySpec={mySpec} myCurHP={myCurHP} enmSpec={enmSpec} enemyCurHP={enemyCurHP} myActionEff={myActionEff} enmActionEff={enmActionEff} myPetBackImg={myPetBackImg} enmSkillEff={enmSkillEff} enmImg={enmImg} enemyHP={enmSpec.hp}
-        countdown={countdown} skillEffMap={skillEffMap} endCountdown={endCountdown} result={result} correctNumber={correctNumber} rewardPoint={rewardPoint} countWinRecord={countWinRecord} exp={enmExp} myDmg={myDmg} enmDmg={enmDmg}
+      <PixiStage isMobile={isMobile} phase={phase} background={background} curQuiz={curQuiz} marking={marking} actionBall={actionBall}
+        countdown={countdown} onDoneCountdown={endCountdown} result={result} correctNumber={correctNumber}
       />
     }
     {/* 리뷰 phase */}

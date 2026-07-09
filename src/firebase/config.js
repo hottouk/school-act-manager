@@ -41,12 +41,15 @@ export const callEnrollCoupon = httpsCallable(functions, "enrollCoupon");
 // 단어 게임
 export const callCreateRoom = httpsCallable(functions, "createBattleRoom");
 export const callJoinByBattleCode = httpsCallable(functions, "joinByBattleCode");
+export const callLeaveBattleRoom = httpsCallable(functions, "leaveBattleRoom");
+export const callKickBattlePlayer = httpsCallable(functions, "kickBattlePlayer");
 export const callStartGame = httpsCallable(functions, "startGame");
 export const callPhaseManager = httpsCallable(functions, "phaseManager");
 export const callSetBossStance = httpsCallable(functions, "setBossStance");
 export const callSubmitMyStance = httpsCallable(functions, "submitMyStance");
 export const callCloseStanceCollection = httpsCallable(functions, "closeStanceCollection");
 export const callResolveBattleTurn = httpsCallable(functions, "resolveBattleTurn");
+export const callRestartBattleRoom = httpsCallable(functions, "restartBattleRoom");
 export const callFinalizeGame = httpsCallable(functions, "finalizeGame");
 //회원 
 export const callSignInWithKakaoCustomToken = httpsCallable(functions, "signInWithKakaoCustomToken");
