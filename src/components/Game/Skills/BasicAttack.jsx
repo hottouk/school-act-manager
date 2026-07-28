@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Graphics, Sprite, Text } from '@pixi/react';
+import { Container, Graphics, Sprite } from '@pixi/react';
+import { Text } from '../SafePixiText';
 import basic_attack from '../../../image/effect/basic_attack.png'
+import { playBattleSound } from '../../../utils/BattleSoundUtils';
 //수정(250731)
 const BasicAttack = ({ x, y, width, height, trigger, value, durationMs = 650 }) => {
   const [progress, setProgress] = useState(0);
@@ -11,6 +13,7 @@ const BasicAttack = ({ x, y, width, height, trigger, value, durationMs = 650 }) 
 
   useEffect(() => {
     if (!trigger) return;
+    playBattleSound('attack');
 
     let animationFrame;
     const startedAt = performance.now();
@@ -72,7 +75,7 @@ const BasicAttack = ({ x, y, width, height, trigger, value, durationMs = 650 }) 
       />
       {hasValue && (
         <Text
-          text={displayValue}
+          text={String(displayValue ?? '')}
           x={0}
           y={-height * 0.1 - progress * height * 0.18}
           anchor={0.5}
@@ -97,4 +100,3 @@ const BasicAttack = ({ x, y, width, height, trigger, value, durationMs = 650 }) 
 }
 
 export default BasicAttack
-

@@ -55,7 +55,6 @@ const EnterroomPage = () => {
 			<>
 				<InputModeWrapper>
 					<InputModeContainer>
-						<BackButton onClick={() => setIsInputMode(false)}>← 뒤로가기</BackButton>
 						<InputTitle>배틀 정보 입력</InputTitle>
 						<InputLabel>배틀코드</InputLabel>
 						<FullWidthInput
@@ -70,6 +69,7 @@ const EnterroomPage = () => {
 							placeholder="닉네임을 입력하세요"
 						/>
 						<SubmitButton onClick={handleJoin}>입장하기</SubmitButton>
+						<BackButton onClick={() => setIsInputMode(false)}>← 뒤로가기</BackButton>
 					</InputModeContainer>
 				</InputModeWrapper>
 				<GptIngModal
@@ -221,13 +221,12 @@ const InputModeContainer = styled.div`
 	position: relative;
 `
 const BackButton = styled.button`
-	position: absolute;
-	top: 15px;
-	left: 15px;
+	width: 100%;
+	height: 50px;
 	padding: 8px 12px;
 	background: #f0f0f0;
 	border: 1px solid #ddd;
-	border-radius: 8px;
+	border-radius: 10px;
 	cursor: pointer;
 	font-size: 14px;
 	font-weight: 600;

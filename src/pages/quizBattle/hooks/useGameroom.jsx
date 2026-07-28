@@ -40,6 +40,7 @@ const useGameroom = (roomId) => {
 	const [phase, setPhase] = useState("waiting");
 	const quizListRef = useRef([]);
 	const [quizId, setQuizId] = useState(null);
+	const quizSource = room?.quizSource || "quiz";
 
 	useEffect(() => {
 		if (!room) return;
@@ -61,13 +62,13 @@ const useGameroom = (roomId) => {
 			}
 
 			try {
-				const quiz = await fetchDoc(quizId);
+				const quiz = await fetchDoc(quizId, quizSource);
 				const nextQuizList = Array.isArray(quiz?.quizList) ? quiz.quizList : [];
 
 				if (!quiz) {
-					console.error(`퀴즈 목록 로딩 실패: quiz/${quizId} 문서가 없습니다.`);
+					console.error(`퀴즈 목록 로딩 실패: ${quizSource}/${quizId} 문서가 없습니다.`);
 				} else if (!Array.isArray(quiz.quizList)) {
-					console.error(`퀴즈 목록 로딩 실패: quiz/${quizId}의 quizList가 배열이 아닙니다.`);
+					console.error(`퀴즈 목록 로딩 실패: ${quizSource}/${quizId}의 quizList가 배열이 아닙니다.`);
 				}
 
 				if (!isActive) return;
@@ -83,7 +84,7 @@ const useGameroom = (roomId) => {
 
 		bindQuizList();
 		return () => { isActive = false; };
-	}, [quizId, fetchDoc])
+	}, [quizId, quizSource, fetchDoc])
 
 	useEffect(() => {
 		if (!roomId || !room?.turn) {

@@ -39,6 +39,7 @@ export const callAskGptOnly = httpsCallable(functions, "askGptOnly");
 export const callCalculateRira = httpsCallable(functions, "calculateRira");
 export const callEnrollCoupon = httpsCallable(functions, "enrollCoupon");
 // 단어 게임
+export const callPurchaseBattlePremium = httpsCallable(functions, "purchaseBattlePremium");
 export const callCreateRoom = httpsCallable(functions, "createBattleRoom");
 export const callJoinByBattleCode = httpsCallable(functions, "joinByBattleCode");
 export const callLeaveBattleRoom = httpsCallable(functions, "leaveBattleRoom");
@@ -49,6 +50,7 @@ export const callSetBossStance = httpsCallable(functions, "setBossStance");
 export const callSubmitMyStance = httpsCallable(functions, "submitMyStance");
 export const callCloseStanceCollection = httpsCallable(functions, "closeStanceCollection");
 export const callResolveBattleTurn = httpsCallable(functions, "resolveBattleTurn");
+export const callCompleteBattleSequence = httpsCallable(functions, "completeBattleSequence");
 export const callRestartBattleRoom = httpsCallable(functions, "restartBattleRoom");
 export const callFinalizeGame = httpsCallable(functions, "finalizeGame");
 //회원 

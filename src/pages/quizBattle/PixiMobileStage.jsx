@@ -1,12 +1,13 @@
 //라이브러리
 import React from 'react'
-import { Stage, Text } from '@pixi/react'
+import { Stage } from '@pixi/react'
+import { Text } from '../../components/Game/SafePixiText'
 import styled from 'styled-components'
 import { useSelector } from 'react-redux'
 //컴포넌트
 import Background from '../../components/Game/Background'
 import PetSprite from '../../components/Game/PetSprite'
-import Countdown from '../../components/Game/Countdown'
+import Countdown from './components/Countdown'
 import MessageUI from '../../components/Game/MessageUI'
 import QuizUI from '../../components/Game/QuizUI'
 import ActionBallUI from '../../components/Game/ActionBallUI'
@@ -37,8 +38,8 @@ const PixiMobileStage = ({ background, phase, quizListRef, correctNumber, action
       }} >
         {/* 기본UI */}
         {background && <Background src={background || qustion_icon} x={0} y={0} width={window.innerWidth} height={window.innerHeight} />}
-        <Text text={`문제: ${quizListRef.current.length}개`} x={window.innerWidth * 0.15} y={window.innerHeight * 0.035} anchor={0.5} style={{ fontSize: 16, fontWeight: 'bold', }} ></Text>
-        <Text text={`점수: ${score}점`} x={window.innerWidth * 0.85} y={window.innerHeight * 0.035} anchor={0.5} style={{ fontSize: 16, fontWeight: 'bold', }} ></Text>
+        <Text text={String(`문제: ${quizListRef.current.length}개`)} x={window.innerWidth * 0.15} y={window.innerHeight * 0.035} anchor={0.5} style={{ fontSize: 16, fontWeight: 'bold', }} ></Text>
+        <Text text={String(`점수: ${score}점`)} x={window.innerWidth * 0.85} y={window.innerHeight * 0.035} anchor={0.5} style={{ fontSize: 16, fontWeight: 'bold', }} ></Text>
         <ActionBallUI x={0} y={window.innerHeight * 0.65} width={window.innerWidth} height={60} correctAnswer={actionBall} />
         <MessageUI messages={messageList} x={0} y={window.innerHeight * 0.75} width={window.innerWidth} height={175} styles={{ fontSize: 18 }} />
         <HPBarUI x={0} y={window.innerHeight * 0.63} width={window.innerWidth} height={12} curHp={myCurHp || 0} maxHp={mySpec?.hp || 0} />

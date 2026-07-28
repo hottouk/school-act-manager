@@ -18,15 +18,9 @@ const Background = ({ src, x = 0, y = 0, width = 1200, height = 900 }) => {
       g.lineTo(stageWidth, y);
     }
   };
-  const drawFilter = (g) => {
-    g.clear();
-    g.beginFill(0xffffff, 0.6); // 흰색, 20% 투명도
-    g.drawRect(0, 0, width, height); // 화면 전체 크기
-    g.endFill();
-  }
+
   return (<>
     <Sprite image={src} x={x} y={y} width={width} height={height} eventMode="none" />
-    <Graphics draw={drawFilter} eventMode="none" />
     {/* <Graphics draw={drawGrid} eventMode="none" /> */}
   </>)
 }

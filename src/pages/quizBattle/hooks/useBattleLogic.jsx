@@ -9,16 +9,9 @@ const EVENT_DURATION = 1800;
 const useBattleLogic = ({
 	setMsg = () => { },
 	gameId = '',
-	setMyCurHP = () => { },
-	setEnemyCurHP = () => { },
 	setActionBall = () => { },
-	setEnmSkillEff = () => { },
 	setStance = () => { },
 	setIsSkillMode = () => { },
-	setMyActionEff = () => { },
-	setEnmActionEff = () => { },
-	setMyDmg = () => { },
-	setEnmDmg = () => { },
 }) => {
 	const user = useSelector(({ user }) => user);
 	const stanceList = ['atk', 'def', 'rest'];
@@ -129,101 +122,6 @@ const useBattleLogic = ({
 		skillOptions.push("취소");
 		return skillOptions;
 	}
-	//------싱글------------------------------------------------
-	const getSkillDamge = (skill, spec) => {
-		let damage = 0;
-		for (const effect of skill.effects) {
-			const { stat, multiplier } = effect;
-			const statValue = spec[stat] || 0;
-			damage += statValue * multiplier;
-		}
-		return damage
-	}
-	const getRandomStance = () => stanceList[Math.floor(Math.random() * stanceList.length)];
-	const attackSequence = ({ enemyStance, mySpec, enmSpec, skill }) => {
-		let damge = 0;
-		if (skill) {
-			setEnmSkillEff(skill);
-			damge = getSkillDamge(skill, mySpec);
-		}
-		else { damge = mySpec.atk; }
-		setActionBall((prev) => Math.max(0, prev - 1));
-		setEnmActionEff("atk");
-		let enmDamage
-		switch (enemyStance) {
-			case "공격":
-				const myDamage = Math.max(Math.floor(enmSpec.atk - mySpec.def), 1);
-				setMyDmg(myDamage)
-				enmDamage = Math.max(Math.floor(damge - enmSpec.def), 1);
-				setEnemyCurHP((prev) => prev - enmDamage);
-				setMyCurHP((prev) => prev - myDamage);
-				setMyActionEff("atk");
-				break;
-			case "방어":
-				enmDamage = Math.max(Math.floor(damge * 0.9 - (enmSpec.def * 2)), 1)
-				setEnemyCurHP((prev) => prev - enmDamage);
-				setEnmActionEff("def");
-				break;
-			case "휴식":
-				enmDamage = Math.floor(damge * 2)
-				setEnemyCurHP((prev) => prev - enmDamage);
-				break;
-			default:
-				break;
-		}
-		setEnmDmg(enmDamage);
-	}
-	const defenseSequence = ({ enemyStance, mySpec, enmSpec }) => {
-		setMyActionEff("def");
-		switch (enemyStance) {
-			case "공격":
-				const myDamage = Math.max(Math.floor(enmSpec.atk * 0.9 - (mySpec.def * 2)), 1);
-				setMyDmg(myDamage);
-				setMyCurHP((prev) => prev - myDamage);
-				setActionBall(prev => Math.min(prev + 1, 5));
-				break;
-			case "방어":
-				setEnmActionEff("def");
-				break;
-			case "휴식":
-				const enmDamage = -Math.floor(enmSpec.hp / 5);
-				setEnmDmg(enmDamage);
-				setEnemyCurHP((prev) => Math.min(prev - enmDamage, enmSpec.hp));
-				setEnmActionEff("rest");
-				break;
-			default:
-				break;
-		}
-	}
-	const restSequence = ({ enemyStance, mySpec, enmSpec }) => {
-		setMyActionEff("rest");
-		let myDamage
-		switch (enemyStance) {
-			case "공격":
-				myDamage = Math.floor(enmSpec.atk * 2)
-				setMyCurHP((prev) => prev - myDamage);
-				setMyActionEff("atk");
-				break;
-			case "방어":
-				myDamage = -Math.floor(mySpec.hp / 5);
-				setMyCurHP((prev) => prev - myDamage);
-				setActionBall(prev => Math.min(prev + 1, 5));
-				setEnmActionEff("def");
-				break;
-			case "휴식":
-				myDamage = -Math.floor(mySpec.hp / 5);
-				const enmDamage = -Math.floor(enmSpec.hp / 5);
-				setEnmDmg(enmDamage);
-				setEnemyCurHP((prev) => Math.min(prev - enmDamage, enmSpec.hp));
-				setMyCurHP((prev) => Math.min(prev - myDamage, mySpec.hp));
-				setActionBall(prev => Math.min(prev + 1, 5));
-				setEnmActionEff("rest");
-				break;
-			default:
-				break;
-		}
-		setMyDmg(myDamage);
-	}
 	const selectStance = (index, setStance) => {
 		if (index === 0) { setStance("atk"); }
 		else if (index === 1) { setStance("def"); }
@@ -263,8 +161,7 @@ const useBattleLogic = ({
 	}
 	return {
 		stanceList, stances: stanceList, battleActions, animEvent, isResolving,
-		playBattleSequence, getRandomStance,
-		getSkillOptions, selectStance, selectAction, checkActionBall, attackSequence, defenseSequence, restSequence, selectSkill
+		playBattleSequence, getSkillOptions, selectStance, selectAction, checkActionBall, selectSkill
 	}
 }
 

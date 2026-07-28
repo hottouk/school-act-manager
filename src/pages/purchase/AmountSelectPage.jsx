@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 //컴포넌트
-import MyinfoSection from '../../components/section/MyinfoSection';
+import MyinfoSection from '../myInfo/section/MyinfoSection';
 import AmountSection from './AmountSection';
 import MainContainer from '../../components/Styled/MainContainer';
 import MainWrapper from '../../components/Styled/MainWrapper';

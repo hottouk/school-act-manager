@@ -6,12 +6,37 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getDatabase } from "firebase-admin/database";
+import { getFirestore } from "firebase-admin/firestore";
 import { onSchedule } from "firebase-functions/scheduler";
+import {
+  consumeQuestionsForTurn,
+  determineBattleOutcome,
+} from "./battleRules.js";
+import {
+  BattleSettingRuleError,
+  resolveBattleSettings,
+} from "./battleSettingsRules.js";
+import { isUserBattlePremium } from "./premiumRules.js";
 if (!getApps().length) initializeApp();
 const REGION = "asia-northeast3";
 const db = getDatabase();
+const firestoreDb = getFirestore();
 const now = () => Date.now();
 const makeCode = () => String(Math.floor(100000 + Math.random() * 900000));
+const DEFAULT_BOSS_STAT_PER_PLAYER = { hp: 200, atk: 30, def: 5 };
+// boss 스탯을 정규화합니다. (잘못된 값이 들어오면 기본값으로 대체)
+const normalizeBossStatPerPlayer = (value) => {
+  const normalizeStat = (stat, fallback, allowZero = true) => {
+    const number = Number(stat);
+    const minimum = allowZero ? 0 : 1;
+    return Number.isFinite(number) && number >= minimum ? number : fallback;
+  };
+  return {
+    hp: normalizeStat(value?.hp, DEFAULT_BOSS_STAT_PER_PLAYER.hp, false),
+    atk: normalizeStat(value?.atk, DEFAULT_BOSS_STAT_PER_PLAYER.atk),
+    def: normalizeStat(value?.def, DEFAULT_BOSS_STAT_PER_PLAYER.def),
+  };
+};
 /**
  * 유일한 배틀 코드를 생성합니다.
  * @async
@@ -29,7 +54,7 @@ async function createUniqueCode(maxTry = 10) {
 }
 // 체크
 const hostCheck = async (req) => {
-  const uid = req.data?.uid;
+  const uid = req.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "로그인 필요");
   const roomId = String(req.data?.roomId || "");
   if (!roomId) throw new HttpsError("invalid-argument", "roomId 필요");
@@ -42,11 +67,43 @@ const hostCheck = async (req) => {
 };
 // 1) 방 생성 (교사용)
 export const createBattleRoom = onCall({ region: REGION }, async (req) => {
-  const uid = req.data?.uid || null;
+  const uid = req.auth?.uid || null;
   if (!uid) throw new HttpsError("unauthenticated", "로그인 필요");
-  const title = String(req.data?.title || "단어 배틀");
-  const maxTurn = Number(req.data?.maxRounds || 5);
   const quizId = req.data?.quizId || "";
+  if (!quizId) throw new HttpsError("invalid-argument", "quizId 필요");
+  const quizSource = req.data?.quizSource || "quiz";
+  if (!["quiz", "quiz_public"].includes(quizSource)) {
+    throw new HttpsError("invalid-argument", "올바르지 않은 퀴즈 출처입니다.");
+  }
+
+  const userSnap = await firestoreDb.doc(`user/${uid}`).get();
+  if (!userSnap.exists) {
+    throw new HttpsError("not-found", "사용자 정보를 찾을 수 없습니다.");
+  }
+  const userData = userSnap.data() || {};
+  if (userData.isTeacher !== true) {
+    throw new HttpsError(
+      "permission-denied",
+      "교사 사용자만 게임방을 만들 수 있습니다.",
+    );
+  }
+
+  const isPremium = isUserBattlePremium(userData, now());
+  let settings;
+  try {
+    settings = resolveBattleSettings({
+      isPremium,
+      bossType: req.data?.bossType,
+      backgroundId: req.data?.backgroundId,
+      maxRounds: req.data?.maxRounds,
+    });
+  } catch (error) {
+    if (error instanceof BattleSettingRuleError) {
+      throw new HttpsError(error.code, error.message);
+    }
+    throw error;
+  }
+
   const roomRef = db.ref("rooms").push();
   const roomId = roomRef.key;
   const battleCode = await createUniqueCode();
@@ -54,11 +111,15 @@ export const createBattleRoom = onCall({ region: REGION }, async (req) => {
   await db.ref().update({
     [`rooms/${roomId}`]: {
       hostUid: uid,
-      title,
       status: "waiting", // waiting|playing|ended
       turn: 1,
       quizId,
-      maxTurn,
+      quizSource,
+      maxTurn: settings.maxRounds,
+      bossType: settings.bossType,
+      bossStatPerPlayer: settings.bossStatPerPlayer,
+      backgroundId: settings.backgroundId,
+      settingTier: settings.settingTier,
       createdAt,
       startedAt: null,
       endedAt: null,
@@ -133,17 +194,30 @@ export const startGame = onCall({ region: REGION }, async (req) => {
   const { roomRef, room } = await hostCheck(req);
   console.log("startGame 호출");
   const studentList = req.data?.studentList || [];
+  const quizCount = Number(req.data?.quizCount);
   if (studentList.length === 0) throw new HttpsError("no-student", "학생이 없습니다.");
+  if (!Number.isInteger(quizCount) || quizCount <= 0) {
+    throw new HttpsError("invalid-argument", "한 개 이상의 문제 필요");
+  }
   const teamHp = (studentList || []).reduce((sum, student) => {
     return sum + Number(student?.pet?.hp || 0);
   }, 0);
   if (room?.status !== "waiting") throw new HttpsError("failed-precondition", "이미 시작되었거나 종료됨");
   const startedAt = now();
+  const bossStat = normalizeBossStatPerPlayer(room?.bossStatPerPlayer);
+  const bossHp = studentList.length * bossStat.hp;
   await roomRef.update({
     status: "countdown",
     turn: 1,
     startedAt,
-    boss: { atk: studentList.length * 30, def: studentList.length * 5, hp: studentList.length * 200, curHp: studentList.length * 200 },
+    totalQuestions: quizCount,
+    remainingQuestions: quizCount,
+    boss: {
+      atk: studentList.length * bossStat.atk,
+      def: studentList.length * bossStat.def,
+      hp: bossHp,
+      curHp: bossHp,
+    },
     pet: { hp: teamHp, curHp: teamHp }
   });
   return { ok: true };
@@ -312,7 +386,12 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
   const canBossAct = bossHpAfterStudent > 0;
   const nextBossHp = canBossAct ? Math.max(0, Math.min(boss.hp, bossHpAfterStudent + healToBoss)) : bossHpAfterStudent;
   const petHpAfterBossAttack = canBossAct ? Math.max(0, Math.min(pet.hp, pet.curHp - damageToTeam)) : Number(pet.curHp || 0);
-  const nextPetHp = Math.max(0, Math.min(pet.hp, petHpAfterBossAttack + healToTeam));
+  const canTeamAct = petHpAfterBossAttack > 0;
+  const nextPetHp = canTeamAct ?
+    Math.max(0, Math.min(pet.hp, petHpAfterBossAttack + healToTeam)) :
+    petHpAfterBossAttack;
+  // HP가 0이 된 행동까지만 실행합니다. 쓰러진 뒤의 회복/공격이 게임을 이어가면 안 됩니다.
+  const lethalStep = !canBossAct ? 3 : !canTeamAct ? 4 : Number.POSITIVE_INFINITY;
   const actionSequence = [
     {
       step: 1,
@@ -364,6 +443,7 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
       nextBossHp,
     },
   ].filter((event) => {
+    if (event.step > lethalStep) return false;
     if (event.actor === "student") return true;
     if (event.effect === "defenseToBoss") return bossStance === "def";
     if (event.actor === "boss" && !canBossAct) return false;
@@ -371,26 +451,16 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
     if (event.effect === "healToBoss") return bossStance === "rest";
     return Number(event.value || 0) > 0;
   });
-  // endGame?
-  const isBossDead = nextBossHp <= 0;
-  const isTeamDead = nextPetHp <= 0;
-  const isTurnOver = nextTurn > maxTurn; // 현재 턴 처리 후 다음 턴이 max 초과면 종료
-
-  let endReason = null;
-  let winner = null;
-
-  if (isBossDead) {
-    endReason = "boss_dead";
-    winner = "team";
-  } else if (isTeamDead) {
-    endReason = "team_dead";
-    winner = "boss";
-  } else if (isTurnOver) {
-    endReason = "max_turn";
-    // 동점/판정 규칙 정하기 (예: 남은 체력 높은 쪽 승리)
-    winner = nextBossHp < nextPetHp ? "team" : "boss";
-  }
+  const questionProgress = consumeQuestionsForTurn(room.remainingQuestions);
+  const { endReason, winner } = determineBattleOutcome({
+    nextBossHp,
+    nextPetHp,
+    nextTurn,
+    maxTurn,
+    questionsExhausted: questionProgress.questionsExhausted,
+  });
   const nextStatus = endReason ? "ended" : "quiz";
+  const resolvedAt = now();
   const result = {
     bossStance,
     beforeBossHp: Number(boss.curHp || 0),
@@ -404,10 +474,13 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
     nextPetHp,
     nextStatus,
     resolved: true,
-    resolvedAt: now(),
+    resolvedAt,
+    endReason,
     winner,
+    usedQuestions: questionProgress.usedQuestions,
+    remainingQuestions: questionProgress.nextRemainingQuestions,
   };
-  await db.ref().update({
+  const updates = {
     [`roomBattleResults/${roomId}/${turn}`]: {
       turn,
       summary,
@@ -417,8 +490,81 @@ export const resolveBattleTurn = onCall({ region: REGION }, async (req) => {
     [`rooms/${roomId}/bossStance`]: null,
     [`rooms/${roomId}/boss/curHp`]: nextBossHp,
     [`rooms/${roomId}/pet/curHp`]: nextPetHp,
-  });
+    [`rooms/${roomId}/pendingResultTurn`]: endReason ? turn : null,
+  };
+  if (questionProgress.isTracked) {
+    updates[`rooms/${roomId}/remainingQuestions`] = questionProgress.nextRemainingQuestions;
+  }
+  await db.ref().update(updates);
   return { ok: true, turn, result, };
+});
+
+// 8-1) 클라이언트 전투 애니메이션 완료 후 결과 반영
+export const completeBattleSequence = onCall({ region: REGION }, async (req) => {
+  const roomId = String(req.data?.roomId || "");
+  const resultTurn = Number(req.data?.turn || 0);
+  const callerUid = String(req.auth?.uid || "");
+  if (!roomId) throw new HttpsError("invalid-argument", "roomId 필요");
+  if (!Number.isInteger(resultTurn) || resultTurn < 1) {
+    throw new HttpsError("invalid-argument", "올바른 turn 필요");
+  }
+  if (!callerUid) throw new HttpsError("unauthenticated", "로그인 필요");
+
+  const roomRef = db.ref(`rooms/${roomId}`);
+  const roomSnap = await roomRef.get();
+  if (!roomSnap.exists()) throw new HttpsError("not-found", "방 없음");
+  const room = roomSnap.val();
+
+  const isHost = room.hostUid === callerUid;
+  const playerSnap = isHost ?
+    null :
+    await db.ref(`roomPlayers/${roomId}/${callerUid}`).get();
+  if (!isHost && !playerSnap?.exists()) {
+    throw new HttpsError("permission-denied", "방 참가자만 전투 완료 가능");
+  }
+
+  const resultRef = db.ref(`roomBattleResults/${roomId}/${resultTurn}`);
+  const resultSnap = await resultRef.get();
+  if (!resultSnap.exists()) {
+    throw new HttpsError("failed-precondition", "전투 결과가 없습니다.");
+  }
+  const result = resultSnap.val();
+  if (!result?.resolved || !["quiz", "ended"].includes(result.nextStatus)) {
+    throw new HttpsError("failed-precondition", "확정되지 않은 전투 결과입니다.");
+  }
+
+  const completedAt = now();
+  // 완료 직전에 최신 방을 다시 읽어 오래된 턴의 요청이 새 전투를 덮어쓰지 않게 합니다.
+  const latestRoomSnap = await roomRef.get();
+  if (!latestRoomSnap.exists()) throw new HttpsError("not-found", "방 없음");
+  const latestRoom = latestRoomSnap.val();
+  const pendingResultTurn = Number(latestRoom.pendingResultTurn || 0);
+  const alreadyCompleted = pendingResultTurn === 0 &&
+    latestRoom.status === result.nextStatus &&
+    Number(latestRoom.turn || 1) === resultTurn + 1;
+  if (alreadyCompleted) {
+    return { ok: true, alreadyCompleted: true, result };
+  }
+  if (pendingResultTurn !== resultTurn) {
+    throw new HttpsError("failed-precondition", "현재 전투의 완료 요청이 아닙니다.");
+  }
+  if (latestRoom.status !== "battle") {
+    throw new HttpsError("failed-precondition", "전투 단계가 아닙니다.");
+  }
+
+  const updates = {
+    [`rooms/${roomId}/status`]: result.nextStatus,
+    [`rooms/${roomId}/turn`]: resultTurn + 1,
+    [`rooms/${roomId}/pendingResultTurn`]: null,
+    [`rooms/${roomId}/boss/curHp`]: Number(result.nextBossHp || 0),
+    [`rooms/${roomId}/pet/curHp`]: Number(result.nextPetHp || 0),
+    [`roomBattleResults/${roomId}/${resultTurn}/animationCompletedAt`]: completedAt,
+  };
+  if (result.nextStatus === "ended") {
+    updates[`rooms/${roomId}/endedAt`] = completedAt;
+  }
+  await db.ref().update(updates);
+  return { ok: true, result };
 });
 
 // 9) 게임 재시작
@@ -441,19 +587,27 @@ export const restartBattleRoom = onCall({ region: REGION }, async (req) => {
   if (teamHp <= 0) {
     throw new HttpsError("failed-precondition", "학생 펫 체력을 계산할 수 없습니다.");
   }
+  const totalQuestions = Number(room.totalQuestions);
+  if (!Number.isInteger(totalQuestions) || totalQuestions <= 0) {
+    throw new HttpsError("failed-precondition", "재시작할 문제 수를 확인할 수 없습니다.");
+  }
 
   const startedAt = now();
+  const bossStat = normalizeBossStatPerPlayer(room?.bossStatPerPlayer);
+  const bossHp = studentList.length * bossStat.hp;
   const updates = {
     [`rooms/${roomId}/status`]: "countdown",
     [`rooms/${roomId}/turn`]: 1,
     [`rooms/${roomId}/startedAt`]: startedAt,
     [`rooms/${roomId}/endedAt`]: null,
+    [`rooms/${roomId}/remainingQuestions`]: totalQuestions,
     [`rooms/${roomId}/bossStance`]: null,
+    [`rooms/${roomId}/pendingResultTurn`]: null,
     [`rooms/${roomId}/boss`]: {
-      atk: studentList.length * 30,
-      def: studentList.length * 5,
-      hp: studentList.length * 200,
-      curHp: studentList.length * 200,
+      atk: studentList.length * bossStat.atk,
+      def: studentList.length * bossStat.def,
+      hp: bossHp,
+      curHp: bossHp,
     },
     [`rooms/${roomId}/pet`]: { hp: teamHp, curHp: teamHp },
     [`roomStances/${roomId}`]: null,

@@ -47,8 +47,8 @@ const LoginPage = () => {
         <WordmonLandingWrapper ref={ref1} $visible={v1}>
           <WordmonLandingImg src={isMobile ? wordMonHeroMobileImg : wordMonHeronImg} alt="워드몬 히어로 이미지" />
           <GameBtnWrapper>
-            <GameBtn to="/quiz_public">학습 하러가기</GameBtn>
-            <GameBtn to="/quiz_game">게임 하러가기</GameBtn>
+            <GameBtn to="/quiz_public">학습 하기</GameBtn>
+            <GameBtn to="/quiz_game">게임 하기</GameBtn>
           </GameBtnWrapper>
         </WordmonLandingWrapper>
       </WordMonsterSection>
@@ -140,7 +140,6 @@ const GoogleLoginBtn = styled.button`
     display: inline-block;
     vertical-align: middle;
   }
-  @media screen and (max-width: 767px){ display: none; }
 `
 export default LoginPage
 

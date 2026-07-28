@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { callPhaseManager, callCloseStanceCollection } from '../../../firebase/config'
+import { callPhaseManager, callCloseStanceCollection, callCompleteBattleSequence } from '../../../firebase/config'
 import useGameroom from './useGameroom'
 import useQuizLogic from './useQuizLogic'
 import useBattleLogic from './useBattleLogic'
 import useFetchStorageImg from '../../../hooks/Game/useFetchStorageImg'
+import { getBackgroundOption, getBossOption } from '../../../data/battleRoomData'
 
 const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved }) => {
   const { room, isRoomResolved, players, pets, boss, phase, quizList, quizListRef, bossStance, stanceSummary, allStances, battleResults } = useGameroom(roomId)
-  const { fetchImgUrl } = useFetchStorageImg();
+  const { fetchPathUrlMap } = useFetchStorageImg();
   const isHost = !!user?.uid && !!room?.hostUid && user.uid === room.hostUid
   const [background, setBackground] = useState(null)
+  const [bossImages, setBossImages] = useState({ front: null, back: null })
   const [msg, setMsg] = useState('')
   const [countdown, setCountdown] = useState(null)
   const [displayBossHp, setDisplayBossHp] = useState(null)
@@ -20,6 +22,7 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
   const timeoutRef = useRef(null)
   const summaryKeyRef = useRef(null)
   const summaryTransitionRef = useRef(null)
+  const completionFallbackRef = useRef(null)
   const playedBattleResultRef = useRef(null)
   const onBattleResolvedRef = useRef(onBattleResolved)
 
@@ -35,6 +38,7 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
     setMarking,
     generateQuestion,
     checkAnswer,
+    resetQuizResults,
     setCorrectNumber,
   } = useQuizLogic(quizList)
   const { stanceList, animEvent, playBattleSequence } = useBattleLogic({ setMsg })
@@ -43,7 +47,7 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
     [players]
   )
   const battleReport = useMemo(() => {
-    const report = { damage: 0, heal: 0, defense: 0, score: 0, result: 'Draw' }
+    const report = { damage: 0, heal: 0, defense: 0, score: 0, result: 'Draw', endReason: null }
     const targetUid = participantUid || user?.uid
     const roundStat = (value) => Math.round(value * 10) / 10
 
@@ -79,6 +83,7 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
     const lastResult = orderedResults[orderedResults.length - 1]
     if (lastResult?.winner === 'team') report.result = 'Win'
     else if (lastResult?.winner === 'boss') report.result = 'Lose'
+    report.endReason = lastResult?.endReason || null
 
     report.damage = roundStat(report.damage)
     report.heal = roundStat(report.heal)
@@ -142,8 +147,27 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
   }, [])
 
   useEffect(() => {
-    fetchImgUrl('images/battle_background.png', setBackground)
-  }, [fetchImgUrl])
+    setBackground(getBackgroundOption(room?.backgroundId).image)
+  }, [room?.backgroundId])
+
+  useEffect(() => {
+    let isActive = true
+    const selectedBoss = getBossOption(room?.bossType)
+    fetchPathUrlMap([selectedBoss.frontPath, selectedBoss.backPath])
+      .then((imageMap) => {
+        if (!isActive || !imageMap) return
+        setBossImages({
+          front: imageMap.get(selectedBoss.frontPath) || null,
+          back: imageMap.get(selectedBoss.backPath) || imageMap.get(selectedBoss.frontPath) || null,
+        })
+      })
+      .catch((error) => {
+        console.error('보스 이미지를 불러오지 못했습니다.', error)
+        if (isActive) setBossImages({ front: null, back: null })
+      })
+
+    return () => { isActive = false }
+  }, [room?.bossType, fetchPathUrlMap])
 
   useEffect(() => {
     onBattleResolvedRef.current = onBattleResolved
@@ -161,6 +185,7 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
         case 'countdown': {
           summaryKeyRef.current = null
           clearTimeout(summaryTransitionRef.current)
+          resetQuizResults()
           setNumber(0)
           setCurQuiz('')
           setCurAnswer('')
@@ -175,7 +200,8 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
           if (quizListRef.current && picked?.idx >= 0) quizListRef.current.splice(picked.idx, 1)
           const quizInterval = setInterval(() => {
             setNumber(prev => {
-              if (prev % 5 === 0) {
+              if (quizListRef.current.length === 0 || prev % 5 === 0) {
+                clearInterval(quizInterval)
                 if (isHost) callPhaseManager({ roomId, status: 'stance' })
                 setCurQuiz('')
                 setCurAnswer('')
@@ -216,7 +242,7 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
       timeoutRef.current = null
       intervalRef.current = null
     }
-  }, [phase, roomId, isHost, user, generateQuestion, setCurAnswer, setCurQuiz, quizListRef])
+  }, [phase, roomId, isHost, user, generateQuestion, resetQuizResults, setCurAnswer, setCurQuiz, quizListRef])
 
   useEffect(() => {
     if (phase !== 'battle') return
@@ -233,6 +259,24 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
     if (playedBattleResultRef.current === resultKey) return
     playedBattleResultRef.current = resultKey
 
+    const completeSequence = async (attempt = 0) => {
+      try {
+        await callCompleteBattleSequence({
+          uid: participantUid || user?.uid,
+          roomId,
+          turn: resultTurn,
+        })
+      } catch (error) {
+        console.error('전투 애니메이션 완료 처리 실패:', error)
+        if (attempt < 2) {
+          completionFallbackRef.current = setTimeout(
+            () => completeSequence(attempt + 1),
+            1500
+          )
+        }
+      }
+    }
+
     playBattleSequence({
       turn: resultTurn,
       result: latestResult,
@@ -241,10 +285,24 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
       bossMaxHp: Number(boss?.hp || latestResult.nextBossHp || 0),
       teamMaxHp: Number(pets?.hp || latestResult.nextPetHp || 0),
       onDone: () => {
-        if (isHost) callPhaseManager({ roomId, status: latestResult.nextStatus })
+        if (latestResult.nextStatus !== 'ended') {
+          if (isHost) callPhaseManager({ roomId, status: latestResult.nextStatus })
+          return
+        }
+        if (isHost) {
+          completeSequence()
+          return
+        }
+        // 호스트 연결이 끊긴 경우에도 방이 battle 상태에 고정되지 않도록 참가자가 대신 완료합니다.
+        completionFallbackRef.current = setTimeout(completeSequence, 2500)
       },
     })
-  }, [phase, battleResults, roomId, boss?.hp, pets?.hp, isHost, playBattleSequence])
+
+    return () => {
+      clearTimeout(completionFallbackRef.current)
+      completionFallbackRef.current = null
+    }
+  }, [phase, battleResults, roomId, boss?.hp, pets?.hp, isHost, participantUid, user?.uid, playBattleSequence])
 
   useEffect(() => {
     if (!bossStance) return
@@ -311,6 +369,7 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
   useEffect(() => {
     return () => {
       clearTimeout(summaryTransitionRef.current)
+      clearTimeout(completionFallbackRef.current)
     }
   }, [])
 
@@ -335,8 +394,10 @@ const useBattleRoomCommon = ({ roomId, user, participantUid, onBattleResolved })
     bossStance,
     quizList,
     quizListRef,
+    remainingQuestionCount: quizListRef.current.length,
     studentList,
     background,
+    bossImages,
     msg,
     countdown,
     displayBossHp,

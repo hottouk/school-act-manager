@@ -19,7 +19,10 @@ const QuizPublicPage = () => {
 	useEffect(() => {
 		const bindPublicQuizData = async () => {
 			const allQuizData = await fetchAllData("quiz_public") || [];
-			setQuizSetList(allQuizData);
+			setQuizSetList(allQuizData.map((quiz) => ({
+				...quiz,
+				quizSource: "quiz_public",
+			})));
 		}
 		bindPublicQuizData();
 	}, [fetchAllData]);

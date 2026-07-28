@@ -12,7 +12,6 @@ import useMediaQuery from '../../hooks/useMediaQuery'
 import iconImg from '../../image/icon/like_icon.png'
 import unknownIcon from '../../image/icon/unkown_icon.png'
 import recycleIcon from '../../image/icon/recycle_icon.png'
-import { callCreateRoom } from '../../firebase/config'
 //생성(240109) -> onClick 로직 분리(250122) -> 정리(251216)
 const CardList = ({ dataList, type, onClick, selected }) => {
   const user = useSelector(({ user }) => user)
@@ -85,18 +84,9 @@ const CardList = ({ dataList, type, onClick, selected }) => {
       setOpenQuizMenuId(null);
     };
 
-    const handleCreateGameClick = async (event) => {
+    const handleCreateGameClick = (event) => {
       event.stopPropagation();
-      const res = await callCreateRoom({ uid: user.uid, title: item.title, maxRounds: 5, quizId: item.id });
-      const { data } = res || {}
-      if (!data) return;
-      navigate("/quiz_game_thr", { state: { battleCode: data.battleCode, roomId: data.roomId } });
-      setOpenQuizMenuId(null);
-    };
-
-    const handleGameClick = (event) => {
-      event.stopPropagation();
-      navigate('/quiz_game', { state: item });
+      navigate('/quiz_game_setting', { state: item });
       setOpenQuizMenuId(null);
     };
 
@@ -112,7 +102,6 @@ const CardList = ({ dataList, type, onClick, selected }) => {
         {user.uid === item.uid && <QuizMenuButton type="button" onClick={handleEditOnClick}>수정</QuizMenuButton>}
         <QuizMenuButton type="button" onClick={handleStudyClick}>학습</QuizMenuButton>
         {user.isTeacher && <QuizMenuButton type="button" onClick={handleCreateGameClick}>게임방 만들기</QuizMenuButton>}
-        <QuizMenuButton type="button" onClick={handleGameClick}>게임하기</QuizMenuButton>
       </QuizMenu>}
     </QuizCardBox>
   }

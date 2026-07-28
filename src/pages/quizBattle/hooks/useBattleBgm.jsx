@@ -1,109 +1,72 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-
-const melody = [
-  { note: 261.63, beat: 0.5 },
-  { note: 329.63, beat: 0.5 },
-  { note: 392.0, beat: 0.5 },
-  { note: 523.25, beat: 0.5 },
-  { note: 493.88, beat: 0.5 },
-  { note: 392.0, beat: 0.5 },
-  { note: 329.63, beat: 0.5 },
-  { note: 392.0, beat: 0.5 },
-]
-
-const beatSeconds = 0.28
-const loopMs = melody.reduce((total, { beat }) => total + beat * beatSeconds * 1000, 0)
-
-const createGain = (audioContext, destination, value) => {
-  const gain = audioContext.createGain()
-  gain.gain.value = value
-  gain.connect(destination)
-  return gain
-}
+import battleBgm from '../../../assets/audio/bgm/battle_bgm_aachronist.mp3'
+const BGM_VOLUME = 0.2
 
 const useBattleBgm = () => {
-  const audioContextRef = useRef(null)
-  const masterGainRef = useRef(null)
-  const loopTimerRef = useRef(null)
+  const audioRef = useRef(null)
+  const isMutedRef = useRef(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
 
-  const getAudioContext = useCallback(() => {
-    if (audioContextRef.current) return audioContextRef.current
+  const getAudio = useCallback(() => {
+    if (!audioRef.current) {
+      const audio = new Audio(battleBgm)
 
-    const AudioContext = window.AudioContext || window.webkitAudioContext
-    if (!AudioContext) return null
-
-    const audioContext = new AudioContext()
-    const masterGain = createGain(audioContext, audioContext.destination, isMuted ? 0 : 0.12)
-    audioContextRef.current = audioContext
-    masterGainRef.current = masterGain
-    return audioContext
-  }, [isMuted])
-
-  const playMelody = useCallback(() => {
-    const audioContext = audioContextRef.current
-    const masterGain = masterGainRef.current
-    if (!audioContext || !masterGain) return
-
-    let currentTime = audioContext.currentTime + 0.02
-
-    melody.forEach(({ note, beat }, index) => {
-      const oscillator = audioContext.createOscillator()
-      const noteGain = createGain(audioContext, masterGain, 0.001)
-      const startTime = currentTime
-      const endTime = currentTime + beat * beatSeconds
-
-      oscillator.type = index % 2 === 0 ? 'triangle' : 'sine'
-      oscillator.frequency.value = note
-      noteGain.gain.setValueAtTime(0.001, startTime)
-      noteGain.gain.linearRampToValueAtTime(0.22, startTime + 0.03)
-      noteGain.gain.exponentialRampToValueAtTime(0.001, endTime)
-      oscillator.connect(noteGain)
-      oscillator.start(startTime)
-      oscillator.stop(endTime + 0.02)
-
-      currentTime = endTime
-    })
-  }, [])
-
-  const stop = useCallback(() => {
-    if (loopTimerRef.current) {
-      clearInterval(loopTimerRef.current)
-      loopTimerRef.current = null
+      audio.loop = true
+      audio.volume = BGM_VOLUME
+      audio.preload = 'auto'
+      audio.muted = isMutedRef.current
+      audioRef.current = audio
     }
-    setIsPlaying(false)
+
+    return audioRef.current
   }, [])
 
   const start = useCallback(async () => {
-    const audioContext = getAudioContext()
-    if (!audioContext || loopTimerRef.current) return
+    const audio = getAudio()
 
-    if (audioContext.state === 'suspended') {
-      await audioContext.resume()
+    if (!audio.paused) return
+
+    audio.muted = isMutedRef.current
+    await audio.play()
+    setIsPlaying(true)
+  }, [getAudio])
+
+  const stop = useCallback(() => {
+    const audio = audioRef.current
+
+    if (audio) {
+      audio.pause()
+      audio.currentTime = 0
     }
 
-    playMelody()
-    loopTimerRef.current = setInterval(playMelody, loopMs)
-    setIsPlaying(true)
-  }, [getAudioContext, playMelody])
+    setIsPlaying(false)
+  }, [])
 
   const toggleMute = useCallback(() => {
-    setIsMuted((prev) => {
-      const next = !prev
-      if (masterGainRef.current) {
-        masterGainRef.current.gain.value = next ? 0 : 0.12
-      }
-      return next
-    })
+    const nextMuted = !isMutedRef.current
+
+    isMutedRef.current = nextMuted
+    setIsMuted(nextMuted)
   }, [])
 
   useEffect(() => {
-    return () => {
-      stop()
-      audioContextRef.current?.close()
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted
     }
-  }, [stop])
+  }, [isMuted])
+
+  useEffect(() => {
+    return () => {
+      const audio = audioRef.current
+
+      if (audio) {
+        audio.pause()
+        audio.src = ''
+        audioRef.current = null
+      }
+    }
+  }, [])
 
   return { isMuted, isPlaying, start, stop, toggleMute }
 }

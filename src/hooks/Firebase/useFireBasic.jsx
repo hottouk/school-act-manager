@@ -27,12 +27,13 @@ const useFireBasic = (col) => {
   }, []);
 
   //문서 하나
-  const fetchDoc = useCallback(async (id, col) => {
-    if (!col) col = colRef;
-    const docRef = doc(colRef, id)
-    const docSnapshot = await getDoc(docRef);
-    return docSnapshot.data();
-  }, []);
+  const fetchDoc = useCallback(async (id, colName) => {
+    const targetColRef = collection(db, colName || col);
+    const docSnapshot = await getDoc(doc(targetColRef, id));
+    return docSnapshot.exists()
+      ? { id: docSnapshot.id, ...docSnapshot.data() }
+      : null;
+  }, [col, db]);
 
   //문서 여러개
   const fetchData = useCallback(async (field, value = String(user.uid)) => {

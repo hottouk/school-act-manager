@@ -1,21 +1,69 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import styled from 'styled-components'
 import { appAuth, callLeaveBattleRoom, callSubmitMyStance } from '../../../firebase/config'
 import BattleRoomFrame from '../components/BattleRoomFrame'
 import BattleActionPanel from '../components/BattleActionPanel'
+import BattleFriendSection from '../components/BattleFriendSection'
 import useBattleRoomCommon from '../hooks/useBattleRoomCommon'
-import bossImg from '../../../image/monsters/mon_evil_002_3.png'
+import useMediaQuery from '../../../hooks/useMediaQuery'
+import defaultBossImg from '../../../image/monsters/mon_evil_002_3.png'
 
 const BattleroomStuPage = () => {
   const user = useSelector(({ user }) => user);
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const { state: battleInfo } = useLocation();
   const { roomId, pet: myPet } = battleInfo || {};
   const navigate = useNavigate();
   const participantUid = appAuth.currentUser?.uid || user?.uid;
   const [actionBall, setActionBall] = useState(0);
   const [isLeaving, setIsLeaving] = useState(false);
+  const resultAudioContextRef = useRef(null);
+  // BGM 관련 훅
+  const playQuizResultSound = useCallback(async (isCorrect) => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+
+    const audioContext = resultAudioContextRef.current || new AudioContext();
+    resultAudioContextRef.current = audioContext;
+
+    try {
+      if (audioContext.state === 'suspended') await audioContext.resume();
+
+      const startedAt = audioContext.currentTime;
+      const notes = isCorrect
+        ? [
+          { frequency: 523.25, offset: 0, duration: 0.14 },
+          { frequency: 659.25, offset: 0.13, duration: 0.14 },
+          { frequency: 783.99, offset: 0.26, duration: 0.24 },
+        ]
+        : [
+          { frequency: 220, offset: 0, duration: 0.22 },
+          { frequency: 146.83, offset: 0.18, duration: 0.32 },
+        ];
+
+      notes.forEach(({ frequency, offset, duration }) => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const noteStart = startedAt + offset;
+        const noteEnd = noteStart + duration;
+
+        oscillator.type = isCorrect ? 'sine' : 'sawtooth';
+        oscillator.frequency.setValueAtTime(frequency, noteStart);
+        gain.gain.setValueAtTime(0.0001, noteStart);
+        gain.gain.exponentialRampToValueAtTime(isCorrect ? 0.14 : 0.08, noteStart + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, noteEnd);
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(noteStart);
+        oscillator.stop(noteEnd + 0.01);
+      });
+    } catch (error) {
+      // 효과음 재생 실패가 퀴즈 진행을 막지 않게 한다.
+      console.debug('Quiz result sound could not be played.', error);
+    }
+  }, []);
 
   const {
     room,
@@ -25,8 +73,9 @@ const BattleroomStuPage = () => {
     boss,
     phase,
     bossStance,
-    quizList,
+    remainingQuestionCount,
     background,
+    bossImages,
     msg,
     countdown,
     displayBossHp,
@@ -37,6 +86,7 @@ const BattleroomStuPage = () => {
     optionList,
     marking,
     correctNumber,
+    wrongList,
     battleReport,
     stanceList,
     animEvent,
@@ -63,6 +113,16 @@ const BattleroomStuPage = () => {
       navigate('/quiz_game', { replace: true })
     }
   }, [players, participantUid, navigate])
+
+  useEffect(() => {
+    if (typeof marking !== 'boolean') return;
+    playQuizResultSound(marking);
+  }, [marking, playQuizResultSound]);
+
+  useEffect(() => () => {
+    resultAudioContextRef.current?.close();
+    resultAudioContextRef.current = null;
+  }, []);
 
   const handleOptionOnClick = (idx) => {
     if (done) return
@@ -102,6 +162,17 @@ const BattleroomStuPage = () => {
     navigate('/quiz_game', { replace: true })
   }
 
+  const handleReviewWrongWords = () => {
+    if (wrongList.length === 0) return
+
+    navigate('/quiz_study', {
+      state: {
+        title: `${room?.title || '단어 배틀'} 틀린 단어 복습`,
+        quizList: wrongList.map(({ quiz, answer }) => `${quiz}#${answer}`),
+      },
+    })
+  }
+
   const actionButtons = []
   if (phase === 'quiz') {
     optionList?.forEach((option, idx) => {
@@ -114,45 +185,51 @@ const BattleroomStuPage = () => {
       actionButtons.push({ label: kor[stance], onClick: () => handleStanceOnClick(idx), disabled: done, variant: 'primary' })
     })
   }
+  if (phase === 'ended') {
+    actionButtons.push({
+      label: '틀린 단어 복습하기',
+      onClick: handleReviewWrongWords,
+      disabled: wrongList.length === 0,
+      variant: 'secondary',
+    })
+  }
   if (phase !== 'quiz') {
     actionButtons.push({ label: isLeaving ? '퇴장 중...' : '종료하기', onClick: handleLeaveRoom, disabled: isLeaving, variant: 'danger' })
   }
 
+  const currentPet = players?.[participantUid]?.pet || myPet
+  const baseBossSpec = room?.bossStatPerPlayer || null
   const bossSpec = boss ? {
     hp: boss.hp,
     atk: boss.atk,
     def: boss.def,
-  } : null
-
-  const footer = (
-    <FriendSection>
-      <h4>접속 친구</h4>
-      <FriendsGrid>
-        {players && Object.entries(players).map(([uid, p]) => (
-          <FriendCard key={uid} title={p.nickname}>
-            <Avatar src={p.petImg || '/image/icon/default_avatar.png'} alt={p.nickname} />
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-              <span>{p.nickname}</span>
-              <small>{p.score ? `점수 ${p.score}` : ''}</small>
-            </div>
-            <StatusDot $online={!!p.connected} />
-          </FriendCard>
-        ))}
-        {!players || Object.keys(players).length === 0 ? <EmptyNotice>접속한 친구가 없습니다.</EmptyNotice> : null}
-      </FriendsGrid>
-    </FriendSection>
-  )
+  } : baseBossSpec
+  const bossPlayerCount = boss && Number(baseBossSpec?.hp) > 0
+    ? Math.max(1, Math.round(Number(boss.hp) / Number(baseBossSpec.hp)))
+    : 1
 
   return (
     <BattleRoomFrame
       statusProps={{
-        myPet,
-        mySpec: { atk: myPet?.atk, def: myPet?.def, hp: myPet?.hp, mat: myPet?.rest },
-        enmPet: { petImg: bossImg },
+        myPet: currentPet,
+        mySpec: {
+          atk: currentPet?.atk,
+          def: currentPet?.def,
+          hp: currentPet?.hp,
+          rest: currentPet?.rest,
+        },
+        myRole: 'student',
+        myLabel: currentPet?.name || '내 펫',
+        myMeta: '기본 능력치',
+        enmPet: { petImg: bossImages.front || defaultBossImg },
         enmSpec: bossSpec,
+        enmRole: 'boss',
+        enmLabel: '보스',
+        enmMeta: boss ? `${bossPlayerCount}명 기준` : '학생 1명 기준',
       }}
       pixiProps={{
         background,
+        bossImages,
         studentList: Object.entries(players || {}).map(([uid, p], idx) => ({
           uid,
           nickname: p?.nickname || `player-${idx + 1}`,
@@ -173,60 +250,24 @@ const BattleroomStuPage = () => {
         actionBall,
         result: battleReport.result,
         correctNumber,
+        wrongNumber: wrongList.length,
         battleStats: battleReport,
+        isMobile,
       }}
       infoProps={{
         phase,
         msg,
         number,
         stats: [
-          { label: '남은 문제', value: Math.max((quizList.length ?? 0) - number, 0) },
+          { label: '남은 문제', value: remainingQuestionCount },
           { label: '맞춘 개수', value: correctNumber },
-          { label: '페이즈', value: phase },
+          { label: '턴', value: `${room?.turn}/${room?.maxTurn}` },
         ],
       }}
       controlPanel={<BattleActionPanel buttons={actionButtons} />}
-      footer={footer}
+      friendPanel={<BattleFriendSection players={players} />}
     />
   )
 }
-
-const FriendSection = styled.div`
-  width: 100%;
-`
-const FriendsGrid = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-`
-const FriendCard = styled.div`
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 8px;
-  border-radius:8px;
-  background:#fff;
-  border:1px solid #eee;
-  min-width: 160px;
-`
-const Avatar = styled.img`
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  object-fit:cover;
-  background:#ddd;
-`
-const StatusDot = styled.div`
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  margin-left:auto;
-  background: ${({ $online }) => ($online ? '#37b24d' : '#9ca3af')};
-`
-const EmptyNotice = styled.div`
-  color:#666;
-  font-size:14px;
-`
 
 export default BattleroomStuPage

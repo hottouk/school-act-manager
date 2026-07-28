@@ -10,7 +10,12 @@ Pink #FF69B4;
 phone max-width 767px
 BorderColor: rgb(120, 120, 120, 0.5);
 black: 3a3a3a
-
+//스크롤바
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-color: #9aa9e8 #edf0fa;
+  scrollbar-width: thin;
 *배열은 반드시 list로 작성
 firebase, react 통일
 

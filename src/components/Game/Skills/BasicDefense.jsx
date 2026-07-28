@@ -1,14 +1,44 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Graphics, Text } from '@pixi/react';
+import { Container, Graphics } from '@pixi/react';
+import { Text } from '../SafePixiText';
+import { playBattleSound } from '../../../utils/BattleSoundUtils';
+
+const DEFENSE_COLORS = {
+  student: {
+    fill: 0x7df9ff,
+    border: 0x5cecff,
+    innerBorder: 0xffffff,
+    accent: 0xb9ffff,
+    wave: 0x8ffbff,
+    innerWave: 0xffffff,
+    valueFill: ['#ffffff', '#7df9ff'],
+    valueStroke: '#05364a',
+    valueShadow: '#001f2f',
+  },
+  boss: {
+    fill: 0xff6b6b,
+    border: 0xff3b30,
+    innerBorder: 0xfff0f0,
+    accent: 0xffa8a8,
+    wave: 0xff8787,
+    innerWave: 0xfff5f5,
+    valueFill: ['#ffffff', '#ff8787'],
+    valueStroke: '#5c0b0b',
+    valueShadow: '#2b0000',
+  },
+};
+
 //수정(250731)
-const BasicDefense = ({ x, y, radius, trigger, value, durationMs = 1800 }) => {
+const BasicDefense = ({ x, y, radius, trigger, value, durationMs = 1800, variant = 'student' }) => {
   const [progress, setProgress] = useState(0);
   const duration = Math.max(Number(durationMs) || 1800, 600);
   const defenseValue = Number(value);
   const hasDefenseValue = Number.isFinite(defenseValue);
+  const colors = DEFENSE_COLORS[variant] || DEFENSE_COLORS.student;
 
   useEffect(() => {
     if (!trigger) return;
+    playBattleSound('defense');
 
     let animationFrame;
     const startedAt = performance.now();
@@ -47,27 +77,27 @@ const BasicDefense = ({ x, y, radius, trigger, value, durationMs = 1800 }) => {
 
   const drawShield = (g) => {
     g.clear();
-    g.beginFill(0x7df9ff, 0.18);
+    g.beginFill(colors.fill, 0.18);
     g.drawCircle(0, 0, radius);
     g.endFill();
-    g.lineStyle(Math.max(4, radius * 0.035), 0x5cecff, 0.95);
+    g.lineStyle(Math.max(4, radius * 0.035), colors.border, 0.95);
     g.drawCircle(0, 0, radius);
-    g.lineStyle(Math.max(2, radius * 0.018), 0xffffff, 0.75);
+    g.lineStyle(Math.max(2, radius * 0.018), colors.innerBorder, 0.75);
     g.drawCircle(0, 0, radius * 0.82);
-    g.lineStyle(Math.max(2, radius * 0.012), 0xb9ffff, 0.55);
+    g.lineStyle(Math.max(2, radius * 0.012), colors.accent, 0.55);
     g.arc(0, 0, radius * 0.62, -0.95, 0.45);
     g.arc(0, 0, radius * 0.62, 2.15, 3.45);
   };
 
   const drawWave = (g) => {
     g.clear();
-    g.lineStyle(Math.max(2, radius * 0.02), 0x8ffbff, 0.7);
+    g.lineStyle(Math.max(2, radius * 0.02), colors.wave, 0.7);
     g.drawCircle(0, 0, radius * 0.92);
   };
 
   const drawInnerWave = (g) => {
     g.clear();
-    g.lineStyle(Math.max(2, radius * 0.014), 0xffffff, 0.6);
+    g.lineStyle(Math.max(2, radius * 0.014), colors.innerWave, 0.6);
     g.drawCircle(0, 0, radius * 0.62);
   };
 
@@ -90,7 +120,7 @@ const BasicDefense = ({ x, y, radius, trigger, value, durationMs = 1800 }) => {
       />
       {hasDefenseValue && (
         <Text
-          text={`+${defenseValue}`}
+          text={String(`+${defenseValue}`)}
           x={0}
           y={-radius * 0.08 - progress * radius * 0.05}
           anchor={0.5}
@@ -100,11 +130,11 @@ const BasicDefense = ({ x, y, radius, trigger, value, durationMs = 1800 }) => {
             fontFamily: 'Arial',
             fontSize: Math.max(28, radius * 0.24),
             fontWeight: '900',
-            fill: ['#ffffff', '#7df9ff'],
-            stroke: '#05364a',
+            fill: colors.valueFill,
+            stroke: colors.valueStroke,
             strokeThickness: Math.max(5, radius * 0.025),
             dropShadow: true,
-            dropShadowColor: '#001f2f',
+            dropShadowColor: colors.valueShadow,
             dropShadowBlur: 7,
             dropShadowDistance: 2,
           }}

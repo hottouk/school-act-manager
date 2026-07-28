@@ -1,4 +1,5 @@
-import { Graphics, Text } from '@pixi/react';
+import { Graphics } from '@pixi/react';
+import { Text } from './SafePixiText';
 import { gsap } from 'gsap';
 import React, { useEffect, useRef } from 'react'
 
@@ -42,7 +43,7 @@ const ExpBar = ({ x, y, width, height, curExp, maxExp }) => {
       <Graphics draw={drawCurExp} x={x} y={y} ref={expBarRef} />
       {/* 경험치 텍스트 */}
       <Text
-        text={`EXP: ${clampedExp} / ${maxExp}`}
+        text={String(`EXP: ${clampedExp} / ${maxExp}`)}
         x={x + width / 2}
         y={y - 20}
         anchor={{ x: 0.5, y: 0.5 }}

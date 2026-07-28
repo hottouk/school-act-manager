@@ -1,5 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
-import { callPhaseManager } from '../../../firebase/config';
+import { useCallback, useMemo, useState } from 'react'
 const useQuizLogic = (quizList = [],) => {
   const [marking, setMarking] = useState(null);
   //문항
@@ -59,8 +58,13 @@ const useQuizLogic = (quizList = [],) => {
       setWrongList(prev => [...prev, { quiz: curQuiz, answer: curAnswer }]);
     }
   }
+  const resetQuizResults = useCallback(() => {
+    setCorrectNumber(0);
+    setWrongList([]);
+    setMarking(null);
+  }, []);
   return (
-    { curQuiz, curAnswer, optionList, marking, correctNumber, wrongList, setCurQuiz, setCurAnswer, setMarking, generateQuestion, checkAnswer, setCorrectNumber }
+    { curQuiz, curAnswer, optionList, marking, correctNumber, wrongList, setCurQuiz, setCurAnswer, setMarking, generateQuestion, checkAnswer, resetQuizResults, setCorrectNumber }
   )
 }
 

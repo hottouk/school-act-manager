@@ -1,7 +1,8 @@
 //라이브러리
 import * as PIXI from 'pixi.js'; //pixi 쓸 때 필수!
 import { useEffect, useState } from 'react'
-import { Sprite, Stage, Text } from '@pixi/react';
+import { Sprite, Stage } from '@pixi/react';
+import { Text } from '../../components/Game/SafePixiText';
 import { useSelector } from 'react-redux';
 //컴포넌트
 import Background from '../../components/Game/Background';
@@ -89,7 +90,7 @@ const PixiShopStage = ({ setIsModal, shopItemList, setSelected }) => {
 			cursor="pointer"
 			pointerdown={handleHintOnClick}
 		/>
-		{_hintList.length !== 0 && <Text Text text={`${_hintList[hintNumber]}`} x={700} y={300} anchor={0.5} style={{ fontSize: 20, fontWeight: 'bold', }} ></Text>}
+		{_hintList.length !== 0 && <Text text={String(_hintList[hintNumber] ?? '')} x={700} y={300} anchor={0.5} style={{ fontSize: 20, fontWeight: 'bold', }} />}
 		<ShopItemBox x={50} y={600} width={90} height={90} onClick={() => { handleNthGiftOnClick(0) }} src={giftImgList[0] || qustion_icon} />
 		<ShopItemBox x={180} y={600} width={90} height={90} onClick={() => { handleNthGiftOnClick(1) }} src={giftImgList[1] || qustion_icon} />
 		<ShopItemBox x={50} y={725} width={90} height={90} onClick={() => { handleNthGiftOnClick(2) }} src={giftImgList[2] || qustion_icon} />

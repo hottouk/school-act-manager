@@ -1,8 +1,8 @@
 import { getDownloadURL, getStorage, ref } from 'firebase/storage'
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 //생성(250117)
 const useFetchStorageImg = () => {
-  const storage = getStorage();
+  const storage = useMemo(() => getStorage(), []);
   const [imgList, setImgList] = useState([]);
   //path 추출
   const getPathList = (list) => {
@@ -30,9 +30,9 @@ const useFetchStorageImg = () => {
       }
     })
     return list;
-  }, [])
+  }, [storage])
   //이미지 하나 가져오기
-  const fetchImgUrl = async (path, setter) => {
+  const fetchImgUrl = useCallback(async (path, setter) => {
     if (!path) return
     const cachedUrl = sessionStorage.getItem(path);
     if (cachedUrl) {
@@ -47,9 +47,9 @@ const useFetchStorageImg = () => {
         else { setter(url); }
       })
     }
-  }
+  }, [storage])
   //path-url 맵
-  const fetchPathUrlMap = async (pathList) => {
+  const fetchPathUrlMap = useCallback(async (pathList) => {
     if (!pathList) return;
     const promises = pathList.map(async (path) => {
       const cachedUrl = sessionStorage.getItem(path);
@@ -61,8 +61,10 @@ const useFetchStorageImg = () => {
       }
     })
     const newMap = await Promise.all(promises);
-    return new Map(newMap);
-  }
+    const imageMap = new Map(newMap);
+    imageMap.forEach((url, path) => sessionStorage.setItem(path, url));
+    return imageMap;
+  }, [storage])
 
   return { imgList, getPathList, fetchImgUrlList, fetchImgUrl, fetchPathUrlMap }
 }

@@ -1,5 +1,6 @@
 import React from 'react'
-import { Container, Sprite, Text } from '@pixi/react'
+import { Container, Sprite } from '@pixi/react'
+import { Text } from './SafePixiText'
 //생성(250722)
 const SpeechBublSprite = ({ x = 475, y = 200, src, width, height, reverse, fontSize = 58 }) => {
   return <>

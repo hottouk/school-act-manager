@@ -330,10 +330,14 @@ export {
   submitMyStance,
   closeStanceCollection,
   resolveBattleTurn,
+  completeBattleSequence,
   restartBattleRoom,
   finalizeGame,
   cleanupExpiredRooms,
 } from "./battle.js";
+
+// 배틀 프리미엄
+export {purchaseBattlePremium} from "./premiumPurchase.js";
 
 // pdf Ocr
 export { extractText, startOcrOnPdf, getPdfOcrResults } from "./pdfOcr.js";

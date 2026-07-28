@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Text } from '@pixi/react';
 import { gsap } from 'gsap';
+import { Text } from '../SafePixiText';
 
 const DamageText = ({ x, y, value }) => {
   const textRef = useRef();
@@ -20,7 +20,7 @@ const DamageText = ({ x, y, value }) => {
   return (
     <Text
       ref={textRef}
-      text={stringValue}
+      text={String(stringValue ?? '')}
       x={x}
       y={y}
       anchor={0.5}

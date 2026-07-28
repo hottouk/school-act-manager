@@ -1,17 +1,50 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Graphics, Text } from '@pixi/react';
+import { Container, Graphics } from '@pixi/react';
+import { Text } from '../SafePixiText';
+import { playBattleSound } from '../../../utils/BattleSoundUtils';
+
+const REST_COLORS = {
+  student: {
+    auraFill: 0x6dff7a,
+    auraInner: 0xbaffc2,
+    auraOuter: 0x2cff5e,
+    plusOutline: 0x064d17,
+    plusFill: 0x67ff6d,
+    plusHighlight: 0xffffff,
+    labelFill: ['#ffffff', '#78ff83'],
+    labelStroke: '#0d4f1d',
+    valueFill: ['#baffc2', '#2cff5e'],
+    valueStroke: '#063f17',
+    shadow: '#002f0d',
+  },
+  boss: {
+    auraFill: 0xff6b6b,
+    auraInner: 0xffb3b3,
+    auraOuter: 0xff3b30,
+    plusOutline: 0x5c0b0b,
+    plusFill: 0xff5c5c,
+    plusHighlight: 0xfff0f0,
+    labelFill: ['#ffffff', '#ff8a8a'],
+    labelStroke: '#6b1010',
+    valueFill: ['#ffc1c1', '#ff3b30'],
+    valueStroke: '#5c0b0b',
+    shadow: '#2b0000',
+  },
+};
 
 //수정(250731)
-const BasicRest = ({ x, y, size, thick, movingPoint, trigger, setTrigger, value, durationMs = 1200 }) => {
+const BasicRest = ({ x, y, size, thick, movingPoint, trigger, setTrigger, value, durationMs = 1200, variant = 'student' }) => {
   const [progress, setProgress] = useState(0);
   const duration = Math.max(Number(durationMs) || 1200, 600);
   const moveDistance = Math.min(Math.max(Number(movingPoint) || size * 5, size * 2.2), size * 6);
   const numericValue = Number(value);
   const hasValue = Number.isFinite(numericValue) && numericValue !== 0;
   const displayValue = hasValue ? `+${Math.abs(numericValue)}` : null;
+  const colors = REST_COLORS[variant] || REST_COLORS.student;
 
   useEffect(() => {
     if (!trigger) return;
+    playBattleSound('rest');
 
     let animationFrame;
     const startedAt = performance.now();
@@ -57,12 +90,12 @@ const BasicRest = ({ x, y, size, thick, movingPoint, trigger, setTrigger, value,
     const radius = size * 1.3;
 
     g.clear();
-    g.beginFill(0x6dff7a, 0.14);
+    g.beginFill(colors.auraFill, 0.14);
     g.drawCircle(0, 0, radius);
     g.endFill();
-    g.lineStyle(Math.max(2, thick * 0.35), 0xbaffc2, 0.75);
+    g.lineStyle(Math.max(2, thick * 0.35), colors.auraInner, 0.75);
     g.drawCircle(0, 0, radius * 0.82);
-    g.lineStyle(Math.max(2, thick * 0.22), 0x2cff5e, 0.65);
+    g.lineStyle(Math.max(2, thick * 0.22), colors.auraOuter, 0.65);
     g.drawCircle(0, 0, radius * 1.08);
   };
 
@@ -71,17 +104,17 @@ const BasicRest = ({ x, y, size, thick, movingPoint, trigger, setTrigger, value,
     const lineWidth = Math.max(3, thick);
 
     g.clear();
-    g.lineStyle(lineWidth + 5, 0x064d17, 0.55);
+    g.lineStyle(lineWidth + 5, colors.plusOutline, 0.55);
     g.moveTo(0, -half);
     g.lineTo(0, half);
     g.moveTo(-half, 0);
     g.lineTo(half, 0);
-    g.lineStyle(lineWidth, 0x67ff6d, 1);
+    g.lineStyle(lineWidth, colors.plusFill, 1);
     g.moveTo(0, -half);
     g.lineTo(0, half);
     g.moveTo(-half, 0);
     g.lineTo(half, 0);
-    g.lineStyle(Math.max(2, lineWidth * 0.28), 0xffffff, 0.85);
+    g.lineStyle(Math.max(2, lineWidth * 0.28), colors.plusHighlight, 0.85);
     g.moveTo(0, -half * 0.62);
     g.lineTo(0, half * 0.62);
     g.moveTo(-half * 0.62, 0);
@@ -107,18 +140,18 @@ const BasicRest = ({ x, y, size, thick, movingPoint, trigger, setTrigger, value,
           fontFamily: 'Arial',
           fontSize: Math.max(18, size * 0.46),
           fontWeight: '900',
-          fill: ['#ffffff', '#78ff83'],
-          stroke: '#0d4f1d',
+          fill: colors.labelFill,
+          stroke: colors.labelStroke,
           strokeThickness: Math.max(4, thick * 0.34),
           dropShadow: true,
-          dropShadowColor: '#002f0d',
+          dropShadowColor: colors.shadow,
           dropShadowBlur: 4,
           dropShadowDistance: 2,
         }}
       />
       {hasValue && (
         <Text
-          text={displayValue}
+          text={String(displayValue ?? '')}
           x={0}
           y={-size * 1.35 - progress * size * 1.25}
           anchor={0.5}
@@ -128,11 +161,11 @@ const BasicRest = ({ x, y, size, thick, movingPoint, trigger, setTrigger, value,
             fontFamily: 'Arial',
             fontSize: Math.max(30, size * 0.9),
             fontWeight: '900',
-            fill: ['#baffc2', '#2cff5e'],
-            stroke: '#063f17',
+            fill: colors.valueFill,
+            stroke: colors.valueStroke,
             strokeThickness: Math.max(4, thick * 0.36),
             dropShadow: true,
-            dropShadowColor: '#002f0d',
+            dropShadowColor: colors.shadow,
             dropShadowBlur: 8,
             dropShadowDistance: 2,
           }}

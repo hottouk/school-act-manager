@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Text } from '@pixi/react';
 import { gsap } from 'gsap';
+import { Text } from '../SafePixiText';
 
 const DefenseText = ({ x, y, value }) => {
   const textRef = useRef();
